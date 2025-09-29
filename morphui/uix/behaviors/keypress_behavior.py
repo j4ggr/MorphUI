@@ -5,6 +5,7 @@ from typing import Dict
 from kivy.event import EventDispatcher
 from kivy.uix.widget import Widget
 from kivy.properties import ListProperty
+from kivy.properties import StringProperty
 from kivy.properties import BooleanProperty
 from kivy.properties import NumericProperty
 from kivy.core.window import Window
@@ -19,8 +20,8 @@ class KeyPressBehavior(EventDispatcher):
     like `on_<key_name>_press` and `on_<key_name>_release`.
     
     The class also provides tab navigation between widgets in the
-    `tab_widgets` list. When the tab key is pressed, focus will move
-    to the next widget in the list.
+    :attr:`tab_widgets` list. When the tab key is pressed, focus will 
+    move to the next widget in the list.
     """
 
     disable_key_press: bool = BooleanProperty(False)
@@ -34,6 +35,12 @@ class KeyPressBehavior(EventDispatcher):
 
     index_next_focus: int = NumericProperty(0)
     """Index of next focused text field."""
+
+    keyboard: int = NumericProperty(0)
+    """Keyboard id."""
+
+    key_text: str = StringProperty('')
+    """Text representation of the last pressed key."""
 
     keycode: int = NumericProperty(-1)
     """Keycode of the last pressed key."""
@@ -72,10 +79,9 @@ class KeyPressBehavior(EventDispatcher):
     
     @property
     def ignore_key_press(self) -> bool:
-        """Override this method to ignore key press events (read-only).
-        By default, key press events are ignored if last key pressed is 
-        not in key_map."""
-        return self.keycode not in self.key_map.keys()
+        """Override this property to provide custom logic for ignoring 
+        key press events (read-only). By default, it returns False."""
+        return False
     
     @property
     def has_focus(self) -> bool:
@@ -96,46 +102,106 @@ class KeyPressBehavior(EventDispatcher):
         assert all(hasattr(w, 'focus') for w in tab_widgets), (
             'All widgets in tab_widgets must have a focus attribute.')
         self.index_last_focus = -1
+    
+    def _skip_keypress_event(self, keycode: int) -> bool:
+        """Return True if key press event should be ignored.
+        By default, key press events are ignored if `disable_key_press`
+        is True, `ignore_key_press` is True, or the keycode is not in
+        `key_map`.
         
+        Parameters
+        ----------
+        keycode : int
+            The keycode of the key press event.
+            
+        Returns
+        -------
+        bool
+            True if the key press event should be ignored.
+        """
+        skip = any((
+            self.disable_key_press,
+            self.ignore_key_press,
+            keycode not in self.key_map.keys(),))
+        return skip
+
     def on_key_press(
             self, instance: Any, keyboard: int, keycode: int, text: str,
             modifiers: List[str]) -> None:
-        """Callback for key press events."""
+        """Callback for key press events. Binds to the Window's
+        on_key_down event.
+        
+        Parameters
+        ----------
+        instance : Any
+            The instance of the Window.
+        keyboard : int
+            The keyboard id.
+        keycode : int
+            The keycode of the pressed key.
+        text : str
+            The text representation of the pressed key.
+        modifiers : List[str]
+            List of currently held modifier keys e.g. 'shift', 'ctrl', 
+            etc.
+        """
+        if self._skip_keypress_event(keycode):
+            return
+        
+        self.keyboard = keyboard
+        self.key_text = text
         self.keycode = keycode
         self.modifiers = modifiers
-        if self.disable_key_press or self.ignore_key_press:
-            return
-
         name = self.key_map[keycode]
         method_name = self._press_event_name(name)
-        if not hasattr(self, method_name):
-            return
-
-        self.dispatch(method_name)
+        if hasattr(self, method_name):
+            self.dispatch(method_name)
         
     def on_key_release(
             self, instance: Any, keyboard: int, keycode: int) -> None:
-        """Callback for key release events."""
-        if self.disable_key_press or self.ignore_key_press:
+        """Callback for key release events. Binds to the Window's
+        on_key_up event.
+        
+        Parameters
+        ----------
+        instance : Any
+            The instance of the Window.
+        keyboard : int
+            The keyboard id.
+        keycode : int
+            The keycode of the released key.
+        """
+        if self._skip_keypress_event(keycode):
             return
         
         name = self.key_map[keycode]
         method_name = self._release_event_name(name)
-        if not hasattr(self, method_name):
-            return
+        if hasattr(self, method_name):
+            self.dispatch(method_name)
 
-        self.dispatch(method_name)
-
-    def on_index_last_focus(self, instance: Any, index_last_focus: int) -> None:
+    def on_index_last_focus(
+            self, instance: Any, index_last_focus: int) -> None:
         """Update index for next focus. Fired when the value of 
-        `index_last_focus` is changed."""
+        `index_last_focus` is changed.
+        
+        Parameters
+        ----------
+        instance : Any
+            The instance of the KeyPressBehavior.
+        index_last_focus : int
+            The last focused index.
+        """
         index_next = index_last_focus + 1
         if index_next >= len(self.tab_widgets):
             index_next = 0
         self.index_next_focus = index_next
 
     def on_tab_press(self, *args) -> None:
-        """Callback for the tab key. Dispatched when tab key is down."""
+        """Callback for the tab key. Dispatched when tab key is down.
+        It moves the focus to the next widget in the :attr:`tab_widgets`
+        list. If no widget has focus, it starts from the beginning of 
+        the list. If the last widget has focus, it wraps around to the 
+        first widget."""
         if not self.tab_widgets:
             return
         
@@ -149,7 +215,11 @@ class KeyPressBehavior(EventDispatcher):
                     break
     
     def on_tab_release(self, *args) -> None:
-        """Callback for the tab key. Dispatched when tab key is up."""
+        """Callback for the tab key. Dispatched when tab key is up.
+        It sets the focus to the next widget in the :attr:`tab_widgets`
+        list. If no widget has focus, it starts from the beginning of the
+        list. If the last widget has focus, it wraps around to the first
+        widget."""
         if not self.tab_widgets:
             return
 
