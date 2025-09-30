@@ -25,13 +25,13 @@ class DeclarativeBehavior:
     code itself, similar to how it is done in kv language.
     """
 
-    identity = StringProperty('')
+    id = StringProperty('')
     """The identity of the widget similar to the id in kv language.
     It can be used to reference the widget in the parent widget's 
     :attr:`identities` dictionary if the parent widget is also a
     :class:`DeclarativeBehavior`.
-    
-    :attr:`identity` is a :class:`~kivy.properties.StringProperty` and
+
+    :attr:`id` is a :class:`~kivy.properties.StringProperty` and
     defaults to ''."""
 
     declarative_children = ListProperty([])
@@ -81,7 +81,7 @@ class DeclarativeBehavior:
         **kwargs : Any
             Additional keyword arguments to pass to the super method.
         """
-        super().add_widget(widget, *args, **kwargs)
+        super().add_widget(widget, *args, **kwargs) # type: ignore
         self._register_declarative_child(widget)
     
     def remove_widget(self, widget: Widget, *args, **kwargs) -> None:
@@ -98,7 +98,7 @@ class DeclarativeBehavior:
         **kwargs : Any
             Additional keyword arguments to pass to the super method.
         """
-        super().remove_widget(widget, *args, **kwargs)
+        super().remove_widget(widget, *args, **kwargs) # type: ignore
         self._unregister_declarative_child(widget)
     
     def _register_declarative_child(self, widget: Widget) -> None:
@@ -113,7 +113,7 @@ class DeclarativeBehavior:
         if widget not in self.declarative_children:
             self.declarative_children.append(widget)
         
-        identity = getattr(widget, 'identity', None)
+        identity = getattr(widget, 'id', None)
         if identity:
             self._identities[identity] = widget
     
