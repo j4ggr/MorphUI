@@ -11,7 +11,10 @@ from kivy.properties import NumericProperty
 from kivy.core.window import Window
 
 
-class KeyPressBehavior(EventDispatcher):
+__all__ = ['MorphKeyPressBehavior']
+
+
+class MorphKeyPressBehavior(EventDispatcher):
     """Base class for widgets with key press behavior.
     
     This class provides key press and key release events for the keys

@@ -6,7 +6,7 @@ from ...utils.dotdict import DotDict
 
 
 # TODO: Add example usage in docstring
-class DeclarativeBehavior:
+class MorphDeclarativeBehavior:
     """A mixin class that adds declarative behavior to Kivy widgets.
     
     This allows you to define child widgets declaratively by adding them

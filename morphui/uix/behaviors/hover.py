@@ -1,5 +1,5 @@
 """Hover behavior for Kivy widgets.
-This module provides a base class `HoverBehavior` that can be mixed
+This module provides a base class `MorphHoverBehavior` that can be mixed
 into any Kivy widget to add hover functionality. It detects when the
 mouse is hovering over the widget and its edges.
 
@@ -21,10 +21,10 @@ from kivy.properties import BooleanProperty
 from kivy.core.window import Window
 
 
-__all__ = ['HoverBehavior']
+__all__ = ['MorphHoverBehavior']
 
 
-class HoverBehavior(EventDispatcher):
+class MorphHoverBehavior(EventDispatcher):
     """Base class for widgets with hover behavior.
 
     This class provides hover events for mouse enter and leave. It also 
@@ -81,10 +81,10 @@ class HoverBehavior(EventDispatcher):
     from kivy.uix.button import Button
     from kivy.uix.boxlayout import BoxLayout
 
-    from morphui.uix.behaviors.hover import HoverBehavior
+    from morphui.uix.behaviors.hover import MorphHoverBehavior
 
 
-    class HoverButton(Button, HoverBehavior):
+    class HoverButton(Button, MorphHoverBehavior):
         '''A button with hover effects.'''
 
         hovered_text: str = "Hovered widget"

@@ -27,7 +27,7 @@ class MorphDropdownMenu:
 
 
 
-class DropdownBehavior:
+class MorphDropdownBehavior:
     """This is a base class used for opening a Dropdown Menu with a list 
     of items.
     

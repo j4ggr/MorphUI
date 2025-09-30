@@ -3,7 +3,10 @@ from typing import Any
 from ...app import MorphApp
 
 
-class MCVReferenceBehavior:
+__all__ = ['MorphMCVReferenceBehavior']
+
+
+class MorphMCVReferenceBehavior:
     """Base class for widgets that need a reference to the main app,
     model, controller, and view instances."""
 
