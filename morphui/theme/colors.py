@@ -121,6 +121,58 @@ class MorphDynamicColorPalette:
         """Get the mapping of attribute names to MaterialDynamicColors 
         attributes (read-only)."""
         return self._attribute_map
+    
+    @property
+    def colors_initialized(self) -> bool:
+        """Check if dynamic colors have been initialized.
+        
+        Returns True if at least one color property has been set with
+        a non-None value, indicating that the color scheme has been
+        applied. Returns False if all color properties are None.
+        
+        Returns
+        -------
+        bool
+            True if colors are initialized, False otherwise.
+            
+        Examples
+        --------
+        ```python
+        # Check if colors are set before using them
+        if theme_manager.colors_initialized:
+            widget.background_color = theme_manager.background_color
+        else:
+            # Use fallback colors or initialize the theme
+            theme_manager.update_colors()
+        ```
+        """
+        # Check a few key color properties to determine if colors are set
+        key_colors = [
+            getattr(self, 'primary_color', None),
+            getattr(self, 'background_color', None), 
+            getattr(self, 'surface_color', None),
+            getattr(self, 'on_surface_color', None)
+        ]
+        return any(color is not None for color in key_colors)
+    
+    @property
+    def all_colors_set(self) -> bool:
+        """Check if all color properties have been initialized.
+        
+        Returns True only if all color properties in the palette have
+        been set with non-None values. This is a more strict check than
+        `colors_initialized`.
+        
+        Returns
+        -------
+        bool
+            True if all colors are set, False if any are None.
+        """
+        for attr_name in self._attribute_map.keys():
+            color_value = getattr(self, attr_name, None)
+            if color_value is None:
+                return False
+        return True 
 
     background_color = ColorProperty()
     """Background color.

@@ -12,19 +12,7 @@ from ...constants import ICON
 
 
 __all__ = [
-    'DropdownBehavior',]
-
-
-class MorphDropdownMenu:
-    """A mock class representing a dropdown menu. Replace with the actual
-    implementation."""
-    
-    def __init__(self, caller: Any, items: List[Dict[str, Any]], position: str) -> None:
-        self.caller = caller
-        self.items = items
-        self.position = position
-        self.parent = None  # Represents if the menu is open or not
-
+    'MorphDropdownBehavior',]
 
 
 class MorphDropdownBehavior:

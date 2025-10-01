@@ -23,10 +23,10 @@ from kivy.app import App
 from kivy.uix.button import Button
 from kivy.uix.boxlayout import BoxLayout
 
-from morphui.uix.behaviors.hover import HoverBehavior
+from morphui.uix.behaviors.hover import MorphHoverBehavior
 
 
-class HoverButton(Button, HoverBehavior):
+class HoverButton(Button, MorphHoverBehavior):
     '''A button with hover effects.'''
 
     hovered_text: str = "Hovered widget"

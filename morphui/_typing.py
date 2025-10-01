@@ -17,12 +17,12 @@ __all__ = [
 
 
 MaterialDynamicScheme: TypeAlias = (
-    Type[SchemeTonalSpot]
-    | Type[SchemeExpressive]
-    | Type[SchemeFruitSalad]
-    | Type[SchemeMonochrome]
-    | Type[SchemeRainbow]
-    | Type[SchemeVibrant]
-    | Type[SchemeNeutral]
-    | Type[SchemeFidelity]
-    | Type[SchemeContent])
+    SchemeTonalSpot
+    | SchemeExpressive
+    | SchemeFruitSalad
+    | SchemeMonochrome
+    | SchemeRainbow
+    | SchemeVibrant
+    | SchemeNeutral
+    | SchemeFidelity
+    | SchemeContent)
