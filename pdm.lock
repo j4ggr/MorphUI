@@ -5,7 +5,7 @@
 groups = ["default", "test"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:e0edfdb8f1f0168b61af8457102ff5fa3cfb1ef8ac86110a403a7d064e1fa83f"
+content_hash = "sha256:e4672f2816514736c04abd6968fcbbd47143c3fc12fa8fed46c772f68a457fa9"
 
 [[metadata.targets]]
 requires_python = ">=3.13"
@@ -174,6 +174,18 @@ dependencies = [
 ]
 files = [
     {file = "Kivy_Garden-0.1.5-py3-none-any.whl", hash = "sha256:ef50f44b96358cf10ac5665f27a4751bb34ef54051c54b93af891f80afe42929"},
+]
+
+[[package]]
+name = "materialyoucolor"
+version = "2.0.10"
+summary = "Material You color generation algorithms in pure python!"
+groups = ["default"]
+files = [
+    {file = "materialyoucolor-2.0.10-cp313-cp313-macosx_10_13_universal2.whl", hash = "sha256:71de9c581c8227c3010c61108a00af9a007c96f99358fdb0628626d0ade817d9"},
+    {file = "materialyoucolor-2.0.10-cp313-cp313-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:978748eca7725d8b569cdecfd9f86a8e34bf946182f79a48b059c98a10f1a0de"},
+    {file = "materialyoucolor-2.0.10-cp313-cp313-win_amd64.whl", hash = "sha256:2ffc8963a2f10d8acb6776e60e97f0e7929d3392eb282cf2bc63b8e56cd930b3"},
+    {file = "materialyoucolor-2.0.10.tar.gz", hash = "sha256:31b4d407b9a4fd4b54b30559b0d0313f6d6da1f9d19b75546ed65da52671ea76"},
 ]
 
 [[package]]
