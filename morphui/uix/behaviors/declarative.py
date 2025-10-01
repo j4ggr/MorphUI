@@ -81,6 +81,11 @@ class MorphDeclarativeBehavior:
         **kwargs : Any
             Additional keyword arguments to pass to the super method.
         """
+        if widget not in self.declarative_children:
+            self.declarative_children = (
+                list(self.declarative_children) + [widget])
+            return # changing declarative_children will call add_widget again
+        
         super().add_widget(widget, *args, **kwargs) # type: ignore
         self._register_declarative_child(widget)
     
@@ -98,42 +103,49 @@ class MorphDeclarativeBehavior:
         **kwargs : Any
             Additional keyword arguments to pass to the super method.
         """
+        if widget in self.declarative_children:
+            self.declarative_children = [
+                w for w in self.declarative_children if w != widget]
+            return # changing declarative_children will call remove_widget again
+        
         super().remove_widget(widget, *args, **kwargs) # type: ignore
         self._unregister_declarative_child(widget)
     
     def _register_declarative_child(self, widget: Widget) -> None:
         """Register a declarative child widget. This method is called
-        when a widget is added to the :attr:`declarative_children` list.
+        when a widget is added to the :attr:`declarative_children` list
+        or when a widget is added using the :meth:`add_widget` method.
         
         Parameters
         ----------
         widget : Widget
             The widget to register.
         """
-        if widget not in self.declarative_children:
-            self.declarative_children.append(widget)
-        
         identity = getattr(widget, 'id', None)
         if identity:
-            self._identities[identity] = widget
+            self._identities = DotDict(
+                {identity: widget} | {**self._identities})
+            # Do not overwrite existing identities because of class attributes
+            # in case of multiple inheritance.
     
     def _unregister_declarative_child(self, widget: Widget) -> None:
         """Unregister a declarative child widget. This method is called
-        when a widget is removed from the :attr:`declarative_children` 
-        list.
-        
+        when a widget is removed from the :attr:`declarative_children`
+        list or when a widget is removed using the :meth:`remove_widget` 
+        method.
+
         Parameters
         ----------
         widget : Widget
             The widget to unregister.
         """
-        if widget in self.declarative_children:
-            self.declarative_children.remove(widget)
-        
         identity = getattr(widget, 'identity', None)
         if identity and identity in self._identities:
-            del self._identities[identity]
-    
+            self._identities = DotDict(
+                {k: v for k, v in self._identities.items() if k != identity})
+            # Do not overwrite existing identities because of class attributes
+            # in case of multiple inheritance.
+
     def on_declarative_children(
             self, instance: Widget, children: list[Widget]) -> None:
         """Called when the :attr:`declarative_children` list is changed.
