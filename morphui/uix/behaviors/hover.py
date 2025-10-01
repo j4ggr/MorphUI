@@ -77,10 +77,10 @@ class MorphHoverBehavior(EventDispatcher):
     Example
     -------
     ```python
-    from kivy.app import App
     from kivy.uix.button import Button
     from kivy.uix.boxlayout import BoxLayout
 
+    from morphui.app import MorphApp
     from morphui.uix.behaviors.hover import MorphHoverBehavior
 
 
@@ -112,7 +112,7 @@ class MorphHoverBehavior(EventDispatcher):
             self.text = self.hovered_text if self.hovered else self.normal_text
 
 
-    class HoverApp(App):
+    class HoverApp(MorphApp):
         def build(self) -> BoxLayout:
             layout = BoxLayout(padding=100)
             btn = HoverButton(text="Hover over me")

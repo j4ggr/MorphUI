@@ -4,6 +4,7 @@ Dynamic color management system for MorphUI
 This module provides a dynamic color system that automatically updates
 all widget colors when switching between light and dark themes.
 """
+from typing import Any
 from typing import List
 from typing import Dict
 from typing import Type
@@ -154,6 +155,11 @@ class ThemeManager(EventDispatcher, MorphDynamicColorPalette):
     :class:`~kivy.properties.BoundedNumericProperty` and defaults to 0.3.
     """
 
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.register_event_type('on_update_colors')
+        self.register_event_type('on_colors_updated')
+
     @property
     def available_seed_colors(self) -> List[str]:
         """List of available seed colors (read-only)."""
@@ -244,8 +250,8 @@ class ThemeManager(EventDispatcher, MorphDynamicColorPalette):
         colormap[color_name] = get_color_from_hex(hex_value)
         self.property('seed_color').options = tuple(
             color.capitalize() for color in hex_colormap.keys())
-    
-    def update_colors(self) -> None:
+
+    def on_update_colors(self, *args) -> None:
         """Update all colors based on current settings.
 
         This method forces an update of all dynamic colors based on the
@@ -372,6 +378,32 @@ class ThemeManager(EventDispatcher, MorphDynamicColorPalette):
 
         if self.auto_theme:
             self.dispatch('on_colors_updated')
+
+    def on_seed_color(self, instance: Any, seed_color: str) -> None:
+        """Fired when the seed_color property changes. Dispatches the
+        `on_update_colors` event."""
+        self.dispatch('on_update_colors')
+
+    def on_color_scheme(self, instance: Any, color_scheme: str) -> None:
+        """Fired when the color_scheme property changes. Dispatches the
+        `on_update_colors` event."""
+        self.dispatch('on_update_colors')
+    
+    def on_color_sheme_contrast(self, instance: Any, contrast: float) -> None:
+        """Fired when the color_scheme_contrast property changes. 
+        Dispatches the `on_update_colors` event."""
+        self.dispatch('on_update_colors')
+
+    def on_color_quality(self, instance: Any, quality: int) -> None:
+        """Fired when the color_quality property changes. Dispatches the
+        `on_update_colors` event."""
+        self.dispatch('on_update_colors')
+
+    def on_theme_mode(
+            self, instance: Any, theme_mode: Literal['Light', 'Dark']) -> None:
+        """Fired when the theme_mode property changes. Dispatches the
+        `on_update_colors` event."""
+        self.dispatch('on_update_colors')
 
     def on_colors_updated(self, *args) -> None:
         """Event fired when colors are updated.
