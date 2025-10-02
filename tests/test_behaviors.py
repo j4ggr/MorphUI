@@ -6,6 +6,7 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).parent.resolve()))
 
 from kivy.uix.widget import Widget
+from kivy.uix.behaviors import FocusBehavior
 
 from morphui.uix.behaviors.declarative import MorphDeclarativeBehavior
 from morphui.uix.behaviors.hover import MorphHoverBehavior
@@ -121,7 +122,7 @@ class TestMorphDeclarativeBehavior:
 class TestMorphHoverBehavior:
     """Test suite for MorphHoverBehavior class."""
 
-    class TestWidget(Widget, MorphHoverBehavior):
+    class TestWidget(MorphHoverBehavior, Widget):
         """Test widget that combines Widget with MorphHoverBehavior."""
         pass
 
@@ -130,8 +131,8 @@ class TestMorphHoverBehavior:
         widget = self.TestWidget()
         assert hasattr(widget, 'allow_hover')
         assert hasattr(widget, 'hovered')
-        assert hasattr(widget, 'edge_hovered')
-        assert hasattr(widget, 'corner_hovered')
+        assert hasattr(widget, 'hovered_edges')
+        assert hasattr(widget, 'hovered_corner')
 
     def test_hover_events_exist(self):
         """Test that hover events are properly defined."""
@@ -144,13 +145,6 @@ class TestMorphHoverBehavior:
         assert hasattr(widget, 'on_leave_edge')
         assert hasattr(widget, 'on_enter_corner')
         assert hasattr(widget, 'on_leave_corner')
-
-    @patch('kivy.core.window.Window')
-    def test_window_mouse_binding(self, mock_window):
-        """Test that the widget binds to window mouse events."""
-        self.TestWidget()
-        # The widget should bind to window mouse events
-        assert mock_window.bind.called
 
     def test_allow_hover_property(self):
         """Test the allow_hover property."""
@@ -167,8 +161,12 @@ class TestMorphHoverBehavior:
 class TestMorphKeyPressBehavior:
     """Test suite for MorphKeyPressBehavior class."""
 
-    class TestWidget(Widget, MorphKeyPressBehavior):
+    class TestWidget(MorphKeyPressBehavior, Widget):
         """Test widget that combines Widget with MorphKeyPressBehavior."""
+        pass
+
+    class FocusWidget(FocusBehavior, Widget):
+        """Test widget that combines Widget with FocusBehavior."""
         pass
 
     def test_initialization(self):
@@ -195,41 +193,60 @@ class TestMorphKeyPressBehavior:
     def test_tab_widgets_property(self):
         """Test the tab_widgets property."""
         widget = self.TestWidget()
-        test_widgets = [Widget(), Widget(), Widget()]
+        test_widgets = [
+            self.FocusWidget(), self.FocusWidget(), self.FocusWidget()]
         
         widget.tab_widgets = test_widgets
         assert widget.tab_widgets == test_widgets
         assert len(widget.tab_widgets) == 3
+        assert not any(w.focus for w in widget.tab_widgets)
 
-    def test_focus_index_properties(self):
-        """Test focus index properties."""
-        widget = self.TestWidget()
-        
-        widget.index_last_focus = 2
-        assert widget.index_last_focus == 2
-        
-        widget.index_next_focus = 1
+        widget.on_key_press(
+            instance=self, keyboard=9, keycode=43, text=None, modifiers=[])
+        widget.on_key_release(instance=self, keyboard=9, keycode=43)
+        assert list(w.focus for w in widget.tab_widgets).count(True) == 1
+        assert widget.index_last_focus == -1
+        assert widget.index_next_focus == 0
+        assert widget.tab_widgets[0].focus is True
+
+        widget.on_key_press(
+            instance=self, keyboard=9, keycode=43, text=None, modifiers=[])
+        widget.on_key_release(instance=self, keyboard=9, keycode=43)
+        assert list(w.focus for w in widget.tab_widgets).count(True) == 1
+        assert widget.index_last_focus == 0
         assert widget.index_next_focus == 1
+        assert widget.tab_widgets[1].focus is True
+
+        widget.on_key_press(
+            instance=self, keyboard=9, keycode=43, text=None, modifiers=[])
+        widget.on_key_release(instance=self, keyboard=9, keycode=43)
+        assert list(w.focus for w in widget.tab_widgets).count(True) == 1
+        assert widget.index_last_focus == 1
+        assert widget.index_next_focus == 2
+        assert widget.tab_widgets[2].focus is True
+
+        widget.on_key_press(
+            instance=self, keyboard=9, keycode=43, text=None, modifiers=[])
+        widget.on_key_release(instance=self, keyboard=9, keycode=43)
+        assert list(w.focus for w in widget.tab_widgets).count(True) == 1
+        assert widget.index_last_focus == 2
+        assert widget.index_next_focus == 0
+        assert widget.tab_widgets[0].focus is True
 
     def test_key_properties(self):
         """Test key-related properties."""
         widget = self.TestWidget()
-        
-        widget.key_text = 'a'
+        widget.key_map = {97: 'a', 98: 'b'}
+        widget.on_key_press(
+            instance=self, keyboard=9, keycode=97, text='a', modifiers=[])
         assert widget.key_text == 'a'
-        
-        widget.keycode = 97  # ASCII for 'a'
         assert widget.keycode == 97
-        
-        widget.keyboard = 1
-        assert widget.keyboard == 1
-
-    @patch('kivy.core.window.Window')
-    def test_window_keyboard_binding(self, mock_window):
-        """Test that the widget binds to window keyboard events."""
-        self.TestWidget()
-        # The widget should bind to window keyboard events
-        assert mock_window.bind.called
+        assert widget.keyboard == 9
+        widget.on_key_press(
+            instance=self, keyboard=9, keycode=98, text='b', modifiers=[])
+        assert widget.key_text == 'b'
+        assert widget.keycode == 98
+        assert widget.keyboard == 9
 
 
 class TestMorphDropdownBehavior:

@@ -28,28 +28,93 @@ class MorphKeyPressBehavior(EventDispatcher):
     """
 
     disable_key_press: bool = BooleanProperty(False)
-    """Disable key press events if True."""
+    """Disable key press events if True.
+    
+    :attr:`disable_key_press` is a 
+    :class:`~kivy.properties.BooleanProperty` and defaults to False."""
 
     tab_widgets: List[Any] = ListProperty([])
-    """List of widgets to focus on tab key press."""
+    """List of widgets to focus on tab key press.
+    
+    All widgets in this list must have a `focus` attribute (e.g.
+    TextInput, Button, etc.). The focus will move to the next widget
+    in the list when the tab key is pressed. If no widget has focus
+    and :attr:`persist_focus_state` is False, it will start from the
+    beginning of the list. Otherwise it will continue from the last
+    focused widget. If the last widget has focus, it will wrap around
+    to the first widget.
+    
+    :attr:`tab_widgets` is a :class:`~kivy.properties.ListProperty` and
+    defaults to an empty list."""
 
     index_last_focus: int = NumericProperty(-1)
-    """Index of last focused widget."""
+    """Index of last focused widget. 
+    
+    Equal to -1 if no widget has focus and :attr:`persist_focus_state` 
+    is False. Otherwise, it retains the index of the last focused widget.
+    
+    :attr:`index_last_focus` is a 
+    :class:`~kivy.properties.NumericProperty` and defaults to -1."""
 
     index_next_focus: int = NumericProperty(0)
-    """Index of next focused text field."""
+    """Index of next focused text field.
+    
+    Wraps around to 0 if it exceeds the length of :attr:`tab_widgets`.
+    
+    :attr:`index_next_focus` is a 
+    :class:`~kivy.properties.NumericProperty` and defaults to 0."""
+
+    persist_focus_state: bool = BooleanProperty(False)
+    """Whether to persist focus state when no widget has focus.
+
+    When True, the focus indices are maintained even when all widgets
+    lose focus, allowing tab navigation to resume from the last position.
+    When False, focus indices are reset when no widget has focus.
+
+    :attr:`persist_focus_state` is a 
+    :class:`~kivy.properties.BooleanProperty` and defaults to False.
+    """
 
     keyboard: int = NumericProperty(0)
-    """Keyboard id."""
+    """Keyboard id. Set when a key is pressed.
+    
+    :attr:`keyboard` is a 
+    :class:`~kivy.properties.NumericProperty` and defaults to 0."""
 
-    key_text: str = StringProperty('')
-    """Text representation of the last pressed key."""
+    key_text: str | None = StringProperty('', allownone=True)
+    """Text representation of the last pressed key.
+    
+    Set when a key is pressed. Can be None for non-text keys. For 
+    example, the 'a' key will set this property to 'a', while the 'enter' 
+    key will set it to None. Note that letter keys will be lowercase
+    regardless of whether shift is held. To check for uppercase letters,
+    check the `modifiers` property for 'shift'.
+    
+    :attr:`key_text` is a 
+    :class:`~kivy.properties.StringProperty` and defaults to an empty
+    string.
+    """
 
     keycode: int = NumericProperty(-1)
-    """Keycode of the last pressed key."""
+    """Keycode of the last pressed key.
+    
+    This is a numeric representation of the key. Set when a key is 
+    pressed.
+    
+    :attr:`keycode` is a 
+    :class:`~kivy.properties.NumericProperty` and defaults to -1.
+    """
 
     modifiers: List[str] = ListProperty([])
-    """List of currently held modifier keys."""
+    """List of currently held modifier keys.
+
+    Possible values include 'shift', 'ctrl', 'alt', 'numlock', etc.
+    Set when a key is pressed.
+
+    :attr:`modifiers` is a 
+    :class:`~kivy.properties.ListProperty` and defaults to an empty 
+    list.
+    """
 
     key_map: Dict[int, str] = {
         40: 'enter',
@@ -63,7 +128,9 @@ class MorphKeyPressBehavior(EventDispatcher):
         82: 'arrow_up',}
     """Mapping of key codes to key names. You can extend or modify this 
     dictionary in subclasses. The key names are used to create events 
-    like `on_<key_name>_press` and `on_<key_name>_release`. """
+    like `on_<key_name>_press` and `on_<key_name>_release`. 
+    
+    If a key code is not in this dictionary, it will be ignored!"""
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
@@ -100,11 +167,26 @@ class MorphKeyPressBehavior(EventDispatcher):
         return f'on_{key_name}_release'
 
     def on_tab_widgets(self, instance: Any, tab_widgets: List[Widget]) -> None:
-        """Update index for next focus. Fired when the value of 
-        `tab_widgets` is changed."""
+        """Reset index for last and next focus. Fired when the value of 
+        `tab_widgets` is changed.
+        
+        Parameters
+        ----------
+        instance : Any
+            The instance of the KeyPressBehavior.
+        tab_widgets : List[Widget]
+            The new list of tab widgets.
+        
+        Raises
+        ------
+        AssertionError
+            If any widget in `tab_widgets` does not have a `focus` 
+            attribute.
+        """
         assert all(hasattr(w, 'focus') for w in tab_widgets), (
             'All widgets in tab_widgets must have a focus attribute.')
         self.index_last_focus = -1
+        self.index_next_focus = 0
     
     def _skip_keypress_event(self, keycode: int) -> bool:
         """Return True if key press event should be ignored.
@@ -129,7 +211,7 @@ class MorphKeyPressBehavior(EventDispatcher):
         return skip
 
     def on_key_press(
-            self, instance: Any, keyboard: int, keycode: int, text: str,
+            self, instance: Any, keyboard: int, keycode: int, text: str | None,
             modifiers: List[str]) -> None:
         """Callback for key press events. Binds to the Window's
         on_key_down event.
@@ -184,8 +266,9 @@ class MorphKeyPressBehavior(EventDispatcher):
 
     def on_index_last_focus(
             self, instance: Any, index_last_focus: int) -> None:
-        """Update index for next focus. Fired when the value of 
-        `index_last_focus` is changed.
+        """Fired when the value of :attr:`index_last_focus` is changed,
+        Usually called when the user navigates through focusable widgets.
+        Override this method in subclasses to implement custom behavior.
         
         Parameters
         ----------
@@ -194,10 +277,22 @@ class MorphKeyPressBehavior(EventDispatcher):
         index_last_focus : int
             The last focused index.
         """
-        index_next = index_last_focus + 1
-        if index_next >= len(self.tab_widgets):
-            index_next = 0
-        self.index_next_focus = index_next
+        pass
+
+    def on_index_next_focus(
+            self, instance: Any, index_next_focus: int) -> None:
+        """Ensure the next focus index is within bounds. Fired when the 
+        value of `index_next_focus` is changed.
+
+        Parameters
+        ----------
+        instance : Any
+            The instance of the KeyPressBehavior.
+        index_next_focus : int
+            The next focused index.
+        """
+        if self.index_next_focus >= len(self.tab_widgets):
+            self.index_next_focus = 0
 
     def on_tab_press(self, *args) -> None:
         """Callback for the tab key. Dispatched when tab key is down.
@@ -208,13 +303,11 @@ class MorphKeyPressBehavior(EventDispatcher):
         if not self.tab_widgets:
             return
         
-        if not self.has_focus:
-            self.index_last_focus = -1
-        else:
+        if self.has_focus:
             for i, widget in enumerate(self.tab_widgets):
                 if widget.focus:
-                    widget.focus = False
                     self.index_last_focus = i
+                    self.index_next_focus = i + 1
                     break
     
     def on_tab_release(self, *args) -> None:
@@ -226,4 +319,5 @@ class MorphKeyPressBehavior(EventDispatcher):
         if not self.tab_widgets:
             return
 
+        self.tab_widgets[self.index_last_focus].focus = False
         self.tab_widgets[self.index_next_focus].focus = True
