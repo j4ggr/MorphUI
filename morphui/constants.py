@@ -1,4 +1,3 @@
-from typing import Any
 from typing import Dict
 from typing import Tuple
 from typing import Literal
@@ -9,7 +8,8 @@ from materialyoucolor.utils.platform_utils import SCHEMES
 __all__ = [
     'ICON',
     'THEME',
-    'PATH',]
+    'PATH',
+    'FONTS',]
 
 
 @dataclass
@@ -54,6 +54,37 @@ PATH = _Path_()
 @dataclass
 class _Fonts_:
     
+    # Typography role constants
+    TYPOGRAPHY_ROLES: Tuple[str, ...] = (
+        'Display', 'Headline', 'Title', 'Body', 'Label')
+    """Available typography roles in the Material Design type system.
+    
+    These roles represent different levels of hierarchy and emphasis:
+    - Display: Large, short, impactful text for hero sections
+    - Headline: High-emphasis text for primary headings
+    - Title: Medium-emphasis text for section titles
+    - Body: Regular content text for paragraphs and reading
+    - Label: Text for UI components like buttons and form labels
+    """
+    
+    SIZE_VARIANTS: Tuple[str, ...] = ('large', 'medium', 'small')
+    """Available size variants for each typography role.
+    
+    Each typography role includes three size options:
+    - large: Largest size in the role for maximum emphasis
+    - medium: Standard size for typical usage
+    - small: Compact size for dense layouts or secondary content
+    """
+
+    WEIGHT_VARIANTS: Tuple[str, ...] = ('Thin', 'Regular', 'Heavy')
+    """Available weight variants for font families.
+
+    Weight variants provide different visual weights:
+    - Thin: Lightest weight, ideal for headlines and display text
+    - Regular: Standard weight for body text and general use
+    - Heavy: Heavier weight for strong emphasis and impactful headings
+    """
+    
     @property
     def DMSANS_REGULAR(self) -> Dict[str, str]:
         """Details for the DM Sans Regular weight font family.
@@ -73,7 +104,7 @@ class _Fonts_:
             - 'fn_bolditalic': Path to bold italic font file
         """
         return {
-            'name': 'DMSans',
+            'name': 'DMSansRegular',
             'fn_regular': str(PATH.DMSANS_FONTS/'DMSans-Regular.ttf'),
             'fn_bold': str(PATH.DMSANS_FONTS/'DMSans-Bold.ttf'),
             'fn_italic': str(PATH.DMSANS_FONTS/'DMSans-Italic.ttf'),
@@ -148,7 +179,7 @@ class _Fonts_:
             - 'fn_bolditalic': Path to bold italic font file
         """
         return {
-            'name': 'Inter',
+            'name': 'InterRegular',
             'fn_regular': str(PATH.INTER_FONTS/'Inter-Regular.ttf'),
             'fn_bold': str(PATH.INTER_FONTS/'Inter-Bold.ttf'),
             'fn_italic': str(PATH.INTER_FONTS/'Inter-Italic.ttf'),
@@ -227,86 +258,110 @@ class _Fonts_:
         return {
             'name': 'MaterialIcons',
             'fn_regular': str(PATH.ICON_FONTS/'MaterialDesignIconsDesktop.ttf'),}
-    
-    @property
-    def STYLES(self) -> Dict[str, Dict[str, Dict[str, str | float | int]]]:
-        
-        return dict(
-            Icon=dict(
-                regular=dict(
-                    name='MaterialIcons',
-                    font_size='24sp',
-                    line_height=1.0,)),
 
+    @property
+    def TEXT_STYLES(self) -> Dict[str, Dict[str, Dict[str, str | float | int]]]:
+        """Material Design typography roles with size variants.
+        
+        Provides a comprehensive set of text styles following Material 
+        Design typography guidelines. Each role includes three size 
+        variants (large, medium, small) with appropriate font sizes and 
+        line heights.
+        
+        Returns
+        -------
+        Dict[str, Dict[str, Dict[str, str | float | int]]]
+            Nested dictionary structure:
+            - First level: Typography role names (Display, Headline, 
+              Title, Body, Label)
+            - Second level: Size variants ('large', 'medium', 'small')
+            - Third level: Style properties ('font_size', 'line_height')
+        
+        Typography Roles
+        ----------------
+        - **Display**: Large, short, and impactful text (36sp-24sp)
+        - **Headline**: High-emphasis text for shorter content (24sp-18sp)
+        - **Title**: Medium-emphasis text for sections (22sp-14sp)
+        - **Body**: Regular content text with good readability (12sp-8sp)
+        - **Label**: Text for components like buttons and tabs (14sp-10sp)
+        
+        Examples
+        --------
+        ```python
+        # Access specific typography style
+        display_large = FONTS.TEXT_STYLES['Display']['large']
+        # Result: {'font_size': '36sp', 'line_height': 1.44}
+        
+        # Apply to Kivy Label
+        label = Label(
+            text='Display Text',
+            font_size=display_large['font_size'],
+            text_size=(None, None)  # Enable line_height
+        )
+        ```
+        
+        Notes
+        -----
+        Font sizes use Kivy's 'sp' (scale-independent pixels) unit for
+        accessibility. Line heights are specified as multipliers of font 
+        size.
+        """
+        return dict(
             Display=dict(
-                regular=dict(
-                    name='InterRegular',
+                large=dict(
                     font_size='36sp',
                     line_height=1.44,),
-                thin=dict(
-                    name='InterThin',
-                    font_size='36sp',
+                medium=dict(
+                    font_size='30sp',
                     line_height=1.44,),
-                heavy=dict(
-                    name='InterHeavy',
-                    font_size='36sp',
+                small=dict(
+                    font_size='24sp',
                     line_height=1.44,),),
 
             Headline=dict(
-                regular=dict(
-                    name='InterRegular',
+                large=dict(
                     font_size='24sp',
                     line_height=1.32,),
-                thin=dict(
-                    name='InterThin',
-                    font_size='24sp',
+                medium=dict(
+                    font_size='22sp',
                     line_height=1.32,),
-                heavy=dict(
-                    name='InterHeavy',
-                    font_size='24sp',
+                small=dict(
+                    font_size='18sp',
                     line_height=1.32,),),
                     
             Title=dict(
-                regular=dict(
-                    name='InterRegular',
+                large=dict(
+                    font_size='22sp',
+                    line_height=1.24,),
+                medium=dict(
                     font_size='18sp',
                     line_height=1.24,),
-                thin=dict(
-                    name='InterThin',
-                    font_size='18sp',
-                    line_height=1.24,),
-                heavy=dict(
-                    name='InterHeavy',
-                    font_size='18sp',
+                small=dict(
+                    font_size='14sp',
                     line_height=1.24,),),
-                    
+
             Body=dict(
-                regular=dict(
-                    name='InterRegular',
-                    font_size='14sp',
-                    line_height=1.2,),
-                thin=dict(
-                    name='InterThin',
-                    font_size='14sp',
-                    line_height=1.2,),
-                heavy=dict(
-                    name='InterHeavy',
-                    font_size='14sp',
-                    line_height=1.2,),),
-            
+                large=dict(
+                    font_size='12sp',
+                    line_height=1.1,),
+                medium=dict(
+                    font_size='10sp',
+                    line_height=1.1,),
+                small=dict(
+                    font_size='8sp',
+                    line_height=1.1,),),
+
             Label=dict(
-                regular=dict(
-                    name='InterRegular',
+                large=dict(
+                    font_size='14sp',
+                    line_height=1.16,),
+                medium=dict(
                     font_size='12sp',
                     line_height=1.16,),
-                thin=dict(
-                    name='InterThin',
-                    font_size='12sp',
-                    line_height=1.16,),
-                heavy=dict(
-                    name='InterHeavy',
-                    font_size='12sp',
+                small=dict(
+                    font_size='10sp',
                     line_height=1.16,),),)
+    
 
 FONTS = _Fonts_()
 """Container for font-related constants and configurations.
