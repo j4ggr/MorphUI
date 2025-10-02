@@ -1,11 +1,13 @@
 from typing import Tuple
 from typing import Literal
+from pathlib import Path
 from dataclasses import dataclass
 from materialyoucolor.utils.platform_utils import SCHEMES
 
 __all__ = [
     'ICON',
-    'THEME',]
+    'THEME',
+    'PATH',]
 
 
 @dataclass
@@ -28,3 +30,14 @@ class _Theme_:
     """Available color schemes from Material You Color."""
 THEME = _Theme_()
 """Container for theme-related constants."""
+
+_root_path_: Path = Path(__file__).parent
+
+@dataclass
+class _Path_:
+    ROOT: Path = _root_path_
+    """Root directory of the project."""
+    FONTS: Path = _root_path_/'fonts'
+    """Directory containing font files."""
+PATH = _Path_()
+"""Container for path constants."""
