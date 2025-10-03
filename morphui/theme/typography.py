@@ -298,10 +298,10 @@ class Typography(EventDispatcher):
         - Font weight variants are appended to base font family name
         """
         assert role in FONTS.TYPOGRAPHY_ROLES,(
-            f'Invalid role {role:r}, must be one of {FONTS.TYPOGRAPHY_ROLES}')
+            f'Invalid role {role!r}, must be one of {FONTS.TYPOGRAPHY_ROLES}')
         assert size in FONTS.SIZE_VARIANTS, (
-            f'Invalid size {size:r}, must be one of {FONTS.SIZE_VARIANTS}')
-        
+            f'Invalid size {size!r}, must be one of {FONTS.SIZE_VARIANTS}')
+
         resolved_font_name = self.font_name
         if resolved_font_name not in self._registered_fonts:
             font_with_weight = f'{resolved_font_name}{font_weight}'
