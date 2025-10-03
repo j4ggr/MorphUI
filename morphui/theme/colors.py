@@ -1,3 +1,4 @@
+from typing import List
 from typing import Dict
 from typing import Tuple
 from typing import Generator
@@ -116,6 +117,9 @@ class MorphDynamicColorPalette:
         material_dynamic_color_attributes())
     """Mapping of attribute names to MaterialDynamicColors attributes."""
 
+    _default_property_color = [1.0, 1.0, 1.0, 1.0]
+    """Default color value for uninitialized properties."""
+
     @property
     def attribute_map(self) -> Dict[str, DynamicColor]:
         """Get the mapping of attribute names to MaterialDynamicColors 
@@ -147,6 +151,7 @@ class MorphDynamicColorPalette:
         ```
         """
         # Check a few key color properties to determine if colors are set
+        
         key_colors = [
             getattr(self, 'primary_color', None),
             getattr(self, 'background_color', None), 
@@ -174,7 +179,7 @@ class MorphDynamicColorPalette:
                 return False
         return True 
 
-    background_color = ColorProperty()
+    background_color: List[float] | None = ColorProperty(None)
     """Background color.
     This property holds the dynamic color value set by the theme.
 
@@ -182,7 +187,7 @@ class MorphDynamicColorPalette:
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    error_color = ColorProperty()
+    error_color: List[float] | None = ColorProperty(None)
     """Error color.
     This property holds the dynamic color value set by the theme.
 
@@ -190,7 +195,7 @@ class MorphDynamicColorPalette:
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    error_container_color = ColorProperty()
+    error_container_color: List[float] | None = ColorProperty(None)
     """Error container color.
     This property holds the dynamic color value set by the theme.
 
@@ -198,7 +203,7 @@ class MorphDynamicColorPalette:
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    inverse_on_surface_color = ColorProperty()
+    inverse_on_surface_color: List[float] | None = ColorProperty(None)
     """Inverse on surface color.
     This property holds the dynamic color value set by the theme.
 
@@ -206,7 +211,7 @@ class MorphDynamicColorPalette:
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    inverse_primary_color = ColorProperty()
+    inverse_primary_color: List[float] | None = ColorProperty(None)
     """Inverse primary color.
     This property holds the dynamic color value set by the theme.
 
@@ -214,7 +219,7 @@ class MorphDynamicColorPalette:
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    inverse_surface_color = ColorProperty()
+    inverse_surface_color: List[float] | None = ColorProperty(None)
     """Inverse surface color.
     This property holds the dynamic color value set by the theme.
 
@@ -222,7 +227,7 @@ class MorphDynamicColorPalette:
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    neutral_palette_key_color = ColorProperty()
+    neutral_palette_key_color: List[float] | None = ColorProperty(None)
     """Neutral palette key color.
     This property holds the dynamic color value set by the theme.
 
@@ -230,7 +235,7 @@ class MorphDynamicColorPalette:
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    neutral_variant_palette_key_color = ColorProperty()
+    neutral_variant_palette_key_color: List[float] | None = ColorProperty(None)
     """Neutral variant palette key color.
     This property holds the dynamic color value set by the theme.
 
@@ -238,7 +243,7 @@ class MorphDynamicColorPalette:
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    on_background_color = ColorProperty()
+    on_background_color: List[float] | None = ColorProperty(None)
     """On background color.
     This property holds the dynamic color value set by the theme.
 
@@ -246,7 +251,7 @@ class MorphDynamicColorPalette:
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    on_error_color = ColorProperty()
+    on_error_color: List[float] | None = ColorProperty(None)
     """On error color.
     This property holds the dynamic color value set by the theme.
 
@@ -254,7 +259,7 @@ class MorphDynamicColorPalette:
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    on_error_container_color = ColorProperty()
+    on_error_container_color: List[float] | None = ColorProperty(None)
     """On error container color.
     This property holds the dynamic color value set by the theme.
 
@@ -262,7 +267,7 @@ class MorphDynamicColorPalette:
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    on_primary_color = ColorProperty()
+    on_primary_color: List[float] | None = ColorProperty(None)
     """On primary color.
     This property holds the dynamic color value set by the theme.
 
@@ -270,7 +275,7 @@ class MorphDynamicColorPalette:
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    on_primary_container_color = ColorProperty()
+    on_primary_container_color: List[float] | None = ColorProperty(None)
     """On primary container color.
     This property holds the dynamic color value set by the theme.
 
@@ -278,7 +283,7 @@ class MorphDynamicColorPalette:
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    on_primary_fixed_color = ColorProperty()
+    on_primary_fixed_color: List[float] | None = ColorProperty(None)
     """On primary fixed color.
     This property holds the dynamic color value set by the theme.
 
@@ -286,7 +291,7 @@ class MorphDynamicColorPalette:
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    on_primary_fixed_variant_color = ColorProperty()
+    on_primary_fixed_variant_color: List[float] | None = ColorProperty(None)
     """On primary fixed variant color.
     This property holds the dynamic color value set by the theme.
 
@@ -294,7 +299,7 @@ class MorphDynamicColorPalette:
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    on_secondary_color = ColorProperty()
+    on_secondary_color: List[float] | None = ColorProperty(None)
     """On secondary color.
     This property holds the dynamic color value set by the theme.
 
@@ -302,7 +307,7 @@ class MorphDynamicColorPalette:
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    on_secondary_container_color = ColorProperty()
+    on_secondary_container_color: List[float] | None = ColorProperty(None)
     """On secondary container color.
     This property holds the dynamic color value set by the theme.
 
@@ -310,7 +315,7 @@ class MorphDynamicColorPalette:
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    on_secondary_fixed_color = ColorProperty()
+    on_secondary_fixed_color: List[float] | None = ColorProperty(None)
     """On secondary fixed color.
     This property holds the dynamic color value set by the theme.
 
@@ -318,7 +323,7 @@ class MorphDynamicColorPalette:
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    on_secondary_fixed_variant_color = ColorProperty()
+    on_secondary_fixed_variant_color: List[float] | None = ColorProperty(None)
     """On secondary fixed variant color.
     This property holds the dynamic color value set by the theme.
 
@@ -326,7 +331,7 @@ class MorphDynamicColorPalette:
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    on_surface_color = ColorProperty()
+    on_surface_color: List[float] | None = ColorProperty(None)
     """On surface color.
     This property holds the dynamic color value set by the theme.
 
@@ -334,7 +339,7 @@ class MorphDynamicColorPalette:
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    on_surface_variant_color = ColorProperty()
+    on_surface_variant_color: List[float] | None = ColorProperty(None)
     """On surface variant color.
     This property holds the dynamic color value set by the theme.
 
@@ -342,7 +347,7 @@ class MorphDynamicColorPalette:
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    on_tertiary_color = ColorProperty()
+    on_tertiary_color: List[float] | None = ColorProperty(None)
     """On tertiary color.
     This property holds the dynamic color value set by the theme.
 
@@ -350,7 +355,7 @@ class MorphDynamicColorPalette:
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    on_tertiary_container_color = ColorProperty()
+    on_tertiary_container_color: List[float] | None = ColorProperty(None)
     """On tertiary container color.
     This property holds the dynamic color value set by the theme.
 
@@ -358,7 +363,7 @@ class MorphDynamicColorPalette:
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    on_tertiary_fixed_color = ColorProperty()
+    on_tertiary_fixed_color: List[float] | None = ColorProperty(None)
     """On tertiary fixed color.
     This property holds the dynamic color value set by the theme.
 
@@ -366,7 +371,7 @@ class MorphDynamicColorPalette:
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    on_tertiary_fixed_variant_color = ColorProperty()
+    on_tertiary_fixed_variant_color: List[float] | None = ColorProperty(None)
     """On tertiary fixed variant color.
     This property holds the dynamic color value set by the theme.
 
@@ -374,7 +379,7 @@ class MorphDynamicColorPalette:
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    outline_color = ColorProperty()
+    outline_color: List[float] | None = ColorProperty(None)
     """Outline color.
     This property holds the dynamic color value set by the theme.
 
@@ -382,7 +387,7 @@ class MorphDynamicColorPalette:
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    outline_variant_color = ColorProperty()
+    outline_variant_color: List[float] | None = ColorProperty(None)
     """Outline variant color.
     This property holds the dynamic color value set by the theme.
 
@@ -390,7 +395,7 @@ class MorphDynamicColorPalette:
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    primary_color = ColorProperty()
+    primary_color: List[float] | None = ColorProperty(None)
     """Primary color.
     This property holds the dynamic color value set by the theme.
 
@@ -398,7 +403,7 @@ class MorphDynamicColorPalette:
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    primary_container_color = ColorProperty()
+    primary_container_color: List[float] | None = ColorProperty(None)
     """Primary container color.
     This property holds the dynamic color value set by the theme.
 
@@ -406,7 +411,7 @@ class MorphDynamicColorPalette:
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    primary_fixed_color = ColorProperty()
+    primary_fixed_color: List[float] | None = ColorProperty(None)
     """Primary fixed color.
     This property holds the dynamic color value set by the theme.
 
@@ -414,7 +419,7 @@ class MorphDynamicColorPalette:
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    primary_fixed_dim_color = ColorProperty()
+    primary_fixed_dim_color: List[float] | None = ColorProperty(None)
     """Primary fixed dim color.
     This property holds the dynamic color value set by the theme.
 
@@ -422,7 +427,7 @@ class MorphDynamicColorPalette:
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    primary_palette_key_color = ColorProperty()
+    primary_palette_key_color: List[float] | None = ColorProperty(None)
     """Primary palette key color.
     This property holds the dynamic color value set by the theme.
 
@@ -430,7 +435,7 @@ class MorphDynamicColorPalette:
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    scrim_color = ColorProperty()
+    scrim_color: List[float] | None = ColorProperty(None)
     """Scrim color.
     This property holds the dynamic color value set by the theme.
 
@@ -438,7 +443,7 @@ class MorphDynamicColorPalette:
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    secondary_color = ColorProperty()
+    secondary_color: List[float] | None = ColorProperty(None)
     """Secondary color.
     This property holds the dynamic color value set by the theme.
 
@@ -446,7 +451,7 @@ class MorphDynamicColorPalette:
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    secondary_container_color = ColorProperty()
+    secondary_container_color: List[float] | None = ColorProperty(None)
     """Secondary container color.
     This property holds the dynamic color value set by the theme.
 
@@ -454,7 +459,7 @@ class MorphDynamicColorPalette:
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    secondary_fixed_color = ColorProperty()
+    secondary_fixed_color: List[float] | None = ColorProperty(None)
     """Secondary fixed color.
     This property holds the dynamic color value set by the theme.
 
@@ -462,7 +467,7 @@ class MorphDynamicColorPalette:
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    secondary_fixed_dim_color = ColorProperty()
+    secondary_fixed_dim_color: List[float] | None = ColorProperty(None)
     """Secondary fixed dim color.
     This property holds the dynamic color value set by the theme.
 
@@ -470,7 +475,7 @@ class MorphDynamicColorPalette:
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    secondary_palette_key_color = ColorProperty()
+    secondary_palette_key_color: List[float] | None = ColorProperty(None)
     """Secondary palette key color.
     This property holds the dynamic color value set by the theme.
 
@@ -478,7 +483,7 @@ class MorphDynamicColorPalette:
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    shadow_color = ColorProperty()
+    shadow_color: List[float] | None = ColorProperty(None)
     """Shadow color.
     This property holds the dynamic color value set by the theme.
 
@@ -486,7 +491,7 @@ class MorphDynamicColorPalette:
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    surface_color = ColorProperty()
+    surface_color: List[float] | None = ColorProperty(None)
     """Surface color.
     This property holds the dynamic color value set by the theme.
 
@@ -494,7 +499,7 @@ class MorphDynamicColorPalette:
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    surface_bright_color = ColorProperty()
+    surface_bright_color: List[float] | None = ColorProperty(None)
     """Surface bright color.
     This property holds the dynamic color value set by the theme.
 
@@ -502,7 +507,7 @@ class MorphDynamicColorPalette:
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    surface_container_color = ColorProperty()
+    surface_container_color: List[float] | None = ColorProperty(None)
     """Surface container color.
     This property holds the dynamic color value set by the theme.
 
@@ -510,7 +515,7 @@ class MorphDynamicColorPalette:
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    surface_container_high_color = ColorProperty()
+    surface_container_high_color: List[float] | None = ColorProperty(None)
     """Surface container high color.
     This property holds the dynamic color value set by the theme.
 
@@ -518,7 +523,7 @@ class MorphDynamicColorPalette:
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    surface_container_highest_color = ColorProperty()
+    surface_container_highest_color: List[float] | None = ColorProperty(None)
     """Surface container highest color.
     This property holds the dynamic color value set by the theme.
 
@@ -526,7 +531,7 @@ class MorphDynamicColorPalette:
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    surface_container_low_color = ColorProperty()
+    surface_container_low_color: List[float] | None = ColorProperty(None)
     """Surface container low color.
     This property holds the dynamic color value set by the theme.
 
@@ -534,7 +539,7 @@ class MorphDynamicColorPalette:
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    surface_container_lowest_color = ColorProperty()
+    surface_container_lowest_color: List[float] | None = ColorProperty(None)
     """Surface container lowest color.
     This property holds the dynamic color value set by the theme.
 
@@ -542,7 +547,7 @@ class MorphDynamicColorPalette:
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    surface_dim_color = ColorProperty()
+    surface_dim_color: List[float] | None = ColorProperty(None)
     """Surface dim color.
     This property holds the dynamic color value set by the theme.
 
@@ -550,7 +555,7 @@ class MorphDynamicColorPalette:
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    surface_tint_color = ColorProperty()
+    surface_tint_color: List[float] | None = ColorProperty(None)
     """Surface tint color.
     This property holds the dynamic color value set by the theme.
 
@@ -558,7 +563,7 @@ class MorphDynamicColorPalette:
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    surface_variant_color = ColorProperty()
+    surface_variant_color: List[float] | None = ColorProperty(None)
     """Surface variant color.
     This property holds the dynamic color value set by the theme.
 
@@ -566,7 +571,7 @@ class MorphDynamicColorPalette:
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    tertiary_color = ColorProperty()
+    tertiary_color: List[float] | None = ColorProperty(None)
     """Tertiary color.
     This property holds the dynamic color value set by the theme.
 
@@ -574,7 +579,7 @@ class MorphDynamicColorPalette:
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    tertiary_container_color = ColorProperty()
+    tertiary_container_color: List[float] | None = ColorProperty(None)
     """Tertiary container color.
     This property holds the dynamic color value set by the theme.
 
@@ -582,7 +587,7 @@ class MorphDynamicColorPalette:
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    tertiary_fixed_color = ColorProperty()
+    tertiary_fixed_color: List[float] | None = ColorProperty(None)
     """Tertiary fixed color.
     This property holds the dynamic color value set by the theme.
 
@@ -590,7 +595,7 @@ class MorphDynamicColorPalette:
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    tertiary_fixed_dim_color = ColorProperty()
+    tertiary_fixed_dim_color: List[float] | None = ColorProperty(None)
     """Tertiary fixed dim color.
     This property holds the dynamic color value set by the theme.
 
@@ -598,7 +603,7 @@ class MorphDynamicColorPalette:
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    tertiary_palette_key_color = ColorProperty()
+    tertiary_palette_key_color: List[float] | None = ColorProperty(None)
     """Tertiary palette key color.
     This property holds the dynamic color value set by the theme.
 
@@ -610,7 +615,7 @@ class MorphDynamicColorPalette:
 if __name__ == '__main__':
     for attr, _ in material_dynamic_color_attributes():
         print(f'''
-    {attr} = ColorProperty()
+    {attr}: List[float] | None = ColorProperty(None)
     """{" ".join(attr.capitalize().split("_"))}.
     This property holds the dynamic color value set by the theme.
 
