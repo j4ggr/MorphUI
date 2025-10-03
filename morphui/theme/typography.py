@@ -4,9 +4,11 @@ Typography system for MorphUI themes
 import warnings
 
 from typing import Dict
+from typing import Tuple
 from typing import Literal
 from pathlib import Path
 
+from kivy.event import EventDispatcher
 from kivy.core.text import LabelBase
 from kivy.properties import StringProperty
 
@@ -17,68 +19,87 @@ __all__ = [
     'Typography',]
 
 
-def _register_font(
-        name: str,
-        fn_regular: str | Path,
-        fn_italic: str | Path | None = None,
-        fn_bold: str | Path | None = None,
-        fn_bolditalic: str | Path | None = None
-        ) -> str:
-    """Register a font with Kivy's LabelBase.
-
-    Parameters
-    ----------
-    data : dict
-        Dictionary with font registration parameters.
-    """
-    LabelBase.register(
-        name=name,
-        fn_regular=fn_regular,
-        fn_italic=fn_italic,
-        fn_bold=fn_bold,
-        fn_bolditalic=fn_bolditalic)
-    return name
-
-_fonts_to_register = [
-    FONTS.DMSANS_REGULAR,
-    FONTS.DMSANS_THIN,
-    FONTS.DMSANS_HEAVY,
-    FONTS.INTER_REGULAR,
-    FONTS.MATERIAL_ICONS]
-
-
-class Typography:
-    """Typography system for consistent text styling across MorphUI themes.
+class Typography(EventDispatcher):
+    """Typography system for consistent text styling across MorphUI 
+    themes.
     
-    Provides a centralized interface for managing typography styles based on
-    Material Design typography guidelines. Handles font registration, style
-    configuration, and automatic fallbacks for missing fonts.
-    
-    The typography system organizes text into hierarchical roles (Display,
-    Headline, Title, Body, Label) with size variants (large, medium, small)
-    and supports multiple font weights for each family.
+    Provides a centralized interface for managing typography styles 
+    based on Material Design typography guidelines. Handles font 
+    registration, style configuration, and automatic fallbacks for
+    missing fonts.
+
+    The typography system organizes text into hierarchical roles 
+    (Display, Headline, Title, Body, Label) with size variants (large, 
+    medium, small) and supports multiple font weights for each family.
     
     Attributes
     ----------
     font_name : str
         Base font family name used for text styling.
-    
+    fonts_to_autoregister : Tuple[Dict[str, str], ...]
+        Tuple of font registration dictionaries that are automatically
+        registered when the typography system is initialized. This
+        happens when a new :class:`MorphApp` instance is created.
+
     Examples
     --------
+
+    To use the typography system, set the desired base font family in
+    your application class that inherits from :class:`MorphApp`. The
+    default is 'Inter', which uses InterRegular, InterThin, and 
+    InterHeavy.
+
     ```python
-    # Create typography instance
-    typography = Typography()
-    typography.font_name = 'DMSans'
+    from morphui.app import MorphApp
+
+    class MyApp(MorphApp):
+        def __init__(self, **kwargs):
+            super().__init__(**kwargs)
+
+        on_start(self):
+            # Use DMSansRegular, DMSansThin and DMSansHeavy.
+            self.typography.font_name = 'DMSans'  
+
+    app = MyApp()
+    app.run()
+    ```
     
-    # Get styled text configuration
-    style = typography.get_text_style('Headline', 'large')
+    To change the auto-registration behavior, you need to modify the
+    class attribute :attr:`Typography.fonts_to_autoregister`:
     
-    # Apply to UI component
-    label = Label(
-        text='Page Title',
-        font_name=style['name'],
-        font_size=style['font_size']
-    )
+    ```python
+    from morphui.app import MorphApp
+    from morphui.constants import FONTS
+    from morphui.theme.typography import Typography
+
+    # Change the auto-registration tuple before app initialization
+    # Do not instantiate Typography
+    Typography.fonts_to_autoregister = (
+        user_font_dict_regular,
+        user_font_dict_thin,
+        user_font_dict_heavy,
+        FONTS.MATERIAL_ICONS,)
+    ```
+
+    To register a custom font at runtime, use the
+    :meth:`MorphApp.typography.register_font` method within your app 
+    class. A good place is in the `on_start` method:
+
+    ```python
+    from morphui.app import MorphApp
+
+    class MyApp(MorphApp):
+        def __init__(self, **kwargs):
+            super().__init__(**kwargs)
+
+        on_start(self):
+            # Register custom fonts on app start
+            self.typography.register_font(user_font_dict_regular)
+            self.typography.register_font(user_font_dict_thin)
+            self.typography.register_font(user_font_dict_heavy)
+
+    app = MyApp()
+    app.run()
     ```
     """
 
@@ -101,10 +122,32 @@ class Typography:
     ```
     """
 
-    _registered_fonts: set = set(
-        _register_font(**font_data) for font_data in _fonts_to_register)
-    """Set of registered font family names to avoid duplicate 
-    registrations."""
+    fonts_to_autoregister: Tuple[Dict[str, str], ...] = (
+        FONTS.DEFAULT_AUTOREGISTERED_FONTS)
+    """Tuple of font registration dictionaries.
+
+    All these fonts are automatically registered when instantiating the
+    :class:`MorphApp`. If you need to register additional fonts
+    automatically, modify this class attribute before instantiation of
+    :class:`MorphApp`. You can also register fonts manually using
+    the `register_font` method. Each dictionary should contain the
+    following keys:
+
+    - `name`: Unique font family name
+    - `fn_regular`: Path to the regular font file
+    - `fn_italic`: Path to the italic font file (optional)
+    - `fn_bold`: Path to the bold font file (optional)
+    - `fn_bolditalic`: Path to the bold italic font file (optional)
+    """
+
+    _registered_fonts: Tuple[str, ...]
+    """Tuple of currently registered font family names."""
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self._registered_fonts = ()
+        self.register_event_type('on_typography_changed')
+        self.bind(font_name=self.on_typography_changed)
 
     def register_font(
             self,
@@ -173,13 +216,13 @@ class Typography:
         if name in self._registered_fonts:
             return
         
-        _register_font(
+        LabelBase.register(
             name=name,
             fn_regular=fn_regular,
             fn_italic=fn_italic,
             fn_bold=fn_bold,
             fn_bolditalic=fn_bolditalic)
-        self._registered_fonts.add(name)
+        self._registered_fonts += (name,)
 
     def get_text_style(
             self,
@@ -274,3 +317,39 @@ class Typography:
         text_style = FONTS.TEXT_STYLES[role][size].copy()
         text_style['name'] = resolved_font_name
         return text_style
+    
+    def on_typography_changed(self, *args) -> None:
+        """Event handler called when the `font_name` property changes.
+        
+        Dispatches the `on_typography_changed` event to notify listeners
+        that the typography configuration has changed. This allows UI
+        components to react and update their text styles accordingly.
+        
+        Parameters
+        ----------
+        *args : tuple
+            Additional arguments passed by the property change event.
+        
+        Examples
+        --------
+        ```python
+        from morphui.app import MorphApp
+
+        def on_typography_changed(self, *args):
+            # Update UI components with new typography styles
+            new_style = self.typography.get_text_style('Body', 'medium')
+            self.label.font_name = new_style['name']
+            self.label.font_size = new_style['font_size']
+        
+        typography = MorphApp.get_running_app().typography
+        typography.bind(on_typography_changed=on_typography_changed)
+        typography.font_name = 'DMSans'  # Triggers the event
+        ```
+        
+        Notes
+        -----
+        - This method is automatically called by Kivy when `font_name`
+          changes due to the property binding.
+        - UI components should bind to this event to refresh their styles.
+        """
+        pass

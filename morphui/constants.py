@@ -258,6 +258,55 @@ class _Fonts_:
         return {
             'name': 'MaterialIcons',
             'fn_regular': str(PATH.ICON_FONTS/'MaterialDesignIconsDesktop.ttf'),}
+    
+    @property
+    def DEFAULT_AUTOREGISTERED_FONTS(self) -> Tuple[Dict[str, str], ...]:
+        """Default font configurations for automatic registration with 
+        Kivy.
+
+        Provides a comprehensive collection of all predefined font 
+        families configured for automatic registration during 
+        application startup. This includes all DM Sans variants, Inter 
+        variants, and Material Design Icons, ensuring consistent 
+        typography availability across the MorphUI framework.
+
+        Returns
+        -------
+        Tuple[Dict[str, str], ...]
+            Tuple containing font configuration dictionaries with keys:
+            - 'name': Font family name for Kivy registration
+            - 'fn_regular': Path to regular weight font file
+            - 'fn_italic': Path to italic font file (if available)
+            - 'fn_bold': Path to bold font file (if available)
+            - 'fn_bolditalic': Path to bold italic font file 
+              (if available)
+
+        Font Families Included
+        ----------------------
+        - **DM Sans Regular**: Standard geometric sans serif
+        - **DM Sans Thin**: Lightweight variant for headlines
+        - **DM Sans Heavy**: Bold variant for emphasis
+        - **Inter Regular**: UI-optimized sans serif
+        - **Inter Thin**: Lightweight Inter variant
+        - **Inter Heavy**: Bold Inter variant
+        - **Material Icons**: Vector icon font
+
+        Notes
+        -----
+        This tuple is designed to be used with the Typography class's
+        automatic font registration system. It can be modified to 
+        include a subset of fonts or extended with additional custom 
+        fonts as needed. For more details, see the Examples section
+        in :class:`Typography`.
+        """
+        return (
+            self.DMSANS_REGULAR,
+            self.DMSANS_THIN,
+            self.DMSANS_HEAVY,
+            self.INTER_REGULAR,
+            self.INTER_THIN,
+            self.INTER_HEAVY,
+            self.MATERIAL_ICONS,)
 
     @property
     def TEXT_STYLES(self) -> Dict[str, Dict[str, Dict[str, str | float | int]]]:
