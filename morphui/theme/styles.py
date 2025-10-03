@@ -12,42 +12,26 @@ from typing import Tuple
 from typing import Literal
 from typing import overload
 
-from kivy.clock import Clock
-from kivy.utils import rgba
 from kivy.utils import colormap
 from kivy.utils import hex_colormap
-from kivy.utils import get_color_from_hex
 from kivy.event import EventDispatcher
-from kivy.properties import ListProperty
+from kivy.utils import get_color_from_hex
 from kivy.properties import OptionProperty
-from kivy.properties import StringProperty
 from kivy.properties import BooleanProperty
 from kivy.properties import BoundedNumericProperty
 
 from materialyoucolor.hct import Hct
-from materialyoucolor.scheme.dynamic_scheme import DynamicScheme
-from materialyoucolor.scheme.scheme_content import SchemeContent
-from materialyoucolor.scheme.scheme_expressive import SchemeExpressive
-from materialyoucolor.scheme.scheme_fidelity import SchemeFidelity
-from materialyoucolor.scheme.scheme_fruit_salad import SchemeFruitSalad
-from materialyoucolor.scheme.scheme_monochrome import SchemeMonochrome
-from materialyoucolor.scheme.scheme_neutral import SchemeNeutral
-from materialyoucolor.scheme.scheme_rainbow import SchemeRainbow
-from materialyoucolor.scheme.scheme_tonal_spot import SchemeTonalSpot
-from materialyoucolor.scheme.scheme_vibrant import SchemeVibrant
 from materialyoucolor.utils.color_utils import argb_from_rgba
 from materialyoucolor.utils.platform_utils import SCHEMES
 from materialyoucolor.utils.platform_utils import get_dynamic_scheme
+from materialyoucolor.scheme.dynamic_scheme import DynamicScheme
 from materialyoucolor.dislike.dislike_analyzer import DislikeAnalyzer
-from materialyoucolor.dynamiccolor.material_dynamic_colors import MaterialDynamicColors
-
-from .colors import MorphDynamicColorPalette
-from .typography import Typography
 
 from ..constants import THEME
 
 from .._typing import MaterialDynamicScheme
 
+from .colors import MorphDynamicColorPalette
 
 __all__ = [
     'ThemeManager',]
@@ -159,6 +143,12 @@ class ThemeManager(EventDispatcher, MorphDynamicColorPalette):
         super().__init__(**kwargs)
         self.register_event_type('on_update_colors')
         self.register_event_type('on_colors_updated')
+        self.bind(on_seed_color=self.on_update_colors)
+        self.bind(on_color_scheme=self.on_update_colors)
+        self.bind(on_color_scheme_contrast=self.on_update_colors)
+        self.bind(on_color_quality=self.on_update_colors)
+        self.bind(on_theme_mode=self.on_update_colors)
+        self.dispatch('on_update_colors')
 
     @property
     def available_seed_colors(self) -> List[str]:
@@ -270,7 +260,7 @@ class ThemeManager(EventDispatcher, MorphDynamicColorPalette):
         if not self.auto_theme and self.colors_initialized:
             return
         
-        scheme = self.create_color_scheme()
+        scheme = self.generate_color_scheme()
         self.apply_color_scheme(scheme)
 
     @overload
@@ -327,34 +317,111 @@ class ThemeManager(EventDispatcher, MorphDynamicColorPalette):
             return list(rgba_values)
         return [int(component * 255) for component in rgba_values]
 
-    def create_color_scheme(self) -> DynamicScheme | MaterialDynamicScheme:
-        """Create a color scheme based on current settings.
+    def generate_color_scheme(self) -> DynamicScheme | MaterialDynamicScheme:
+        """Create a Material You color scheme based on current theme 
+        settings.
         
-        This method generates a Material You color scheme using the
-        current seed color, color scheme algorithm, and other settings.
+        This method is the primary interface for generating color 
+        schemes in MorphUI. It intelligently chooses between two color 
+        generation strategies:
+        
+        1. **Dynamic Wallpaper-Based Colors** (when `auto_theme=True`):
+           Attempts to extract colors from the user's system wallpaper 
+           using the Material You Color library. This provides a 
+           personalized color experience that adapts to the user's 
+           environment and preferences.
+        
+        2. **Seed Color-Based Colors** (fallback or when 
+           `auto_theme=False`):
+           Generates colors from the specified `seed_color` using the 
+           selected `color_scheme` algorithm. This ensures consistent, 
+           predictable theming.
+        
+        The method automatically respects all current theme settings 
+        including theme mode (light/dark), contrast level, color quality, 
+        and the selected color scheme algorithm.
         
         Returns
         -------
-        DynamicScheme
-            A Material You dynamic color scheme object.
+        DynamicScheme | MaterialDynamicScheme
+            A Material You dynamic color scheme object ready for 
+            application. The scheme contains all necessary color roles 
+            (primary, secondary, surface, etc.) in the appropriate theme 
+            mode.
+        
+        Color Generation Process
+        ------------------------
+        1. If `auto_theme` is enabled, attempts dynamic wallpaper color 
+           extraction
+        2. If dynamic extraction fails or is disabled, falls back to 
+           seed colors
+        3. Applies current contrast level and quality settings
+        4. Generates appropriate colors for the current theme mode 
+           (light/dark)
+        
+        Examples
+        --------
+        ```python
+        # Generate scheme with current settings
+        theme_manager = ThemeManager()
+        scheme = theme_manager.generate_color_scheme()
+        
+        # Configure settings before generation
+        theme_manager.seed_color = 'Purple'
+        theme_manager.color_scheme = 'VIBRANT'
+        theme_manager.theme_mode = 'Dark'
+        theme_manager.color_scheme_contrast = 0.5
+        scheme = theme_manager.generate_color_scheme()
+        
+        # Use with apply_color_scheme
+        scheme = theme_manager.generate_color_scheme()
+        theme_manager.apply_color_scheme(scheme)
+        ```
+        
+        See Also
+        --------
+        apply_color_scheme : Apply a generated scheme to update all 
+        colors
+        on_update_colors : Event handler that calls this method 
+        automatically
         """
+        scheme = None
         if self.auto_theme:
-            scheme = get_dynamic_scheme(
-                dark_mode=self.theme_mode == THEME.DARK,
-                contrast=self.color_scheme_contrast,
-                dynamic_color_quality=self.color_quality,
-                fallback_wallpaper_path=None, # TODO: add wallpaper support
-                fallback_scheme_name=self.color_scheme,
-                force_fallback_wallpaper=False,
-                message_logger=print, # TODO: Add global logging support
-                logger_head='ThemeManager',)
-        else:
-            argb = argb_from_rgba(self.get_seed_color_rgba(as_float=False))
-            hct = DislikeAnalyzer.fix_if_disliked(Hct.from_int(argb))
-            scheme = self.material_schemes[self.color_scheme](
-                source_color_hct=hct,
-                is_dark=self.theme_mode == THEME.DARK,
-                contrast_level=self.color_scheme_contrast,)
+            scheme = self._extract_wallpaper_scheme()
+        
+        if scheme is None:
+            scheme = self._generate_seed_scheme()
+        return scheme
+
+    def _extract_wallpaper_scheme(self) -> DynamicScheme | MaterialDynamicScheme | None:
+        """Extract color scheme from system wallpaper using Material You.
+        
+        Returns None if wallpaper-based color extraction is unavailable
+        or fails, allowing graceful fallback to seed color generation.
+        """
+        scheme = get_dynamic_scheme(
+            dark_mode=self.theme_mode == THEME.DARK,
+            contrast=self.color_scheme_contrast,
+            dynamic_color_quality=self.color_quality,
+            fallback_wallpaper_path=None, # TODO: add wallpaper support
+            fallback_scheme_name=self.color_scheme,
+            force_fallback_wallpaper=False,
+            message_logger=print, # TODO: Add global logging support
+            logger_head='ThemeManager',)
+        return scheme
+
+    def _generate_seed_scheme(self) -> DynamicScheme | MaterialDynamicScheme:
+        """Generate color scheme from the current seed color.
+        
+        Uses the specified color_scheme algorithm and applies dislike
+        analysis to ensure pleasant color combinations.
+        """
+        argb = argb_from_rgba(self.get_seed_color_rgba(as_float=False))
+        hct = DislikeAnalyzer.fix_if_disliked(Hct.from_int(argb))
+        scheme = self.material_schemes[self.color_scheme](
+            source_color_hct=hct,
+            is_dark=self.theme_mode == THEME.DARK,
+            contrast_level=self.color_scheme_contrast,)
         return scheme
 
     def apply_color_scheme(
@@ -378,32 +445,6 @@ class ThemeManager(EventDispatcher, MorphDynamicColorPalette):
 
         if self.auto_theme:
             self.dispatch('on_colors_updated')
-
-    def on_seed_color(self, instance: Any, seed_color: str) -> None:
-        """Fired when the seed_color property changes. Dispatches the
-        `on_update_colors` event."""
-        self.dispatch('on_update_colors')
-
-    def on_color_scheme(self, instance: Any, color_scheme: str) -> None:
-        """Fired when the color_scheme property changes. Dispatches the
-        `on_update_colors` event."""
-        self.dispatch('on_update_colors')
-    
-    def on_color_sheme_contrast(self, instance: Any, contrast: float) -> None:
-        """Fired when the color_scheme_contrast property changes. 
-        Dispatches the `on_update_colors` event."""
-        self.dispatch('on_update_colors')
-
-    def on_color_quality(self, instance: Any, quality: int) -> None:
-        """Fired when the color_quality property changes. Dispatches the
-        `on_update_colors` event."""
-        self.dispatch('on_update_colors')
-
-    def on_theme_mode(
-            self, instance: Any, theme_mode: Literal['Light', 'Dark']) -> None:
-        """Fired when the theme_mode property changes. Dispatches the
-        `on_update_colors` event."""
-        self.dispatch('on_update_colors')
 
     def on_colors_updated(self, *args) -> None:
         """Event fired when colors are updated.
