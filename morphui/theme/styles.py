@@ -12,10 +12,12 @@ from typing import Tuple
 from typing import Literal
 from typing import overload
 
+from kivy.clock import Clock
 from kivy.utils import colormap
 from kivy.utils import hex_colormap
 from kivy.event import EventDispatcher
 from kivy.utils import get_color_from_hex
+from kivy.properties import StringProperty
 from kivy.properties import OptionProperty
 from kivy.properties import BooleanProperty
 from kivy.properties import BoundedNumericProperty
@@ -37,7 +39,8 @@ __all__ = [
     'ThemeManager',]
 
 
-def get_available_colors() -> Tuple[str, ...]:
+def get_available_seed_colors() -> Tuple[str, ...]:
+    """Get a tuple of all available seed color names."""
     return tuple(
         color.capitalize() for color in hex_colormap.keys())
 
@@ -61,7 +64,7 @@ class ThemeManager(EventDispatcher, MorphDynamicColorPalette):
     and defaults to True.
     """
 
-    seed_color: str = OptionProperty('Blue', options=get_available_colors())
+    seed_color: str = StringProperty('Blue')
     """The seed color used to generate the dynamic color palette.
 
     This property sets the source color from which all other theme colors
@@ -85,7 +88,7 @@ class ThemeManager(EventDispatcher, MorphDynamicColorPalette):
     """
 
     color_scheme_contrast: float = BoundedNumericProperty(
-        0.0, min=0.0, max=1.0, errorvalue=lambda x: max(0.0, min(x, 1.0)))
+        0.0, min=0.0, max=1.0, errorhandler=lambda x: max(0.0, min(x, 1.0)))
     """Adjusts the contrast level of the selected color scheme.
 
     This property modifies the contrast of the generated color scheme.
@@ -139,6 +142,9 @@ class ThemeManager(EventDispatcher, MorphDynamicColorPalette):
     :class:`~kivy.properties.BoundedNumericProperty` and defaults to 0.3.
     """
 
+    _available_seed_colors: Tuple[str, ...] = get_available_seed_colors()
+    """List of available seed colors (read-only)."""
+
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self.register_event_type('on_update_colors')
@@ -148,12 +154,12 @@ class ThemeManager(EventDispatcher, MorphDynamicColorPalette):
         self.bind(on_color_scheme_contrast=self.on_update_colors)
         self.bind(on_color_quality=self.on_update_colors)
         self.bind(on_theme_mode=self.on_update_colors)
-        self.dispatch('on_update_colors')
+        Clock.schedule_once(lambda dt: self.dispatch('on_update_colors'), 0)
 
     @property
-    def available_seed_colors(self) -> List[str]:
+    def available_seed_colors(self) -> Tuple[str, ...]:
         """List of available seed colors (read-only)."""
-        return list(self.property('seed_color').options)
+        return self._available_seed_colors
 
     @property
     def inverse_mode(self) -> Literal['Light', 'Dark']:
@@ -238,8 +244,27 @@ class ThemeManager(EventDispatcher, MorphDynamicColorPalette):
         color_name = color_name.lower()
         hex_colormap[color_name] = hex_value
         colormap[color_name] = get_color_from_hex(hex_value)
-        self.property('seed_color').options = tuple(
-            color.capitalize() for color in hex_colormap.keys())
+        self._available_seed_colors = get_available_seed_colors()
+
+    def on_seed_color(self, instance: Any, seed_color: str) -> None:
+        """Event handler for when the seed color changes.
+
+        This method is automatically called whenever the `seed_color`
+        property is updated. It triggers a regeneration of the color
+        scheme and updates all dynamic colors accordingly.
+
+        Parameters
+        ----------
+        instance : Any
+            The instance that triggered the event (usually self).
+        seed_color : str
+            The new seed color value.
+        """
+        assert seed_color in self.available_seed_colors, (
+            f'Seed color {seed_color!r} is not registered. Use '
+            'register_seed_color() to add it. Available colors: '
+            f'{self.available_seed_colors}')
+        self.dispatch('on_update_colors')
 
     def on_update_colors(self, *args) -> None:
         """Update all colors based on current settings.
@@ -435,7 +460,7 @@ class ThemeManager(EventDispatcher, MorphDynamicColorPalette):
         ----------
         scheme : DynamicScheme | MaterialDynamicScheme
             The color scheme to apply.
-        """
+        """ 
         if not self.auto_theme and self.colors_initialized:
             return
 
