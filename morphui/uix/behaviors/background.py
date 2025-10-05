@@ -43,34 +43,34 @@ class MorphBackgroundBehavior(EventDispatcher):
     background_color : list of float
         RGBA color values for the background. Defaults to [1, 1, 1, 1]."""
 
-    border_line_color: ColorProperty = ColorProperty([0, 0, 0, 0])
-    """Border line color of the widget.
+    border_color: ColorProperty = ColorProperty([0, 0, 0, 0])
+    """Border color of the widget.
     
     Parameters
     ----------
-    border_line_color : list of float
-        RGBA color values for the border line. Defaults to [0, 0, 0, 0]."""
+    border_color : list of float
+        RGBA color values for the border. Defaults to [0, 0, 0, 0]."""
 
-    border_line_width: float = NumericProperty(0)
-    """Width of the border line.
+    border_width: float = NumericProperty(0)
+    """Width of the border.
     
     Parameters
     ----------
-    border_line_width : float
-        Width of the border line in pixels. Defaults to 0.
+    border_width : float
+        Width of the border in pixels. Defaults to 0.
     """
 
-    _background_color: Color
+    _background_color_instruction: Color
     """Kivy Color instruction for the background color."""
 
-    _background_rectangle: RoundedRectangle
+    _background_instruction: RoundedRectangle
     """Kivy RoundedRectangle instruction for the background shape."""
 
-    _border_line_color: Color
-    """Kivy Color instruction for the border line color."""
+    _border_color_instruction: Color
+    """Kivy Color instruction for the border color."""
 
-    _border_line: SmoothLine
-    """Kivy SmoothLine instruction for the border line."""
+    _border_instruction: SmoothLine
+    """Kivy SmoothLine instruction for the border."""
 
     def __init__(self, **kwargs) -> None:
         """Initialize the background behavior with canvas graphics 
@@ -83,20 +83,20 @@ class MorphBackgroundBehavior(EventDispatcher):
         """
         super().__init__(**kwargs)
         with self.canvas:
-            self._background_color = Color(*self.background_color)
-            self._background_rectangle = RoundedRectangle(
+            self._background_color_instruction = Color(*self.background_color)
+            self._background_instruction = RoundedRectangle(
                 size=self.size, pos=self.pos, radius=self.radius)
-            self._border_line_color = Color(*self.border_line_color)
-            self._border_line = SmoothLine(
-                width=self.border_line_width,
+            self._border_color_instruction = Color(*self.border_color)
+            self._border_instruction = SmoothLine(
+                width=self.border_width,
                 rounded_rectangle=self._rounded_rectangle)
         self.bind(
             background_color=self._update_background_color,
             size=self._update_size,
             pos=self._update_position,
             radius=self._update_radius,
-            border_line_color=self._update_border_line_color,
-            border_line_width=self._update_border_line_width,
+            border_color=self._update_border_color,
+            border_width=self._update_border_width,
             )
     
     @property
@@ -111,8 +111,8 @@ class MorphBackgroundBehavior(EventDispatcher):
         """
         is_relative = isinstance(self, RelativeLayout)
         return [
-            self.x if is_relative else 0,
-            self.y if is_relative else 0,
+            0 if is_relative else self.x,
+            0 if is_relative else self.y,
             self.width,
             self.height,
             *self.radius,]
@@ -145,33 +145,33 @@ class MorphBackgroundBehavior(EventDispatcher):
         color : list of float
             New background color values.
         """
-        self._background_color.rgba = self._ensure_alpha(color)
+        self._background_color_instruction.rgba = self._ensure_alpha(color)
     
-    def _update_border_line_color(
+    def _update_border_color(
             self, instance: Any, color: List[float]):
-        """Update the border line color when the property changes.
+        """Update the border color when the property changes.
         
         Parameters
         ----------
         instance : Any
             The widget instance.
         color : list of float
-            New border line color values.
+            New border color values.
         """
-        self._border_line_color.rgba = self._ensure_alpha(color)
+        self._border_color_instruction.rgba = self._ensure_alpha(color)
 
-    def _update_border_line_width(
+    def _update_border_width(
             self, instance: Any, width: float):
-        """Update the border line width when the property changes.
+        """Update the border width when the property changes.
         
         Parameters
         ----------
         instance : Any
             The widget instance.
         width : float
-            New border line width.
+            New border width.
         """
-        self._border_line.width = width
+        self._border_instruction.width = width
 
     def _update_size(self, instance: Any, size: List[float]):
         """Update the background and border when the widget size changes.
@@ -183,8 +183,8 @@ class MorphBackgroundBehavior(EventDispatcher):
         size : list of float
             New size values [width, height].
         """
-        self._background_rectangle.size = size
-        self._border_line.rounded_rectangle = self._rounded_rectangle
+        self._background_instruction.size = size
+        self._border_instruction.rounded_rectangle = self._rounded_rectangle
 
     def _update_position(self, instance: Any, pos: List[float]):
         """Update the background and border when the widget position changes.
@@ -196,8 +196,8 @@ class MorphBackgroundBehavior(EventDispatcher):
         pos : list of float
             New position values [x, y].
         """
-        self._background_rectangle.pos = pos
-        self._border_line.rounded_rectangle = self._rounded_rectangle
+        self._background_instruction.pos = pos
+        self._border_instruction.rounded_rectangle = self._rounded_rectangle
 
     def _update_radius(self, instance: Any, radius: List[float]):
         """Update the background and border when the radius changes.
@@ -209,5 +209,5 @@ class MorphBackgroundBehavior(EventDispatcher):
         radius : list of float
             New radius values [top_left, top_right, bottom_right, bottom_left].
         """
-        self._background_rectangle.radius = radius
-        self._border_line.rounded_rectangle = self._rounded_rectangle
+        self._background_instruction.radius = radius
+        self._border_instruction.rounded_rectangle = self._rounded_rectangle

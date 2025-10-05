@@ -154,7 +154,6 @@ class ThemeManager(EventDispatcher, MorphDynamicColorPalette):
         self.bind(on_color_scheme_contrast=self.on_update_colors)
         self.bind(on_color_quality=self.on_update_colors)
         self.bind(on_theme_mode=self.on_update_colors)
-        Clock.schedule_once(lambda dt: self.dispatch('on_update_colors'), 0)
 
     @property
     def available_seed_colors(self) -> Tuple[str, ...]:
