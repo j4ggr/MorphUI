@@ -4,6 +4,9 @@ from kivy.properties import StringProperty
 
 from ...utils.dotdict import DotDict
 
+__all__ = [
+    'MorphDeclarativeBehavior',]
+
 
 # TODO: Add example usage in docstring
 class MorphDeclarativeBehavior:

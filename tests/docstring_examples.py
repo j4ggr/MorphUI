@@ -24,43 +24,42 @@ from kivy.uix.button import Button
 from kivy.uix.boxlayout import BoxLayout
 
 from morphui.app import MorphApp
-from morphui.uix.behaviors.hover import MorphHoverBehavior
+from morphui.uix.behaviors.background import MorphBackgroundBehavior
 
 
-class HoverButton(Button, MorphHoverBehavior):
-    '''A button with hover effects.'''
-
-    hovered_text: str = "Hovered widget"
-
-    normal_text: str = "Hover over me"
-
-    def on_enter(self) -> None:
-        self.color = (0, 0.8, 0.5, 1)  # Change color on hover
-        self.text = self.hovered_text
-
-    def on_leave(self) -> None:
-        self.color = (1, 1, 1, 1)  # Reset color when not hovering
-        self.text = self.normal_text
-
-    def on_enter_edge(self, edge: str) -> None:
-        self.text = f"Hovered {edge} edge"
-
-    def on_leave_edge(self, edge: str) -> None:
-        self.text = self.hovered_text if self.hovered else self.normal_text
-
-    def on_enter_corner(self, corner: str) -> None:
-        self.text = f"Hovered {corner} corner"
-
-    def on_leave_corner(self, corner: str) -> None:
-        self.text = self.hovered_text if self.hovered else self.normal_text
+class UserButton(MorphBackgroundBehavior, Button):
+    pass
 
 
-class HoverApp(MorphApp):
-    def build(self) -> BoxLayout:
-        layout = BoxLayout(padding=100)
-        btn = HoverButton(text="Hover over me")
-        layout.add_widget(btn)
-        return layout
-        
-if __name__ == "__main__":
-    HoverApp().run()
+class RootWidget(MorphBackgroundBehavior, BoxLayout):
+
+    def __init__(self, **kwargs):
+        # make sure we aren't overriding any important functionality
+        super(RootWidget, self).__init__(**kwargs)
+
+        # let's add a Widget to this layout
+        self.add_widget(
+            UserButton(
+                text="Hello World",
+                size_hint=(.5, .5),
+                pos_hint={'center_x': .5, 'center_y': .5},
+                background_color=(1, 0, 0, 0.5),  # semi-transparent red
+                border_line_color=(0, 1, 0, 0.5),
+                radius=[25, 5, 25, 5],# rounded corners
+                border_line_width=2,))
+
+
+class MainApp(MorphApp):
+
+    def build(self) -> RootWidget:
+        self.root = root = RootWidget()
+        root.background_color = (0, 0.5, 1, 0.8)  # Blue background
+        root.border_line_color = (0.2, 0.8, 0.5, 0.2)  # Green border
+        root.border_line_width = 0
+        root.radius = [20, 20, 20, 20]  # Rounded corners
+        return root
+
+
+
+if __name__ == '__main__':
+    MainApp().run()

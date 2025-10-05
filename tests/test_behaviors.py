@@ -8,12 +8,12 @@ sys.path.append(str(Path(__file__).parent.resolve()))
 from kivy.uix.widget import Widget
 from kivy.uix.behaviors import FocusBehavior
 
-from morphui.uix.behaviors.declarative import MorphDeclarativeBehavior
-from morphui.uix.behaviors.hover import MorphHoverBehavior
-from morphui.uix.behaviors.keypress import MorphKeyPressBehavior
-from morphui.uix.behaviors.dropdown import MorphDropdownBehavior
-from morphui.uix.behaviors.mcvreference import MorphMCVReferenceBehavior
 from morphui.utils.dotdict import DotDict
+from morphui.uix.behaviors import MorphHoverBehavior
+from morphui.uix.behaviors import MorphKeyPressBehavior
+from morphui.uix.behaviors import MorphDropdownBehavior
+from morphui.uix.behaviors import MorphDeclarativeBehavior
+from morphui.uix.behaviors import MorphMCVReferenceBehavior
 
 
 class TestMorphDeclarativeBehavior:
