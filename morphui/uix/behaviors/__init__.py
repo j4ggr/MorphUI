@@ -4,3 +4,4 @@ from .dropdown import MorphDropdownBehavior
 from .background import MorphBackgroundBehavior
 from .declarative import MorphDeclarativeBehavior
 from .mcvreference import MorphMCVReferenceBehavior
+from .autosizing import MorphAutoSizingBehavior
