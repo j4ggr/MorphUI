@@ -22,14 +22,18 @@ sys.path.append(str(Path(__file__).parents[1].resolve()))
 # from kivy.app import App
 from kivy.uix.widget import Widget
 from kivy.uix.button import Button
+from kivy.uix.label import Label
+from kivy.uix.behaviors import ButtonBehavior
 from kivy.uix.boxlayout import BoxLayout
 
 from morphui.app import MorphApp
 from morphui.uix.behaviors import MorphBackgroundBehavior
 
 
-class UserButton(MorphBackgroundBehavior, Button):
-    pass
+class UserButton(MorphBackgroundBehavior, ButtonBehavior, Label):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
 
 
 class RootWidget(MorphBackgroundBehavior, BoxLayout):
