@@ -66,10 +66,10 @@ class ThemeManager(EventDispatcher, MorphDynamicColorPalette):
     seed_color: str = StringProperty('Blue')
     """The seed color used to generate the dynamic color palette.
 
-    This property sets the source color from which all other theme colors
-    are generated using the Material You color system. Changing this
-    property will regenerate the entire color palette and automatically
-    update all widgets that have `auto_theme` enabled.
+    This property sets the source color from which all other theme 
+    colors are generated using the Material You color system. Changing 
+    this property will regenerate the entire color palette and 
+    automatically update all widgets that have `auto_theme` enabled.
 
     :attr:`seed_color` is a :class:`~kivy.properties.OptionProperty`
     and defaults to 'Blue'.
@@ -146,13 +146,13 @@ class ThemeManager(EventDispatcher, MorphDynamicColorPalette):
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
-        self.register_event_type('on_update_colors')
+        self.register_event_type('on_theme_changed')
         self.register_event_type('on_colors_updated')
-        self.bind(on_seed_color=self.on_update_colors)
-        self.bind(on_color_scheme=self.on_update_colors)
-        self.bind(on_color_scheme_contrast=self.on_update_colors)
-        self.bind(on_color_quality=self.on_update_colors)
-        self.bind(on_theme_mode=self.on_update_colors)
+        self.bind(on_seed_color=self.on_theme_changed)
+        self.bind(on_color_scheme=self.on_theme_changed)
+        self.bind(on_color_scheme_contrast=self.on_theme_changed)
+        self.bind(on_color_quality=self.on_theme_changed)
+        self.bind(on_theme_mode=self.on_theme_changed)
 
     @property
     def available_seed_colors(self) -> Tuple[str, ...]:
@@ -248,8 +248,9 @@ class ThemeManager(EventDispatcher, MorphDynamicColorPalette):
         """Event handler for when the seed color changes.
 
         This method is automatically called whenever the `seed_color`
-        property is updated. It triggers a regeneration of the color
-        scheme and updates all dynamic colors accordingly.
+        property is updated. It triggers the `on_theme_changed` event 
+        which regenerates the color scheme and updates all dynamic 
+        colors accordingly.
 
         Parameters
         ----------
@@ -262,13 +263,15 @@ class ThemeManager(EventDispatcher, MorphDynamicColorPalette):
             f'Seed color {seed_color!r} is not registered. Use '
             'register_seed_color() to add it. Available colors: '
             f'{self.available_seed_colors}')
-        self.dispatch('on_update_colors')
+        self.dispatch('on_theme_changed')
 
-    def on_update_colors(self, *args) -> None:
-        """Update all colors based on current settings.
+    def on_theme_changed(self, *args) -> None:
+        """Handle theme changes and update all colors based on current 
+        settings.
 
-        This method forces an update of all dynamic colors based on the
-        current seed_color, color_scheme, and theme_mode. It is useful
+        This method is automatically called whenever theme properties 
+        change (seed_color, color_scheme, theme_mode, etc.) and forces 
+        an update of all dynamic colors. It can also be called manually 
         when multiple properties have been changed and you want to apply
         the changes immediately.
 
@@ -277,7 +280,7 @@ class ThemeManager(EventDispatcher, MorphDynamicColorPalette):
         ```python
         theme_manager.seed_color = 'Red'
         theme_manager.color_scheme = 'VIBRANT'
-        theme_manager.update_colors()
+        theme_manager.on_theme_changed()  # Manual trigger if needed
         ```
         """
         if not self.auto_theme and self.colors_initialized:
@@ -314,8 +317,9 @@ class ThemeManager(EventDispatcher, MorphDynamicColorPalette):
         Returns
         -------
         List[int] | List[float]
-            A list of 4 RGBA values. If `as_float` is True, returns floats
-            in range [0.0, 1.0]. If False, returns integers in range [0, 255].
+            A list of 4 RGBA values. If `as_float` is True, returns 
+            floats in range [0.0, 1.0]. If False, returns integers in 
+            range [0, 255].
 
         Examples
         --------
@@ -361,8 +365,8 @@ class ThemeManager(EventDispatcher, MorphDynamicColorPalette):
            predictable theming.
         
         The method automatically respects all current theme settings 
-        including theme mode (light/dark), contrast level, color quality, 
-        and the selected color scheme algorithm.
+        including theme mode (light/dark), contrast level, color 
+        quality, and the selected color scheme algorithm.
         
         Returns
         -------
@@ -405,7 +409,7 @@ class ThemeManager(EventDispatcher, MorphDynamicColorPalette):
         --------
         apply_color_scheme : Apply a generated scheme to update all 
         colors
-        on_update_colors : Event handler that calls this method 
+        on_theme_changed : Event handler that calls this method 
         automatically
         """
         scheme = None
@@ -416,9 +420,11 @@ class ThemeManager(EventDispatcher, MorphDynamicColorPalette):
             scheme = self._generate_seed_scheme()
         return scheme
 
-    def _extract_wallpaper_scheme(self) -> DynamicScheme | MaterialDynamicScheme | None:
+    def _extract_wallpaper_scheme(
+            self,
+            ) -> DynamicScheme | MaterialDynamicScheme | None:
         """Extract color scheme from system wallpaper using Material You.
-        
+
         Returns None if wallpaper-based color extraction is unavailable
         or fails, allowing graceful fallback to seed color generation.
         """
@@ -470,20 +476,23 @@ class ThemeManager(EventDispatcher, MorphDynamicColorPalette):
             self.dispatch('on_colors_updated')
 
     def on_colors_updated(self, *args) -> None:
-        """Event fired when colors are updated.
+        """Event fired after color properties have been applied.
 
-        This event is triggered whenever the color scheme is regenerated
-        and applied. Widgets that listen to this event can update their
-        colors accordingly.
+        This is a more specific event than `on_theme_changed` that fires
+        specifically when color values have been calculated and set on
+        the theme manager. Use this event when you only need to respond
+        to color changes, not other potential theme changes.
+
+        Note: This event only fires when `auto_theme` is True.
 
         Examples
         --------
         ```python
-        def on_colors_updated(self):
+        def update_widget_colors(self):
             self.background_color = theme_manager.background_color
-            self.text_color = theme_manager.text_color
+            self.text_color = theme_manager.on_background_color
 
-        theme_manager.bind(on_colors_updated=on_colors_updated)
+        theme_manager.bind(on_colors_updated=update_widget_colors)
         ```
         """
         pass
