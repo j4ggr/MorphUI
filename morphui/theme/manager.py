@@ -32,7 +32,7 @@ from ..constants import THEME
 
 from .._typing import MaterialDynamicScheme
 
-from .colors import MorphDynamicColorPalette
+from .palette import MorphDynamicColorPalette
 
 __all__ = [
     'ThemeManager',]

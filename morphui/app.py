@@ -1,7 +1,7 @@
 from typing import Self
 from kivy.app import App
 
-from .theme.styles import ThemeManager
+from .theme.manager import ThemeManager
 from .theme.typography import Typography
 
     
