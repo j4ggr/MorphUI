@@ -18,56 +18,32 @@ import sys
 from pathlib import Path
 sys.path.append(str(Path(__file__).parents[1].resolve()))
 
-
 # from kivy.app import App
-from kivy.uix.widget import Widget
-from kivy.uix.button import Button
-from kivy.uix.label import Label
-from kivy.uix.behaviors import ButtonBehavior
-from kivy.uix.boxlayout import BoxLayout
-
+from kivy.clock import Clock
 from morphui.app import MorphApp
-from morphui.uix.behaviors import MorphBackgroundBehavior
+from morphui.uix.boxlayout import MorphBoxLayout
+from morphui.uix.label import MorphLabel
 
-
-class UserButton(MorphBackgroundBehavior, ButtonBehavior, Label):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-
-
-class RootWidget(MorphBackgroundBehavior, BoxLayout):
-
-    def __init__(self, **kwargs):
-        # make sure we aren't overriding any important functionality
-        super(RootWidget, self).__init__(**kwargs)
-
-        # let's add a Widget to this layout
-        self.add_widget(Widget())
-        self.add_widget(
-            UserButton(
-                text="Hello World",
-                size_hint=(None, .5),
-                width=200,
-                pos_hint={'center_x': .5, 'center_y': .5},
-                background_color=(1, 0, 0, 0.5),  # semi-transparent red
-                border_color=(0, 1, 0, 0.5),
-                radius=[25, 5, 25, 5],# rounded corners
-                border_width=2,))
-        self.add_widget(Widget())
-
-
-class MainApp(MorphApp):
-
-    def build(self) -> RootWidget:
-        self.root = root = RootWidget()
-        root.background_color = (0, 0.5, 1, 0.8)  # Blue background
-        root.border_color = (0.2, 0.8, 0.5, 0.2)  # Green border
-        root.border_width = 0
-        root.radius = [20, 20, 20, 20]  # Rounded corners
-        return root
-
+class MyApp(MorphApp):
+    def build(self) -> MorphBoxLayout:
+        self.root = MorphBoxLayout(
+            MorphLabel(
+                identity="label1",
+                text="Label 1",),
+            MorphLabel(
+                identity="label2",
+                text="Label 2",
+                theme_style='secondary',
+                radius=[25, 5, 25, 5],),
+            theme_style='surface',
+            orientation='vertical',
+            padding=10,
+            spacing=10,)
+        return self.root
+    
+    def on_start(self) -> None:
+        Clock.schedule_interval(self.theme_manager.toggle_theme_mode, 2)
 
 
 if __name__ == '__main__':
-    MainApp().run()
+    MyApp().run()
