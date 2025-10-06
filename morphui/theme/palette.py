@@ -65,9 +65,9 @@ class MorphDynamicColorPalette:
 
     Attributes
     ----------
-    ATTRIBUTE_MAP : Dict[str, DynamicColor]
-        Maps attribute names to MaterialDynamicColors attributes for 
-        easy reference and dynamic assignment.
+    material_color_map : Dict[str, DynamicColor]
+        Maps color property names to MaterialDynamicColors instances for 
+        easy reference and dynamic color scheme application.
     Key color properties:
         The following attributes represent key colors for palettes and
         UI elements, each as a `ColorProperty`:
@@ -113,18 +113,49 @@ class MorphDynamicColorPalette:
     across different UI components and states.
     """
 
-    _attribute_map: Dict[str, DynamicColor] = dict(
+    _material_color_map: Dict[str, DynamicColor] = dict(
         material_dynamic_color_attributes())
-    """Mapping of attribute names to MaterialDynamicColors attributes."""
+    """Mapping of color property names to MaterialDynamicColors instances."""
 
     _default_property_color = [1.0, 1.0, 1.0, 1.0]
     """Default color value for uninitialized properties."""
 
     @property
-    def attribute_map(self) -> Dict[str, DynamicColor]:
-        """Get the mapping of attribute names to MaterialDynamicColors 
-        attributes (read-only)."""
-        return self._attribute_map
+    def material_color_map(self) -> Dict[str, DynamicColor]:
+        """Get the mapping of color property names to Material Design colors (read-only).
+        
+        Returns a dictionary where:
+        - Keys are color property names (e.g., 'primary_color', 'background_color')
+        - Values are the corresponding MaterialDynamicColors DynamicColor instances
+        
+        This mapping is used internally to apply color schemes to all available
+        color properties.
+        """
+        return self._material_color_map
+    
+    @property
+    def dynamic_color_properties(self) -> List[str]:
+        """List of all dynamic color property names in the palette.
+        
+        This property returns a list of strings representing the names
+        of all dynamic color properties defined in the palette. These
+        names correspond to the attributes that hold dynamic color
+        values, allowing for easy iteration and management of colors.
+        
+        Returns
+        -------
+        list of str
+            List of dynamic color property names.
+            
+        Examples
+        --------
+        ```python
+        # Iterate over all dynamic color properties
+        for color_prop in theme_manager.dynamic_color_properties:
+            print(color_prop)
+        ```
+        """
+        return list(self._material_color_map.keys())
     
     @property
     def colors_initialized(self) -> bool:
@@ -173,7 +204,7 @@ class MorphDynamicColorPalette:
         bool
             True if all colors are set, False if any are None.
         """
-        for attr_name in self._attribute_map.keys():
+        for attr_name in self._material_color_map.keys():
             color_value = getattr(self, attr_name, None)
             if color_value is None:
                 return False

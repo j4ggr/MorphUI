@@ -468,7 +468,7 @@ class ThemeManager(EventDispatcher, MorphDynamicColorPalette):
         if not self.auto_theme and self.colors_initialized:
             return
 
-        for attr_name, color in self.attribute_map.items():
+        for attr_name, color in self.material_color_map.items():
             rgba = [c/255 for c in color.get_hct(scheme).to_rgba()]
             setattr(self, attr_name, rgba)
 
