@@ -10,6 +10,7 @@ from pathlib import Path
 
 from kivy.event import EventDispatcher
 from kivy.core.text import LabelBase
+from kivy.properties import DictProperty
 from kivy.properties import StringProperty
 
 from ..constants import FONTS
@@ -36,6 +37,9 @@ class Typography(EventDispatcher):
     ----------
     font_name : str
         Base font family name used for text styling.
+    text_styles : Dict[str, Dict[str, Dict[str, str | float | int]]]
+        Typography text styles configuration that can be customized
+        to override default Material Design typography styles.
     fonts_to_autoregister : Tuple[Dict[str, str], ...]
         Tuple of font registration dictionaries that are automatically
         registered when the typography system is initialized. This
@@ -101,6 +105,24 @@ class Typography(EventDispatcher):
     app = MyApp()
     app.run()
     ```
+    
+    To customize typography styles, modify the :attr:`text_styles`
+    property:
+
+    ```python
+    from morphui.app import MorphApp
+
+    class MyApp(MorphApp):
+        def on_start(self):
+            # Customize specific typography styles
+            custom_styles = self.typography.text_styles.copy()
+            custom_styles['Headline']['large']['font_size'] = '28sp'
+            custom_styles['Body']['medium']['line_height'] = 1.2
+            self.typography.text_styles = custom_styles
+
+    app = MyApp()
+    app.run()
+    ```
     """
 
     font_name: str = StringProperty('Inter')
@@ -140,6 +162,52 @@ class Typography(EventDispatcher):
     - `fn_bolditalic`: Path to the bold italic font file (optional)
     """
 
+    text_styles: Dict[str, Dict[str, Dict[str, str | float | int]]] = DictProperty(FONTS.TEXT_STYLES)
+    """Typography text styles configuration.
+    
+    Defines the text styles for all typography roles and size variants.
+    This property allows customization of the default Material Design
+    typography styles. The structure follows the same format as
+    FONTS.TEXT_STYLES with nested dictionaries for roles, sizes, and
+    style properties.
+    
+    Users can modify this to customize typography styles for their
+    application while maintaining the same API.
+    
+    :attr:`text_styles` is a :class:`~kivy.properties.DictProperty`
+    and defaults to FONTS.TEXT_STYLES.
+    
+    Examples
+    --------
+    Customize specific text styles:
+    
+    ```python
+    from morphui.app import MorphApp
+    
+    class MyApp(MorphApp):
+        def build(self):
+            # Customize headline sizes
+            custom_styles = self.typography.text_styles.copy()
+            custom_styles['Headline']['large']['font_size'] = '28sp'
+            custom_styles['Headline']['large']['line_height'] = 1.3
+            self.typography.text_styles = custom_styles
+            return super().build()
+    ```
+    
+    Add custom typography role:
+    
+    ```python
+    # Add a custom 'Caption' role
+    custom_styles = typography.text_styles.copy()
+    custom_styles['Caption'] = {
+        'large': {'font_size': '14sp', 'line_height': 1.2},
+        'medium': {'font_size': '12sp', 'line_height': 1.2},
+        'small': {'font_size': '10sp', 'line_height': 1.2},
+    }
+    typography.text_styles = custom_styles
+    ```
+    """
+
     _registered_fonts: Tuple[str, ...]
     """Tuple of currently registered font family names."""
 
@@ -148,6 +216,7 @@ class Typography(EventDispatcher):
         self._registered_fonts = ()
         self.register_event_type('on_typography_changed')
         self.bind(font_name=self.on_typography_changed)
+        self.bind(text_styles=self.on_typography_changed)
 
     def register_font(
             self,
@@ -314,16 +383,18 @@ class Typography(EventDispatcher):
                     f'falling back to "{resolved_font_name}"',
                     UserWarning, stacklevel=2)
 
-        text_style = FONTS.TEXT_STYLES[role][size].copy()
+        text_style = self.text_styles[role][size].copy()
         text_style['name'] = resolved_font_name
         return text_style
     
     def on_typography_changed(self, *args) -> None:
-        """Event handler called when the `font_name` property changes.
+        """Event handler called when typography configuration changes.
         
         Dispatches the `on_typography_changed` event to notify listeners
-        that the typography configuration has changed. This allows UI
-        components to react and update their text styles accordingly.
+        that the typography configuration has changed. This includes 
+        changes to the `font_name` property or the `text_styles`
+        property. This allows UI components to react and update their
+        text styles accordingly.
         
         Parameters
         ----------
@@ -344,12 +415,13 @@ class Typography(EventDispatcher):
         typography = MorphApp.get_running_app().typography
         typography.bind(on_typography_changed=on_typography_changed)
         typography.font_name = 'DMSans'  # Triggers the event
+        typography.text_styles = custom_styles  # Also triggers the event
         ```
         
         Notes
         -----
         - This method is automatically called by Kivy when `font_name`
-          changes due to the property binding.
+          or `text_styles` changes due to the property bindings.
         - UI components should bind to this event to refresh their styles.
         """
         pass
