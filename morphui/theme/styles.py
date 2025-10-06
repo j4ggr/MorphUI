@@ -12,7 +12,6 @@ from typing import Tuple
 from typing import Literal
 from typing import overload
 
-from kivy.clock import Clock
 from kivy.utils import colormap
 from kivy.utils import hex_colormap
 from kivy.event import EventDispatcher
