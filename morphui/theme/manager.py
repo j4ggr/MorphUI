@@ -44,7 +44,7 @@ def get_available_seed_colors() -> Tuple[str, ...]:
         color.capitalize() for color in hex_colormap.keys())
 
 
-class ThemeManager(EventDispatcher, MorphDynamicColorPalette):
+class ThemeManager(MorphDynamicColorPalette):
     """Manage the theme and dynamic colors for the application.
     
     This class handles the overall theme management, including
@@ -148,11 +148,11 @@ class ThemeManager(EventDispatcher, MorphDynamicColorPalette):
         super().__init__(**kwargs)
         self.register_event_type('on_theme_changed')
         self.register_event_type('on_colors_updated')
-        self.bind(on_seed_color=self.on_theme_changed)
-        self.bind(on_color_scheme=self.on_theme_changed)
-        self.bind(on_color_scheme_contrast=self.on_theme_changed)
-        self.bind(on_color_quality=self.on_theme_changed)
-        self.bind(on_theme_mode=self.on_theme_changed)
+        self.bind(seed_color=self.on_theme_changed)
+        self.bind(color_scheme=self.on_theme_changed)
+        self.bind(color_scheme_contrast=self.on_theme_changed)
+        self.bind(color_quality=self.on_theme_changed)
+        self.bind(theme_mode=self.on_theme_changed)
 
     @property
     def available_seed_colors(self) -> Tuple[str, ...]:
