@@ -40,7 +40,7 @@ class TestMorphDeclarativeBehavior:
     def test_initialization(self):
         """Test basic initialization of MorphDeclarativeBehavior."""
         widget = self.TestWidget()
-        assert widget.id == ''
+        assert widget.identity == ''
         assert widget.declarative_children == []
         assert isinstance(widget.identities, DotDict)
 
@@ -56,8 +56,8 @@ class TestMorphDeclarativeBehavior:
     def test_id_property(self):
         """Test the id property functionality."""
         widget = self.TestWidget()
-        widget.id = 'test_widget'
-        assert widget.id == 'test_widget'
+        widget.identity = 'test_widget'
+        assert widget.identity == 'test_widget'
 
     def test_identities_property(self):
         """Test the identities property returns DotDict."""
@@ -70,7 +70,7 @@ class TestMorphDeclarativeBehavior:
         """Test adding a widget with an id updates identities."""
         parent = self.TestWidget()
         child = self.ChildWidget()
-        child.id = 'test_child'
+        child.identity = 'test_child'
         
         parent.add_widget(child)
         
@@ -91,7 +91,7 @@ class TestMorphDeclarativeBehavior:
         """Test removing a widget updates declarative_children and identities."""
         parent = self.TestWidget()
         child = self.ChildWidget()
-        child.id = 'test_child'
+        child.identity = 'test_child'
         
         parent.add_widget(child)
         assert child in parent.declarative_children
@@ -104,7 +104,7 @@ class TestMorphDeclarativeBehavior:
         """Test the _register_declarative_child method."""
         parent = self.TestWidget()
         child = self.ChildWidget()
-        child.id = 'test_child'
+        child.identity = 'test_child'
         
         parent._register_declarative_child(child)
         
@@ -115,7 +115,7 @@ class TestMorphDeclarativeBehavior:
         """Test the _unregister_declarative_child method."""
         parent = self.TestWidget()
         child = self.ChildWidget()
-        child.id = 'test_child'  # Use id instead of identity
+        child.identity = 'test_child'  # Use id instead of identity
         
         parent._register_declarative_child(child)
         parent._unregister_declarative_child(child)

@@ -14,7 +14,6 @@ from typing import overload
 
 from kivy.utils import colormap
 from kivy.utils import hex_colormap
-from kivy.event import EventDispatcher
 from kivy.utils import get_color_from_hex
 from kivy.properties import StringProperty
 from kivy.properties import OptionProperty

@@ -196,7 +196,7 @@ class TestThemeManager:
         assert 'primary_color' in color_map
         assert 'background_color' in color_map
         assert 'surface_color' in color_map
-        assert 'on_surface_color' in color_map
+        assert 'text_surface_color' in color_map
 
     def test_bounded_properties(self):
         """Test bounded numeric properties validation."""
