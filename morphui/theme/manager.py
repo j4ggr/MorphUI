@@ -176,7 +176,7 @@ class ThemeManager(MorphDynamicColorPalette):
         """
         return SCHEMES
 
-    def toggle_theme_mode(self) -> None:
+    def toggle_theme_mode(self, *args) -> None:
         """Toggle between light and dark theme modes.
         
         Switches the current theme_mode to its inverse. If currently 
@@ -197,7 +197,7 @@ class ThemeManager(MorphDynamicColorPalette):
         """
         self.theme_mode = self.inverse_mode
 
-    def switch_to_light(self) -> None:
+    def switch_to_light(self, *args) -> None:
         """Switch to light theme mode.
         
         Sets the theme_mode to 'Light'. If already in light mode,
@@ -206,7 +206,7 @@ class ThemeManager(MorphDynamicColorPalette):
         """
         self.theme_mode = THEME.LIGHT
 
-    def switch_to_dark(self) -> None:
+    def switch_to_dark(self, *args) -> None:
         """Switch to dark theme mode.
         
         Sets the theme_mode to 'Dark'. If already in dark mode,

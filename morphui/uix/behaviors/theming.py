@@ -228,9 +228,9 @@ class MorphThemeBehavior(EventDispatcher):
         super().__init__(**kwargs)
         self.register_event_type('on_theme_changed')
         self.register_event_type('on_colors_updated')
-        self.register_event_type('on_colors_applied')
         self._theme_manager.bind(on_theme_changed=self.on_theme_changed)
         self._theme_manager.bind(on_colors_updated=self.on_colors_updated)
+        self.on_theme_color_bindings(self, self.theme_color_bindings)
 
     @property
     def theme_manager(self) -> ThemeManager:
@@ -395,7 +395,6 @@ class MorphThemeBehavior(EventDispatcher):
             
         for widget_prop, theme_color in self.theme_color_bindings.items():
             self.apply_theme_color(widget_prop, theme_color)
-        self.dispatch('on_colors_applied')
 
     def on_auto_theme(self, instance: Any, auto_theme: bool) -> None:
         """Fired when :attr:`auto_theme` property changes."""
@@ -604,14 +603,5 @@ class MorphThemeBehavior(EventDispatcher):
 
         Override this method in subclasses to implement custom
         behavior when theme colors are updated.
-        """
-        pass
-
-    def on_colors_applied(self, *args) -> None:
-        """Event callback fired after theme colors are applied to the
-        widget.
-        
-        Override this method in subclasses to implement custom
-        behavior after the widget's colors have been updated.
         """
         pass

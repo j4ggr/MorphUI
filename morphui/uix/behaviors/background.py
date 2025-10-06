@@ -82,7 +82,7 @@ class MorphBackgroundBehavior(EventDispatcher):
             Additional keyword arguments passed to the parent class.
         """
         super().__init__(**kwargs)
-        with self.canvas:
+        with self.canvas.before:
             self._background_color_instruction = Color(*self.background_color)
             self._background_instruction = RoundedRectangle(
                 size=self.size, pos=self.pos, radius=self.radius)
