@@ -1,15 +1,17 @@
-
-from typing import Dict
 from typing import Any
+from typing import Dict
+from typing import Literal
 
 from kivy.event import EventDispatcher
-from kivy.properties import BooleanProperty
 from kivy.properties import DictProperty
 from kivy.properties import StringProperty
+from kivy.properties import OptionProperty
+from kivy.properties import BooleanProperty
 
 from ...app import MorphApp
-from ...theme.manager import ThemeManager
 from ...constants import THEME
+from ...theme.manager import ThemeManager
+from ...theme.typography import Typography
 
 
 __all__ = [
@@ -63,7 +65,7 @@ class MorphThemeBehavior(EventDispatcher):
             self.theme_color_bindings = {
                 'background_color': 'primary_color',
                 'border_color': 'outline_color',
-                'color': 'on_primary_color'  # text color
+                'color': 'text_primary_color'  # text color
             }
     ```
     
@@ -148,27 +150,9 @@ class MorphThemeBehavior(EventDispatcher):
     'background_color', 'color', 'border_color') and each value 
     represents the corresponding theme color property name from the 
     :class:`ThemeManager` (such as 'primary_color', 'surface_color').
-    
-    When the theme changes, the behavior automatically updates each 
-    bound widget property with the current value of its corresponding 
-    theme color.
-    
-    Common Widget Properties
-    ------------------------
-    - 'background_color' : Widget background color (from 
-      MorphBackgroundBehavior)
-    - 'border_color' : Widget border color (from 
-      MorphBackgroundBehavior)  
-    - 'color' : Text color (for Label-based widgets)
-    - Any other color property available on the widget
-    
-    Common Theme Colors
-    -------------------
-    - 'primary_color', 'on_primary_color' : Primary theme colors
-    - 'secondary_color', 'on_secondary_color' : Secondary theme colors
-    - 'surface_color', 'on_surface_color' : Surface background colors
-    - 'error_color', 'on_error_color' : Error state colors
-    - 'outline_color', 'outline_variant_color' : Border and outline colors
+
+    When the theme changes, widget properties listed here will be
+    automatically updated with the corresponding theme color values.
     
     Examples
     --------
@@ -177,17 +161,8 @@ class MorphThemeBehavior(EventDispatcher):
     ```python
     widget.theme_color_bindings = {
         'background_color': 'primary_color',
-        'color': 'on_primary_color'
-    }
-    ```
-    
-    Surface styling:
-    
-    ```python
-    widget.theme_color_bindings = {
-        'background_color': 'surface_container_color',
-        'border_color': 'outline_variant_color',
-        'color': 'on_surface_color'
+        'color': 'text_primary_color',
+        'border_color': 'outline_color'
     }
     ```
     
@@ -195,14 +170,63 @@ class MorphThemeBehavior(EventDispatcher):
     
     ```python
     widget.theme_color_bindings = {
-        'background_color': 'error_container_color',
-        'color': 'on_error_container_color',
+        'background_color': 'error_color',
+        'color': 'text_error_color',
         'border_color': 'error_color'
     }
     ```
     
     :attr:`theme_color_bindings` is a :class:`~kivy.properties.DictProperty` 
     and defaults to {}.
+    """
+
+    typography_role: Literal['Display', 'Headline', 'Title', 'Body', 'Label'] = OptionProperty(
+        'Label', options=['Display', 'Headline', 'Title', 'Body', 'Label'])
+    """Typography role for automatic text styling.
+    
+    Sets the Material Design typography role which automatically configures
+    appropriate font family, size, and line height. Available roles: 'Display',
+    'Headline', 'Title', 'Body', 'Label'.
+    
+    When set, the widget automatically applies the corresponding typography
+    style based on the current :attr:`typography_size` and app font settings.
+    
+    :attr:`typography_role` is a :class:`~kivy.properties.StringProperty`
+    and defaults to 'Label'.
+    """
+
+    typography_size: Literal['large', 'medium', 'small'] = OptionProperty(
+        'medium', options=['large', 'medium', 'small'])
+    """Size variant for the typography role.
+    
+    Available options: 'large', 'medium', 'small'
+    Works in conjunction with :attr:`typography_role` to determine
+    the final text styling.
+    
+    :attr:`typography_size` is a :class:`~kivy.properties.OptionProperty`
+    and defaults to 'medium'.
+    """
+
+    typography_font_weight: Literal['Thin', 'Regular', 'Heavy', ''] = OptionProperty(
+        '', options=['Thin', 'Regular', 'Heavy', ''])
+    """Weight variant for the typography role.
+
+    Available options: 'Thin', 'Regular', 'Heavy', ''
+    Works in conjunction with :attr:`typography_role` to determine
+    the final text styling.
+
+    :attr:`typography_weight` is a :class:`~kivy.properties.OptionProperty`
+    and defaults to ''.
+    """
+
+    auto_typography: bool = BooleanProperty(True)
+    """Enable automatic typography updates for this widget.
+    
+    When True, the widget automatically updates its typography when the
+    app font family changes or when typography properties are modified.
+    
+    :attr:`auto_typography` is a :class:`~kivy.properties.BooleanProperty`
+    and defaults to True.
     """
 
     _bound_theme_colors: Dict[str, str] = {}
@@ -221,6 +245,9 @@ class MorphThemeBehavior(EventDispatcher):
     _theme_manager: ThemeManager = MorphApp._theme_manager
     """Reference to the global ThemeManager instance."""
 
+    _typography: Typography = MorphApp._typography
+    """Reference to the global Typography instance."""
+
     _theme_bound: bool = False
     """Track if theme manager events are bound."""
     
@@ -228,9 +255,21 @@ class MorphThemeBehavior(EventDispatcher):
         super().__init__(**kwargs)
         self.register_event_type('on_theme_changed')
         self.register_event_type('on_colors_updated')
-        self._theme_manager.bind(on_theme_changed=self.on_theme_changed)
-        self._theme_manager.bind(on_colors_updated=self.on_colors_updated)
-        self.on_theme_color_bindings(self, self.theme_color_bindings)
+        self.register_event_type('on_typography_changed')
+
+        self.theme_manager.bind(
+            on_theme_changed=self.on_theme_changed,
+            on_colors_updated=self.on_colors_updated)
+        self.typography.bind(
+            on_typography_changed=self.on_typography_changed,)
+        self.bind(
+            typography_role=self._update_typography,
+            typography_size=self._update_typography,
+            auto_typography=self._update_typography,
+            on_typography_changed=self._update_typography)
+
+        self.refresh_theme_colors()
+        self.refresh_typography()
 
     @property
     def theme_manager(self) -> ThemeManager:
@@ -242,6 +281,19 @@ class MorphThemeBehavior(EventDispatcher):
         class attribute and shared across all instances of this behavior.
         """
         return self._theme_manager
+    
+    @property
+    def typography(self) -> Typography:
+        """Access the typography manager for text style management 
+        (read-only).
+
+        The :attr:`typography` attribute provides access to the
+        :class:`Typography` instance, which handles typography and text
+        style management. This instance is automatically initialized as 
+        a class attribute and shared across all instances of this 
+        behavior.
+        """
+        return self._typography
 
     def bind_property_to_theme_color(
             self, widget_property: str, theme_color: str) -> None:
@@ -265,11 +317,11 @@ class MorphThemeBehavior(EventDispatcher):
         """
         if any((
             not hasattr(self, widget_property),
-            not hasattr(self._theme_manager, theme_color),
+            not hasattr(self.theme_manager, theme_color),
             self._bound_theme_colors.get(widget_property) == theme_color)):
             return
         
-        self._theme_manager.bind(
+        self.theme_manager.bind(
             **{theme_color: self.setter(widget_property)})
         self._bound_theme_colors[widget_property] = theme_color
     
@@ -294,11 +346,11 @@ class MorphThemeBehavior(EventDispatcher):
         """
         if any((
             not hasattr(self, widget_property),
-            not hasattr(self._theme_manager, theme_color),
+            not hasattr(self.theme_manager, theme_color),
             self._bound_theme_colors.get(widget_property, '') != theme_color)):
             return
         
-        self._theme_manager.unbind(
+        self.theme_manager.unbind(
             **{theme_color: self.setter(widget_property)})
         self._bound_theme_colors.pop(widget_property, None)
 
@@ -381,8 +433,8 @@ class MorphThemeBehavior(EventDispatcher):
             widget.apply_theme_color('background_color', 'surface_bright_color')
         ```
         """
-        if hasattr(self._theme_manager, theme_color):
-            color_value = getattr(self._theme_manager, theme_color)
+        if hasattr(self.theme_manager, theme_color):
+            color_value = getattr(self.theme_manager, theme_color)
             if color_value is not None and hasattr(self, widget_property):
                 setattr(self, widget_property, color_value)
                 return True
@@ -541,7 +593,7 @@ class MorphThemeBehavior(EventDispatcher):
         ```python
         widget.add_custom_style('warning', {
             'background_color': 'error_container_color',
-            'color': 'on_error_container_color',
+            'color': 'text_error_container_color',
             'border_color': 'outline_color'
         })
         
@@ -554,7 +606,7 @@ class MorphThemeBehavior(EventDispatcher):
         ```python
         widget.add_custom_style('subtle', {
             'background_color': 'surface_variant_color',
-            'color': 'on_surface_variant_color',
+            'color': 'text_surface_variant_color',
             'border_color': 'outline_variant_color'
         })
         ```
@@ -603,5 +655,74 @@ class MorphThemeBehavior(EventDispatcher):
 
         Override this method in subclasses to implement custom
         behavior when theme colors are updated.
+        """
+        pass
+
+    def apply_typography_style(
+            self,
+            role: Literal['Display', 'Headline', 'Title', 'Body', 'Label'],
+            size: Literal['large', 'medium', 'small'],
+            font_weight: Literal['Thin', 'Regular', 'Heavy', ''] = ''
+            ) -> bool:
+        """Apply typography style to this widget.
+        
+        Parameters
+        ----------
+        role : str
+            Typography role ('Display', 'Headline', 'Title', 'Body', 'Label')
+        size : str, optional
+            Size variant ('large', 'medium', 'small'), defaults to 'medium'
+            
+        Returns
+        -------
+        bool
+            True if style was successfully applied
+        """ 
+        try:
+            style = self.typography.get_text_style(
+                role=role, size=size, font_weight=font_weight)
+            
+            # Apply font properties if widget has them
+            if hasattr(self, 'font_name') and 'name' in style:
+                self.font_name = style['name']
+            if hasattr(self, 'font_size') and 'font_size' in style:
+                self.font_size = style['font_size']
+                
+            return True
+        except (AssertionError, KeyError):
+            return False
+
+    def _update_typography(self, *args) -> None:
+        """Update typography based on current settings.
+        
+        This method applies the typography style to the widget
+        based on the current :attr:`typography_role`, 
+        :attr:`typography_size`, and :attr:`typography_font_weight`.
+        
+        If :attr:`auto_typography` is False, the method does nothing.
+        This method is typically called when typography-related
+        properties change or when the typography system is updated.
+        """
+        if not self.auto_typography:
+            return None
+            
+        self.apply_typography_style(
+            role=self.typography_role,
+            size=self.typography_size,
+            font_weight=self.typography_font_weight)
+    
+    def refresh_typography(self) -> None:
+        """Manually refresh typography style.
+        
+        This method forces an update of the typography style,
+        useful when you want to ensure typography is up to date."""
+        self._update_typography()
+
+    def on_typography_changed(self, *args) -> None:
+        """Called when the typography system changes (e.g., font family).
+
+        This method is automatically invoked whenever the typography
+        system is updated. Override this method in subclasses to
+        implement custom behavior when the typography system changes.
         """
         pass
