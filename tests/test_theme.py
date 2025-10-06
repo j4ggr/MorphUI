@@ -8,6 +8,7 @@ sys.path.append(str(Path(__file__).parent.resolve()))
 
 from morphui.theme.manager import ThemeManager
 from morphui.theme.typography import Typography
+from morphui.uix.behaviors.theming import MorphThemeBehavior
 from morphui.constants import FONTS, THEME
 
 
@@ -502,3 +503,415 @@ class TestTypography:
         # Check that subsequent calls return clean copies
         style3 = typography.get_text_style('Display', 'large')
         assert 'custom_property' not in style3
+
+
+class TestMorphThemeBehavior:
+    """Test suite for MorphThemeBehavior class."""
+
+    def setup_method(self):
+        """Set up test fixtures before each test method."""
+        self.mock_theme_manager = Mock(spec=ThemeManager)
+        self.mock_theme_manager.primary_color = [1.0, 0.0, 0.0, 1.0]
+        self.mock_theme_manager.on_primary_color = [1.0, 1.0, 1.0, 1.0]
+        self.mock_theme_manager.surface_color = [0.9, 0.9, 0.9, 1.0]
+        self.mock_theme_manager.outline_color = [0.5, 0.5, 0.5, 1.0]
+
+    @patch('morphui.uix.behaviors.theming.MorphApp._theme_manager')
+    def test_init_default_properties(self, mock_app_theme_manager):
+        """Test MorphThemeBehavior initialization with default values."""
+        mock_app_theme_manager.return_value = self.mock_theme_manager
+        
+        # Create a mock widget class that inherits from MorphThemeBehavior
+        class MockWidget(MorphThemeBehavior):
+            def __init__(self, **kwargs):
+                # Mock the widget properties
+                self.background_color = None
+                self.color = None
+                self.border_color = None
+                super().__init__(**kwargs)
+
+        # Mock the binding methods to avoid Kivy property issues
+        with patch.object(MockWidget, 'bind'), \
+             patch.object(MockWidget, 'register_event_type'):
+            
+            widget = MockWidget()
+            
+            assert widget.auto_theme is True
+            assert widget.theme_color_bindings == {}
+            assert widget.theme_manager == self.mock_theme_manager
+            assert widget._theme_bound is False
+
+    @patch('morphui.uix.behaviors.theming.MorphApp._theme_manager')
+    def test_theme_style_mappings_class_attribute(self, mock_app_theme_manager):
+        """Test that theme_style_mappings is properly set from constants."""
+        mock_app_theme_manager.return_value = self.mock_theme_manager
+        
+        class MockWidget(MorphThemeBehavior):
+            def __init__(self, **kwargs):
+                super().__init__(**kwargs)
+
+        with patch.object(MockWidget, 'bind'), \
+             patch.object(MockWidget, 'register_event_type'), \
+             patch.object(MockWidget, '_bind_to_theme_manager'):
+            
+            widget = MockWidget()
+            
+            # Check that default styles are available
+            assert 'primary' in widget.theme_style_mappings
+            assert 'secondary' in widget.theme_style_mappings
+            assert 'surface' in widget.theme_style_mappings
+            assert 'error' in widget.theme_style_mappings
+            assert 'outline' in widget.theme_style_mappings
+            
+            # Check that it references THEME.STYLES
+            assert widget.theme_style_mappings == THEME.STYLES
+
+    @patch('morphui.uix.behaviors.theming.MorphApp._theme_manager')
+    def test_bind_theme_colors(self, mock_app_theme_manager):
+        """Test bind_theme_colors method."""
+        mock_app_theme_manager.return_value = self.mock_theme_manager
+        
+        class MockWidget(MorphThemeBehavior):
+            def __init__(self, **kwargs):
+                self.background_color = None
+                self.color = None
+                super().__init__(**kwargs)
+
+        with patch.object(MockWidget, 'bind'), \
+             patch.object(MockWidget, 'register_event_type'), \
+             patch.object(MockWidget, '_bind_to_theme_manager'), \
+             patch.object(MockWidget, '_update_colors') as mock_update:
+            
+            widget = MockWidget()
+            
+            # Test binding colors
+            color_mappings = {
+                'background_color': 'primary_color',
+                'color': 'on_primary_color'
+            }
+            
+            widget.bind_theme_colors(color_mappings)
+            
+            # Check that bindings were updated
+            assert widget.theme_color_bindings == color_mappings
+            
+            # Check that _update_colors was called (since auto_theme is True by default)
+            mock_update.assert_called_once()
+
+    @patch('morphui.uix.behaviors.theming.MorphApp._theme_manager')
+    def test_apply_theme_color_success(self, mock_app_theme_manager):
+        """Test successful theme color application."""
+        mock_app_theme_manager.return_value = self.mock_theme_manager
+        
+        class MockWidget(MorphThemeBehavior):
+            def __init__(self, **kwargs):
+                self.background_color = None
+                super().__init__(**kwargs)
+
+        with patch.object(MockWidget, 'bind'), \
+             patch.object(MockWidget, 'register_event_type'), \
+             patch.object(MockWidget, '_bind_to_theme_manager'):
+            
+            widget = MockWidget()
+            
+            # Test successful color application
+            result = widget.apply_theme_color('background_color', 'primary_color')
+            
+            assert result is True
+            assert widget.background_color == [1.0, 0.0, 0.0, 1.0]
+
+    @patch('morphui.uix.behaviors.theming.MorphApp._theme_manager')
+    def test_apply_theme_color_failure_cases(self, mock_app_theme_manager):
+        """Test theme color application failure cases."""
+        mock_app_theme_manager.return_value = self.mock_theme_manager
+        
+        class MockWidget(MorphThemeBehavior):
+            def __init__(self, **kwargs):
+                self.background_color = None
+                super().__init__(**kwargs)
+
+        with patch.object(MockWidget, 'bind'), \
+             patch.object(MockWidget, 'register_event_type'), \
+             patch.object(MockWidget, '_bind_to_theme_manager'):
+            
+            widget = MockWidget()
+            
+            # Test with non-existent theme color
+            result = widget.apply_theme_color('background_color', 'nonexistent_color')
+            assert result is False
+            
+            # Test with non-existent widget property
+            result = widget.apply_theme_color('nonexistent_property', 'primary_color')
+            assert result is False
+            
+            # Test with None color value
+            self.mock_theme_manager.primary_color = None
+            result = widget.apply_theme_color('background_color', 'primary_color')
+            assert result is False
+
+    @patch('morphui.uix.behaviors.theming.MorphApp._theme_manager')
+    def test_set_theme_style(self, mock_app_theme_manager):
+        """Test set_theme_style method with predefined styles."""
+        mock_app_theme_manager.return_value = self.mock_theme_manager
+        
+        class MockWidget(MorphThemeBehavior):
+            def __init__(self, **kwargs):
+                self.background_color = None
+                self.color = None
+                self.border_color = None
+                super().__init__(**kwargs)
+
+        with patch.object(MockWidget, 'bind'), \
+             patch.object(MockWidget, 'register_event_type'), \
+             patch.object(MockWidget, '_bind_to_theme_manager'), \
+             patch.object(MockWidget, 'bind_theme_colors') as mock_bind:
+            
+            widget = MockWidget()
+            
+            # Test setting primary style
+            widget.set_theme_style('primary')
+            
+            expected_bindings = {
+                'background_color': 'primary_color',
+                'color': 'on_primary_color',
+                'border_color': 'primary_color'
+            }
+            
+            mock_bind.assert_called_with(expected_bindings)
+
+    @patch('morphui.uix.behaviors.theming.MorphApp._theme_manager')
+    def test_set_theme_style_invalid(self, mock_app_theme_manager):
+        """Test set_theme_style with invalid style name."""
+        mock_app_theme_manager.return_value = self.mock_theme_manager
+        
+        class MockWidget(MorphThemeBehavior):
+            def __init__(self, **kwargs):
+                super().__init__(**kwargs)
+
+        with patch.object(MockWidget, 'bind'), \
+             patch.object(MockWidget, 'register_event_type'), \
+             patch.object(MockWidget, '_bind_to_theme_manager'), \
+             patch.object(MockWidget, 'bind_theme_colors') as mock_bind:
+            
+            widget = MockWidget()
+            
+            # Test with invalid style name - should not call bind_theme_colors
+            widget.set_theme_style('invalid_style')
+            
+            mock_bind.assert_not_called()
+
+    @patch('morphui.uix.behaviors.theming.MorphApp._theme_manager')
+    def test_add_custom_style(self, mock_app_theme_manager):
+        """Test add_custom_style method."""
+        mock_app_theme_manager.return_value = self.mock_theme_manager
+        
+        class MockWidget(MorphThemeBehavior):
+            def __init__(self, **kwargs):
+                super().__init__(**kwargs)
+
+        with patch.object(MockWidget, 'bind'), \
+             patch.object(MockWidget, 'register_event_type'), \
+             patch.object(MockWidget, '_bind_to_theme_manager'):
+            
+            widget = MockWidget()
+            
+            # Add a custom style
+            custom_mappings = {
+                'background_color': 'tertiary_color',
+                'color': 'on_tertiary_color'
+            }
+            
+            widget.add_custom_style('custom', custom_mappings)
+            
+            # Check that custom style was added
+            assert 'custom' in widget.theme_style_mappings
+            assert widget.theme_style_mappings['custom'] == custom_mappings
+            
+            # Check that original styles are still there
+            assert 'primary' in widget.theme_style_mappings
+
+    @patch('morphui.uix.behaviors.theming.MorphApp._theme_manager')
+    def test_add_custom_style_copy_on_write(self, mock_app_theme_manager):
+        """Test that adding custom style creates instance copy."""
+        mock_app_theme_manager.return_value = self.mock_theme_manager
+        
+        class MockWidget(MorphThemeBehavior):
+            def __init__(self, **kwargs):
+                super().__init__(**kwargs)
+
+        with patch.object(MockWidget, 'bind'), \
+             patch.object(MockWidget, 'register_event_type'), \
+             patch.object(MockWidget, '_bind_to_theme_manager'):
+            
+            widget1 = MockWidget()
+            widget2 = MockWidget()
+            
+            # Initially both widgets should reference the same class attribute
+            assert widget1.theme_style_mappings is widget2.theme_style_mappings
+            assert widget1.theme_style_mappings is MockWidget.theme_style_mappings
+            
+            # Add custom style to widget1
+            widget1.add_custom_style('custom1', {'background_color': 'primary_color'})
+            
+            # Now widget1 should have its own copy
+            assert widget1.theme_style_mappings is not widget2.theme_style_mappings
+            assert widget1.theme_style_mappings is not MockWidget.theme_style_mappings
+            
+            # widget2 should still reference the class attribute
+            assert widget2.theme_style_mappings is MockWidget.theme_style_mappings
+            
+            # Only widget1 should have the custom style
+            assert 'custom1' in widget1.theme_style_mappings
+            assert 'custom1' not in widget2.theme_style_mappings
+
+    @patch('morphui.uix.behaviors.theming.MorphApp._theme_manager')
+    def test_auto_theme_property_changes(self, mock_app_theme_manager):
+        """Test auto_theme property changes and their effects."""
+        mock_app_theme_manager.return_value = self.mock_theme_manager
+        
+        class MockWidget(MorphThemeBehavior):
+            def __init__(self, **kwargs):
+                super().__init__(**kwargs)
+
+        with patch.object(MockWidget, 'bind'), \
+             patch.object(MockWidget, 'register_event_type'), \
+             patch.object(MockWidget, '_bind_to_theme_manager') as mock_bind, \
+             patch.object(MockWidget, '_unbind_from_theme_manager') as mock_unbind, \
+             patch.object(MockWidget, '_update_colors') as mock_update:
+            
+            widget = MockWidget()
+            
+            # Test disabling auto_theme
+            widget.on_auto_theme(widget, False)
+            mock_unbind.assert_called_once()
+            
+            # Test enabling auto_theme
+            mock_bind.reset_mock()
+            mock_update.reset_mock()
+            widget.on_auto_theme(widget, True)
+            mock_bind.assert_called_once()
+            mock_update.assert_called_once()
+
+    @patch('morphui.uix.behaviors.theming.MorphApp._theme_manager')
+    def test_theme_color_bindings_property_changes(self, mock_app_theme_manager):
+        """Test theme_color_bindings property changes trigger updates."""
+        mock_app_theme_manager.return_value = self.mock_theme_manager
+        
+        class MockWidget(MorphThemeBehavior):
+            def __init__(self, **kwargs):
+                super().__init__(**kwargs)
+
+        with patch.object(MockWidget, 'bind'), \
+             patch.object(MockWidget, 'register_event_type'), \
+             patch.object(MockWidget, '_bind_to_theme_manager'), \
+             patch.object(MockWidget, '_update_colors') as mock_update:
+            
+            widget = MockWidget()
+            widget.auto_theme = True
+            
+            # Test that changing bindings triggers update
+            new_bindings = {'background_color': 'primary_color'}
+            widget.on_theme_color_bindings(widget, new_bindings)
+            
+            mock_update.assert_called_once()
+
+    @patch('morphui.uix.behaviors.theming.MorphApp._theme_manager')
+    def test_theme_manager_event_handlers(self, mock_app_theme_manager):
+        """Test theme manager event handler methods."""
+        mock_app_theme_manager.return_value = self.mock_theme_manager
+        
+        class MockWidget(MorphThemeBehavior):
+            def __init__(self, **kwargs):
+                super().__init__(**kwargs)
+                self.on_theme_changed_called = False
+                
+            def on_theme_changed(self, *args):
+                self.on_theme_changed_called = True
+
+        with patch.object(MockWidget, 'bind'), \
+             patch.object(MockWidget, 'register_event_type'), \
+             patch.object(MockWidget, '_bind_to_theme_manager'), \
+             patch.object(MockWidget, '_update_colors') as mock_update, \
+             patch.object(MockWidget, 'dispatch') as mock_dispatch:
+            
+            widget = MockWidget()
+            widget.auto_theme = True
+            
+            # Test _on_theme_manager_changed
+            widget._on_theme_manager_changed()
+            mock_update.assert_called()
+            mock_dispatch.assert_called_with('on_theme_changed')
+            
+            # Test _on_colors_updated
+            mock_update.reset_mock()
+            widget._on_colors_updated()
+            mock_update.assert_called()
+
+    @patch('morphui.uix.behaviors.theming.MorphApp._theme_manager')
+    def test_refresh_theme_colors(self, mock_app_theme_manager):
+        """Test refresh_theme_colors method."""
+        mock_app_theme_manager.return_value = self.mock_theme_manager
+        
+        class MockWidget(MorphThemeBehavior):
+            def __init__(self, **kwargs):
+                super().__init__(**kwargs)
+
+        with patch.object(MockWidget, 'bind'), \
+             patch.object(MockWidget, 'register_event_type'), \
+             patch.object(MockWidget, '_bind_to_theme_manager'), \
+             patch.object(MockWidget, '_update_colors') as mock_update:
+            
+            widget = MockWidget()
+            
+            # Test manual refresh
+            widget.refresh_theme_colors()
+            mock_update.assert_called_once()
+
+    @patch('morphui.uix.behaviors.theming.MorphApp._theme_manager')
+    def test_update_colors_conditions(self, mock_app_theme_manager):
+        """Test _update_colors method with different conditions."""
+        mock_app_theme_manager.return_value = self.mock_theme_manager
+        
+        class MockWidget(MorphThemeBehavior):
+            def __init__(self, **kwargs):
+                self.background_color = None
+                super().__init__(**kwargs)
+
+        with patch.object(MockWidget, 'bind'), \
+             patch.object(MockWidget, 'register_event_type'), \
+             patch.object(MockWidget, '_bind_to_theme_manager'), \
+             patch.object(MockWidget, 'apply_theme_color') as mock_apply:
+            
+            widget = MockWidget()
+            
+            # Test with auto_theme False - should not update
+            widget.auto_theme = False
+            widget._update_colors()
+            mock_apply.assert_not_called()
+            
+            # Test with no bindings - should not update
+            widget.auto_theme = True
+            widget.theme_color_bindings = {}
+            widget._update_colors()
+            mock_apply.assert_not_called()
+            
+            # Test with valid conditions - should update
+            widget.theme_color_bindings = {'background_color': 'primary_color'}
+            widget._update_colors()
+            mock_apply.assert_called_with('background_color', 'primary_color')
+
+    def test_on_theme_changed_default_implementation(self):
+        """Test that on_theme_changed has a default no-op implementation."""
+        class MockWidget(MorphThemeBehavior):
+            def __init__(self, **kwargs):
+                super().__init__(**kwargs)
+
+        with patch.object(MockWidget, 'bind'), \
+             patch.object(MockWidget, 'register_event_type'), \
+             patch.object(MockWidget, '_bind_to_theme_manager'):
+            
+            widget = MockWidget()
+            
+            # Should not raise any exception
+            result = widget.on_theme_changed()
+            assert result is None

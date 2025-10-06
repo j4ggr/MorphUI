@@ -30,6 +30,36 @@ class _Theme_:
     """Dark theme mode."""
     SCHEMES: Tuple[str, ...] = tuple(SCHEMES.keys())
     """Available color schemes from Material You Color."""
+    
+    @property
+    def STYLES(self) -> Dict[str, Dict[str, str]]:
+        """Predefined theme styles mapping to color roles for common 
+        Material Design patterns."""
+        return {
+            'primary': {
+                'background_color': 'primary_color',
+                'color': 'on_primary_color',
+                'border_color': 'primary_color',},
+
+            'secondary': {
+                'background_color': 'secondary_color', 
+                'color': 'on_secondary_color',
+                'border_color': 'secondary_color',},
+
+            'surface': {
+                'background_color': 'surface_color',
+                'color': 'on_surface_color',
+                'border_color': 'outline_color',},
+
+            'error': {
+                'background_color': 'error_color',
+                'color': 'on_error_color', 
+                'border_color': 'error_color',},
+
+            'outline': {
+                'background_color': 'surface_color',
+                'color': 'on_surface_color',
+                'border_color': 'outline_color',},}
 THEME = _Theme_()
 """Container for theme-related constants."""
 
