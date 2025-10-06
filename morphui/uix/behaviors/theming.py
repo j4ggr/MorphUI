@@ -5,6 +5,7 @@ from typing import Any
 from kivy.event import EventDispatcher
 from kivy.properties import BooleanProperty
 from kivy.properties import DictProperty
+from kivy.properties import StringProperty
 
 from ...app import MorphApp
 from ...theme.manager import ThemeManager
@@ -73,7 +74,7 @@ class MorphThemeBehavior(EventDispatcher):
         def __init__(self, **kwargs):
             super().__init__(**kwargs)
             # Apply a predefined Material Design style
-            self.set_theme_style('primary')
+            self.theme_style = 'primary'
     ```
     
     Custom theme change handling:
@@ -105,21 +106,59 @@ class MorphThemeBehavior(EventDispatcher):
     and defaults to True.
     """
 
+    theme_style: str = StringProperty('')
+    """Predefined theme style to apply to this widget.
+
+    This property allows you to set a predefined Material Design style
+    configuration for the widget. When set to a valid style name, it
+    automatically applies the corresponding set of color bindings from
+    :attr:`theme_style_mappings` via the :meth:`on_theme_style` event handler.
+    
+    This provides a quick way to style widgets according to established
+    Material Design roles such as 'primary', 'secondary', 'surface', 'error',
+    and 'outline'. The property uses Kivy's StringProperty binding system,
+    so changes are automatically detected and applied.
+    
+    When an invalid style name is provided, the change is silently ignored
+    and the property retains its previous value. Setting to an empty string
+    ('') effectively disables any predefined style without clearing existing
+    color bindings.
+
+    Available Styles
+    ----------------
+    - **'primary'**: High-emphasis style for primary actions
+    - **'secondary'**: Medium-emphasis style for secondary actions  
+    - **'surface'**: Standard surface style for content areas
+    - **'error'**: Error state style for warnings and alerts
+    - **'outline'**: Low-emphasis outlined style
+    - **''**: Empty string (no predefined style)
+
+    Each style configures appropriate color bindings for background,
+    text, and border colors according to Material Design guidelines.
+
+    :attr:`theme_style` is a :class:`~kivy.properties.StringProperty`
+    and defaults to ''.
+    """
+
     theme_color_bindings: Dict[str, str] = DictProperty({})
     """Dictionary mapping widget properties to theme color names.
     
-    This dictionary defines the automatic color binding configuration for the widget.
-    Each key represents a widget property name (such as 'background_color', 'color', 
-    'border_color') and each value represents the corresponding theme color property
-    name from the :class:`ThemeManager` (such as 'primary_color', 'surface_color').
+    This dictionary defines the automatic color binding configuration 
+    for the widget. Each key represents a widget property name (such as 
+    'background_color', 'color', 'border_color') and each value 
+    represents the corresponding theme color property name from the 
+    :class:`ThemeManager` (such as 'primary_color', 'surface_color').
     
-    When the theme changes, the behavior automatically updates each bound widget
-    property with the current value of its corresponding theme color.
+    When the theme changes, the behavior automatically updates each 
+    bound widget property with the current value of its corresponding 
+    theme color.
     
     Common Widget Properties
     ------------------------
-    - 'background_color' : Widget background color (from MorphBackgroundBehavior)
-    - 'border_color' : Widget border color (from MorphBackgroundBehavior)  
+    - 'background_color' : Widget background color (from 
+      MorphBackgroundBehavior)
+    - 'border_color' : Widget border color (from 
+      MorphBackgroundBehavior)  
     - 'color' : Text color (for Label-based widgets)
     - Any other color property available on the widget
     
@@ -166,11 +205,10 @@ class MorphThemeBehavior(EventDispatcher):
     and defaults to {}.
     """
 
-    _theme_manager: ThemeManager = MorphApp._theme_manager
-    """Reference to the global ThemeManager instance."""
-
-    _theme_bound: bool = False
-    """Track if theme manager events are bound."""
+    _bound_theme_colors: Dict[str, str] = {}
+    """Track currently bound theme colors to widget properties. Where
+    keys are widget property names and values are the corresponding
+    theme color names."""
 
     theme_style_mappings: Dict[str, Dict[str, str]] = THEME.STYLES
     """Predefined theme style mappings from constants.
@@ -179,6 +217,20 @@ class MorphThemeBehavior(EventDispatcher):
     configurations. Subclasses can override this to provide custom
     or additional style mappings.
     """
+
+    _theme_manager: ThemeManager = MorphApp._theme_manager
+    """Reference to the global ThemeManager instance."""
+
+    _theme_bound: bool = False
+    """Track if theme manager events are bound."""
+    
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.register_event_type('on_theme_changed')
+        self.register_event_type('on_colors_updated')
+        self.register_event_type('on_colors_applied')
+        self._theme_manager.bind(on_theme_changed=self.on_theme_changed)
+        self._theme_manager.bind(on_colors_updated=self.on_colors_updated)
 
     @property
     def theme_manager(self) -> ThemeManager:
@@ -190,52 +242,97 @@ class MorphThemeBehavior(EventDispatcher):
         class attribute and shared across all instances of this behavior.
         """
         return self._theme_manager
-    
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.register_event_type('on_theme_changed')
-        self._bind_to_theme_manager()
-    
-    def _bind_to_theme_manager(self) -> None:
-        """Bind to the theme manager for automatic updates. And apply
-        initial colors if auto_theme is enabled."""
-        if self._theme_bound:
+
+    def bind_property_to_theme_color(
+            self, widget_property: str, theme_color: str) -> None:
+        """Bind a widget property to a dynamic theme color.
+
+        This method sets up a binding between a widget property and a
+        theme color, allowing the widget property to automatically
+        update when the theme color changes.
+
+        If the widget property is already bound to the specified
+        theme color, this method does nothing.
+
+        Parameters
+        ----------
+        widget_property : str
+            The name of the widget property to bind (e.g., 
+            'background_color').
+        theme_color : str
+            The name of the theme color to bind to (e.g., 
+            'primary_color').
+        """
+        if any((
+            not hasattr(self, widget_property),
+            not hasattr(self._theme_manager, theme_color),
+            self._bound_theme_colors.get(widget_property) == theme_color)):
             return
-        
-        assert self._theme_manager, (
-            'ThemeManager instance is required for MorphThemeBehavior')
         
         self._theme_manager.bind(
-            on_theme_changed=self._on_theme_manager_changed,
-            on_colors_updated=self._on_colors_updated)
-        self._theme_bound = True
-        if self.auto_theme:
-            self._update_colors()
+            **{theme_color: self.setter(widget_property)})
+        self._bound_theme_colors[widget_property] = theme_color
+    
+    def unbind_property_from_theme_color(
+            self, widget_property: str, theme_color: str) -> None:
+        """Unbind a widget property from a dynamic theme color.
 
-    def _unbind_from_theme_manager(self) -> None:
-        """Unbind from the theme manager."""
-        if not self._theme_bound:
+        This method removes the binding between a widget property and a
+        theme color.
+
+        If the widget property is not currently bound to the specified
+        theme color, this method does nothing.
+
+        Parameters
+        ----------
+        widget_property : str
+            The name of the widget property to unbind (e.g., 
+            'background_color').
+        theme_color : str
+            The name of the theme color to unbind from (e.g., 
+            'primary_color').
+        """
+        if any((
+            not hasattr(self, widget_property),
+            not hasattr(self._theme_manager, theme_color),
+            self._bound_theme_colors.get(widget_property, '') != theme_color)):
             return
         
-        self._theme_manager.unbind(on_theme_changed=self._on_theme_manager_changed)
-        self._theme_manager.unbind(on_colors_updated=self._on_colors_updated)
-        self._theme_bound = False
+        self._theme_manager.unbind(
+            **{theme_color: self.setter(widget_property)})
+        self._bound_theme_colors.pop(widget_property, None)
 
-    def bind_theme_colors(self, color_mappings: Dict[str, str]) -> None:
-        """Bind widget color properties to theme colors.
+    def on_theme_color_bindings(
+            self, instance: Any, bindings: Dict[str, str]) -> None:
+        """Fired when :attr:`theme_color_bindings` property changes. 
         
-        This is a convenience method to set theme_color_bindings and 
-        immediately apply the color updates.
+        This method updates the widget's color bindings based on the
+        new dictionary of bindings. It ensures that any previously bound
+        properties are unbound if they are no longer present in the new
+        bindings, and binds any new properties to their corresponding
+        theme colors.
+        
+        If :attr:`auto_theme` is False, it applies the new colors
+        immediately without setting up bindings.
         
         Parameters
         ----------
-        color_mappings : Dict[str, str]
-            Dictionary mapping widget property names to theme color names.
-            Example: {'background_color': 'primary_color'}
+        instance : Any
+            The widget instance that triggered the property change.
+        bindings : Dict[str, str]
+            The new dictionary mapping widget properties to theme color
+            names. Where keys are widget property names (e.g.,
+            'background_color') and values are theme color names (e.g.,
+            'primary_color').
         """
-        self.theme_color_bindings.update(color_mappings)
-        if self.auto_theme:
-            self._update_colors()
+        for name, color in bindings.items():
+            if self.auto_theme:
+                old_color = self._bound_theme_colors.get(name, '')
+                if color and color != old_color:
+                    self.unbind_property_from_theme_color(name, old_color)
+                self.bind_property_to_theme_color(name, color)
+
+        self._update_colors()
 
     def apply_theme_color(self, widget_property: str, theme_color: str) -> bool:
         """Apply a specific theme color to a widget property.
@@ -298,53 +395,48 @@ class MorphThemeBehavior(EventDispatcher):
             
         for widget_prop, theme_color in self.theme_color_bindings.items():
             self.apply_theme_color(widget_prop, theme_color)
+        self.dispatch('on_colors_applied')
 
-    def _on_theme_manager_changed(self, *args) -> None:
-        """Called when theme manager signals a theme change."""
-        if self.auto_theme:
-            self._update_colors()
-            self.dispatch('on_theme_changed')
-
-    def _on_colors_updated(self, *args) -> None:
-        """Called when theme manager colors are updated."""
-        if self.auto_theme:
-            self._update_colors()
-
-    def on_auto_theme(self, instance: Any, value: bool) -> None:
+    def on_auto_theme(self, instance: Any, auto_theme: bool) -> None:
         """Fired when :attr:`auto_theme` property changes."""
-        if value:
-            self._bind_to_theme_manager()
-            self._update_colors()
+        if auto_theme:
+            self.on_theme_color_bindings(self, self.theme_color_bindings)
         else:
-            self._unbind_from_theme_manager()
+            for name, color in self.theme_color_bindings.items():
+                self.unbind_property_from_theme_color(name, color)
 
-    def on_theme_color_bindings(
-            self, instance: Any, bindings: Dict[str, str]) -> None:
-        """Fired when :attr:`theme_color_bindings` property changes."""
-        if self.auto_theme:
-            self._update_colors()
-
-    def set_theme_style(self, style_name: str) -> None:
-        """Apply a predefined theme style configuration to this widget.
+    def on_theme_style(self, instance: Any, style_name: str) -> None:
+        """Event handler fired when :attr:`theme_style` property 
+        changes.
         
-        This method provides convenient access to common Material Design color
-        combinations by applying predefined :attr:`theme_color_bindings` based
-        on Material Design component roles and states.
+        This method is automatically called when the theme_style 
+        property is modified, applying the corresponding predefined 
+        style configuration from :attr:`theme_style_mappings` to the 
+        widget.
+        
+        The method provides convenient access to common Material Design
+        color combinations by applying predefined
+        :attr:`theme_color_bindings` based on Material Design component
+        roles and states.
         
         Each style configures appropriate color bindings for background,
         text, and border colors according to Material Design guidelines.
         
         Parameters
         ----------
+        instance : Any
+            The widget instance that triggered the property change.
         style_name : str
-            The name of the predefined style to apply. Available options:
+            The name of the predefined style to apply. Available 
+            options:
             
             - **'primary'**: High-emphasis style for primary actions
               - Uses primary_color for background and borders
               - Uses on_primary_color for text/content
               - Ideal for: Main action buttons, important controls
               
-            - **'secondary'**: Medium-emphasis style for secondary actions  
+            - **'secondary'**: Medium-emphasis style for secondary 
+              actions
               - Uses secondary_color for background and borders
               - Uses on_secondary_color for text/content
               - Ideal for: Secondary buttons, complementary actions
@@ -358,69 +450,82 @@ class MorphThemeBehavior(EventDispatcher):
             - **'error'**: Error state style for warnings and alerts
               - Uses error_color for background and borders
               - Uses on_error_color for text/content
-              - Ideal for: Error messages, warning dialogs, destructive actions
+              - Ideal for: Error messages, warning dialogs, destructive
+                actions
               
             - **'outline'**: Low-emphasis outlined style
               - Uses surface_color for background
-              - Uses outline_color for borders (creates outlined appearance)
+              - Uses outline_color for borders (creates outlined
+                appearance)
               - Uses on_surface_color for text/content
               - Ideal for: Outlined buttons, optional actions
+              
+            - **''**: Empty string - no style applied
         
-        Raises
-        ------
-        None
-            If an invalid style_name is provided, the method silently ignores
-            the request without raising an error.
+        Notes
+        -----
+        If an invalid style_name is provided, the method silently 
+        ignores the request without raising an error. Empty string
+        values are accepted and effectively disable predefined styling.
+        
+        This method is called automatically by Kivy's property binding
+        system when the :attr:`theme_style` property changes. You 
+        typically don't need to call this method directly - instead, set 
+        the :attr:`theme_style` property:
+
+        ```python
+        widget.theme_style = 'primary'  # Triggers on_theme_style automatically
+        ```
             
         Examples
         --------
-        Apply primary style to a button:
-        
-        ```python
-        class PrimaryButton(MorphThemeBehavior, MorphBackgroundBehavior, Label):
-            def __init__(self, **kwargs):
-                super().__init__(**kwargs)
-                self.set_theme_style('primary')
-        ```
-        
-        Create different button variants:
+        The following property assignments will trigger this event handler:
         
         ```python
         # High-emphasis action
-        save_button.set_theme_style('primary')
+        widget.theme_style = 'primary'
         
         # Medium-emphasis action  
-        cancel_button.set_theme_style('secondary')
+        widget.theme_style = 'secondary'
         
         # Low-emphasis action
-        help_button.set_theme_style('outline')
+        widget.theme_style = 'outline'
         
         # Error/destructive action
-        delete_button.set_theme_style('error')
-        ```
+        widget.theme_style = 'error'
         
-        Surface container styling:
+        # Surface container styling
+        widget.theme_style = 'surface'
         
-        ```python
-        # Content card or panel
-        card.set_theme_style('surface')
+        # Clear predefined styling
+        widget.theme_style = ''
         ```
         
         See Also
         --------
-        bind_theme_colors : For custom color binding configurations
-        theme_color_bindings : The underlying property that stores color mappings
-        theme_style_mappings : Class attribute containing the style definitions
+        - :meth:`bind_theme_colors` : For custom color binding 
+          configurations
+        - :attr:`theme_color_bindings` : The underlying property that 
+          stores color mappings
+        - :attr:`theme_style_mappings` : Class attribute containing the 
+          style definitions
         """
-        if style_name in self.theme_style_mappings:
-            self.bind_theme_colors(self.theme_style_mappings[style_name])
+        style_mappings = self.theme_style_mappings.get(style_name, None)
+        if style_mappings:
+            self.theme_color_bindings |= style_mappings
 
-    def add_custom_style(self, style_name: str, color_mappings: Dict[str, str]) -> None:
+    def add_custom_style(
+            self, style_name: str, color_mappings: Dict[str, str]) -> None:
         """Add a custom theme style to the available styles.
         
-        This method allows you to define new theme styles that can be used
-        with :meth:`set_theme_style`. Custom styles are added to the instance's
-        theme_style_mappings and can be used immediately.
+        This method allows you to define new theme styles that can be
+        used by setting the :attr:`theme_style` property. Custom styles
+        are added to the instance's :attr:`theme_style_mappings` and can 
+        be used immediately.
+
+        If a style with the same name already exists, it will be
+        overwritten with the new color mappings. This allows you to
+        customize or update existing styles as needed.
         
         Parameters
         ----------
@@ -442,7 +547,7 @@ class MorphThemeBehavior(EventDispatcher):
         })
         
         # Now use the custom style
-        widget.set_theme_style('warning')
+        widget.theme_style = 'warning'
         ```
         
         Add a subtle style:
@@ -454,8 +559,17 @@ class MorphThemeBehavior(EventDispatcher):
             'border_color': 'outline_variant_color'
         })
         ```
+
+        Notes
+        -----
+        If this is the first custom style being added to the instance,
+        the method creates a copy of the class-level theme_style_
+        mappings. This ensures that modifications to the instance's
+        style mappings do not affect other instances or the class.
+        If you want to modify the class-level mappings for all
+        instances, you can do so by directly modifying the 
+        :attr:`theme_style_mappings` class attribute.
         """
-        # Create a copy of the class mappings if this is the first custom style
         if self.theme_style_mappings is self.__class__.theme_style_mappings:
             self.theme_style_mappings = self.__class__.theme_style_mappings.copy()
         
@@ -472,75 +586,32 @@ class MorphThemeBehavior(EventDispatcher):
     def on_theme_changed(self, *args) -> None:
         """Event callback fired when the application theme changes.
         
-        This method is automatically called after the widget's bound theme
-        colors have been updated in response to a theme change. It provides
-        a hook for subclasses to implement custom logic that should occur
-        when themes change, such as updating non-color properties or
-        triggering animations.
+        This method is bound to the :meth:`ThemeManager.on_theme_changed`
+        method and is automatically invoked whenever the theme changes.
         
-        The event is only fired when :attr:`auto_theme` is True and a theme
-        change occurs in the connected :class:`ThemeManager`.
+        Override this method in subclasses to implement custom
+        behavior when the theme changes.
+        """
+        pass
+
+    def on_colors_updated(self, *args) -> None:
+        """Event callback fired after theme colors are updated within
+        the theme manager but before they are applied to the widget.
+
+        This can be used to perform actions or adjustments based on the
+        new color values before they are applied to the widget's
+        properties.
+
+        Override this method in subclasses to implement custom
+        behavior when theme colors are updated.
+        """
+        pass
+
+    def on_colors_applied(self, *args) -> None:
+        """Event callback fired after theme colors are applied to the
+        widget.
         
-        Parameters
-        ----------
-        *args
-            Variable arguments passed from the event dispatcher.
-            Typically not used but provided for compatibility.
-            
-        Notes
-        -----
-        This is an event method that can be overridden in subclasses.
-        When overriding, you can either:
-        
-        1. Override the method directly in your class
-        2. Bind to the 'on_theme_changed' event
-        
-        The automatic color updates happen before this method is called,
-        so all bound theme colors will already be up to date when this
-        method executes.
-        
-        Examples
-        --------
-        Override in a subclass:
-        
-        ```python
-        class CustomThemedWidget(MorphThemeBehavior, Widget):
-            def on_theme_changed(self):
-                # Custom theme change logic
-                if self.theme_manager.theme_mode == 'Dark':
-                    self.opacity = 0.9
-                else:
-                    self.opacity = 1.0
-                    
-                # Trigger a smooth transition animation
-                self.animate_theme_transition()
-        ```
-        
-        Bind to the event:
-        
-        ```python
-        def handle_theme_change(widget):
-            print(f"Theme changed on {widget}")
-            widget.update_custom_styling()
-            
-        widget.bind(on_theme_changed=handle_theme_change)
-        ```
-        
-        Access theme information:
-        
-        ```python
-        class ResponsiveWidget(MorphThemeBehavior, Widget):
-            def on_theme_changed(self):
-                current_mode = self.theme_manager.theme_mode
-                current_seed = self.theme_manager.seed_color
-                
-                print(f"Theme changed to {current_mode} mode with {current_seed} seed")
-                
-                # Apply mode-specific styling
-                if current_mode == 'Dark':
-                    self.apply_dark_mode_extras()
-                else:
-                    self.apply_light_mode_extras()
-        ```
+        Override this method in subclasses to implement custom
+        behavior after the widget's colors have been updated.
         """
         pass

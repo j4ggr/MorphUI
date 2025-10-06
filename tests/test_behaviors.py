@@ -10,10 +10,14 @@ from kivy.uix.behaviors import FocusBehavior
 
 from morphui.utils.dotdict import DotDict
 from morphui.uix.behaviors import MorphHoverBehavior
+from morphui.uix.behaviors import MorphHoverEnhancedBehavior
+from morphui.uix.behaviors import MorphThemeBehavior
 from morphui.uix.behaviors import MorphKeyPressBehavior
 from morphui.uix.behaviors import MorphDropdownBehavior
+from morphui.uix.behaviors import MorphBackgroundBehavior
 from morphui.uix.behaviors import MorphDeclarativeBehavior
 from morphui.uix.behaviors import MorphMCVReferenceBehavior
+from morphui.uix.behaviors import MorphAutoSizingBehavior
 
 
 class TestMorphDeclarativeBehavior:
@@ -120,33 +124,35 @@ class TestMorphDeclarativeBehavior:
 
 
 class TestMorphHoverBehavior:
-    """Test suite for MorphHoverBehavior class."""
+    """Test suite for MorphHoverBehavior class (basic hover)."""
 
     class TestWidget(MorphHoverBehavior, Widget):
         """Test widget that combines Widget with MorphHoverBehavior."""
         pass
 
-    def test_initialization(self):
+    @patch('kivy.core.window.Window')
+    def test_initialization(self, mock_window):
         """Test basic initialization of MorphHoverBehavior."""
         widget = self.TestWidget()
-        assert hasattr(widget, 'allow_hover')
-        assert hasattr(widget, 'hovered')
-        assert hasattr(widget, 'hovered_edges')
-        assert hasattr(widget, 'hovered_corner')
+        assert widget.allow_hover is True
+        assert widget.hovered is False
+        assert widget.enter_pos == (0, 0)
+        assert widget.leave_pos == (0, 0)
+        assert widget.current_pos == (0, 0)
 
-    def test_hover_events_exist(self):
-        """Test that hover events are properly defined."""
+    @patch('kivy.core.window.Window')
+    def test_basic_hover_events_exist(self, mock_window):
+        """Test that basic hover events are properly defined."""
         widget = self.TestWidget()
         
-        # Check that event methods exist
+        # Check that basic event methods exist
         assert hasattr(widget, 'on_enter')
         assert hasattr(widget, 'on_leave')
-        assert hasattr(widget, 'on_enter_edge')
-        assert hasattr(widget, 'on_leave_edge')
-        assert hasattr(widget, 'on_enter_corner')
-        assert hasattr(widget, 'on_leave_corner')
+        assert callable(widget.on_enter)
+        assert callable(widget.on_leave)
 
-    def test_allow_hover_property(self):
+    @patch('kivy.core.window.Window')
+    def test_allow_hover_property(self, mock_window):
         """Test the allow_hover property."""
         widget = self.TestWidget()
         
@@ -156,6 +162,168 @@ class TestMorphHoverBehavior:
         
         widget.allow_hover = True
         assert widget.allow_hover is True
+
+    @patch('kivy.core.window.Window')
+    def test_is_displayed_property(self, mock_window):
+        """Test the is_displayed property."""
+        widget = self.TestWidget()
+        
+        # Mock get_root_window to return None (not displayed)
+        widget.get_root_window = Mock(return_value=None)
+        assert widget.is_displayed is False
+        
+        # Mock get_root_window to return a window (displayed)
+        mock_root_window = Mock()
+        widget.get_root_window = Mock(return_value=mock_root_window)
+        assert widget.is_displayed is True
+
+
+class TestMorphHoverEnhancedBehavior:
+    """Test suite for MorphHoverEnhancedBehavior class (enhanced hover with edges/corners)."""
+
+    class TestWidget(MorphHoverEnhancedBehavior, Widget):
+        """Test widget that combines Widget with MorphHoverEnhancedBehavior."""
+        pass
+
+    @patch('kivy.core.window.Window')
+    def test_enhanced_initialization(self, mock_window):
+        """Test basic initialization of MorphHoverEnhancedBehavior."""
+        widget = self.TestWidget()
+        assert widget.allow_hover is True
+        assert widget.hovered is False
+        assert widget.hovered_edges == []
+        assert widget.hovered_corner == 'none'
+        assert widget.edge_size == 4
+        assert widget.left_edge_hovered is False
+        assert widget.right_edge_hovered is False
+        assert widget.top_edge_hovered is False
+        assert widget.bottom_edge_hovered is False
+
+    @patch('kivy.core.window.Window')
+    def test_enhanced_hover_events_exist(self, mock_window):
+        """Test that enhanced hover events are properly defined."""
+        widget = self.TestWidget()
+        
+        # Check that all event methods exist
+        assert hasattr(widget, 'on_enter')
+        assert hasattr(widget, 'on_leave')
+        assert hasattr(widget, 'on_enter_edge')
+        assert hasattr(widget, 'on_leave_edge')
+        assert hasattr(widget, 'on_enter_corner')
+        assert hasattr(widget, 'on_leave_corner')
+
+    @patch('kivy.core.window.Window')
+    def test_edge_constants(self, mock_window):
+        """Test edge and corner constants."""
+        widget = self.TestWidget()
+        assert widget.EDGES == ('left', 'right', 'top', 'bottom')
+        assert widget.CORNERS == ('top-left', 'top-right', 'bottom-left', 'bottom-right')
+
+    @patch('kivy.core.window.Window')
+    def test_corner_detection(self, mock_window):
+        """Test corner detection from edges."""
+        widget = self.TestWidget()
+        
+        # Test no corner when not hovered
+        widget.hovered = False
+        widget.hovered_edges = ['left', 'top']
+        assert widget.get_hovered_corner() == 'none'
+        
+        # Test corner detection
+        widget.hovered = True
+        widget.hovered_edges = ['left', 'top']
+        assert widget.get_hovered_corner() == 'top-left'
+        
+        widget.hovered_edges = ['right', 'top']
+        assert widget.get_hovered_corner() == 'top-right'
+        
+        widget.hovered_edges = ['left', 'bottom']
+        assert widget.get_hovered_corner() == 'bottom-left'
+        
+        widget.hovered_edges = ['right', 'bottom']
+        assert widget.get_hovered_corner() == 'bottom-right'
+
+    @patch('kivy.core.window.Window')
+    def test_edge_size_property(self, mock_window):
+        """Test the edge_size property."""
+        widget = self.TestWidget()
+        
+        widget.edge_size = 10
+        assert widget.edge_size == 10
+        
+        widget.edge_size = 2
+        assert widget.edge_size == 2
+
+
+class TestMorphBackgroundBehavior:
+    """Test suite for MorphBackgroundBehavior class."""
+
+    class TestWidget(MorphBackgroundBehavior, Widget):
+        """Test widget that combines Widget with MorphBackgroundBehavior."""
+        pass
+
+    def test_initialization(self):
+        """Test basic initialization of MorphBackgroundBehavior."""
+        widget = self.TestWidget()
+        assert widget.background_color == [1, 1, 1, 1]
+        assert widget.radius == [0, 0, 0, 0]
+        assert widget.border_width == 0
+        assert widget.border_color == [0, 0, 0, 0]
+
+    def test_background_color_property(self):
+        """Test the background_color property."""
+        widget = self.TestWidget()
+        
+        test_color = [0.5, 0.5, 0.5, 0.8]
+        widget.background_color = test_color
+        assert widget.background_color == test_color
+
+    def test_background_radius_property(self):
+        """Test the background_radius property."""
+        widget = self.TestWidget()
+        
+        test_radius = [10, 10, 5, 5]
+        widget.background_radius = test_radius
+        assert widget.background_radius == test_radius
+
+    def test_border_properties(self):
+        """Test border-related properties."""
+        widget = self.TestWidget()
+        
+        widget.border_width = 2
+        assert widget.border_width == 2
+        
+        test_border_color = [1, 0, 0, 1]
+        widget.border_color = test_border_color
+        assert widget.border_color == test_border_color
+
+
+class TestMorphAutoSizingBehavior:
+    """Test suite for MorphAutoSizingBehavior class.
+    
+    Note: This behavior is complex and requires testing with actual Kivy
+    widgets that have texture_size properties (like Label) or 
+    size-related behavior. These tests would need a full Kivy 
+    environment to be meaningful.
+    
+    The behavior provides auto_width, auto_height, and auto_size 
+    properties that dynamically adjust widget sizes based on content, 
+    which is difficult to test properly without real widget rendering.
+    
+    For now, this test class is commented out as the previous tests were
+    testing non-existent properties (auto_size_x, min_width, etc.) that
+    don't exist in the actual MorphAutoSizingBehavior implementation.
+    """
+    pass
+
+    # TODO: Implement proper tests when Kivy environment is available
+    # The tests should cover:
+    # - auto_width property and _fit_width_to_content()
+    # - auto_height property and _fit_height_to_content() 
+    # - auto_size property and combined sizing
+    # - texture_size binding for Label-like widgets
+    # - size_hint management during auto-sizing
+    # - _original_size and _original_size_hint storage/restoration
 
 
 class TestMorphKeyPressBehavior:
@@ -406,6 +574,303 @@ class TestMorphMCVReferenceBehavior:
         controller = widget.controller
         
         assert controller is None
+
+
+class TestMorphThemeBehavior:
+    """Test suite for MorphThemeBehavior class."""
+
+    def setup_method(self):
+        """Set up test fixtures before each test method."""
+        from morphui.theme.manager import ThemeManager
+        self.mock_theme_manager = Mock(spec=ThemeManager)
+        self.mock_theme_manager.primary_color = [1.0, 0.0, 0.0, 1.0]
+        self.mock_theme_manager.on_primary_color = [1.0, 1.0, 1.0, 1.0]
+        self.mock_theme_manager.surface_color = [0.9, 0.9, 0.9, 1.0]
+        self.mock_theme_manager.outline_color = [0.5, 0.5, 0.5, 1.0]
+
+    class TestWidget(MorphThemeBehavior, Widget):
+        """Test widget that combines Widget with MorphThemeBehavior."""
+        
+        def __init__(self, **kwargs):
+            # Mock properties to avoid Kivy property issues
+            self.background_color = None
+            self.color = None
+            self.border_color = None
+            Widget.__init__(self, **kwargs)
+            MorphThemeBehavior.__init__(self, **kwargs)
+
+    @patch('morphui.uix.behaviors.theming.MorphApp._theme_manager')
+    def test_init_default_properties(self, mock_app_theme_manager):
+        """Test MorphThemeBehavior initialization with default values."""
+        
+        with patch.object(self.TestWidget, 'bind'), \
+             patch.object(self.TestWidget, 'register_event_type'):
+            
+            widget = self.TestWidget()
+            
+            assert widget.auto_theme is True
+            assert widget.theme_color_bindings == {}
+            assert widget.theme_style == ''
+            assert widget._theme_bound is False
+
+    @patch('morphui.uix.behaviors.theming.MorphApp._theme_manager')
+    def test_theme_style_mappings_class_attribute(self, mock_app_theme_manager):
+        """Test that theme_style_mappings is properly set from constants."""
+        
+        with patch.object(self.TestWidget, 'bind'), \
+             patch.object(self.TestWidget, 'register_event_type'):
+            
+            widget = self.TestWidget()
+            
+            # Check that default styles are available
+            from morphui.constants import THEME
+            assert 'primary' in widget.theme_style_mappings
+            assert 'secondary' in widget.theme_style_mappings
+            assert 'surface' in widget.theme_style_mappings
+            assert 'error' in widget.theme_style_mappings
+            assert 'outline' in widget.theme_style_mappings
+            
+            # Check that it references THEME.STYLES
+            assert widget.theme_style_mappings == THEME.STYLES
+
+    @patch('morphui.uix.behaviors.theming.MorphApp._theme_manager')
+    def test_apply_theme_color_success(self, mock_app_theme_manager):
+        """Test successful theme color application."""
+        
+        with patch.object(self.TestWidget, 'bind'), \
+             patch.object(self.TestWidget, 'register_event_type'):
+            
+            widget = self.TestWidget()
+            widget._theme_manager = self.mock_theme_manager
+            
+            # Test successful color application
+            result = widget.apply_theme_color('background_color', 'primary_color')
+            
+            assert result is True
+            assert widget.background_color == [1.0, 0.0, 0.0, 1.0]
+
+    @patch('morphui.uix.behaviors.theming.MorphApp._theme_manager')
+    def test_apply_theme_color_failure_cases(self, mock_app_theme_manager):
+        """Test theme color application failure cases."""
+        
+        with patch.object(self.TestWidget, 'bind'), \
+             patch.object(self.TestWidget, 'register_event_type'):
+            
+            widget = self.TestWidget()
+            widget._theme_manager = self.mock_theme_manager
+            
+            # Test with non-existent theme color
+            result = widget.apply_theme_color('background_color', 'nonexistent_color')
+            assert result is False
+            
+            # Test with non-existent widget property
+            result = widget.apply_theme_color('nonexistent_property', 'primary_color')
+            assert result is False
+            
+            # Test with None color value
+            self.mock_theme_manager.primary_color = None
+            result = widget.apply_theme_color('background_color', 'primary_color')
+            assert result is False
+
+    @patch('morphui.uix.behaviors.theming.MorphApp._theme_manager')
+    def test_on_theme_style_with_valid_style(self, mock_app_theme_manager):
+        """Test on_theme_style method with valid predefined styles."""
+        
+        with patch.object(self.TestWidget, 'bind'), \
+             patch.object(self.TestWidget, 'register_event_type'):
+            
+            widget = self.TestWidget()
+            
+            # Test setting primary style
+            widget.on_theme_style(widget, 'primary')
+            
+            # Should update theme_color_bindings with the primary style mappings
+            from morphui.constants import THEME
+            primary_style = THEME.STYLES['primary']
+            
+            # Check that all primary style bindings were added
+            for widget_prop, theme_color in primary_style.items():
+                assert widget_prop in widget.theme_color_bindings
+                assert widget.theme_color_bindings[widget_prop] == theme_color
+
+    @patch('morphui.uix.behaviors.theming.MorphApp._theme_manager')
+    def test_on_theme_style_with_invalid_style(self, mock_app_theme_manager):
+        """Test on_theme_style with invalid style name."""
+        
+        with patch.object(self.TestWidget, 'bind'), \
+             patch.object(self.TestWidget, 'register_event_type'):
+            
+            widget = self.TestWidget()
+            
+            # Store initial bindings
+            initial_bindings = widget.theme_color_bindings.copy()
+            
+            # Test with invalid style name - should not change bindings
+            widget.on_theme_style(widget, 'invalid_style')
+            
+            # Bindings should remain unchanged
+            assert widget.theme_color_bindings == initial_bindings
+
+    @patch('morphui.uix.behaviors.theming.MorphApp._theme_manager')
+    def test_add_custom_style(self, mock_app_theme_manager):
+        """Test add_custom_style method."""
+        
+        with patch.object(self.TestWidget, 'bind'), \
+             patch.object(self.TestWidget, 'register_event_type'):
+            
+            widget = self.TestWidget()
+            
+            # Add a custom style
+            custom_mappings = {
+                'background_color': 'tertiary_color',
+                'color': 'on_tertiary_color'
+            }
+            
+            widget.add_custom_style('custom', custom_mappings)
+            
+            # Check that custom style was added
+            assert 'custom' in widget.theme_style_mappings
+            assert widget.theme_style_mappings['custom'] == custom_mappings
+            
+            # Check that original styles are still there
+            assert 'primary' in widget.theme_style_mappings
+
+    @patch('morphui.uix.behaviors.theming.MorphApp._theme_manager')
+    def test_add_custom_style_copy_on_write(self, mock_app_theme_manager):
+        """Test that adding custom style creates instance copy."""
+        
+        with patch.object(self.TestWidget, 'bind'), \
+             patch.object(self.TestWidget, 'register_event_type'):
+            
+            widget1 = self.TestWidget()
+            widget2 = self.TestWidget()
+            
+            # Initially both widgets should reference the same class attribute
+            assert widget1.theme_style_mappings is widget2.theme_style_mappings
+            assert widget1.theme_style_mappings is self.TestWidget.theme_style_mappings
+            
+            # Add custom style to widget1
+            widget1.add_custom_style('custom1', {'background_color': 'primary_color'})
+            
+            # Now widget1 should have its own copy
+            assert widget1.theme_style_mappings is not widget2.theme_style_mappings
+            assert widget1.theme_style_mappings is not self.TestWidget.theme_style_mappings
+            
+            # widget2 should still reference the class attribute
+            assert widget2.theme_style_mappings is self.TestWidget.theme_style_mappings
+            
+            # Only widget1 should have the custom style
+            assert 'custom1' in widget1.theme_style_mappings
+            assert 'custom1' not in widget2.theme_style_mappings
+
+    @patch('morphui.uix.behaviors.theming.MorphApp._theme_manager')
+    def test_bind_property_to_theme_color(self, mock_app_theme_manager):
+        """Test bind_property_to_theme_color method."""
+        
+        with patch.object(self.TestWidget, 'bind'), \
+             patch.object(self.TestWidget, 'register_event_type'):
+            
+            widget = self.TestWidget()
+            widget._theme_manager = self.mock_theme_manager
+            
+            # Test binding a property
+            widget.bind_property_to_theme_color('background_color', 'primary_color')
+            
+            # Check that the binding was added to _bound_theme_colors (internal tracking)
+            assert 'background_color' in widget._bound_theme_colors
+            assert widget._bound_theme_colors['background_color'] == 'primary_color'
+
+    @patch('morphui.uix.behaviors.theming.MorphApp._theme_manager')
+    def test_unbind_property_from_theme_color(self, mock_app_theme_manager):
+        """Test unbind_property_from_theme_color method."""
+        
+        with patch.object(self.TestWidget, 'bind'), \
+             patch.object(self.TestWidget, 'register_event_type'):
+            
+            widget = self.TestWidget()
+            widget._theme_manager = self.mock_theme_manager
+            
+            # First bind a property
+            widget.bind_property_to_theme_color('background_color', 'primary_color')
+            assert 'background_color' in widget._bound_theme_colors
+            
+            # Then unbind it
+            widget.unbind_property_from_theme_color('background_color', 'primary_color')
+            assert 'background_color' not in widget._bound_theme_colors
+
+    @patch('morphui.uix.behaviors.theming.MorphApp._theme_manager')
+    def test_refresh_theme_colors(self, mock_app_theme_manager):
+        """Test refresh_theme_colors method."""
+        
+        with patch.object(self.TestWidget, 'bind'), \
+             patch.object(self.TestWidget, 'register_event_type'):
+            
+            widget = self.TestWidget()
+            
+            # Test manual refresh
+            with patch.object(widget, '_update_colors') as mock_update:
+                widget.refresh_theme_colors()
+                mock_update.assert_called_once()
+
+    @patch('morphui.uix.behaviors.theming.MorphApp._theme_manager')
+    def test_on_theme_color_bindings(self, mock_app_theme_manager):
+        """Test on_theme_color_bindings property change handler."""
+        
+        with patch.object(self.TestWidget, 'bind'), \
+             patch.object(self.TestWidget, 'register_event_type'), \
+             patch.object(self.TestWidget, 'dispatch'):
+            
+            widget = self.TestWidget()
+            widget.auto_theme = True
+            
+            # Test that changing bindings triggers the appropriate behavior
+            new_bindings = {'background_color': 'primary_color'}
+            old_bindings = {'color': 'secondary_color'}
+            
+            with patch.object(widget, 'bind_property_to_theme_color') as mock_bind, \
+                 patch.object(widget, 'unbind_property_from_theme_color'):
+                
+                # Set up old bindings first
+                widget.theme_color_bindings = old_bindings
+                
+                # Trigger the change
+                widget.on_theme_color_bindings(widget, new_bindings)
+                
+                # Should bind new properties (unbind is only called if there are conflicts)
+                mock_bind.assert_called_with('background_color', 'primary_color')
+
+    def test_on_theme_changed_default_implementation(self):
+        """Test that on_theme_changed has a default no-op implementation."""
+        with patch.object(self.TestWidget, 'bind'), \
+             patch.object(self.TestWidget, 'register_event_type'):
+            
+            widget = self.TestWidget()
+            
+            # Should not raise any exception
+            result = widget.on_theme_changed()
+            assert result is None
+
+    def test_on_colors_updated_default_implementation(self):
+        """Test that on_colors_updated has a default no-op implementation."""
+        with patch.object(self.TestWidget, 'bind'), \
+             patch.object(self.TestWidget, 'register_event_type'):
+            
+            widget = self.TestWidget()
+            
+            # Should not raise any exception
+            result = widget.on_colors_updated()
+            assert result is None
+
+    def test_on_colors_applied_default_implementation(self):
+        """Test that on_colors_applied has a default no-op implementation."""
+        with patch.object(self.TestWidget, 'bind'), \
+             patch.object(self.TestWidget, 'register_event_type'):
+            
+            widget = self.TestWidget()
+            
+            # Should not raise any exception
+            result = widget.on_colors_applied()
+            assert result is None
 
 
 if __name__ == '__main__':
