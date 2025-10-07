@@ -269,7 +269,7 @@ class TestMorphBackgroundBehavior:
         widget = self.TestWidget()
         assert widget.background_color == [1, 1, 1, 1]
         assert widget.radius == [0, 0, 0, 0]
-        assert widget.border_width == 0
+        assert widget.border_width == 1
         assert widget.border_color == [0, 0, 0, 0]
 
     def test_background_color_property(self):

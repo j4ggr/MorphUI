@@ -21,42 +21,27 @@ sys.path.append(str(Path(__file__).parents[1].resolve()))
 from morphui.app import MorphApp
 from morphui.uix.label import MorphLabel
 from morphui.uix.boxlayout import MorphBoxLayout
-from kivy.uix.behaviors.touchripple import TouchRippleBehavior
+from morphui.uix.behaviors import MorphHoverBehavior
+from morphui.uix.behaviors import MorphStateLayerBehavior
 
-class RippleLabel(TouchRippleBehavior, MorphLabel):
+class TestWidget(MorphHoverBehavior, MorphStateLayerBehavior, MorphLabel):
+    pass
 
-    def __init__(self, **kwargs):
-        super(RippleLabel, self).__init__(**kwargs)
-
-    def on_touch_down(self, touch):
-        collide_point = self.collide_point(touch.x, touch.y)
-        if collide_point:
-            touch.grab(self)
-            self.ripple_show(touch)
-            return True
-        return False
-
-    def on_touch_up(self, touch):
-        if touch.grab_current is self:
-            touch.ungrab(self)
-            self.ripple_fade()
-            return True
-        return False
-    
 class MyApp(MorphApp):
     def build(self) -> MorphBoxLayout:
-        self.theme_manager.seed_color = 'Purple'
-        return MorphBoxLayout(
-            RippleLabel(
-                text="Label 1",
+        layout = MorphBoxLayout(
+            TestWidget(text="Hover Me", theme_style='primary'),
+            TestWidget(
+                text="Or Hover Me Too",
                 theme_style='primary',
-                auto_size=True,),
-            MorphLabel(
-                text="Label 2",
-                theme_style='secondary',
-                auto_size=True,),
-            theme_style='surface',
-            auto_size=False,)
+                disabled=True,),
+            orientation='vertical',
+            padding=100,
+            spacing=10,
+            theme_style='surface',)
+        
+        return layout
+
 
 if __name__ == '__main__':
     MyApp().run()

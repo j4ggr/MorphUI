@@ -10,6 +10,7 @@ from .declarative import MorphDeclarativeBehavior
 from .declarative import MorphIdentificationBehavior
 from .mcvreference import MorphMCVReferenceBehavior
 from .autosizing import MorphAutoSizingBehavior
+from .statelayer import MorphStateLayerBehavior
 
 __all__ = [
     'MorphHoverBehavior',           # Basic hover behavior
@@ -24,4 +25,5 @@ __all__ = [
     'MorphIdentificationBehavior',  # Identity management
     'MorphMCVReferenceBehavior',    # MCV reference handling
     'MorphAutoSizingBehavior',      # Automatic sizing
+    'MorphStateLayerBehavior',      # State layer management
 ]

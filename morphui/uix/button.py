@@ -1,5 +1,5 @@
 
-from kivy.uix.behaviors import ButtonBehavior
+from kivy.uix.behaviors import TouchRippleButtonBehavior
 
 from .label import MorphLabel
 
@@ -8,5 +8,7 @@ __all__ = [
 ]
 
 
-class MorphBaseButton(ButtonBehavior, MorphLabel):
+class MorphBaseButton(
+        TouchRippleButtonBehavior,
+        MorphLabel):
     pass
