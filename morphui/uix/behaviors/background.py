@@ -28,36 +28,37 @@ class MorphBackgroundBehavior(EventDispatcher):
     radius = VariableListProperty([0], length=4)
     """Canvas radius for each corner.
     
-    Parameters
-    ----------
-    radius : list of float
-        Corner radii in order:
-        [top_left, top_right, bottom_right, bottom_left].
-        Defaults to [0, 0, 0, 0]."""
+    The order of the corners is: top-left, top-right, bottom-right, 
+    bottom-left.
+    
+    :attr:`radius` is a :class:`~kivy.properties.VariableListProperty`
+    and defaults to `[0, 0, 0, 0]`."""
 
     background_color: ColorProperty = ColorProperty()
     """Background color of the widget.
     
-    Parameters
-    ----------
-    background_color : list of float
-        RGBA color values for the background. Defaults to [1, 1, 1, 1]."""
+    The color should be provided as a list of RGBA values between 0 and 
+    1. Example: `[1, 0, 0, 1]` for solid red.
+    
+    :attr:`background_color` is a :class:`~kivy.properties.ColorProperty`
+    and defaults to `[1, 1, 1, 1]` (white)."""
 
     border_color: ColorProperty = ColorProperty([0, 0, 0, 0])
     """Border color of the widget.
     
-    Parameters
-    ----------
-    border_color : list of float
-        RGBA color values for the border. Defaults to [0, 0, 0, 0]."""
+    The color should be provided as a list of RGBA values between 0 and 
+    1. Example: `[0, 1, 0, 1]` for solid green.
+
+    :attr:`border_color` is a :class:`~kivy.properties.ColorProperty`
+    and defaults to `[0, 0, 0, 0]` (transparent)."""
 
     border_width: float = NumericProperty(0)
     """Width of the border.
+
+    The width is specified in pixels.
     
-    Parameters
-    ----------
-    border_width : float
-        Width of the border in pixels. Defaults to 0.
+    :attr:`border_width` is a :class:`~kivy.properties.NumericProperty`
+    and defaults to `0` (no border).
     """
 
     _background_color_instruction: Color
@@ -82,6 +83,14 @@ class MorphBackgroundBehavior(EventDispatcher):
             Additional keyword arguments passed to the parent class.
         """
         super().__init__(**kwargs)
+        self.bind(
+            background_color=self._update_background_color,
+            size=self._update_size,
+            pos=self._update_position,
+            radius=self._update_radius,
+            border_color=self._update_border_color,
+            border_width=self._update_border_width,)
+        
         with self.canvas.before:
             self._background_color_instruction = Color(*self.background_color)
             self._background_instruction = RoundedRectangle(
@@ -90,14 +99,6 @@ class MorphBackgroundBehavior(EventDispatcher):
             self._border_instruction = SmoothLine(
                 width=self.border_width,
                 rounded_rectangle=self._rounded_rectangle)
-        self.bind(
-            background_color=self._update_background_color,
-            size=self._update_size,
-            pos=self._update_position,
-            radius=self._update_radius,
-            border_color=self._update_border_color,
-            border_width=self._update_border_width,
-            )
     
     @property
     def _rounded_rectangle(self) -> RoundedRectangle:
