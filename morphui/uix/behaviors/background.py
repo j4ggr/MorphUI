@@ -255,8 +255,6 @@ class MorphStateLayerBehavior(MorphBackgroundBehavior):
             radius=self._update_state_layer,)
         
         for state in self.supported_states:
-            if not hasattr(self, state):
-                continue
             self.bind(**{
                 state: lambda _, value: self._on_state_change(state, value)})
 
