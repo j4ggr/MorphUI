@@ -1,3 +1,5 @@
+import warnings
+
 from typing import Any
 from typing import Dict
 from typing import Literal
@@ -244,11 +246,20 @@ class MorphColorThemeBehavior(EventDispatcher):
             The name of the theme color to bind to (e.g., 
             'primary_color').
         """
-        if any((
-            not hasattr(self, widget_property),
-            not hasattr(self.theme_manager, theme_color),
-            self._bound_theme_colors.get(widget_property) == theme_color)):
-            return
+        if not hasattr(self, widget_property):
+            warnings.warn(
+                f"Cannot bind unknown property '{widget_property}'",
+                UserWarning)
+            return None
+        
+        if not hasattr(self.theme_manager, theme_color):
+            warnings.warn(
+                f"Cannot bind to unknown theme color '{theme_color}'",
+                UserWarning)
+            return None
+        
+        if self._bound_theme_colors.get(widget_property) == theme_color:
+            return None
         
         self.theme_manager.bind(
             **{theme_color: self.setter(widget_property)})
@@ -672,16 +683,16 @@ class MorphTypographyBehavior(EventDispatcher):
     and defaults to 'medium'.
     """
 
-    typography_font_weight: Literal['Thin', 'Regular', 'Heavy', ''] = OptionProperty(
-        '', options=['Thin', 'Regular', 'Heavy', ''])
+    typography_font_weight: Literal['Thin', 'Regular', 'Heavy'] = OptionProperty(
+         'Regular', options=['Thin', 'Regular', 'Heavy'])
     """Weight variant for the typography role.
 
-    Available options: 'Thin', 'Regular', 'Heavy', ''
+    Available options: 'Thin', 'Regular', 'Heavy'
     Works in conjunction with :attr:`typography_role` to determine
     the final text styling.
 
     :attr:`typography_font_weight` is a :class:`~kivy.properties.OptionProperty`
-    and defaults to ''.
+    and defaults to 'Regular'.
     """
 
     auto_typography: bool = BooleanProperty(True)
@@ -729,7 +740,7 @@ class MorphTypographyBehavior(EventDispatcher):
             self,
             role: Literal['Display', 'Headline', 'Title', 'Body', 'Label'],
             size: Literal['large', 'medium', 'small'],
-            font_weight: Literal['Thin', 'Regular', 'Heavy', ''] = ''
+            font_weight: Literal['Thin', 'Regular', 'Heavy'] = 'Regular'
             ) -> bool:
         """Apply typography style to this widget.
         
@@ -740,7 +751,7 @@ class MorphTypographyBehavior(EventDispatcher):
         size : str
             Size variant ('large', 'medium', 'small')
         font_weight : str, optional
-            Font weight ('Thin', 'Regular', 'Heavy', ''), defaults to ''
+            Font weight ('Thin', 'Regular', 'Heavy'), defaults to 'Regular'
             
         Returns
         -------

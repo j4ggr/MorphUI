@@ -434,7 +434,7 @@ class TestTypography:
         
         for weight in FONTS.WEIGHT_VARIANTS:
             # Cast to satisfy type checker
-            typed_weight = cast(Literal['Regular', 'Thin', 'Heavy', ''], weight)
+            typed_weight = cast(Literal['Regular', 'Thin', 'Heavy'], weight)
             style = typography.get_text_style('Title', 'medium', font_weight=typed_weight)
             expected_name = f'TestFont{weight}'
             assert style['name'] == expected_name

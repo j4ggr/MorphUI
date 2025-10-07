@@ -982,7 +982,7 @@ class TestMorphTypographyBehavior:
             
             assert widget.typography_role == 'Label'
             assert widget.typography_size == 'medium'
-            assert widget.typography_font_weight == ''
+            assert widget.typography_font_weight == 'Regular'
             assert widget.auto_typography is True
 
     @patch('morphui.uix.behaviors.theming.MorphApp._typography')

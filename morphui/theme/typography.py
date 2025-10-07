@@ -297,7 +297,7 @@ class Typography(EventDispatcher):
             self,
             role: Literal['Display', 'Headline', 'Title', 'Body', 'Label'],
             size: Literal['large', 'medium', 'small'],
-            font_weight: Literal['Regular', 'Thin', 'Heavy', ''] = ''
+            font_weight: Literal['Regular', 'Thin', 'Heavy'] = 'Regular'
             ) -> Dict[str, str | float | int]:
         """Get typography style configuration for specified role and size.
         
@@ -320,9 +320,9 @@ class Typography(EventDispatcher):
             - 'large': Maximum emphasis, largest size in role
             - 'medium': Standard usage, typical size for role
             - 'small': Compact layout, smallest size in role
-        font_weight : {'Regular', 'Thin', 'Heavy', ''}, optional
+        font_weight : {'Regular', 'Thin', 'Heavy'}, optional
             Font weight variant to append to base font family name.
-            Empty string uses the base font family. Default is ''.
+            Empty string uses the base font family. Default is 'Regular'.
         
         Returns
         -------
@@ -371,20 +371,20 @@ class Typography(EventDispatcher):
         assert size in FONTS.SIZE_VARIANTS, (
             f'Invalid size {size!r}, must be one of {FONTS.SIZE_VARIANTS}')
 
-        resolved_font_name = self.font_name
-        if resolved_font_name not in self._registered_fonts:
-            font_with_weight = f'{resolved_font_name}{font_weight}'
-            if font_with_weight in self._registered_fonts:
-                resolved_font_name = font_with_weight
-            else:
-                resolved_font_name = 'InterRegular'
+        default_name = 'InterRegular'
+        if self.font_name in self._registered_fonts:
+            resolved_name = self.font_name
+        else:
+            resolved_name = f'{self.font_name}{font_weight}'
+            if resolved_name not in self._registered_fonts:
                 warnings.warn(
-                    f'Font "{font_with_weight}" not registered, '
-                    f'falling back to "{resolved_font_name}"',
-                    UserWarning, stacklevel=2)
+                    f'Font {self.font_name!r} and {resolved_name!r} not '
+                    f'registered, falling back to {default_name!r}',
+                    UserWarning)
+                resolved_name = default_name
 
         text_style = self.text_styles[role][size].copy()
-        text_style['name'] = resolved_font_name
+        text_style['name'] = resolved_name
         return text_style
     
     def on_typography_changed(self, *args) -> None:
