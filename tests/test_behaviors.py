@@ -901,7 +901,7 @@ class TestMorphTypographyBehavior:
             
             assert widget.typography_role == 'Label'
             assert widget.typography_size == 'medium'
-            assert widget.typography_font_weight == 'Regular'
+            assert widget.typography_weight == 'Regular'
             assert widget.auto_typography is True
 
     @patch('morphui.uix.behaviors.theming.MorphApp._typography')
@@ -915,9 +915,7 @@ class TestMorphTypographyBehavior:
             widget._typography = self.mock_typography
             
             # Test successful typography application
-            result = widget.apply_typography_style('Headline', 'large', 'Regular')
-            
-            assert result is True
+            widget.apply_typography_style('Headline', 'large', 'Regular')
             self.mock_typography.get_text_style.assert_called_with(
                 role='Headline', size='large', font_weight='Regular')
 
@@ -937,8 +935,8 @@ class TestMorphTypographyBehavior:
             widget.typography_size = 'large'
             assert widget.typography_size == 'large'
             
-            widget.typography_font_weight = 'Heavy'
-            assert widget.typography_font_weight == 'Heavy'
+            widget.typography_weight = 'Heavy'
+            assert widget.typography_weight == 'Heavy'
 
 
 class TestMorphThemeBehaviorSplit:
@@ -976,7 +974,7 @@ class TestMorphThemeBehaviorSplit:
             # Should have typography properties
             assert hasattr(widget, 'typography_role')
             assert hasattr(widget, 'typography_size')
-            assert hasattr(widget, 'typography_font_weight')
+            assert hasattr(widget, 'typography_weight')
             assert hasattr(widget, 'auto_typography')
             assert hasattr(widget, 'apply_typography_style')
 

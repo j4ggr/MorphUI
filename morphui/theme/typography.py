@@ -123,6 +123,41 @@ class Typography(EventDispatcher):
     app = MyApp()
     app.run()
     ```
+
+    To visualize all available typography styles, you can create a
+    simple app that generates labels for each role and size variant:
+    ```python
+    from morphui.app import MorphApp
+    from morphui.uix.label import MorphLabel
+    from morphui.uix.gridlayout import MorphGridLayout
+
+    class MyApp(MorphApp):
+        def build(self) -> MorphGridLayout:
+            # self.typography.font_name = 'DMSans' # Uncomment to test custom font
+            labels = []
+            for role, variants in self.typography.text_styles.items():
+                for size, style in variants.items():
+                    for weight in ('Thin', 'Regular', 'Heavy'):
+                        label = MorphLabel(
+                            text=(
+                                f'{role}: {size}, {weight}, '
+                                f'{style["font_size"]}, {style["line_height"]}'),
+                            typography_role=role,
+                            typography_size=size,
+                            typography_weight=weight,
+                            auto_height=True,)
+                        labels.append(label)
+            
+            self.root = MorphGridLayout(
+                *labels,
+                theme_style='surface',
+                cols=3,
+                padding=50,
+                spacing=15,)
+            return self.root
+
+    if __name__ == '__main__':
+        MyApp().run()
     """
 
     font_name: str = StringProperty('Inter')
@@ -162,7 +197,8 @@ class Typography(EventDispatcher):
     - `fn_bolditalic`: Path to the bold italic font file (optional)
     """
 
-    text_styles: Dict[str, Dict[str, Dict[str, str | float | int]]] = DictProperty(FONTS.TEXT_STYLES)
+    text_styles: Dict[str, Dict[str, Dict[str, str | float | int]]] = DictProperty(
+        FONTS.TEXT_STYLES)
     """Typography text styles configuration.
     
     Defines the text styles for all typography roles and size variants.

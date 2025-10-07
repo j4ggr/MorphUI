@@ -48,7 +48,7 @@ class TestThemeManager:
         assert theme_manager.mode_transition_duration == 0.8
         
         # Verify that dispatch was called during initialization
-        mock_dispatch.assert_called_with('on_theme_changed')
+        mock_dispatch.assert_called_with('on_colors_updated')
 
     def test_available_seed_colors(self):
         """Test available_seed_colors property."""

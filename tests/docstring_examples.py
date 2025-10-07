@@ -18,40 +18,34 @@ import sys
 from pathlib import Path
 sys.path.append(str(Path(__file__).parents[1].resolve()))
 
-# from kivy.app import App
-from kivy.clock import Clock
 from morphui.app import MorphApp
-from morphui.uix.boxlayout import MorphBoxLayout
 from morphui.uix.label import MorphLabel
+from morphui.uix.gridlayout import MorphGridLayout
 
 class MyApp(MorphApp):
-    def build(self) -> MorphBoxLayout:
-        self.root = MorphBoxLayout(
-            MorphLabel(
-                identity="label1",
-                text="Label 1",
-                theme_color_bindings={
-                    'background_color': 'surface_container_color',
-                    'text_color': 'text_surface_color',
-                    'border_color': 'outline_color',},
-                radius=[5, 25, 5, 25],),
-            MorphLabel(
-                identity="label2",
-                text="Label 2",
-                theme_color_bindings={
-                    'background_color': 'surface_container_low_color',
-                    'text_color': 'text_surface_color',
-                    'border_color': 'outline_variant_color',},
-                radius=[25, 5, 25, 5],),
+    def build(self) -> MorphGridLayout:
+        # self.typography.font_name = 'DMSans' # Uncomment to test custom font
+        labels = []
+        for role, variants in self.typography.text_styles.items():
+            for size, style in variants.items():
+                for weight in ('Thin', 'Regular', 'Heavy'):
+                    label = MorphLabel(
+                        text=(
+                            f'{role}: {size}, {weight}, '
+                            f'{style["font_size"]}, {style["line_height"]}'),
+                        typography_role=role,
+                        typography_size=size,
+                        typography_weight=weight,
+                        auto_height=True,)
+                    labels.append(label)
+        
+        self.root = MorphGridLayout(
+            *labels,
             theme_style='surface',
-            orientation='vertical',
+            cols=3,
             padding=50,
             spacing=15,)
         return self.root
-    
-    # def on_start(self) -> None:
-    #     Clock.schedule_interval(self.theme_manager.toggle_theme_mode, 2)
-
 
 if __name__ == '__main__':
     MyApp().run()

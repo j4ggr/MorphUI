@@ -37,15 +37,27 @@ class MorphBoxLayout(
         def build(self):
             return MorphBoxLayout(
                 MorphLabel(
+                    identity="label1",
                     text="Label 1",
-                    theme_style='primary'),
+                    theme_color_bindings={
+                        'background_color': 'surface_container_color',
+                        'text_color': 'text_surface_color',
+                        'border_color': 'outline_color',},
+                    radius=[5, 25, 5, 25],),
                 MorphLabel(
+                    identity="label2",
                     text="Label 2",
-                    theme_style='secondary'),
+                    theme_color_bindings={
+                        'background_color': 'surface_container_low_color',
+                        'text_color': 'text_surface_color',
+                        'border_color': 'outline_variant_color',},
+                    radius=[25, 5, 25, 5],),
                 theme_style='surface',
                 orientation='vertical',
                 padding=50,
                 spacing=15,)
+            return self.root
+            
     MyApp().run()
     """
     pass

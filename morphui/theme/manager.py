@@ -299,7 +299,10 @@ class ThemeManager(MorphDynamicColorPalette):
         theme_manager.refresh_theme_colors()  # Manual refresh
         ```
         """
+        auto_theme = self.auto_theme
+        self.auto_theme = True
         self._update_theme()
+        self.auto_theme = auto_theme
 
     def on_theme_changed(self, *args) -> None:
         """Handle theme changes and update all colors based on current 

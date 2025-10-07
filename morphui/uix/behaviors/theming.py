@@ -511,7 +511,10 @@ class MorphColorThemeBehavior(EventDispatcher):
         This method forces an update of all bound theme colors,
         useful when you want to ensure colors are up to date.
         """
+        auto_theme = self.auto_theme
+        self.auto_theme = True
         self._update_colors()
+        self.auto_theme = auto_theme
 
     def on_colors_updated(self, *args) -> None:
         """Event callback fired after theme colors are updated within
@@ -615,7 +618,7 @@ class MorphTypographyBehavior(EventDispatcher):
     :class:`~kivy.properties.OptionProperty` and defaults to 'medium'.
     """
 
-    typography_font_weight: Literal['Thin', 'Regular', 'Heavy'] = OptionProperty(
+    typography_weight: Literal['Thin', 'Regular', 'Heavy'] = OptionProperty(
          'Regular', options=['Thin', 'Regular', 'Heavy'])
     """Weight variant for the typography role.
 
@@ -623,7 +626,7 @@ class MorphTypographyBehavior(EventDispatcher):
     Works in conjunction with :attr:`typography_role` to determine
     the final text styling.
 
-    :attr:`typography_font_weight` is a
+    :attr:`typography_weight` is a
     :class:`~kivy.properties.OptionProperty` and defaults to 'Regular'.
     """
 
@@ -642,16 +645,18 @@ class MorphTypographyBehavior(EventDispatcher):
     
     def __init__(self, **kwargs) -> None:
         self.register_event_type('on_typography_updated')
+        typography_properties = (
+            'typography_role',
+            'typography_size',
+            'typography_weight',)
         super().__init__(**kwargs)
 
         self.typography.bind(
             on_typography_changed=self._update_typography)
-        self.bind(
-            typography_role=self._update_typography,
-            typography_size=self._update_typography,
-            typography_font_weight=self._update_typography,
-            auto_typography=self._update_typography,
-            on_typography_changed=self._update_typography)
+        self.bind(**{p: self._update_typography for p in typography_properties})
+
+        if any(p in kwargs for p in typography_properties):
+            self.refresh_typography()
 
     @property
     def typography(self) -> Typography:
@@ -671,8 +676,13 @@ class MorphTypographyBehavior(EventDispatcher):
             role: Literal['Display', 'Headline', 'Title', 'Body', 'Label'],
             size: Literal['large', 'medium', 'small'],
             font_weight: Literal['Thin', 'Regular', 'Heavy'] = 'Regular'
-            ) -> bool:
+            ) -> None:
         """Apply typography style to this widget.
+
+        This method applies the specified typography style to the widget
+        based on the provided role, size, and font weight. It retrieves
+        the appropriate text style from the :attr:`typography` system and
+        updates the widget's font properties accordingly.
         
         Parameters
         ----------
@@ -682,32 +692,24 @@ class MorphTypographyBehavior(EventDispatcher):
             Size variant ('large', 'medium', 'small')
         font_weight : str, optional
             Font weight ('Thin', 'Regular', 'Heavy'), defaults to 'Regular'
-            
-        Returns
-        -------
-        bool
-            True if style was successfully applied
         """ 
-        try:
-            style = self.typography.get_text_style(
-                role=role, size=size, font_weight=font_weight)
-            
-            # Apply font properties if widget has them
-            if hasattr(self, 'font_name') and 'name' in style:
-                self.font_name = style['name']
-            if hasattr(self, 'font_size') and 'font_size' in style:
-                self.font_size = style['font_size']
-                
-            return True
-        except (AssertionError, KeyError):
-            return False
+        style = self.typography.get_text_style(
+            role=role, size=size, font_weight=font_weight)
+        
+        # Apply font properties if widget has them
+        if hasattr(self, 'font_name') and 'name' in style:
+            self.font_name = style['name']
+
+        for key, value in style.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
 
     def _update_typography(self, *args) -> None:
         """Update typography based on current settings.
         
         This method applies the typography style to the widget
         based on the current :attr:`typography_role`, 
-        :attr:`typography_size`, and :attr:`typography_font_weight`.
+        :attr:`typography_size`, and :attr:`typography_weight`.
         
         If :attr:`auto_typography` is False, the method does nothing.
         This method is typically called when typography-related
@@ -719,7 +721,7 @@ class MorphTypographyBehavior(EventDispatcher):
         self.apply_typography_style(
             role=self.typography_role,
             size=self.typography_size,
-            font_weight=self.typography_font_weight)
+            font_weight=self.typography_weight)
         self.dispatch('on_typography_updated')
     
     def refresh_typography(self) -> None:
@@ -727,7 +729,10 @@ class MorphTypographyBehavior(EventDispatcher):
         
         This method forces an update of the typography style,
         useful when you want to ensure typography is up to date."""
+        auto_typography = self.auto_typography
+        self.auto_typography = True
         self._update_typography()
+        self.auto_typography = auto_typography
 
     def on_typography_updated(self, *args) -> None:
         """Called after typography is applied to the widget.
