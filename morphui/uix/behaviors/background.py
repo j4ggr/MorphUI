@@ -52,13 +52,13 @@ class MorphBackgroundBehavior(EventDispatcher):
     :attr:`border_color` is a :class:`~kivy.properties.ColorProperty`
     and defaults to `[0, 0, 0, 0]` (transparent)."""
 
-    border_width: float = NumericProperty(0)
+    border_width: float = NumericProperty(1, min=0.01)
     """Width of the border.
 
     The width is specified in pixels.
     
     :attr:`border_width` is a :class:`~kivy.properties.NumericProperty`
-    and defaults to `0` (no border).
+    and defaults to `1` (1 pixel wide).
     """
 
     _background_color_instruction: Color
@@ -82,19 +82,22 @@ class MorphBackgroundBehavior(EventDispatcher):
         **kwargs
             Additional keyword arguments passed to the parent class.
         """
+        self.register_event_type('on_background_update')
         super().__init__(**kwargs)
         self.bind(
-            background_color=self._update_background_color,
-            size=self._update_size,
-            pos=self._update_position,
-            radius=self._update_radius,
-            border_color=self._update_border_color,
-            border_width=self._update_border_width,)
+            background_color=self._update_background,
+            size=self._update_background,
+            pos=self._update_background,
+            radius=self._update_background,
+            border_color=self._update_background,
+            border_width=self._update_background,)
         
         with self.canvas.before:
             self._background_color_instruction = Color(*self.background_color)
             self._background_instruction = RoundedRectangle(
-                size=self.size, pos=self.pos, radius=self.radius)
+                size=self.size,
+                pos=self.pos,
+                radius=self.radius)
             self._border_color_instruction = Color(*self.border_color)
             self._border_instruction = SmoothLine(
                 width=self.border_width,
@@ -117,98 +120,24 @@ class MorphBackgroundBehavior(EventDispatcher):
             self.width,
             self.height,
             *self.radius,]
-
-    def _ensure_alpha(self, color: List[float]) -> List[float]:
-        """Ensure the color has an alpha channel.
-        
-        Parameters
-        ----------
-        color : list of float
-            Color list with RGB or RGBA values.
-            
-        Returns
-        -------
-        list of float
-            Color list with RGBA values (alpha defaults to 1 if not provided).
-        """
-        if len(color) == 3:
-            color = [*color, 1]
-        return color
-
-    def _update_background_color(
-            self, instance: Any, color: List[float]):
-        """Update the background color when the property changes.
-        
-        Parameters
-        ----------
-        instance : Any
-            The widget instance.
-        color : list of float
-            New background color values.
-        """
-        self._background_color_instruction.rgba = self._ensure_alpha(color)
     
-    def _update_border_color(
-            self, instance: Any, color: List[float]):
-        """Update the border color when the property changes.
+    def _update_background(self, *args) -> None:
+        """Update the background when any relevant property changes."""
+        self._background_color_instruction.rgba = self.background_color
+        self._background_instruction.pos = self.pos
+        self._background_instruction.size = self.size
+        self._background_instruction.radius = self.radius
         
-        Parameters
-        ----------
-        instance : Any
-            The widget instance.
-        color : list of float
-            New border color values.
-        """
-        self._border_color_instruction.rgba = self._ensure_alpha(color)
-
-    def _update_border_width(
-            self, instance: Any, width: float):
-        """Update the border width when the property changes.
-        
-        Parameters
-        ----------
-        instance : Any
-            The widget instance.
-        width : float
-            New border width.
-        """
-        self._border_instruction.width = width
-
-    def _update_size(self, instance: Any, size: List[float]):
-        """Update the background and border when the widget size changes.
-        
-        Parameters
-        ----------
-        instance : Any
-            The widget instance.
-        size : list of float
-            New size values [width, height].
-        """
-        self._background_instruction.size = size
+        self._border_color_instruction.rgba = self.border_color
+        self._border_instruction.width = self.border_width
         self._border_instruction.rounded_rectangle = self._rounded_rectangle
 
-    def _update_position(self, instance: Any, pos: List[float]):
-        """Update the background and border when the widget position changes.
-        
-        Parameters
-        ----------
-        instance : Any
-            The widget instance.
-        pos : list of float
-            New position values [x, y].
-        """
-        self._background_instruction.pos = pos
-        self._border_instruction.rounded_rectangle = self._rounded_rectangle
+        self.dispatch('on_background_update')
 
-    def _update_radius(self, instance: Any, radius: List[float]):
-        """Update the background and border when the radius changes.
+    def on_background_update(self, *args) -> None:
+        """Event dispatched when the background is updated.
         
-        Parameters
-        ----------
-        instance : Any
-            The widget instance.
-        radius : list of float
-            New radius values [top_left, top_right, bottom_right, bottom_left].
-        """
-        self._background_instruction.radius = radius
-        self._border_instruction.rounded_rectangle = self._rounded_rectangle
+        This can be overridden by subclasses to perform additional
+        actions when the background changes."""
+        pass
+
