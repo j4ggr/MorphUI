@@ -29,20 +29,28 @@ class MyApp(MorphApp):
         self.root = MorphBoxLayout(
             MorphLabel(
                 identity="label1",
-                text="Label 1",),
+                text="Label 1",
+                theme_color_bindings={
+                    'background_color': 'surface_container_color',
+                    'text_color': 'text_surface_color',
+                    'border_color': 'outline_color',},
+                radius=[5, 25, 5, 25],),
             MorphLabel(
                 identity="label2",
                 text="Label 2",
-                theme_style='secondary',
+                theme_color_bindings={
+                    'background_color': 'surface_container_low_color',
+                    'text_color': 'text_surface_color',
+                    'border_color': 'outline_variant_color',},
                 radius=[25, 5, 25, 5],),
             theme_style='surface',
             orientation='vertical',
-            padding=10,
-            spacing=10,)
+            padding=50,
+            spacing=15,)
         return self.root
     
-    def on_start(self) -> None:
-        Clock.schedule_interval(self.theme_manager.toggle_theme_mode, 2)
+    # def on_start(self) -> None:
+    #     Clock.schedule_interval(self.theme_manager.toggle_theme_mode, 2)
 
 
 if __name__ == '__main__':

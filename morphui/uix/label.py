@@ -30,5 +30,8 @@ class MorphLabel(
     """Default settings for MorphLabel instances."""
 
     def __init__(self, **kwargs) -> None:
-        _kwargs = self._default_settings | kwargs
+        _kwargs = self._default_settings.copy()
+        if 'theme_style' in kwargs:
+            _kwargs.pop('theme_color_bindings')
+        _kwargs = _kwargs | kwargs
         super().__init__(**_kwargs)

@@ -1,4 +1,4 @@
-from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.floatlayout import FloatLayout
 
 from .behaviors import MorphColorThemeBehavior
 from .behaviors import MorphBackgroundBehavior
@@ -7,19 +7,19 @@ from .behaviors import MorphDeclarativeBehavior
 
 
 __all__ = [
-    'MorphBoxLayout',]
+    'MorphFloatLayout',]
 
 
-class MorphBoxLayout(
+class MorphFloatLayout(
         MorphDeclarativeBehavior,
         MorphColorThemeBehavior,
         MorphBackgroundBehavior,
         MorphAutoSizingBehavior,
-        BoxLayout):
-    """A BoxLayout that supports declarative child widgets via
+        FloatLayout):
+    """A FloatLayout that supports declarative child widgets via
     :class:`~morphui.uix.behaviors.MorphDeclarativeBehavior`.
-    
-    This class combines the functionality of Kivy's BoxLayout with
+
+    This class combines the functionality of Kivy's FloatLayout with
     several MorphUI behaviors to enhance its capabilities:
     - `MorphDeclarativeBehavior`: Enables declarative property binding.
     - `MorphColorThemeBehavior`: Integrates color theming capabilities.
@@ -30,12 +30,11 @@ class MorphBoxLayout(
     --------
     ```python
     from morphui.app import MorphApp
-    from morphui.uix.boxlayout import MorphBoxLayout
+    from morphui.uix.floatlayout import MorphFloatLayout
     from morphui.uix.label import MorphLabel
-
     class MyApp(MorphApp):
         def build(self):
-            return MorphBoxLayout(
+            return MorphFloatLayout(
                 MorphLabel(
                     text="Label 1",
                     theme_style='primary'),
@@ -43,9 +42,8 @@ class MorphBoxLayout(
                     text="Label 2",
                     theme_style='secondary'),
                 theme_style='surface',
-                orientation='vertical',
                 padding=50,
                 spacing=15,)
     MyApp().run()
+    ```
     """
-    pass

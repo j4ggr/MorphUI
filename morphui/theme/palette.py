@@ -228,7 +228,15 @@ class MorphDynamicColorPalette(EventDispatcher):
             color_value = getattr(self, attr_name, None)
             if color_value is None:
                 return False
-        return True 
+        return True
+
+    transparent_color: List[float] = ColorProperty([0, 0, 0, 0])
+    """Transparent color. This property is always [0, 0, 0, 0] and 
+    does not change with the theme. It is provided for convenience.
+
+    :attr:`transparent_color` is a
+    :class:`~kivy.properties.ColorProperty` that holds a static color
+    value and defaults to [0, 0, 0, 0] (fully transparent)."""
 
     background_color: List[float] | None = ColorProperty(None)
     """Background color.
