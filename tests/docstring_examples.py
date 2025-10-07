@@ -20,32 +20,21 @@ sys.path.append(str(Path(__file__).parents[1].resolve()))
 
 from morphui.app import MorphApp
 from morphui.uix.label import MorphLabel
-from morphui.uix.gridlayout import MorphGridLayout
+from morphui.uix.boxlayout import MorphBoxLayout
 
 class MyApp(MorphApp):
-    def build(self) -> MorphGridLayout:
-        # self.typography.font_name = 'DMSans' # Uncomment to test custom font
-        labels = []
-        for role, variants in self.typography.text_styles.items():
-            for size, style in variants.items():
-                for weight in ('Thin', 'Regular', 'Heavy'):
-                    label = MorphLabel(
-                        text=(
-                            f'{role}: {size}, {weight}, '
-                            f'{style["font_size"]}, {style["line_height"]}'),
-                        typography_role=role,
-                        typography_size=size,
-                        typography_weight=weight,
-                        auto_height=True,)
-                    labels.append(label)
-        
-        self.root = MorphGridLayout(
-            *labels,
+    def build(self) -> MorphBoxLayout:
+        self.theme_manager.seed_color = 'Purple'
+        return MorphBoxLayout(
+            MorphLabel(
+                text="Label 1",
+                theme_style='primary'),
+            MorphLabel(
+                text="Label 2",
+                theme_style='secondary',
+                auto_size=True,),
             theme_style='surface',
-            cols=3,
-            padding=50,
-            spacing=15,)
-        return self.root
+            auto_size=True,)
 
 if __name__ == '__main__':
     MyApp().run()
