@@ -2,7 +2,6 @@ from kivy.uix.floatlayout import FloatLayout
 
 from .behaviors import MorphColorThemeBehavior
 from .behaviors import MorphBackgroundBehavior
-from .behaviors import MorphAutoSizingBehavior
 from .behaviors import MorphDeclarativeBehavior
 
 
@@ -14,7 +13,6 @@ class MorphFloatLayout(
         MorphDeclarativeBehavior,
         MorphColorThemeBehavior,
         MorphBackgroundBehavior,
-        MorphAutoSizingBehavior,
         FloatLayout):
     """A FloatLayout that supports declarative child widgets via
     :class:`~morphui.uix.behaviors.MorphDeclarativeBehavior`.
@@ -24,26 +22,27 @@ class MorphFloatLayout(
     - `MorphDeclarativeBehavior`: Enables declarative property binding.
     - `MorphColorThemeBehavior`: Integrates color theming capabilities.
     - `MorphBackgroundBehavior`: Provides background styling options.
-    - `MorphAutoSizingBehavior`: Enables automatic sizing based on content.
 
     Examples
     --------
     ```python
     from morphui.app import MorphApp
-    from morphui.uix.floatlayout import MorphFloatLayout
     from morphui.uix.label import MorphLabel
+    from morphui.uix.floatlayout import MorphFloatLayout
+
     class MyApp(MorphApp):
-        def build(self):
+        def build(self) -> MorphFloatLayout:
+            self.theme_manager.seed_color = 'Purple'
             return MorphFloatLayout(
                 MorphLabel(
                     text="Label 1",
                     theme_style='primary'),
                 MorphLabel(
                     text="Label 2",
-                    theme_style='secondary'),
-                theme_style='surface',
-                padding=50,
-                spacing=15,)
+                    theme_style='secondary',
+                    auto_size=True,),
+                theme_style='surface',)
+
     MyApp().run()
     ```
     """
