@@ -211,9 +211,6 @@ class MorphColorThemeBehavior(EventDispatcher):
     or additional style mappings.
     """
 
-    _theme_manager: ThemeManager = MorphApp._theme_manager
-    """Reference to the global ThemeManager instance."""
-
     _theme_bound: bool = False
     """Track if theme manager events are bound."""
     
@@ -239,7 +236,7 @@ class MorphColorThemeBehavior(EventDispatcher):
         class attribute and shared across all instances of this
         behavior.
         """
-        return self._theme_manager
+        return MorphApp._theme_manager
 
     def on_theme_color_bindings(
             self, instance: Any, bindings: Dict[str, str]) -> None:
@@ -639,9 +636,6 @@ class MorphTypographyBehavior(EventDispatcher):
     :attr:`auto_typography` is a
     :class:`~kivy.properties.BooleanProperty` and defaults to True.
     """
-
-    _typography: Typography = MorphApp._typography
-    """Reference to the global Typography instance."""
     
     def __init__(self, **kwargs) -> None:
         self.register_event_type('on_typography_updated')
@@ -660,8 +654,8 @@ class MorphTypographyBehavior(EventDispatcher):
 
     @property
     def typography(self) -> Typography:
-        """Access the typography manager for text style management 
-        (read-only).
+        """Access the global typography manager for text style
+        management (read-only).
 
         The :attr:`typography` attribute provides access to the
         :class:`Typography` instance, which handles typography and text
@@ -669,7 +663,7 @@ class MorphTypographyBehavior(EventDispatcher):
         a class attribute and shared across all instances of this 
         behavior.
         """
-        return self._typography
+        return MorphApp._typography
 
     def apply_typography_style(
             self,
