@@ -679,7 +679,8 @@ class TestMorphThemeBehavior:
         """Test on_theme_style method with valid predefined styles."""
         
         with patch.object(self.TestWidget, 'bind'), \
-             patch.object(self.TestWidget, 'register_event_type'):
+             patch.object(self.TestWidget, 'register_event_type'), \
+             patch.object(self.TestWidget, 'dispatch'):
             
             widget = self.TestWidget()
             
@@ -725,7 +726,7 @@ class TestMorphThemeBehavior:
             # Add a custom style
             custom_mappings = {
                 'background_color': 'tertiary_color',
-                'color': 'on_tertiary_color'
+                'text_color': 'on_tertiary_color'
             }
             
             widget.add_custom_style('custom', custom_mappings)
@@ -766,46 +767,12 @@ class TestMorphThemeBehavior:
             assert 'custom1' not in widget2.theme_style_mappings
 
     @patch('morphui.uix.behaviors.theming.MorphApp._theme_manager')
-    def test_bind_property_to_theme_color(self, mock_app_theme_manager):
-        """Test bind_property_to_theme_color method."""
-        
-        with patch.object(self.TestWidget, 'bind'), \
-             patch.object(self.TestWidget, 'register_event_type'):
-            
-            widget = self.TestWidget()
-            widget._theme_manager = self.mock_theme_manager
-            
-            # Test binding a property
-            widget.bind_property_to_theme_color('background_color', 'primary_color')
-            
-            # Check that the binding was added to _bound_theme_colors (internal tracking)
-            assert 'background_color' in widget._bound_theme_colors
-            assert widget._bound_theme_colors['background_color'] == 'primary_color'
-
-    @patch('morphui.uix.behaviors.theming.MorphApp._theme_manager')
-    def test_unbind_property_from_theme_color(self, mock_app_theme_manager):
-        """Test unbind_property_from_theme_color method."""
-        
-        with patch.object(self.TestWidget, 'bind'), \
-             patch.object(self.TestWidget, 'register_event_type'):
-            
-            widget = self.TestWidget()
-            widget._theme_manager = self.mock_theme_manager
-            
-            # First bind a property
-            widget.bind_property_to_theme_color('background_color', 'primary_color')
-            assert 'background_color' in widget._bound_theme_colors
-            
-            # Then unbind it
-            widget.unbind_property_from_theme_color('background_color', 'primary_color')
-            assert 'background_color' not in widget._bound_theme_colors
-
-    @patch('morphui.uix.behaviors.theming.MorphApp._theme_manager')
     def test_refresh_theme_colors(self, mock_app_theme_manager):
         """Test refresh_theme_colors method."""
         
         with patch.object(self.TestWidget, 'bind'), \
-             patch.object(self.TestWidget, 'register_event_type'):
+             patch.object(self.TestWidget, 'register_event_type'), \
+             patch.object(self.TestWidget, 'dispatch'):
             
             widget = self.TestWidget()
             
@@ -813,44 +780,6 @@ class TestMorphThemeBehavior:
             with patch.object(widget, '_update_colors') as mock_update:
                 widget.refresh_theme_colors()
                 mock_update.assert_called_once()
-
-    @patch('morphui.uix.behaviors.theming.MorphApp._theme_manager')
-    def test_on_theme_color_bindings(self, mock_app_theme_manager):
-        """Test on_theme_color_bindings property change handler."""
-        
-        with patch.object(self.TestWidget, 'bind'), \
-             patch.object(self.TestWidget, 'register_event_type'), \
-             patch.object(self.TestWidget, 'dispatch'):
-            
-            widget = self.TestWidget()
-            widget.auto_theme = True
-            
-            # Test that changing bindings triggers the appropriate behavior
-            new_bindings = {'background_color': 'primary_color'}
-            old_bindings = {'color': 'secondary_color'}
-            
-            with patch.object(widget, 'bind_property_to_theme_color') as mock_bind, \
-                 patch.object(widget, 'unbind_property_from_theme_color'):
-                
-                # Set up old bindings first
-                widget.theme_color_bindings = old_bindings
-                
-                # Trigger the change
-                widget.on_theme_color_bindings(widget, new_bindings)
-                
-                # Should bind new properties (unbind is only called if there are conflicts)
-                mock_bind.assert_called_with('background_color', 'primary_color')
-
-    def test_on_theme_changed_default_implementation(self):
-        """Test that on_theme_changed has a default no-op implementation."""
-        with patch.object(self.TestWidget, 'bind'), \
-             patch.object(self.TestWidget, 'register_event_type'):
-            
-            widget = self.TestWidget()
-            
-            # Should not raise any exception
-            result = widget.on_theme_changed()
-            assert result is None
 
     def test_on_colors_updated_default_implementation(self):
         """Test that on_colors_updated has a default no-op implementation."""
@@ -861,17 +790,6 @@ class TestMorphThemeBehavior:
             
             # Should not raise any exception
             result = widget.on_colors_updated()
-            assert result is None
-
-    def test_on_colors_applied_default_implementation(self):
-        """Test that on_colors_applied has a default no-op implementation."""
-        with patch.object(self.TestWidget, 'bind'), \
-             patch.object(self.TestWidget, 'register_event_type'):
-            
-            widget = self.TestWidget()
-            
-            # Should not raise any exception
-            result = widget.on_colors_applied()
             assert result is None
 
 
@@ -932,7 +850,8 @@ class TestMorphColorThemeBehavior:
         """Test applying predefined theme styles."""
         
         with patch.object(self.TestWidget, 'bind'), \
-             patch.object(self.TestWidget, 'register_event_type'):
+             patch.object(self.TestWidget, 'register_event_type'), \
+             patch.object(self.TestWidget, 'dispatch'):
             
             widget = self.TestWidget()
             

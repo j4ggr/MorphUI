@@ -27,7 +27,7 @@ class TestThemeManager:
         assert theme_manager.mode_transition is True
         assert theme_manager.mode_transition_duration == 0.3
 
-    @patch.object(ThemeManager, 'dispatch')
+    @patch.object(ThemeManager, 'dispatch', return_value=None)
     def test_init_custom_properties(self, mock_dispatch):
         """Test ThemeManager initialization with custom values."""
         theme_manager = ThemeManager(
@@ -173,12 +173,18 @@ class TestThemeManager:
         assert all(0.0 <= val <= 1.0 for val in rgba_float)
 
     @patch('morphui.theme.manager.get_dynamic_scheme')
-    def test_generate_color_scheme_auto_theme(self, mock_get_dynamic_scheme):
+    @patch.object(ThemeManager, 'apply_color_scheme')
+    def test_generate_color_scheme_auto_theme(self, mock_apply_color_scheme, mock_get_dynamic_scheme):
         """Test generate_color_scheme with auto_theme enabled."""
-        theme_manager = ThemeManager()
-        theme_manager.auto_theme = True
+        # Create a proper mock scheme with necessary attributes
         mock_scheme = Mock()
+        mock_scheme.contrast_level = 0.0  # Add the contrast_level attribute that the library expects
         mock_get_dynamic_scheme.return_value = mock_scheme
+        
+        # Patch the initialization to avoid calling apply_color_scheme during init
+        with patch.object(ThemeManager, 'refresh_theme_colors'):
+            theme_manager = ThemeManager()
+            theme_manager.auto_theme = True
         
         result = theme_manager.generate_color_scheme()
         
@@ -243,15 +249,15 @@ class TestThemeManager:
         assert hasattr(theme_manager, 'all_colors_set')
         assert hasattr(theme_manager, 'material_color_map')
 
-    @patch.object(ThemeManager, 'dispatch')
-    def test_on_theme_changed_event(self, mock_dispatch):
-        """Test that on_theme_changed event is properly dispatched."""
+    @patch.object(ThemeManager, 'dispatch', return_value=None)
+    def test_on_colors_updated_event(self, mock_dispatch):
+        """Test that on_colors_updated event is properly dispatched."""
         theme_manager = ThemeManager()
         mock_dispatch.reset_mock()  # Clear any calls from initialization
-        
-        # Changing seed color should trigger on_theme_changed
+
+        # Changing seed color should trigger on_colors_updated
         theme_manager.seed_color = 'Red'
-        mock_dispatch.assert_called_with('on_theme_changed')
+        mock_dispatch.assert_called_with('on_colors_updated')
 
     def test_on_colors_updated_event_disabled_auto_theme(self):
         """Test on_colors_updated behavior when auto_theme is disabled."""

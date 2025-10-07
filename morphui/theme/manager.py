@@ -147,11 +147,14 @@ class ThemeManager(MorphDynamicColorPalette):
         super().__init__(**kwargs)
         self.register_event_type('on_theme_changed')
         self.register_event_type('on_colors_updated')
-        self.bind(seed_color=self.on_theme_changed)
-        self.bind(color_scheme=self.on_theme_changed)
-        self.bind(color_scheme_contrast=self.on_theme_changed)
-        self.bind(color_quality=self.on_theme_changed)
-        self.bind(theme_mode=self.on_theme_changed)
+        
+        self.bind(seed_color=self._update_theme)
+        self.bind(color_scheme=self._update_theme)
+        self.bind(color_scheme_contrast=self._update_theme)
+        self.bind(color_quality=self._update_theme)
+        self.bind(theme_mode=self._update_theme)
+
+        self.refresh_theme_colors()
 
     @property
     def available_seed_colors(self) -> Tuple[str, ...]:
@@ -262,7 +265,41 @@ class ThemeManager(MorphDynamicColorPalette):
             f'Seed color {seed_color!r} is not registered. Use '
             'register_seed_color() to add it. Available colors: '
             f'{self.available_seed_colors}')
+    
+    def _update_theme(self, *args) -> None:
+        """Handle theme changes and update all colors based on current 
+        settings.
+
+        This method is automatically called whenever theme properties 
+        change (seed_color, color_scheme, theme_mode, etc.) and forces 
+        an update of all dynamic colors. It can also be called manually 
+        when multiple properties have been changed and you want to apply
+        the changes immediately.
+        """
+        if not self.auto_theme and self.colors_initialized:
+            return
+        
         self.dispatch('on_theme_changed')
+        scheme = self.generate_color_scheme()
+        self.apply_color_scheme(scheme)
+    
+    def refresh_theme_colors(self) -> None:
+        """Manually refresh and apply the current theme colors.
+
+        This method can be called to force a refresh of all dynamic
+        colors based on the current theme settings. It is useful when
+        multiple properties have been changed and you want to apply the
+        changes immediately.
+
+        Examples
+        --------
+        ```python
+        theme_manager.seed_color = 'Red'
+        theme_manager.color_scheme = 'VIBRANT'
+        theme_manager.refresh_theme_colors()  # Manual refresh
+        ```
+        """
+        self._update_theme()
 
     def on_theme_changed(self, *args) -> None:
         """Handle theme changes and update all colors based on current 
@@ -282,11 +319,7 @@ class ThemeManager(MorphDynamicColorPalette):
         theme_manager.on_theme_changed()  # Manual trigger if needed
         ```
         """
-        if not self.auto_theme and self.colors_initialized:
-            return
-        
-        scheme = self.generate_color_scheme()
-        self.apply_color_scheme(scheme)
+        pass
 
     @overload
     def get_seed_color_rgba(self, as_float: Literal[True]) -> List[float]:

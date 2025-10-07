@@ -25,8 +25,8 @@ __all__ = [
 
 
 class MorphColorThemeBehavior(EventDispatcher):
-    """Behavior that provides automatic color theme integration for MorphUI 
-    widgets.
+    """Behavior that provides automatic color theme integration for 
+    MorphUI widgets.
     
     This behavior enables widgets to automatically respond to theme 
     changes by updating their color properties when the application 
@@ -36,8 +36,8 @@ class MorphColorThemeBehavior(EventDispatcher):
     
     The behavior integrates seamlessly with other MorphUI behaviors, 
     particularly :class:`MorphBackgroundBehavior`, to provide 
-    comprehensive color theming capabilities including background colors,  
-    border colors, text colors, and other visual properties.
+    comprehensive color theming capabilities including background 
+    colors, border colors, text colors, and other visual properties.
     
     Key Features
     ------------
@@ -99,17 +99,19 @@ class MorphColorThemeBehavior(EventDispatcher):
     
     See Also
     --------
-    MorphBackgroundBehavior : Provides background and border styling capabilities
-    MorphTypographyBehavior : Provides typography and text styling capabilities
-    ThemeManager : Manages application-wide theming and color schemes
+    - MorphBackgroundBehavior : Provides background and border styling 
+      capabilities
+    - MorphTypographyBehavior : Provides typography and text styling
+      capabilities
+    - ThemeManager : Manages application-wide theming and color schemes
     """
 
     auto_theme: bool = BooleanProperty(True)
     """Enable automatic theme updates for this widget.
 
-    When True, the widget automatically updates its colors when the theme 
-    changes. When False, the widget retains its current colors until 
-    manually updated.
+    When True, the widget automatically updates its colors when the 
+    theme changes. When False, the widget retains its current colors 
+    until manually updated.
 
     :attr:`auto_theme` is a :class:`~kivy.properties.BooleanProperty` 
     and defaults to True.
@@ -121,17 +123,18 @@ class MorphColorThemeBehavior(EventDispatcher):
     This property allows you to set a predefined Material Design style
     configuration for the widget. When set to a valid style name, it
     automatically applies the corresponding set of color bindings from
-    :attr:`theme_style_mappings` via the :meth:`on_theme_style` event handler.
+    :attr:`theme_style_mappings` via the :meth:`on_theme_style` event 
+    handler.
     
     This provides a quick way to style widgets according to established
-    Material Design roles such as 'primary', 'secondary', 'surface', 'error',
-    and 'outline'. The property uses Kivy's StringProperty binding system,
-    so changes are automatically detected and applied.
+    Material Design roles such as 'primary', 'secondary', 'surface', 
+    'error', and 'outline'. The property uses Kivy's StringProperty 
+    binding system, so changes are automatically detected and applied.
     
-    When an invalid style name is provided, the change is silently ignored
-    and the property retains its previous value. Setting to an empty string
-    ('') effectively disables any predefined style without clearing existing
-    color bindings.
+    When an invalid style name is provided, the change is silently 
+    ignored and the property retains its previous value. Setting to an
+    empty string ('') effectively disables any predefined style without
+    clearing existing color bindings.
 
     Available Styles
     ----------------
@@ -183,27 +186,22 @@ class MorphColorThemeBehavior(EventDispatcher):
     }
     ```
     
-    :attr:`theme_color_bindings` is a :class:`~kivy.properties.DictProperty` 
-    and defaults to {}.
+    :attr:`theme_color_bindings` is a
+    :class:`~kivy.properties.DictProperty` and defaults to {}.
     """
 
-    text_color: List[float] = ColorProperty([0, 0, 0, 1])
+    text_color: List[float] | None = ColorProperty(None)
     """Explicit text color property for theme binding disambiguation.
     
     This property provides a clear, dedicated binding target for text
-    colors in theme configurations. Since Kivy uses the generic 'text_color'
-    property for text rendering, this explicit `text_color` property
-    allows theme bindings to unambiguously specify text color intentions
-    in :attr:`theme_color_bindings`.
+    colors in theme configurations. Since Kivy uses the generic 
+    'text_color' property for text rendering, this explicit `text_color`
+    property allows theme bindings to unambiguously specify text color
+    intentions in :attr:`theme_color_bindings`.
 
     :attr:`text_color` is a :class:`~kivy.properties.ColorProperty`
-    and defaults to [0, 0, 0, 1] (black).
+    and defaults to None.
     """
-
-    _bound_theme_colors: Dict[str, str] = {}
-    """Track currently bound theme colors to widget properties. Where
-    keys are widget property names and values are the corresponding
-    theme color names."""
 
     theme_style_mappings: Dict[str, Dict[str, str]] = THEME.STYLES
     """Predefined theme style mappings from constants.
@@ -220,109 +218,35 @@ class MorphColorThemeBehavior(EventDispatcher):
     """Track if theme manager events are bound."""
     
     def __init__(self, **kwargs) -> None:
-        super().__init__(**kwargs)
-        self.register_event_type('on_theme_changed')
         self.register_event_type('on_colors_updated')
+        super().__init__(**kwargs)
 
-        self.theme_manager.bind(
-            on_theme_changed=self.on_theme_changed,
-            on_colors_updated=self.on_colors_updated)
+        self.theme_manager.bind(on_colors_updated=self._update_colors)
         
         if hasattr(self, 'color'):
             self.bind(text_color=self.setter('color'))
-        self.refresh_theme_colors()
+            if self.text_color is not None:
+                self.color = self.text_color
 
     @property
     def theme_manager(self) -> ThemeManager:
-        """Access the theme manager for theming and style management (read-only).
+        """Access the theme manager for theming and style management
+        (read-only).
 
         The :attr:`theme_manager` attribute provides access to the
         :class:`ThemeManager` instance, which handles theming and style
         management. This instance is automatically initialized as a
-        class attribute and shared across all instances of this behavior.
+        class attribute and shared across all instances of this
+        behavior.
         """
         return self._theme_manager
-    
-    def bind_property_to_theme_color(
-            self, widget_property: str, theme_color: str) -> None:
-        """Bind a widget property to a dynamic theme color.
-
-        This method sets up a binding between a widget property and a
-        theme color, allowing the widget property to automatically
-        update when the theme color changes.
-
-        If the widget property is already bound to the specified
-        theme color, this method does nothing.
-
-        Parameters
-        ----------
-        widget_property : str
-            The name of the widget property to bind (e.g., 
-            'background_color').
-        theme_color : str
-            The name of the theme color to bind to (e.g., 
-            'primary_color').
-        """
-        if not hasattr(self, widget_property):
-            warnings.warn(
-                f"Cannot bind unknown property '{widget_property}'",
-                UserWarning)
-            return None
-        
-        if not hasattr(self.theme_manager, theme_color):
-            warnings.warn(
-                f"Cannot bind to unknown theme color '{theme_color}'",
-                UserWarning)
-            return None
-        
-        if self._bound_theme_colors.get(widget_property) == theme_color:
-            return None
-        
-        self.theme_manager.bind(
-            **{theme_color: self.setter(widget_property)})
-        self._bound_theme_colors[widget_property] = theme_color
-    
-    def unbind_property_from_theme_color(
-            self, widget_property: str, theme_color: str) -> None:
-        """Unbind a widget property from a dynamic theme color.
-
-        This method removes the binding between a widget property and a
-        theme color.
-
-        If the widget property is not currently bound to the specified
-        theme color, this method does nothing.
-
-        Parameters
-        ----------
-        widget_property : str
-            The name of the widget property to unbind (e.g., 
-            'background_color').
-        theme_color : str
-            The name of the theme color to unbind from (e.g., 
-            'primary_color').
-        """
-        if any((
-            not hasattr(self, widget_property),
-            not hasattr(self.theme_manager, theme_color),
-            self._bound_theme_colors.get(widget_property, '') != theme_color)):
-            return
-        
-        self.theme_manager.unbind(
-            **{theme_color: self.setter(widget_property)})
-        self._bound_theme_colors.pop(widget_property, None)
 
     def on_theme_color_bindings(
             self, instance: Any, bindings: Dict[str, str]) -> None:
         """Fired when :attr:`theme_color_bindings` property changes. 
         
-        This method updates the widget's color bindings based on the
-        new dictionary of bindings. It ensures that any previously bound
-        properties are unbound if they are no longer present in the new
-        bindings, and binds any new properties to their corresponding
-        theme colors.
-        
-        If :attr:`auto_theme` is False, it applies the new colors
-        immediately without setting up bindings.
+        This method updates the widget's colors based on the new
+        dictionary of bindings by calling :meth:`_update_colors`.
         
         Parameters
         ----------
@@ -334,24 +258,19 @@ class MorphColorThemeBehavior(EventDispatcher):
             'background_color') and values are theme color names (e.g.,
             'primary_color').
         """
-        for name, color in bindings.items():
-            if self.auto_theme:
-                old_color = self._bound_theme_colors.get(name, '')
-                if color and color != old_color:
-                    self.unbind_property_from_theme_color(name, old_color)
-                self.bind_property_to_theme_color(name, color)
-
         self._update_colors()
 
     def apply_theme_color(self, widget_property: str, theme_color: str) -> bool:
         """Apply a specific theme color to a widget property.
         
-        This method provides manual control over theme color application,
-        allowing you to update individual widget properties with specific
-        theme colors outside of the automatic binding system.
+        This method provides manual control over theme color
+        application, allowing you to update individual widget properties
+        with specific theme colors outside of the automatic binding
+        system.
         
-        The method safely handles cases where the theme color doesn't exist
-        or the widget property is not available, returning False in such cases.
+        The method safely handles cases where the theme color doesn't
+        exist or the widget property is not available, returning False
+        in such cases.
         
         Parameters
         ----------
@@ -397,21 +316,19 @@ class MorphColorThemeBehavior(EventDispatcher):
                 return True
         return False
 
-    def _update_colors(self) -> None:
+    def _update_colors(self, *args) -> None:
         """Update widget colors based on current theme."""
         if not self.auto_theme or not self.theme_color_bindings:
             return
             
         for widget_prop, theme_color in self.theme_color_bindings.items():
             self.apply_theme_color(widget_prop, theme_color)
+        self.dispatch('on_colors_updated')
 
     def on_auto_theme(self, instance: Any, auto_theme: bool) -> None:
         """Fired when :attr:`auto_theme` property changes."""
         if auto_theme:
-            self.on_theme_color_bindings(self, self.theme_color_bindings)
-        else:
-            for name, color in self.theme_color_bindings.items():
-                self.unbind_property_from_theme_color(name, color)
+            self._update_colors()
 
     def on_theme_style(self, instance: Any, style_name: str) -> None:
         """Event handler fired when :attr:`theme_style` property 
@@ -596,17 +513,6 @@ class MorphColorThemeBehavior(EventDispatcher):
         """
         self._update_colors()
 
-    def on_theme_changed(self, *args) -> None:
-        """Event callback fired when the application theme changes.
-        
-        This method is bound to the :meth:`ThemeManager.on_theme_changed`
-        method and is automatically invoked whenever the theme changes.
-        
-        Override this method in subclasses to implement custom
-        behavior when the theme changes.
-        """
-        pass
-
     def on_colors_updated(self, *args) -> None:
         """Event callback fired after theme colors are updated within
         the theme manager but before they are applied to the widget.
@@ -622,17 +528,20 @@ class MorphColorThemeBehavior(EventDispatcher):
 
 
 class MorphTypographyBehavior(EventDispatcher):
-    """Behavior that provides automatic typography integration for MorphUI widgets.
+    """Behavior that provides automatic typography integration for 
+    MorphUI widgets.
     
     This behavior enables widgets to automatically apply Material Design 
-    typography styles and respond to typography system changes. It provides 
-    a declarative way to set typography roles, sizes, and weights while 
-    maintaining consistency with the application's typography system.
+    typography styles and respond to typography system changes. It
+    provides a declarative way to set typography roles, sizes, and
+    weights while maintaining consistency with the application's
+    typography system.
     
     Key Features
     ------------
     - Automatic typography updates when app font family changes
-    - Material Design typography role system (Display, Headline, Title, Body, Label)
+    - Material Design typography role system (Display, Headline, Title,
+      Body, Label)
     - Typography size variants (large, medium, small)
     - Font weight control (Thin, Regular, Heavy)
     - Fine-grained control with :attr:`auto_typography` property
@@ -641,9 +550,9 @@ class MorphTypographyBehavior(EventDispatcher):
     Typography Integration
     ----------------------
     The behavior automatically connects to the application's 
-    :class:`Typography` system and listens for typography change events. When 
-    changes occur, it updates the widget's typography properties according to 
-    the current role, size, and weight settings.
+    :class:`Typography` system and listens for typography change events.
+    When changes occur, it updates the widget's typography properties
+    according to the current role, size, and weight settings.
     
     Examples
     --------
@@ -682,12 +591,13 @@ class MorphTypographyBehavior(EventDispatcher):
         'Label', options=['Display', 'Headline', 'Title', 'Body', 'Label'])
     """Typography role for automatic text styling.
     
-    Sets the Material Design typography role which automatically configures
-    appropriate font family, size, and line height. Available roles: 'Display',
-    'Headline', 'Title', 'Body', 'Label'.
+    Sets the Material Design typography role which automatically
+    configures appropriate font family, size, and line height. Available
+    roles: 'Display', 'Headline', 'Title', 'Body', 'Label'.
     
-    When set, the widget automatically applies the corresponding typography
-    style based on the current :attr:`typography_size` and app font settings.
+    When set, the widget automatically applies the corresponding
+    typography style based on the current :attr:`typography_size` and
+    app font settings.
     
     :attr:`typography_role` is a :class:`~kivy.properties.OptionProperty`
     and defaults to 'Label'.
@@ -701,8 +611,8 @@ class MorphTypographyBehavior(EventDispatcher):
     Works in conjunction with :attr:`typography_role` to determine
     the final text styling.
     
-    :attr:`typography_size` is a :class:`~kivy.properties.OptionProperty`
-    and defaults to 'medium'.
+    :attr:`typography_size` is a
+    :class:`~kivy.properties.OptionProperty` and defaults to 'medium'.
     """
 
     typography_font_weight: Literal['Thin', 'Regular', 'Heavy'] = OptionProperty(
@@ -713,8 +623,8 @@ class MorphTypographyBehavior(EventDispatcher):
     Works in conjunction with :attr:`typography_role` to determine
     the final text styling.
 
-    :attr:`typography_font_weight` is a :class:`~kivy.properties.OptionProperty`
-    and defaults to 'Regular'.
+    :attr:`typography_font_weight` is a
+    :class:`~kivy.properties.OptionProperty` and defaults to 'Regular'.
     """
 
     auto_typography: bool = BooleanProperty(True)
@@ -723,27 +633,25 @@ class MorphTypographyBehavior(EventDispatcher):
     When True, the widget automatically updates its typography when the
     app font family changes or when typography properties are modified.
     
-    :attr:`auto_typography` is a :class:`~kivy.properties.BooleanProperty`
-    and defaults to True.
+    :attr:`auto_typography` is a
+    :class:`~kivy.properties.BooleanProperty` and defaults to True.
     """
 
     _typography: Typography = MorphApp._typography
     """Reference to the global Typography instance."""
     
     def __init__(self, **kwargs) -> None:
+        self.register_event_type('on_typography_updated')
         super().__init__(**kwargs)
-        self.register_event_type('on_typography_changed')
 
         self.typography.bind(
-            on_typography_changed=self.on_typography_changed)
+            on_typography_changed=self._update_typography)
         self.bind(
             typography_role=self._update_typography,
             typography_size=self._update_typography,
             typography_font_weight=self._update_typography,
             auto_typography=self._update_typography,
             on_typography_changed=self._update_typography)
-
-        self.refresh_typography()
 
     @property
     def typography(self) -> Typography:
@@ -812,6 +720,7 @@ class MorphTypographyBehavior(EventDispatcher):
             role=self.typography_role,
             size=self.typography_size,
             font_weight=self.typography_font_weight)
+        self.dispatch('on_typography_updated')
     
     def refresh_typography(self) -> None:
         """Manually refresh typography style.
@@ -820,12 +729,11 @@ class MorphTypographyBehavior(EventDispatcher):
         useful when you want to ensure typography is up to date."""
         self._update_typography()
 
-    def on_typography_changed(self, *args) -> None:
-        """Called when the typography system changes (e.g., font family).
+    def on_typography_updated(self, *args) -> None:
+        """Called after typography is applied to the widget.
 
-        This method is automatically invoked whenever the typography
-        system is updated. Override this method in subclasses to
-        implement custom behavior when the typography system changes.
+        Override this method in subclasses to implement custom
+        behavior when typography is updated.
         """
         pass
 
