@@ -11,6 +11,8 @@ from kivy.uix.behaviors import FocusBehavior
 from morphui.utils.dotdict import DotDict
 from morphui.uix.behaviors import MorphHoverBehavior
 from morphui.uix.behaviors import MorphHoverEnhancedBehavior
+from morphui.uix.behaviors import MorphColorThemeBehavior
+from morphui.uix.behaviors import MorphTypographyBehavior
 from morphui.uix.behaviors import MorphThemeBehavior
 from morphui.uix.behaviors import MorphKeyPressBehavior
 from morphui.uix.behaviors import MorphDropdownBehavior
@@ -871,6 +873,203 @@ class TestMorphThemeBehavior:
             # Should not raise any exception
             result = widget.on_colors_applied()
             assert result is None
+
+
+class TestMorphColorThemeBehavior:
+    """Test suite for MorphColorThemeBehavior class."""
+
+    def setup_method(self):
+        """Set up test fixtures before each test method."""
+        from morphui.theme.manager import ThemeManager
+        self.mock_theme_manager = Mock(spec=ThemeManager)
+        self.mock_theme_manager.primary_color = [1.0, 0.0, 0.0, 1.0]
+        self.mock_theme_manager.on_primary_color = [1.0, 1.0, 1.0, 1.0]
+        self.mock_theme_manager.surface_color = [0.9, 0.9, 0.9, 1.0]
+        self.mock_theme_manager.outline_color = [0.5, 0.5, 0.5, 1.0]
+
+    class TestWidget(MorphColorThemeBehavior, Widget):
+        """Test widget that combines Widget with MorphColorThemeBehavior."""
+        
+        def __init__(self, **kwargs):
+            # Mock properties to avoid Kivy property issues
+            self.background_color = None
+            self.color = None
+            self.border_color = None
+            Widget.__init__(self, **kwargs)
+            MorphColorThemeBehavior.__init__(self, **kwargs)
+
+    @patch('morphui.uix.behaviors.theming.MorphApp._theme_manager')
+    def test_initialization(self, mock_app_theme_manager):
+        """Test MorphColorThemeBehavior initialization."""
+        
+        with patch.object(self.TestWidget, 'bind'), \
+             patch.object(self.TestWidget, 'register_event_type'):
+            
+            widget = self.TestWidget()
+            
+            assert widget.auto_theme is True
+            assert widget.theme_color_bindings == {}
+            assert widget.theme_style == ''
+
+    @patch('morphui.uix.behaviors.theming.MorphApp._theme_manager')
+    def test_apply_theme_color(self, mock_app_theme_manager):
+        """Test applying theme colors to widget properties."""
+        
+        with patch.object(self.TestWidget, 'bind'), \
+             patch.object(self.TestWidget, 'register_event_type'):
+            
+            widget = self.TestWidget()
+            widget._theme_manager = self.mock_theme_manager
+            
+            # Test successful color application
+            result = widget.apply_theme_color('background_color', 'primary_color')
+            
+            assert result is True
+            assert widget.background_color == [1.0, 0.0, 0.0, 1.0]
+
+    @patch('morphui.uix.behaviors.theming.MorphApp._theme_manager')
+    def test_theme_style_application(self, mock_app_theme_manager):
+        """Test applying predefined theme styles."""
+        
+        with patch.object(self.TestWidget, 'bind'), \
+             patch.object(self.TestWidget, 'register_event_type'):
+            
+            widget = self.TestWidget()
+            
+            # Test setting primary style
+            widget.on_theme_style(widget, 'primary')
+            
+            # Should update theme_color_bindings with the primary style mappings
+            from morphui.constants import THEME
+            primary_style = THEME.STYLES['primary']
+            
+            # Check that all primary style bindings were added
+            for widget_prop, theme_color in primary_style.items():
+                assert widget_prop in widget.theme_color_bindings
+                assert widget.theme_color_bindings[widget_prop] == theme_color
+
+
+class TestMorphTypographyBehavior:
+    """Test suite for MorphTypographyBehavior class."""
+
+    def setup_method(self):
+        """Set up test fixtures before each test method."""
+        from morphui.theme.typography import Typography
+        self.mock_typography = Mock(spec=Typography)
+        self.mock_typography.get_text_style.return_value = {
+            'name': 'Test Font',
+            'font_size': 16
+        }
+
+    class TestWidget(MorphTypographyBehavior, Widget):
+        """Test widget that combines Widget with MorphTypographyBehavior."""
+        
+        def __init__(self, **kwargs):
+            # Mock properties to avoid Kivy property issues
+            self.font_name = None
+            self.font_size = None
+            Widget.__init__(self, **kwargs)
+            MorphTypographyBehavior.__init__(self, **kwargs)
+
+    @patch('morphui.uix.behaviors.theming.MorphApp._typography')
+    def test_initialization(self, mock_app_typography):
+        """Test MorphTypographyBehavior initialization."""
+        
+        with patch.object(self.TestWidget, 'bind'), \
+             patch.object(self.TestWidget, 'register_event_type'):
+            
+            widget = self.TestWidget()
+            
+            assert widget.typography_role == 'Label'
+            assert widget.typography_size == 'medium'
+            assert widget.typography_font_weight == ''
+            assert widget.auto_typography is True
+
+    @patch('morphui.uix.behaviors.theming.MorphApp._typography')
+    def test_apply_typography_style(self, mock_app_typography):
+        """Test applying typography styles to widget."""
+        
+        with patch.object(self.TestWidget, 'bind'), \
+             patch.object(self.TestWidget, 'register_event_type'):
+            
+            widget = self.TestWidget()
+            widget._typography = self.mock_typography
+            
+            # Test successful typography application
+            result = widget.apply_typography_style('Headline', 'large', 'Regular')
+            
+            assert result is True
+            self.mock_typography.get_text_style.assert_called_with(
+                role='Headline', size='large', font_weight='Regular')
+
+    @patch('morphui.uix.behaviors.theming.MorphApp._typography')
+    def test_typography_properties(self, mock_app_typography):
+        """Test typography property changes."""
+        
+        with patch.object(self.TestWidget, 'bind'), \
+             patch.object(self.TestWidget, 'register_event_type'):
+            
+            widget = self.TestWidget()
+            
+            # Test changing typography properties
+            widget.typography_role = 'Headline'
+            assert widget.typography_role == 'Headline'
+            
+            widget.typography_size = 'large'
+            assert widget.typography_size == 'large'
+            
+            widget.typography_font_weight = 'Heavy'
+            assert widget.typography_font_weight == 'Heavy'
+
+
+class TestMorphThemeBehaviorSplit:
+    """Test suite for the combined MorphThemeBehavior class after split."""
+
+    class TestWidget(MorphThemeBehavior, Widget):
+        """Test widget that combines Widget with MorphThemeBehavior."""
+        
+        def __init__(self, **kwargs):
+            # Mock properties to avoid Kivy property issues
+            self.background_color = None
+            self.color = None
+            self.border_color = None
+            self.font_name = None
+            self.font_size = None
+            Widget.__init__(self, **kwargs)
+            MorphThemeBehavior.__init__(self, **kwargs)
+
+    @patch('morphui.uix.behaviors.theming.MorphApp._theme_manager')
+    @patch('morphui.uix.behaviors.theming.MorphApp._typography')
+    def test_combined_behavior_inheritance(self, mock_app_typography, mock_app_theme_manager):
+        """Test that MorphThemeBehavior combines both behaviors."""
+        
+        with patch.object(self.TestWidget, 'bind'), \
+             patch.object(self.TestWidget, 'register_event_type'):
+            
+            widget = self.TestWidget()
+            
+            # Should have color theming properties
+            assert hasattr(widget, 'auto_theme')
+            assert hasattr(widget, 'theme_color_bindings')
+            assert hasattr(widget, 'theme_style')
+            assert hasattr(widget, 'apply_theme_color')
+            
+            # Should have typography properties
+            assert hasattr(widget, 'typography_role')
+            assert hasattr(widget, 'typography_size')
+            assert hasattr(widget, 'typography_font_weight')
+            assert hasattr(widget, 'auto_typography')
+            assert hasattr(widget, 'apply_typography_style')
+
+    def test_inheritance_chain(self):
+        """Test that MorphThemeBehavior inherits from both specialized behaviors."""
+        assert issubclass(MorphThemeBehavior, MorphColorThemeBehavior)
+        assert issubclass(MorphThemeBehavior, MorphTypographyBehavior)
+        
+        # Check MRO includes both behaviors
+        mro_names = [cls.__name__ for cls in MorphThemeBehavior.__mro__]
+        assert 'MorphColorThemeBehavior' in mro_names
+        assert 'MorphTypographyBehavior' in mro_names
 
 
 if __name__ == '__main__':

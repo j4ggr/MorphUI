@@ -10,7 +10,8 @@ from kivy.event import EventDispatcher
 from kivy.properties import ColorProperty
 
 
-__all__ = ['MorphDynamicColorPalette']
+__all__ = [
+    'MorphDynamicColorPalette',]
 
 
 def attribute_name_for_color(color: DynamicColor) -> str:

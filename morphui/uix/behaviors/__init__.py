@@ -1,5 +1,7 @@
 from .hover import MorphHoverBehavior
 from .hover import MorphHoverEnhancedBehavior
+from .theming import MorphColorThemeBehavior
+from .theming import MorphTypographyBehavior
 from .theming import MorphThemeBehavior
 from .keypress import MorphKeyPressBehavior
 from .dropdown import MorphDropdownBehavior
@@ -12,7 +14,9 @@ from .autosizing import MorphAutoSizingBehavior
 __all__ = [
     'MorphHoverBehavior',           # Basic hover behavior
     'MorphHoverEnhancedBehavior',   # Enhanced hover with edges/corners
-    'MorphThemeBehavior',           # Theme integration
+    'MorphColorThemeBehavior',      # Color theme integration only
+    'MorphTypographyBehavior',      # Typography integration only
+    'MorphThemeBehavior',           # Combined theme integration (compatibility)
     'MorphKeyPressBehavior',        # Key press handling
     'MorphDropdownBehavior',        # Dropdown functionality
     'MorphBackgroundBehavior',      # Background and border styling

@@ -15,11 +15,13 @@ from ...theme.typography import Typography
 
 
 __all__ = [
+    'MorphColorThemeBehavior',
+    'MorphTypographyBehavior', 
     'MorphThemeBehavior']
 
 
-class MorphThemeBehavior(EventDispatcher):
-    """Behavior that provides automatic theme integration for MorphUI 
+class MorphColorThemeBehavior(EventDispatcher):
+    """Behavior that provides automatic color theme integration for MorphUI 
     widgets.
     
     This behavior enables widgets to automatically respond to theme 
@@ -30,7 +32,7 @@ class MorphThemeBehavior(EventDispatcher):
     
     The behavior integrates seamlessly with other MorphUI behaviors, 
     particularly :class:`MorphBackgroundBehavior`, to provide 
-    comprehensive theming capabilities including background colors,  
+    comprehensive color theming capabilities including background colors,  
     border colors, text colors, and other visual properties.
     
     Key Features
@@ -54,11 +56,11 @@ class MorphThemeBehavior(EventDispatcher):
     Basic usage with automatic color binding:
     
     ```python
-    from morphui.uix.behaviors.theming import MorphThemeBehavior
+    from morphui.uix.behaviors.theming import MorphColorThemeBehavior
     from morphui.uix.behaviors.background import MorphBackgroundBehavior
     from kivy.uix.label import Label
     
-    class ThemedButton(MorphThemeBehavior, MorphBackgroundBehavior, Label):
+    class ThemedButton(MorphColorThemeBehavior, MorphBackgroundBehavior, Label):
         def __init__(self, **kwargs):
             super().__init__(**kwargs)
             # Bind widget properties to theme colors
@@ -72,7 +74,7 @@ class MorphThemeBehavior(EventDispatcher):
     Using predefined styles:
     
     ```python
-    class QuickButton(MorphThemeBehavior, MorphBackgroundBehavior, Label):
+    class QuickButton(MorphColorThemeBehavior, MorphBackgroundBehavior, Label):
         def __init__(self, **kwargs):
             super().__init__(**kwargs)
             # Apply a predefined Material Design style
@@ -82,7 +84,7 @@ class MorphThemeBehavior(EventDispatcher):
     Custom theme change handling:
     
     ```python
-    class AdvancedWidget(MorphThemeBehavior, Widget):
+    class AdvancedWidget(MorphColorThemeBehavior, Widget):
         def on_theme_changed(self):
             # Custom logic when theme changes
             if self.theme_manager.theme_mode == 'Dark':
@@ -94,6 +96,7 @@ class MorphThemeBehavior(EventDispatcher):
     See Also
     --------
     MorphBackgroundBehavior : Provides background and border styling capabilities
+    MorphTypographyBehavior : Provides typography and text styling capabilities
     ThemeManager : Manages application-wide theming and color schemes
     """
 
@@ -180,55 +183,6 @@ class MorphThemeBehavior(EventDispatcher):
     and defaults to {}.
     """
 
-    typography_role: Literal['Display', 'Headline', 'Title', 'Body', 'Label'] = OptionProperty(
-        'Label', options=['Display', 'Headline', 'Title', 'Body', 'Label'])
-    """Typography role for automatic text styling.
-    
-    Sets the Material Design typography role which automatically configures
-    appropriate font family, size, and line height. Available roles: 'Display',
-    'Headline', 'Title', 'Body', 'Label'.
-    
-    When set, the widget automatically applies the corresponding typography
-    style based on the current :attr:`typography_size` and app font settings.
-    
-    :attr:`typography_role` is a :class:`~kivy.properties.StringProperty`
-    and defaults to 'Label'.
-    """
-
-    typography_size: Literal['large', 'medium', 'small'] = OptionProperty(
-        'medium', options=['large', 'medium', 'small'])
-    """Size variant for the typography role.
-    
-    Available options: 'large', 'medium', 'small'
-    Works in conjunction with :attr:`typography_role` to determine
-    the final text styling.
-    
-    :attr:`typography_size` is a :class:`~kivy.properties.OptionProperty`
-    and defaults to 'medium'.
-    """
-
-    typography_font_weight: Literal['Thin', 'Regular', 'Heavy', ''] = OptionProperty(
-        '', options=['Thin', 'Regular', 'Heavy', ''])
-    """Weight variant for the typography role.
-
-    Available options: 'Thin', 'Regular', 'Heavy', ''
-    Works in conjunction with :attr:`typography_role` to determine
-    the final text styling.
-
-    :attr:`typography_weight` is a :class:`~kivy.properties.OptionProperty`
-    and defaults to ''.
-    """
-
-    auto_typography: bool = BooleanProperty(True)
-    """Enable automatic typography updates for this widget.
-    
-    When True, the widget automatically updates its typography when the
-    app font family changes or when typography properties are modified.
-    
-    :attr:`auto_typography` is a :class:`~kivy.properties.BooleanProperty`
-    and defaults to True.
-    """
-
     _bound_theme_colors: Dict[str, str] = {}
     """Track currently bound theme colors to widget properties. Where
     keys are widget property names and values are the corresponding
@@ -245,9 +199,6 @@ class MorphThemeBehavior(EventDispatcher):
     _theme_manager: ThemeManager = MorphApp._theme_manager
     """Reference to the global ThemeManager instance."""
 
-    _typography: Typography = MorphApp._typography
-    """Reference to the global Typography instance."""
-
     _theme_bound: bool = False
     """Track if theme manager events are bound."""
     
@@ -255,21 +206,12 @@ class MorphThemeBehavior(EventDispatcher):
         super().__init__(**kwargs)
         self.register_event_type('on_theme_changed')
         self.register_event_type('on_colors_updated')
-        self.register_event_type('on_typography_changed')
 
         self.theme_manager.bind(
             on_theme_changed=self.on_theme_changed,
             on_colors_updated=self.on_colors_updated)
-        self.typography.bind(
-            on_typography_changed=self.on_typography_changed,)
-        self.bind(
-            typography_role=self._update_typography,
-            typography_size=self._update_typography,
-            auto_typography=self._update_typography,
-            on_typography_changed=self._update_typography)
 
         self.refresh_theme_colors()
-        self.refresh_typography()
 
     @property
     def theme_manager(self) -> ThemeManager:
@@ -282,19 +224,6 @@ class MorphThemeBehavior(EventDispatcher):
         """
         return self._theme_manager
     
-    @property
-    def typography(self) -> Typography:
-        """Access the typography manager for text style management 
-        (read-only).
-
-        The :attr:`typography` attribute provides access to the
-        :class:`Typography` instance, which handles typography and text
-        style management. This instance is automatically initialized as 
-        a class attribute and shared across all instances of this 
-        behavior.
-        """
-        return self._typography
-
     def bind_property_to_theme_color(
             self, widget_property: str, theme_color: str) -> None:
         """Bind a widget property to a dynamic theme color.
@@ -658,6 +587,144 @@ class MorphThemeBehavior(EventDispatcher):
         """
         pass
 
+
+class MorphTypographyBehavior(EventDispatcher):
+    """Behavior that provides automatic typography integration for MorphUI widgets.
+    
+    This behavior enables widgets to automatically apply Material Design 
+    typography styles and respond to typography system changes. It provides 
+    a declarative way to set typography roles, sizes, and weights while 
+    maintaining consistency with the application's typography system.
+    
+    Key Features
+    ------------
+    - Automatic typography updates when app font family changes
+    - Material Design typography role system (Display, Headline, Title, Body, Label)
+    - Typography size variants (large, medium, small)
+    - Font weight control (Thin, Regular, Heavy)
+    - Fine-grained control with :attr:`auto_typography` property
+    - Event-driven updates with :meth:`on_typography_changed` callback
+    
+    Typography Integration
+    ----------------------
+    The behavior automatically connects to the application's 
+    :class:`Typography` system and listens for typography change events. When 
+    changes occur, it updates the widget's typography properties according to 
+    the current role, size, and weight settings.
+    
+    Examples
+    --------
+    Basic usage with typography role:
+    
+    ```python
+    from morphui.uix.behaviors.theming import MorphTypographyBehavior
+    from kivy.uix.label import Label
+    
+    class TypedLabel(MorphTypographyBehavior, Label):
+        def __init__(self, **kwargs):
+            super().__init__(**kwargs)
+            self.typography_role = 'Headline'
+            self.typography_size = 'large'
+    ```
+    
+    Manual typography application:
+    
+    ```python
+    class CustomWidget(MorphTypographyBehavior, Widget):
+        def setup_typography(self):
+            self.apply_typography_style(
+                role='Body', 
+                size='medium', 
+                font_weight='Regular'
+            )
+    ```
+    
+    See Also
+    --------
+    MorphColorThemeBehavior : Provides color theme integration
+    Typography : Manages application-wide typography styles
+    """
+
+    typography_role: Literal['Display', 'Headline', 'Title', 'Body', 'Label'] = OptionProperty(
+        'Label', options=['Display', 'Headline', 'Title', 'Body', 'Label'])
+    """Typography role for automatic text styling.
+    
+    Sets the Material Design typography role which automatically configures
+    appropriate font family, size, and line height. Available roles: 'Display',
+    'Headline', 'Title', 'Body', 'Label'.
+    
+    When set, the widget automatically applies the corresponding typography
+    style based on the current :attr:`typography_size` and app font settings.
+    
+    :attr:`typography_role` is a :class:`~kivy.properties.OptionProperty`
+    and defaults to 'Label'.
+    """
+
+    typography_size: Literal['large', 'medium', 'small'] = OptionProperty(
+        'medium', options=['large', 'medium', 'small'])
+    """Size variant for the typography role.
+    
+    Available options: 'large', 'medium', 'small'
+    Works in conjunction with :attr:`typography_role` to determine
+    the final text styling.
+    
+    :attr:`typography_size` is a :class:`~kivy.properties.OptionProperty`
+    and defaults to 'medium'.
+    """
+
+    typography_font_weight: Literal['Thin', 'Regular', 'Heavy', ''] = OptionProperty(
+        '', options=['Thin', 'Regular', 'Heavy', ''])
+    """Weight variant for the typography role.
+
+    Available options: 'Thin', 'Regular', 'Heavy', ''
+    Works in conjunction with :attr:`typography_role` to determine
+    the final text styling.
+
+    :attr:`typography_font_weight` is a :class:`~kivy.properties.OptionProperty`
+    and defaults to ''.
+    """
+
+    auto_typography: bool = BooleanProperty(True)
+    """Enable automatic typography updates for this widget.
+    
+    When True, the widget automatically updates its typography when the
+    app font family changes or when typography properties are modified.
+    
+    :attr:`auto_typography` is a :class:`~kivy.properties.BooleanProperty`
+    and defaults to True.
+    """
+
+    _typography: Typography = MorphApp._typography
+    """Reference to the global Typography instance."""
+    
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.register_event_type('on_typography_changed')
+
+        self.typography.bind(
+            on_typography_changed=self.on_typography_changed)
+        self.bind(
+            typography_role=self._update_typography,
+            typography_size=self._update_typography,
+            typography_font_weight=self._update_typography,
+            auto_typography=self._update_typography,
+            on_typography_changed=self._update_typography)
+
+        self.refresh_typography()
+
+    @property
+    def typography(self) -> Typography:
+        """Access the typography manager for text style management 
+        (read-only).
+
+        The :attr:`typography` attribute provides access to the
+        :class:`Typography` instance, which handles typography and text
+        style management. This instance is automatically initialized as 
+        a class attribute and shared across all instances of this 
+        behavior.
+        """
+        return self._typography
+
     def apply_typography_style(
             self,
             role: Literal['Display', 'Headline', 'Title', 'Body', 'Label'],
@@ -670,8 +737,10 @@ class MorphThemeBehavior(EventDispatcher):
         ----------
         role : str
             Typography role ('Display', 'Headline', 'Title', 'Body', 'Label')
-        size : str, optional
-            Size variant ('large', 'medium', 'small'), defaults to 'medium'
+        size : str
+            Size variant ('large', 'medium', 'small')
+        font_weight : str, optional
+            Font weight ('Thin', 'Regular', 'Heavy', ''), defaults to ''
             
         Returns
         -------
@@ -726,3 +795,44 @@ class MorphThemeBehavior(EventDispatcher):
         implement custom behavior when the typography system changes.
         """
         pass
+
+
+class MorphThemeBehavior(MorphColorThemeBehavior, MorphTypographyBehavior):
+    """Combined behavior providing both color theming and typography integration.
+    
+    This behavior combines :class:`MorphColorThemeBehavior` and 
+    :class:`MorphTypographyBehavior` to provide comprehensive theming 
+    capabilities including automatic color updates, typography styling,
+    and theme integration.
+    
+    This is a convenience class that provides the same functionality as
+    the original MorphThemeBehavior while allowing users to choose between
+    the combined behavior or individual specialized behaviors.
+    
+    For new code, consider using the individual behaviors (:class:`MorphColorThemeBehavior`
+    and :class:`MorphTypographyBehavior`) for better modularity and clearer separation
+    of concerns.
+    
+    Examples
+    --------
+    Using the combined behavior:
+    
+    ```python
+    from morphui.uix.behaviors.theming import MorphThemeBehavior
+    from morphui.uix.behaviors.background import MorphBackgroundBehavior
+    from kivy.uix.label import Label
+    
+    class FullyThemedLabel(MorphThemeBehavior, MorphBackgroundBehavior, Label):
+        def __init__(self, **kwargs):
+            super().__init__(**kwargs)
+            self.theme_style = 'primary'
+            self.typography_role = 'Headline'
+            self.typography_size = 'large'
+    ```
+    
+    See Also
+    --------
+    MorphColorThemeBehavior : Provides color theme integration only
+    MorphTypographyBehavior : Provides typography integration only
+    """
+    pass
