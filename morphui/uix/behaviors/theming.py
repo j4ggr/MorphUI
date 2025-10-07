@@ -2,10 +2,12 @@ import warnings
 
 from typing import Any
 from typing import Dict
+from typing import List
 from typing import Literal
 
 from kivy.event import EventDispatcher
 from kivy.properties import DictProperty
+from kivy.properties import ColorProperty
 from kivy.properties import StringProperty
 from kivy.properties import OptionProperty
 from kivy.properties import BooleanProperty
@@ -69,7 +71,7 @@ class MorphColorThemeBehavior(EventDispatcher):
             self.theme_color_bindings = {
                 'background_color': 'primary_color',
                 'border_color': 'outline_color',
-                'color': 'text_primary_color'  # text color
+                'text_color': 'text_primary_color'  # text color
             }
     ```
     
@@ -152,7 +154,7 @@ class MorphColorThemeBehavior(EventDispatcher):
     
     This dictionary defines the automatic color binding configuration 
     for the widget. Each key represents a widget property name (such as 
-    'background_color', 'color', 'border_color') and each value 
+    'background_color', 'text_color', 'border_color') and each value 
     represents the corresponding theme color property name from the 
     :class:`ThemeManager` (such as 'primary_color', 'surface_color').
 
@@ -166,7 +168,7 @@ class MorphColorThemeBehavior(EventDispatcher):
     ```python
     widget.theme_color_bindings = {
         'background_color': 'primary_color',
-        'color': 'text_primary_color',
+        'text_color': 'text_primary_color',
         'border_color': 'outline_color'
     }
     ```
@@ -176,13 +178,26 @@ class MorphColorThemeBehavior(EventDispatcher):
     ```python
     widget.theme_color_bindings = {
         'background_color': 'error_color',
-        'color': 'text_error_color',
+        'text_color': 'text_error_color',
         'border_color': 'error_color'
     }
     ```
     
     :attr:`theme_color_bindings` is a :class:`~kivy.properties.DictProperty` 
     and defaults to {}.
+    """
+
+    text_color: List[float] = ColorProperty([0, 0, 0, 1])
+    """Explicit text color property for theme binding disambiguation.
+    
+    This property provides a clear, dedicated binding target for text
+    colors in theme configurations. Since Kivy uses the generic 'text_color'
+    property for text rendering, this explicit `text_color` property
+    allows theme bindings to unambiguously specify text color intentions
+    in :attr:`theme_color_bindings`.
+
+    :attr:`text_color` is a :class:`~kivy.properties.ColorProperty`
+    and defaults to [0, 0, 0, 1] (black).
     """
 
     _bound_theme_colors: Dict[str, str] = {}
@@ -212,7 +227,9 @@ class MorphColorThemeBehavior(EventDispatcher):
         self.theme_manager.bind(
             on_theme_changed=self.on_theme_changed,
             on_colors_updated=self.on_colors_updated)
-
+        
+        if hasattr(self, 'color'):
+            self.bind(text_color=self.setter('color'))
         self.refresh_theme_colors()
 
     @property
@@ -341,7 +358,7 @@ class MorphColorThemeBehavior(EventDispatcher):
         widget_property : str
             The name of the widget property to update. Must be a valid
             property on this widget instance (e.g., 'background_color',
-            'color', 'border_color').
+            'text_color', 'border_color').
         theme_color : str
             The name of the theme color property to use. Must be a valid
             color property on the ThemeManager (e.g., 'primary_color',
@@ -502,8 +519,13 @@ class MorphColorThemeBehavior(EventDispatcher):
           style definitions
         """
         style_mappings = self.theme_style_mappings.get(style_name, None)
-        if style_mappings:
-            self.theme_color_bindings |= style_mappings
+        if style_mappings is not None:
+            self.theme_color_bindings = (
+                self.theme_color_bindings.copy() | style_mappings)
+        elif style_name != '':
+            warnings.warn(
+                f"Unknown theme_style '{style_name}', ignoring",
+                UserWarning)
 
     def add_custom_style(
             self, style_name: str, color_mappings: Dict[str, str]) -> None:
@@ -533,7 +555,7 @@ class MorphColorThemeBehavior(EventDispatcher):
         ```python
         widget.add_custom_style('warning', {
             'background_color': 'error_container_color',
-            'color': 'text_error_container_color',
+            'text_color': 'text_error_container_color',
             'border_color': 'outline_color'
         })
         
@@ -546,7 +568,7 @@ class MorphColorThemeBehavior(EventDispatcher):
         ```python
         widget.add_custom_style('subtle', {
             'background_color': 'surface_variant_color',
-            'color': 'text_surface_variant_color',
+            'text_color': 'text_surface_variant_color',
             'border_color': 'outline_variant_color'
         })
         ```
