@@ -79,8 +79,12 @@ class _Path_:
 PATH = _Path_()
 """Container for path constants."""
 
-with open(PATH.ROOT/'icon_map.toml', 'rb') as f:
-    _icon_map_ = tomllib.load(f)['icons']
+
+with open(PATH.ICON_FONTS/'material_icons.toml', 'rb') as f:
+    _raw_icon_map = tomllib.load(f)['icons']
+_icon_map_ = {
+    name: chr(int(codepoint[2:], 16)) 
+    for name, codepoint in _raw_icon_map.items()}
 
 @dataclass
 class _Icon_:
@@ -90,7 +94,23 @@ class _Icon_:
     """Icon for the open dropdown menu."""
     @property
     def MAP(self) -> Dict[str, str]:
-        """Mapping of icon names to their Unicode characters."""
+        """Mapping of icon names to their actual Unicode characters.
+        
+        Returns a dictionary where keys are icon names and values are 
+        the corresponding Unicode characters ready for use in labels
+        and other text widgets.
+        
+        Examples
+        --------
+        ```python
+        # Use icon directly in label
+        icon_char = ICON.MAP['chevron-up']
+        label.text = icon_char
+        
+        # Or with the predefined constants
+        label.text = ICON.MAP[ICON.DD_MENU_CLOSED]  # 'chevron-up'
+        ```
+        """
         return _icon_map_.copy()
 ICON = _Icon_()
 """Container for icon constants."""

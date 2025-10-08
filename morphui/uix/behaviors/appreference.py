@@ -2,6 +2,7 @@ from typing import Any
 
 from ...app import MorphApp
 from ...theme.manager import ThemeManager
+from ...theme.typography import Typography
 
 __all__ = ['MorphAppReferenceBehavior']
 
@@ -95,11 +96,6 @@ class MorphAppReferenceBehavior:
         instance serves as the central hub for accessing MVC components
         and application-wide services.
 
-        Returns
-        -------
-        Any
-            The running MorphApp instance, or None if no app is running.
-
         Examples
         --------
         ```python
@@ -124,12 +120,6 @@ class MorphAppReferenceBehavior:
         settings. The theme manager is always available through the
         MorphApp instance.
 
-        Returns
-        -------
-        ThemeManager
-            The theme manager instance for accessing theme properties
-            and methods.
-
         Examples
         --------
         ```python
@@ -147,19 +137,23 @@ class MorphAppReferenceBehavior:
         return MorphApp._theme_manager
     
     @property
+    def typography(self) -> Typography:
+        """Get the current typography manager instance (read-only).
+
+        This property provides direct access to the application's
+        typography manager, which handles font styles, sizes, and text
+        layout settings. The typography manager is always available
+        through the MorphApp instance.
+        """
+        return MorphApp._typography
+
+    @property
     def model(self) -> Any:
         """Get the application's model instance (read-only).
 
         This property provides access to the application's model
         component in the MVC pattern. The model typically contains
         application data, business logic, and state management.
-
-        Returns
-        -------
-        Any or None
-            The model instance if configured in the app, None otherwise.
-            This allows for optional MVC architecture where not all
-            components need to be present.
 
         Examples
         --------
@@ -190,13 +184,6 @@ class MorphAppReferenceBehavior:
         as it allows widgets to easily bind their events to controller
         methods, enabling clean separation of concerns and reactive
         programming patterns.
-
-        Returns
-        -------
-        Any or None
-            The controller instance if configured in the app, None
-            otherwise. The controller is optional in the MVC 
-            architecture, allowing for flexible application design.
 
         Examples
         --------
@@ -260,13 +247,6 @@ class MorphAppReferenceBehavior:
         component in the MVC pattern. The view typically represents the
         main UI container or root widget that manages the overall
         application interface.
-
-        Returns
-        -------
-        Any or None
-            The view instance if configured in the app, None otherwise.
-            Like other MVC components, the view is optional and may not
-            be present in all application architectures.
 
         Examples
         --------
