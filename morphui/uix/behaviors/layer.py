@@ -20,7 +20,9 @@ __all__ = [
     'MorphSurfaceLayerBehavior',
     'MorphInteractionLayerBehavior',
     'MorphContentLayerBehavior',
-    'MorphOverlayLayerBehavior',]
+    'MorphInteractiveLayerBehavior',
+    'MorphTextLayerBehavior',
+    'MorphCompleteLayerBehavior',]
 
 
 class BaseLayerBehavior(
@@ -612,3 +614,129 @@ class MorphOverlayLayerBehavior(EventDispatcher):
         This can be overridden by subclasses to perform additional
         actions when the overlay changes."""
         pass
+
+
+# Convenience Mixin Classes for Common Layer Combinations
+
+class MorphInteractiveLayerBehavior(
+        MorphInteractionLayerBehavior,
+        MorphSurfaceLayerBehavior):
+    """Convenience mixin combining surface and interaction layers.
+    
+    This behavior combines surface styling with interaction state 
+    management, making it ideal for interactive widgets like buttons, 
+    cards, and other clickable elements that need both visual styling 
+    and hover/press feedback.
+    
+    Provides:
+    - Surface color, border, and radius styling
+    - Interaction state layers (hover, press, focus)
+    - Automatic theme-aware state colors
+    
+    Examples
+    --------
+    ```python
+    from morphui.uix.behaviors import MorphInteractiveLayerBehavior
+    from morphui.uix.behaviors import MorphHoverBehavior
+    from kivy.uix.label import Label
+    
+    class InteractiveCard(
+        MorphHoverBehavior,
+        MorphInteractiveLayerBehavior, 
+        Label
+    ):
+        pass
+    ```
+    
+    Notes
+    -----
+    - Ensure hover/press behaviors are included for full functionality
+    - The interaction layer automatically appears above the surface
+    - State colors adapt to the current theme (light/dark)
+    """
+    pass
+
+
+class MorphTextLayerBehavior(
+        MorphContentLayerBehavior,
+        MorphSurfaceLayerBehavior):
+    """Convenience mixin combining surface and content layers.
+    
+    This behavior combines surface styling with content color management,
+    making it ideal for text-based widgets like labels, buttons with text,
+    and other widgets that need both background styling and text color 
+    theming.
+    
+    Provides:
+    - Surface color, border, and radius styling  
+    - Content/text color management
+    - Disabled state color handling
+    - Theme-aware color bindings
+    
+    Examples
+    --------
+    ```python
+    from morphui.uix.behaviors import MorphTextLayerBehavior
+    from kivy.uix.label import Label
+    
+    class ThemedLabel(MorphTextLayerBehavior, Label):
+        pass
+    ```
+    
+    Notes
+    -----
+    - Content colors automatically adapt to theme changes
+    - Disabled state colors are handled automatically
+    - Works with any widget that has a 'color' property
+    """
+    pass
+
+
+class MorphCompleteLayerBehavior(
+        MorphOverlayLayerBehavior,
+        MorphContentLayerBehavior,
+        MorphInteractionLayerBehavior,
+        MorphSurfaceLayerBehavior):
+    """Convenience mixin providing all layer behaviors.
+    
+    This behavior combines all available layer behaviors, providing
+    complete styling and interaction capabilities. It's ideal for
+    complex interactive widgets that need full theming support.
+    
+    Provides:
+    - Surface color, border, and radius styling
+    - Interaction state layers (hover, press, focus)
+    - Content/text color management  
+    - Overlay layer capability
+    - Complete theme integration
+    - Disabled state handling
+    
+    Layer Stack (bottom to top):
+    1. Surface Layer - Background, borders
+    2. Interaction Layer - State feedback  
+    3. Content Layer - Text/icon colors
+    4. Overlay Layer - Top-level overlays
+    
+    Examples
+    --------
+    ```python
+    from morphui.uix.behaviors import MorphCompleteLayerBehavior
+    from morphui.uix.behaviors import MorphHoverBehavior
+    from kivy.uix.button import Button
+    
+    class FullFeaturedButton(
+        MorphHoverBehavior,
+        MorphCompleteLayerBehavior,
+        Button
+    ):
+        pass
+    ```
+    
+    Notes
+    -----
+    - This is equivalent to using MorphWidget as a base
+    - Include appropriate interaction behaviors for full functionality
+    - All layers are properly stacked and themed
+    - Consider using more specific mixins if not all layers are needed
+    """
+    pass
