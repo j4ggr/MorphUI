@@ -254,9 +254,8 @@ class MorphStateLayerBehavior(MorphBackgroundBehavior):
             size=self._update_state_layer,
             radius=self._update_state_layer,)
         
-        for state in self.supported_states:
-            self.bind(**{
-                state: lambda _, value: self._on_state_change(state, value)})
+        for s in self.supported_states:
+            self.bind(**{s: lambda _, v, s=s: self._on_state_change(s, v)})
 
     def _update_state_layer(self, *args) -> None:
         """Update the state layer position and size."""
@@ -272,7 +271,7 @@ class MorphStateLayerBehavior(MorphBackgroundBehavior):
         This ensures that the state layer is visible against the
         background. The returned list contains RGB values only.
         """
-        if self._theme_manager.theme_mode == THEME.DARK:
+        if self.theme_manager.theme_mode == THEME.DARK:
             return [1, 1, 1]
         return [0, 0, 0]
     
@@ -286,13 +285,9 @@ class MorphStateLayerBehavior(MorphBackgroundBehavior):
         behavior should have corresponding properties for these states.
         """
         return tuple(s for s in self._supported_states if hasattr(self, s))
-    
-    def _has_other_active_states(
-            self,
-            exclude_state: Literal[
-                'hovered', 'pressed', 'focused', 'disabled', 'active']
-            ) -> bool:
-        """Check if any state other than the excluded one is currently 
+
+    def _has_other_active_states(self, exclude_state: str) -> bool:
+        """Check if any state other than the excluded one is currently
         active.
 
         This method determines whether any of the widget's interactive
@@ -335,25 +330,17 @@ class MorphStateLayerBehavior(MorphBackgroundBehavior):
         return any(
             getattr(self, state, False) for state in other_states)
     
-    def _on_state_change(
-            self,
-            state: Literal['hovered', 'pressed', 'focused', 'disabled', 'active'],
-            value: bool
-            ) -> None:
+    def _on_state_change(self, state: str, value: bool) -> None:
         """Handle changes to the specified state."""
         if not self.allow_state_layer or self._has_other_active_states(state):
             return None
         
         if state in ('hovered', 'pressed', 'focused'):
             if value:
-                if state == 'hovered':
-                    color = (*self._base_layer_color, self.hover_state_opacity)
-                elif state == 'pressed':
-                    color = (*self._base_layer_color, self.press_state_opacity)
-                elif state == 'focused':
-                    color = (*self._base_layer_color, self.focus_state_opacity)
+                opacity = getattr(self, f'{state}_state_opacity', 0)
+                color = (*self._base_layer_color, opacity)
             else:
-                color = self._theme_manager.transparent_color
+                color = self.theme_manager.transparent_color
             self._state_layer_color_instruction.rgba = color
             self.dispatch('on_state_layer_update')
 
