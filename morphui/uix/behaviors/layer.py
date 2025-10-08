@@ -85,14 +85,14 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
     :attr:`surface_color` is a :class:`~kivy.properties.ColorProperty`
     and defaults to `[1, 1, 1, 1]` (white)."""
 
-    surface_color_disabled: ColorProperty = ColorProperty([0, 0, 0, 0])
+    disabled_surface_color: ColorProperty = ColorProperty([0, 0, 0, 0])
     """Background color when the widget is disabled.
 
     This color is applied when the widget is in a disabled state.
     It should be a fully transparent color if you are using state layer.
     Otherwise, it can be set to any RGBA color.
 
-    :attr:`surface_color_disabled` is a
+    :attr:`disabled_surface_color` is a
     :class:`~kivy.properties.ColorProperty` and defaults to 
     `[0, 0, 0, 0]` (transparent)."""
 
@@ -105,12 +105,12 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
     :attr:`border_color` is a :class:`~kivy.properties.ColorProperty`
     and defaults to `[0, 0, 0, 0]` (transparent)."""
 
-    border_color_disabled: ColorProperty = ColorProperty([0, 0, 0, 0])
+    disabled_border_color: ColorProperty = ColorProperty([0, 0, 0, 0])
     """Border color when the widget is disabled.
 
     This color is applied when the widget is in a disabled state.
 
-    :attr:`border_color_disabled` is a
+    :attr:`disabled_border_color` is a
     :class:`~kivy.properties.ColorProperty` and defaults to
     `[0, 0, 0, 0]` (transparent)."""
 
@@ -171,8 +171,8 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
     def _update_surface_layer(self, *args) -> None:
         """Update the surface when any relevant property changes."""
         if self.disabled:
-            surface_color = self.surface_color_disabled
-            border_color = self.surface_color_disabled
+            surface_color = self.disabled_surface_color
+            border_color = self.disabled_border_color
         else:
             surface_color = self.surface_color
             border_color = self.border_color
@@ -442,14 +442,14 @@ class MorphContentLayerBehavior(BaseLayerBehavior):
     and defaults to None.
     """
 
-    content_color_disabled: List[float] | None = ColorProperty(None)
+    disabled_content_color: List[float] | None = ColorProperty(None)
     """Content color to use when the widget is disabled.
 
     This property allows you to specify a different content color for
     the widget when it is in the disabled state. If not set, the default
     content color will be used.
 
-    :attr:`content_color_disabled` is a 
+    :attr:`disabled_content_color` is a 
     :class:`~kivy.properties.ColorProperty` and defaults to None.
     """
 
@@ -460,6 +460,10 @@ class MorphContentLayerBehavior(BaseLayerBehavior):
         self.bind(
             content_color=self._update_content_layer,
             disabled=self._update_content_layer,)
+        if hasattr(self, 'color'):
+            self.bind(content_color=self.setter('color'))
+        if hasattr(self, 'disabled_color'):
+            self.bind(disabled_content_color=self.setter('disabled_color'))
     
     def _update_content_layer(self, *args) -> None:
         """Update the content layer based on the current properties.
@@ -469,8 +473,8 @@ class MorphContentLayerBehavior(BaseLayerBehavior):
         appropriate content color based on the current state.
         """
         if hasattr(self, 'color'):
-            if self.disabled and self.content_color_disabled:
-                color = self.content_color_disabled
+            if self.disabled and self.disabled_content_color:
+                color = self.disabled_content_color
             elif self.content_color:
                 color = self.content_color
             else:
