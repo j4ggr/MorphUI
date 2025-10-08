@@ -4,6 +4,7 @@ from kivy.graphics import SmoothLine
 from kivy.graphics import RoundedRectangle
 from kivy.properties import ColorProperty
 from kivy.properties import NumericProperty
+from kivy.properties import BooleanProperty
 from kivy.properties import VariableListProperty
 from kivy.uix.relativelayout import RelativeLayout
 
@@ -40,6 +41,17 @@ class MorphBackgroundBehavior(EventDispatcher):
     :attr:`background_color` is a :class:`~kivy.properties.ColorProperty`
     and defaults to `[1, 1, 1, 1]` (white)."""
 
+    disabled_background_color: ColorProperty = ColorProperty([0, 0, 0, 0])
+    """Background color when the widget is disabled.
+
+    This color is applied when the widget is in a disabled state.
+    It should be a fully transparent color if you are using state layer.
+    Otherwise, it can be set to any RGBA color.
+
+    :attr:`disabled_background_color` is a
+    :class:`~kivy.properties.ColorProperty` and defaults to 
+    `[0, 0, 0, 0]` (transparent)."""
+
     border_color: ColorProperty = ColorProperty([0, 0, 0, 0])
     """Border color of the widget.
     
@@ -49,6 +61,17 @@ class MorphBackgroundBehavior(EventDispatcher):
     :attr:`border_color` is a :class:`~kivy.properties.ColorProperty`
     and defaults to `[0, 0, 0, 0]` (transparent)."""
 
+    disabled_background_color: ColorProperty = ColorProperty([0, 0, 0, 0])
+    """Background color when the widget is disabled.
+
+    This color is applied when the widget is in a disabled state.
+    It should be a fully transparent color if you are using state layer.
+    Otherwise, it can be set to any RGBA color.
+
+    :attr:`disabled_background_color` is a 
+    :class:`~kivy.properties.ColorProperty` and defaults to 
+    `[0, 0, 0, 0]` (transparent)."""
+
     border_width: float = NumericProperty(1, min=0.01)
     """Width of the border.
 
@@ -56,6 +79,18 @@ class MorphBackgroundBehavior(EventDispatcher):
     
     :attr:`border_width` is a :class:`~kivy.properties.NumericProperty`
     and defaults to `1` (1 pixel wide).
+    """
+
+    disabled: bool = BooleanProperty(False)
+    """Whether the widget is disabled.
+
+    When `True`, the `disabled_background_color` is used for the 
+    background and border colors. Changing the background or border
+    colors while disabled will have no effect until `disabled` is set
+    to `False`.
+
+    :attr:`disabled` is a :class:`~kivy.properties.BooleanProperty`
+    and defaults to `False`.
     """
 
     _background_color_instruction: Color
@@ -87,7 +122,8 @@ class MorphBackgroundBehavior(EventDispatcher):
             pos=self._update_background,
             radius=self._update_background,
             border_color=self._update_background,
-            border_width=self._update_background,)
+            border_width=self._update_background,
+            disabled=self._update_background,)
         
         with self.canvas.before:
             self._background_color_instruction = Color(*self.background_color)
@@ -120,12 +156,19 @@ class MorphBackgroundBehavior(EventDispatcher):
     
     def _update_background(self, *args) -> None:
         """Update the background when any relevant property changes."""
-        self._background_color_instruction.rgba = self.background_color
+        if self.disabled:
+            background_color = self.disabled_background_color
+            border_color = self.disabled_background_color
+        else:
+            background_color = self.background_color
+            border_color = self.border_color
+
+        self._background_color_instruction.rgba = background_color
         self._background_instruction.pos = self.pos
         self._background_instruction.size = self.size
         self._background_instruction.radius = self.radius
         
-        self._border_color_instruction.rgba = self.border_color
+        self._border_color_instruction.rgba = border_color
         self._border_instruction.width = self.border_width
         self._border_instruction.rounded_rectangle = self._rounded_rectangle
 
