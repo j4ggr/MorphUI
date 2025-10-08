@@ -530,7 +530,7 @@ class ThemeManager(MorphDynamicColorPalette):
         ```python
         def update_widget_colors(self):
             self.surface_color = theme_manager.background_color
-            self.text_color = theme_manager.text_background_color
+            self.content_color = theme_manager.content_background_color
 
         theme_manager.bind(on_colors_updated=update_widget_colors)
         ```

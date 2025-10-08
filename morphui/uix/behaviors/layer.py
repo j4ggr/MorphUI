@@ -398,7 +398,7 @@ class MorphInteractionLayerBehavior(BaseLayerBehavior):
             f'State {state!r} is not supported. Supported states are: '
             f'{self.supported_states}')
             
-        self.interaction_color = [*self._base_layer_color[:3], opacity]
+        self.interaction_color = [*self._interaction_color[:3], opacity]
     
     def refresh_interaction(self) -> None:
         """Reapply the current state layer based on the widget's state.

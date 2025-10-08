@@ -69,7 +69,7 @@ class MorphColorThemeBehavior(EventDispatcher):
             self.theme_color_bindings = {
                 'surface_color': 'primary_color',
                 'border_color': 'outline_color',
-                'text_color': 'text_primary_color'  # text color
+                'content_color': 'content_primary_color'  # text color
             }
     ```
     
@@ -155,7 +155,7 @@ class MorphColorThemeBehavior(EventDispatcher):
     
     This dictionary defines the automatic color binding configuration 
     for the widget. Each key represents a widget property name (such as 
-    'surface_color', 'text_color', 'border_color') and each value 
+    'surface_color', 'content_color', 'border_color') and each value 
     represents the corresponding theme color property name from the 
     :class:`ThemeManager` (such as 'primary_color', 'surface_color').
 
@@ -169,7 +169,7 @@ class MorphColorThemeBehavior(EventDispatcher):
     ```python
     widget.theme_color_bindings = {
         'surface_color': 'primary_color',
-        'text_color': 'text_primary_color',
+        'content_color': 'content_primary_color',
         'border_color': 'outline_color'
     }
     ```
@@ -179,7 +179,7 @@ class MorphColorThemeBehavior(EventDispatcher):
     ```python
     widget.theme_color_bindings = {
         'surface_color': 'error_color',
-        'text_color': 'text_error_color',
+        'content_color': 'content_error_color',
         'border_color': 'error_color'
     }
     ```
@@ -254,7 +254,7 @@ class MorphColorThemeBehavior(EventDispatcher):
         widget_property : str
             The name of the widget property to update. Must be a valid
             property on this widget instance (e.g., 'surface_color',
-            'text_color', 'border_color').
+            'content_color', 'border_color').
         theme_color : str
             The name of the theme color property to use. Must be a valid
             color property on the ThemeManager (e.g., 'primary_color',
@@ -449,7 +449,7 @@ class MorphColorThemeBehavior(EventDispatcher):
         ```python
         widget.add_custom_style('warning', {
             'surface_color': 'error_container_color',
-            'text_color': 'text_error_container_color',
+            'content_color': 'content_error_container_color',
             'border_color': 'outline_color'
         })
         
@@ -462,7 +462,7 @@ class MorphColorThemeBehavior(EventDispatcher):
         ```python
         widget.add_custom_style('subtle', {
             'surface_color': 'surface_variant_color',
-            'text_color': 'text_surface_variant_color',
+            'content_color': 'content_surface_variant_color',
             'border_color': 'outline_variant_color'
         })
         ```

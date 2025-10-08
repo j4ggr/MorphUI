@@ -23,7 +23,7 @@ def attribute_name_for_color(color: DynamicColor) -> str:
     returned unchanged; otherwise, '_color' is appended to the name.
     
     Special handling for names starting with 'on_' to avoid conflicts
-    with Kivy's event handling system by prefixing them with 'text_'.
+    with Kivy's event handling system by prefixing them with 'content_'.
 
     Parameters
     ----------
@@ -39,10 +39,10 @@ def attribute_name_for_color(color: DynamicColor) -> str:
     
     # Handle 'on_' prefix to avoid Kivy event handler conflicts
     if name.startswith('on_'):
-        # Convert 'on_background' -> 'text_background_color'
-        # Convert 'on_primary' -> 'text_primary_color'
-        name = 'text_' + name[3:]  # Remove 'on_' and add 'text_'
-    
+        # Convert 'on_background' -> 'content_background_color'
+        # Convert 'on_primary' -> 'content_primary_color'
+        name = 'content_' + name[3:]  # Remove 'on_' and add 'content_'
+
     if not name.endswith('_color'):
         name += '_color'
     return name
@@ -87,13 +87,13 @@ class MorphDynamicColorPalette(EventDispatcher):
           tertiary_palette_key_color
         - neutral_palette_key_color, neutral_variant_palette_key_color
     Core UI colors:
-        - background_color, text_background_color
+        - background_color, content_background_color
         - surface_color, surface_dim_color, surface_bright_color
         - surface_container_lowest_color, surface_container_low_color,
           surface_container_color
         - surface_container_high_color, surface_container_highest_color
-        - text_surface_color, surface_variant_color,
-          text_surface_variant_color
+        - content_surface_color, surface_variant_color,
+          content_surface_variant_color
         - inverse_surface_color, inverse_on_surface_color
     Outline and shadow colors:
         - outline_color, outline_variant_color
@@ -102,27 +102,27 @@ class MorphDynamicColorPalette(EventDispatcher):
         - surface_tint_color
     Primary, secondary, tertiary, and error colors
         (and their containers and text variants)
-        - primary_color, text_primary_color, primary_container_color,
-          text_primary_container_color, inverse_primary_color
-        - secondary_color, text_secondary_color,
-          secondary_container_color, text_secondary_container_color
-        - tertiary_color, text_tertiary_color, tertiary_container_color,
-          text_tertiary_container_color
-        - error_color, text_error_color, error_container_color,
-          text_error_container_color
+        - primary_color, content_primary_color, primary_container_color,
+          content_primary_container_color, inverse_primary_color
+        - secondary_color, content_secondary_color,
+          secondary_container_color, content_secondary_container_color
+        - tertiary_color, content_tertiary_color, tertiary_container_color,
+          content_tertiary_container_color
+        - error_color, content_error_color, error_container_color,
+          content_error_container_color
     Fixed palette colors for accessibility and contrast:
         - primary_fixed_color, primary_fixed_dim_color,
-          text_primary_fixed_color, text_primary_fixed_variant_color
+          content_primary_fixed_color, content_primary_fixed_variant_color
         - secondary_fixed_color, secondary_fixed_dim_color,
-          text_secondary_fixed_color, text_secondary_fixed_variant_color
+          content_secondary_fixed_color, content_secondary_fixed_variant_color
         - tertiary_fixed_color, tertiary_fixed_dim_color,
-          text_tertiary_fixed_color, text_tertiary_fixed_variant_color
+          content_tertiary_fixed_color, content_tertiary_fixed_variant_color
     
     Notes
     -----
     Material You colors starting with 'on_' (like 'on_background', 
-    'on_primary') are renamed to 'text_' prefixed variants (like 
-    'text_background_color', 'text_primary_color') to avoid conflicts 
+    'on_primary') are renamed to 'content_' prefixed variants (like 
+    'content_background_color', 'content_primary_color') to avoid conflicts 
     with Kivy's event handling system which treats attributes starting 
     with 'on_' as event handlers.
     
@@ -302,139 +302,139 @@ class MorphDynamicColorPalette(EventDispatcher):
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    text_background_color: List[float] | None = ColorProperty(None)
-    """Text background color.
+    content_background_color: List[float] | None = ColorProperty(None)
+    """Content background color.
     This property holds the dynamic color value set by the theme.
 
-    :attr:`text_background_color` is a
+    :attr:`content_background_color` is a
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    text_error_color: List[float] | None = ColorProperty(None)
-    """Text error color.
+    content_error_color: List[float] | None = ColorProperty(None)
+    """Content error color.
     This property holds the dynamic color value set by the theme.
 
-    :attr:`text_error_color` is a
+    :attr:`content_error_color` is a
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    text_error_container_color: List[float] | None = ColorProperty(None)
-    """Text error container color.
+    content_error_container_color: List[float] | None = ColorProperty(None)
+    """Content error container color.
     This property holds the dynamic color value set by the theme.
 
-    :attr:`text_error_container_color` is a
+    :attr:`content_error_container_color` is a
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    text_primary_color: List[float] | None = ColorProperty(None)
-    """Text primary color.
+    content_primary_color: List[float] | None = ColorProperty(None)
+    """Content primary color.
     This property holds the dynamic color value set by the theme.
 
-    :attr:`text_primary_color` is a
+    :attr:`content_primary_color` is a
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    text_primary_container_color: List[float] | None = ColorProperty(None)
-    """Text primary container color.
+    content_primary_container_color: List[float] | None = ColorProperty(None)
+    """Content primary container color.
     This property holds the dynamic color value set by the theme.
 
-    :attr:`text_primary_container_color` is a
+    :attr:`content_primary_container_color` is a
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    text_primary_fixed_color: List[float] | None = ColorProperty(None)
-    """Text primary fixed color.
+    content_primary_fixed_color: List[float] | None = ColorProperty(None)
+    """Content primary fixed color.
     This property holds the dynamic color value set by the theme.
 
-    :attr:`text_primary_fixed_color` is a
+    :attr:`content_primary_fixed_color` is a
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    text_primary_fixed_variant_color: List[float] | None = ColorProperty(None)
-    """Text primary fixed variant color.
+    content_primary_fixed_variant_color: List[float] | None = ColorProperty(None)
+    """Content primary fixed variant color.
     This property holds the dynamic color value set by the theme.
 
-    :attr:`text_primary_fixed_variant_color` is a
+    :attr:`content_primary_fixed_variant_color` is a
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    text_secondary_color: List[float] | None = ColorProperty(None)
-    """Text secondary color.
+    content_secondary_color: List[float] | None = ColorProperty(None)
+    """Content secondary color.
     This property holds the dynamic color value set by the theme.
 
-    :attr:`text_secondary_color` is a
+    :attr:`content_secondary_color` is a
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    text_secondary_container_color: List[float] | None = ColorProperty(None)
-    """Text secondary container color.
+    content_secondary_container_color: List[float] | None = ColorProperty(None)
+    """Content secondary container color.
     This property holds the dynamic color value set by the theme.
 
-    :attr:`text_secondary_container_color` is a
+    :attr:`content_secondary_container_color` is a
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    text_secondary_fixed_color: List[float] | None = ColorProperty(None)
-    """Text secondary fixed color.
+    content_secondary_fixed_color: List[float] | None = ColorProperty(None)
+    """Content secondary fixed color.
     This property holds the dynamic color value set by the theme.
 
-    :attr:`text_secondary_fixed_color` is a
+    :attr:`content_secondary_fixed_color` is a
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    text_secondary_fixed_variant_color: List[float] | None = ColorProperty(None)
-    """Text secondary fixed variant color.
+    content_secondary_fixed_variant_color: List[float] | None = ColorProperty(None)
+    """Content secondary fixed variant color.
     This property holds the dynamic color value set by the theme.
 
-    :attr:`text_secondary_fixed_variant_color` is a
+    :attr:`content_secondary_fixed_variant_color` is a
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    text_surface_color: List[float] | None = ColorProperty(None)
-    """Text surface color.
+    content_surface_color: List[float] | None = ColorProperty(None)
+    """Content surface color.
     This property holds the dynamic color value set by the theme.
 
-    :attr:`text_surface_color` is a
+    :attr:`content_surface_color` is a
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    text_surface_variant_color: List[float] | None = ColorProperty(None)
-    """Text surface variant color.
+    content_surface_variant_color: List[float] | None = ColorProperty(None)
+    """Content surface variant color.
     This property holds the dynamic color value set by the theme.
 
-    :attr:`text_surface_variant_color` is a
+    :attr:`content_surface_variant_color` is a
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    text_tertiary_color: List[float] | None = ColorProperty(None)
-    """Text tertiary color.
+    content_tertiary_color: List[float] | None = ColorProperty(None)
+    """Content tertiary color.
     This property holds the dynamic color value set by the theme.
 
-    :attr:`text_tertiary_color` is a
+    :attr:`content_tertiary_color` is a
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    text_tertiary_container_color: List[float] | None = ColorProperty(None)
-    """Text tertiary container color.
+    content_tertiary_container_color: List[float] | None = ColorProperty(None)
+    """Content tertiary container color.
     This property holds the dynamic color value set by the theme.
 
-    :attr:`text_tertiary_container_color` is a
+    :attr:`content_tertiary_container_color` is a
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    text_tertiary_fixed_color: List[float] | None = ColorProperty(None)
-    """Text tertiary fixed color.
+    content_tertiary_fixed_color: List[float] | None = ColorProperty(None)
+    """Content tertiary fixed color.
     This property holds the dynamic color value set by the theme.
 
-    :attr:`text_tertiary_fixed_color` is a
+    :attr:`content_tertiary_fixed_color` is a
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    text_tertiary_fixed_variant_color: List[float] | None = ColorProperty(None)
-    """Text tertiary fixed variant color.
+    content_tertiary_fixed_variant_color: List[float] | None = ColorProperty(None)
+    """Content tertiary fixed variant color.
     This property holds the dynamic color value set by the theme.
 
-    :attr:`text_tertiary_fixed_variant_color` is a
+    :attr:`content_tertiary_fixed_variant_color` is a
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 

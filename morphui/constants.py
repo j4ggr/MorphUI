@@ -38,27 +38,27 @@ class _Theme_:
         return {
             'primary': {
                 'surface_color': 'primary_color',
-                'text_color': 'text_primary_color',
+                'content_color': 'content_primary_color',
                 'border_color': 'primary_color',},
 
             'secondary': {
                 'surface_color': 'secondary_color', 
-                'text_color': 'text_secondary_color',
+                'content_color': 'content_secondary_color',
                 'border_color': 'secondary_color',},
 
             'surface': {
                 'surface_color': 'surface_color',
-                'text_color': 'text_surface_color',
+                'content_color': 'content_surface_color',
                 'border_color': 'outline_color',},
 
             'error': {
                 'surface_color': 'error_color',
-                'text_color': 'text_error_color', 
+                'content_color': 'content_error_color', 
                 'border_color': 'error_color',},
 
             'outline': {
                 'surface_color': 'surface_color',
-                'text_color': 'text_on_surface_color',
+                'content_color': 'content_on_surface_color',
                 'border_color': 'outline_color',},}
 THEME = _Theme_()
 """Container for theme-related constants."""
@@ -375,7 +375,7 @@ class _Fonts_:
         label = Label(
             text='Display Text',
             font_size=display_large['font_size'],
-            text_size=(None, None)  # Enable line_height
+            content_size=(None, None)  # Enable line_height
         )
         ```
         

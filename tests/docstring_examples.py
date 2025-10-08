@@ -23,21 +23,34 @@ from morphui.app import MorphApp
 from morphui.uix.label import MorphLabel
 from morphui.uix.boxlayout import MorphBoxLayout
 from morphui.uix.behaviors import MorphHoverBehavior
-from morphui.uix.behaviors import MorphInteractionBehavior
+from morphui.uix.behaviors import MorphInteractionLayerBehavior
 
 
-class TestWidget(MorphHoverBehavior, MorphInteractionBehavior, MorphLabel):
+class HoverLabel(
+        MorphHoverBehavior,
+        MorphInteractionLayerBehavior,
+        MorphLabel):
     pass
+
+
+class DisabledLabel(
+        MorphInteractionLayerBehavior,
+        MorphLabel):
+
+    def on_disabled(self, instance, disabled) -> None:
+        self.text = "Disabled" if disabled else "Enabled"
 
 
 class MyApp(MorphApp):
     def build(self) -> MorphBoxLayout:
-        self.w2 = TestWidget(
+        self.theme_manager.seed_color = 'Purple'
+
+        self.w2 = DisabledLabel(
             text="Disabled",
-            theme_style='primary',
+            theme_style='secondary',
             disabled=True,)
         layout = MorphBoxLayout(
-            TestWidget(text="Hover Me", theme_style='primary'),
+            HoverLabel(text="Hover Me", theme_style='primary'),
             self.w2,
             orientation='vertical',
             padding=100,
@@ -46,11 +59,11 @@ class MyApp(MorphApp):
         return layout
 
     def on_start(self):
+        dt = 2
         Clock.schedule_interval(
-            lambda dt: setattr(self.w2, 'disabled', not self.w2.disabled), 2)
-        self.w2.bind(
-            disabled=lambda i, v: setattr(
-                self.w2, 'text', "Disabled" if v else "Enabled"))
+            lambda dt: setattr(self.w2, 'disabled', not self.w2.disabled), dt)
+        Clock.schedule_interval(
+            lambda dt: self.theme_manager.toggle_theme_mode(), dt * 2)
         return super().on_start()
 
 if __name__ == '__main__':

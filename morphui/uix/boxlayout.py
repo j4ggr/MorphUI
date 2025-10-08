@@ -41,7 +41,7 @@ class MorphBoxLayout(
                     text="Label 1",
                     theme_color_bindings={
                         'surface_color': 'surface_container_color',
-                        'text_color': 'text_surface_color',
+                        'content_color': 'content_surface_color',
                         'border_color': 'outline_color',},
                     radius=[5, 25, 5, 25],),
                 MorphLabel(
@@ -49,7 +49,7 @@ class MorphBoxLayout(
                     text="Label 2",
                     theme_color_bindings={
                         'surface_color': 'surface_container_low_color',
-                        'text_color': 'text_surface_color',
+                        'content_color': 'content_surface_color',
                         'border_color': 'outline_variant_color',},
                     radius=[25, 5, 25, 5],),
                 theme_style='surface',
@@ -60,4 +60,5 @@ class MorphBoxLayout(
             
     MyApp().run()
     """
-    pass
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)

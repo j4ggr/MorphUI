@@ -586,7 +586,7 @@ class TestMorphThemeBehavior:
         from morphui.theme.manager import ThemeManager
         self.mock_theme_manager = Mock(spec=ThemeManager)
         self.mock_theme_manager.primary_color = [1.0, 0.0, 0.0, 1.0]
-        self.mock_theme_manager.text_primary_color = [1.0, 1.0, 1.0, 1.0]
+        self.mock_theme_manager.content_primary_color = [1.0, 1.0, 1.0, 1.0]
         self.mock_theme_manager.surface_color = [0.9, 0.9, 0.9, 1.0]
         self.mock_theme_manager.outline_color = [0.5, 0.5, 0.5, 1.0]
 
@@ -598,7 +598,7 @@ class TestMorphThemeBehavior:
             self.surface_color = [1, 1, 1, 1]
             self.color = [0, 0, 0, 1]
             self.border_color = [0, 0, 0, 0]
-            self.text_color = [0, 0, 0, 1]
+            self.content_color = [0, 0, 0, 1]
             Widget.__init__(self, **kwargs)
             MorphThemeBehavior.__init__(self, **kwargs)
 
@@ -642,15 +642,15 @@ class TestMorphThemeBehavior:
         # Configure the mock to return our mock theme manager
         mock_app_theme_manager.configure_mock(**{
             'primary_color': [1.0, 0.0, 0.0, 1.0],
-            'text_primary_color': [1.0, 1.0, 1.0, 1.0],
+            'content_primary_color': [1.0, 1.0, 1.0, 1.0],
             'secondary_color': [0.0, 1.0, 0.0, 1.0],
-            'text_secondary_color': [0.8, 0.8, 0.8, 1.0],
+            'content_secondary_color': [0.8, 0.8, 0.8, 1.0],
             'surface_color': [0.9, 0.9, 0.9, 1.0],
-            'text_surface_color': [0.2, 0.2, 0.2, 1.0],
+            'content_surface_color': [0.2, 0.2, 0.2, 1.0],
             'error_color': [1.0, 0.0, 0.0, 1.0],
-            'text_error_color': [1.0, 1.0, 1.0, 1.0],
+            'content_error_color': [1.0, 1.0, 1.0, 1.0],
             'outline_color': [0.5, 0.5, 0.5, 1.0],
-            'text_on_surface_color': [0.1, 0.1, 0.1, 1.0],
+            'content_on_surface_color': [0.1, 0.1, 0.1, 1.0],
         })
         
         with patch.object(self.TestWidget, 'bind'), \
@@ -672,15 +672,15 @@ class TestMorphThemeBehavior:
         # Configure the mock to return our mock theme manager
         mock_app_theme_manager.configure_mock(**{
             'primary_color': [1.0, 0.0, 0.0, 1.0],
-            'text_primary_color': [1.0, 1.0, 1.0, 1.0],
+            'content_primary_color': [1.0, 1.0, 1.0, 1.0],
         })
         
         # Override the mock's __hasattr__ to properly handle non-existent attributes
         def mock_hasattr(attr):
-            return attr in ['primary_color', 'text_primary_color']
+            return attr in ['primary_color', 'content_primary_color']
         
         # Set up the mock to behave more like a real object for hasattr checks
-        type(mock_app_theme_manager).__contains__ = lambda self, item: item in ['primary_color', 'text_primary_color']
+        type(mock_app_theme_manager).__contains__ = lambda self, item: item in ['primary_color', 'content_primary_color']
         
         with patch.object(self.TestWidget, 'bind'), \
              patch.object(self.TestWidget, 'register_event_type'):
@@ -691,7 +691,7 @@ class TestMorphThemeBehavior:
             
             # Test with non-existent theme color by patching hasattr directly
             with patch('builtins.hasattr') as mock_hasattr:
-                mock_hasattr.side_effect = lambda obj, attr: attr in ['primary_color', 'text_primary_color'] if obj is mock_app_theme_manager else hasattr(obj, attr)
+                mock_hasattr.side_effect = lambda obj, attr: attr in ['primary_color', 'content_primary_color'] if obj is mock_app_theme_manager else hasattr(obj, attr)
                 result = widget.apply_theme_color('surface_color', 'nonexistent_color')
                 assert result is False
             
@@ -713,15 +713,15 @@ class TestMorphThemeBehavior:
         # Configure the mock to return our mock theme manager
         mock_app_theme_manager.configure_mock(**{
             'primary_color': [1.0, 0.0, 0.0, 1.0],
-            'text_primary_color': [1.0, 1.0, 1.0, 1.0],
+            'content_primary_color': [1.0, 1.0, 1.0, 1.0],
             'secondary_color': [0.0, 1.0, 0.0, 1.0],
-            'text_secondary_color': [0.8, 0.8, 0.8, 1.0],
+            'content_secondary_color': [0.8, 0.8, 0.8, 1.0],
             'surface_color': [0.9, 0.9, 0.9, 1.0],
-            'text_surface_color': [0.2, 0.2, 0.2, 1.0],
+            'content_surface_color': [0.2, 0.2, 0.2, 1.0],
             'error_color': [1.0, 0.0, 0.0, 1.0],
-            'text_error_color': [1.0, 1.0, 1.0, 1.0],
+            'content_error_color': [1.0, 1.0, 1.0, 1.0],
             'outline_color': [0.5, 0.5, 0.5, 1.0],
-            'text_on_surface_color': [0.1, 0.1, 0.1, 1.0],
+            'content_on_surface_color': [0.1, 0.1, 0.1, 1.0],
         })
         
         with patch.object(self.TestWidget, 'bind'), \
@@ -731,7 +731,7 @@ class TestMorphThemeBehavior:
             widget = self.TestWidget()
             # Set up valid widget properties
             widget.surface_color = [1, 1, 1, 1]
-            widget.text_color = [0, 0, 0, 1]
+            widget.content_color = [0, 0, 0, 1]
             widget.border_color = [0, 0, 0, 0]
             
             # Test setting primary style
@@ -776,7 +776,7 @@ class TestMorphThemeBehavior:
             # Add a custom style
             custom_mappings = {
                 'surface_color': 'tertiary_color',
-                'text_color': 'on_tertiary_color'
+                'content_color': 'on_tertiary_color'
             }
             
             widget.add_custom_style('custom', custom_mappings)
@@ -851,14 +851,14 @@ class TestMorphColorThemeBehavior:
         from morphui.theme.manager import ThemeManager
         self.mock_theme_manager = Mock(spec=ThemeManager)
         self.mock_theme_manager.primary_color = [1.0, 0.0, 0.0, 1.0]
-        self.mock_theme_manager.text_primary_color = [1.0, 1.0, 1.0, 1.0]
+        self.mock_theme_manager.content_primary_color = [1.0, 1.0, 1.0, 1.0]
         self.mock_theme_manager.surface_color = [0.9, 0.9, 0.9, 1.0]
         self.mock_theme_manager.outline_color = [0.5, 0.5, 0.5, 1.0]
-        self.mock_theme_manager.text_primary_color = [1.0, 1.0, 1.0, 1.0]
-        self.mock_theme_manager.text_secondary_color = [0.8, 0.8, 0.8, 1.0]
-        self.mock_theme_manager.text_surface_color = [0.2, 0.2, 0.2, 1.0]
-        self.mock_theme_manager.text_error_color = [1.0, 1.0, 1.0, 1.0]
-        self.mock_theme_manager.text_on_surface_color = [0.1, 0.1, 0.1, 1.0]
+        self.mock_theme_manager.content_primary_color = [1.0, 1.0, 1.0, 1.0]
+        self.mock_theme_manager.content_nt_secondary_color = [0.8, 0.8, 0.8, 1.0]
+        self.mock_theme_manager.content_surface_color = [0.2, 0.2, 0.2, 1.0]
+        self.mock_theme_manager.content_error_color = [1.0, 1.0, 1.0, 1.0]
+        self.mock_theme_manager.content_on_surface_color = [0.1, 0.1, 0.1, 1.0]
         self.mock_theme_manager.secondary_color = [0.0, 1.0, 0.0, 1.0]
         self.mock_theme_manager.error_color = [1.0, 0.0, 0.0, 1.0]
 
@@ -870,7 +870,7 @@ class TestMorphColorThemeBehavior:
             self.surface_color = [1, 1, 1, 1]
             self.color = [0, 0, 0, 1]
             self.border_color = [0, 0, 0, 0]
-            self.text_color = [0, 0, 0, 1]
+            self.content_color = [0, 0, 0, 1]
             Widget.__init__(self, **kwargs)
             MorphColorThemeBehavior.__init__(self, **kwargs)
 
@@ -880,15 +880,15 @@ class TestMorphColorThemeBehavior:
         # Configure the mock to return our mock theme manager
         mock_app_theme_manager.configure_mock(**{
             'primary_color': [1.0, 0.0, 0.0, 1.0],
-            'text_primary_color': [1.0, 1.0, 1.0, 1.0],
+            'content_primary_color': [1.0, 1.0, 1.0, 1.0],
             'secondary_color': [0.0, 1.0, 0.0, 1.0],
-            'text_secondary_color': [0.8, 0.8, 0.8, 1.0],
+            'content_secondary_color': [0.8, 0.8, 0.8, 1.0],
             'surface_color': [0.9, 0.9, 0.9, 1.0],
-            'text_surface_color': [0.2, 0.2, 0.2, 1.0],
+            'content_surface_color': [0.2, 0.2, 0.2, 1.0],
             'error_color': [1.0, 0.0, 0.0, 1.0],
-            'text_error_color': [1.0, 1.0, 1.0, 1.0],
+            'content_error_color': [1.0, 1.0, 1.0, 1.0],
             'outline_color': [0.5, 0.5, 0.5, 1.0],
-            'text_on_surface_color': [0.1, 0.1, 0.1, 1.0],
+            'content_on_surface_color': [0.1, 0.1, 0.1, 1.0],
         })
         
         with patch.object(self.TestWidget, 'bind'), \
@@ -906,15 +906,15 @@ class TestMorphColorThemeBehavior:
         # Configure the mock to return our mock theme manager
         mock_app_theme_manager.configure_mock(**{
             'primary_color': [1.0, 0.0, 0.0, 1.0],
-            'text_primary_color': [1.0, 1.0, 1.0, 1.0],
+            'content_primary_color': [1.0, 1.0, 1.0, 1.0],
             'secondary_color': [0.0, 1.0, 0.0, 1.0],
-            'text_secondary_color': [0.8, 0.8, 0.8, 1.0],
+            'content_secondary_color': [0.8, 0.8, 0.8, 1.0],
             'surface_color': [0.9, 0.9, 0.9, 1.0],
-            'text_surface_color': [0.2, 0.2, 0.2, 1.0],
+            'content_surface_color': [0.2, 0.2, 0.2, 1.0],
             'error_color': [1.0, 0.0, 0.0, 1.0],
-            'text_error_color': [1.0, 1.0, 1.0, 1.0],
+            'content_error_color': [1.0, 1.0, 1.0, 1.0],
             'outline_color': [0.5, 0.5, 0.5, 1.0],
-            'text_on_surface_color': [0.1, 0.1, 0.1, 1.0],
+            'content_on_surface_color': [0.1, 0.1, 0.1, 1.0],
         })
         
         with patch.object(self.TestWidget, 'bind'), \
@@ -934,15 +934,15 @@ class TestMorphColorThemeBehavior:
         # Configure the mock to return our mock theme manager
         mock_app_theme_manager.configure_mock(**{
             'primary_color': [1.0, 0.0, 0.0, 1.0],
-            'text_primary_color': [1.0, 1.0, 1.0, 1.0],
+            'content_primary_color': [1.0, 1.0, 1.0, 1.0],
             'secondary_color': [0.0, 1.0, 0.0, 1.0],
-            'text_secondary_color': [0.8, 0.8, 0.8, 1.0],
+            'content_secondary_color': [0.8, 0.8, 0.8, 1.0],
             'surface_color': [0.9, 0.9, 0.9, 1.0],
-            'text_surface_color': [0.2, 0.2, 0.2, 1.0],
+            'content_surface_color': [0.2, 0.2, 0.2, 1.0],
             'error_color': [1.0, 0.0, 0.0, 1.0],
-            'text_error_color': [1.0, 1.0, 1.0, 1.0],
+            'content_error_color': [1.0, 1.0, 1.0, 1.0],
             'outline_color': [0.5, 0.5, 0.5, 1.0],
-            'text_on_surface_color': [0.1, 0.1, 0.1, 1.0],
+            'content_on_surface_color': [0.1, 0.1, 0.1, 1.0],
         })
         
         with patch.object(self.TestWidget, 'bind'), \
