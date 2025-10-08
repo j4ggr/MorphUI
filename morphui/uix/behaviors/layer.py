@@ -427,7 +427,23 @@ class MorphInteractionLayerBehavior(BaseLayerBehavior):
 
 
 class MorphContentLayerBehavior(BaseLayerBehavior):
-    """"""
+    """A behavior class that provides content layer capabilities.
+
+    This behavior adds content color properties to widgets, allowing
+    them to style their content (e.g., text, icons) based on
+    different states. It automatically manages the content color
+    based on the widget's state (e.g., disabled).
+
+    Notes
+    -----
+    The kivy Label widget uses the generic `color` property for text
+    rendering. This can lead to ambiguity in theme configurations where
+    the intention is to specify a content color. The `content_color`
+    property provides a clear, dedicated binding target for content
+    colors in theme configurations. The label widget does also support
+    a `outline_color` and `disabled_outline_color` property, which can 
+    be used for text outlines/shadows, but this is less commonly used.
+    """
     
     content_color: List[float] | None = ColorProperty(None)
     """Explicit content color property for theme binding disambiguation.
@@ -512,6 +528,7 @@ class MorphContentLayerBehavior(BaseLayerBehavior):
         This can be overridden by subclasses to perform additional
         actions when the content layer changes."""
         pass
+
 
 class MorphOverlayLayerBehavior(EventDispatcher):
     """A behavior class that provides an overlay layer capability.
