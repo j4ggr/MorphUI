@@ -595,9 +595,10 @@ class TestMorphThemeBehavior:
         
         def __init__(self, **kwargs):
             # Mock properties to avoid Kivy property issues
-            self.background_color = None
-            self.color = None
-            self.border_color = None
+            self.background_color = [1, 1, 1, 1]
+            self.color = [0, 0, 0, 1]
+            self.border_color = [0, 0, 0, 0]
+            self.text_color = [0, 0, 0, 1]
             Widget.__init__(self, **kwargs)
             MorphThemeBehavior.__init__(self, **kwargs)
 
@@ -638,12 +639,26 @@ class TestMorphThemeBehavior:
     @patch('morphui.uix.behaviors.theming.MorphApp._theme_manager')
     def test_apply_theme_color_success(self, mock_app_theme_manager):
         """Test successful theme color application."""
+        # Configure the mock to return our mock theme manager
+        mock_app_theme_manager.configure_mock(**{
+            'primary_color': [1.0, 0.0, 0.0, 1.0],
+            'text_primary_color': [1.0, 1.0, 1.0, 1.0],
+            'secondary_color': [0.0, 1.0, 0.0, 1.0],
+            'text_secondary_color': [0.8, 0.8, 0.8, 1.0],
+            'surface_color': [0.9, 0.9, 0.9, 1.0],
+            'text_surface_color': [0.2, 0.2, 0.2, 1.0],
+            'error_color': [1.0, 0.0, 0.0, 1.0],
+            'text_error_color': [1.0, 1.0, 1.0, 1.0],
+            'outline_color': [0.5, 0.5, 0.5, 1.0],
+            'text_on_surface_color': [0.1, 0.1, 0.1, 1.0],
+        })
         
         with patch.object(self.TestWidget, 'bind'), \
              patch.object(self.TestWidget, 'register_event_type'):
             
             widget = self.TestWidget()
-            widget._theme_manager = self.mock_theme_manager
+            # Set up valid widget properties
+            widget.background_color = [1, 1, 1, 1]
             
             # Test successful color application
             result = widget.apply_theme_color('background_color', 'primary_color')
@@ -654,35 +669,70 @@ class TestMorphThemeBehavior:
     @patch('morphui.uix.behaviors.theming.MorphApp._theme_manager')
     def test_apply_theme_color_failure_cases(self, mock_app_theme_manager):
         """Test theme color application failure cases."""
+        # Configure the mock to return our mock theme manager
+        mock_app_theme_manager.configure_mock(**{
+            'primary_color': [1.0, 0.0, 0.0, 1.0],
+            'text_primary_color': [1.0, 1.0, 1.0, 1.0],
+        })
+        
+        # Override the mock's __hasattr__ to properly handle non-existent attributes
+        def mock_hasattr(attr):
+            return attr in ['primary_color', 'text_primary_color']
+        
+        # Set up the mock to behave more like a real object for hasattr checks
+        type(mock_app_theme_manager).__contains__ = lambda self, item: item in ['primary_color', 'text_primary_color']
         
         with patch.object(self.TestWidget, 'bind'), \
              patch.object(self.TestWidget, 'register_event_type'):
             
             widget = self.TestWidget()
-            widget._theme_manager = self.mock_theme_manager
+            # Set up valid widget properties
+            widget.background_color = [1, 1, 1, 1]
             
-            # Test with non-existent theme color
-            result = widget.apply_theme_color('background_color', 'nonexistent_color')
-            assert result is False
+            # Test with non-existent theme color by patching hasattr directly
+            with patch('builtins.hasattr') as mock_hasattr:
+                mock_hasattr.side_effect = lambda obj, attr: attr in ['primary_color', 'text_primary_color'] if obj is mock_app_theme_manager else hasattr(obj, attr)
+                result = widget.apply_theme_color('background_color', 'nonexistent_color')
+                assert result is False
             
             # Test with non-existent widget property
             result = widget.apply_theme_color('nonexistent_property', 'primary_color')
             assert result is False
             
-            # Test with None color value
-            self.mock_theme_manager.primary_color = None
+            # Test with None color value - temporarily set primary_color to None
+            original_primary = mock_app_theme_manager.primary_color
+            mock_app_theme_manager.primary_color = None
             result = widget.apply_theme_color('background_color', 'primary_color')
             assert result is False
+            # Restore the original value
+            mock_app_theme_manager.primary_color = original_primary
 
     @patch('morphui.uix.behaviors.theming.MorphApp._theme_manager')
     def test_on_theme_style_with_valid_style(self, mock_app_theme_manager):
         """Test on_theme_style method with valid predefined styles."""
+        # Configure the mock to return our mock theme manager
+        mock_app_theme_manager.configure_mock(**{
+            'primary_color': [1.0, 0.0, 0.0, 1.0],
+            'text_primary_color': [1.0, 1.0, 1.0, 1.0],
+            'secondary_color': [0.0, 1.0, 0.0, 1.0],
+            'text_secondary_color': [0.8, 0.8, 0.8, 1.0],
+            'surface_color': [0.9, 0.9, 0.9, 1.0],
+            'text_surface_color': [0.2, 0.2, 0.2, 1.0],
+            'error_color': [1.0, 0.0, 0.0, 1.0],
+            'text_error_color': [1.0, 1.0, 1.0, 1.0],
+            'outline_color': [0.5, 0.5, 0.5, 1.0],
+            'text_on_surface_color': [0.1, 0.1, 0.1, 1.0],
+        })
         
         with patch.object(self.TestWidget, 'bind'), \
              patch.object(self.TestWidget, 'register_event_type'), \
              patch.object(self.TestWidget, 'dispatch'):
             
             widget = self.TestWidget()
+            # Set up valid widget properties
+            widget.background_color = [1, 1, 1, 1]
+            widget.text_color = [0, 0, 0, 1]
+            widget.border_color = [0, 0, 0, 0]
             
             # Test setting primary style
             widget.on_theme_style(widget, 'primary')
@@ -804,21 +854,42 @@ class TestMorphColorThemeBehavior:
         self.mock_theme_manager.on_primary_color = [1.0, 1.0, 1.0, 1.0]
         self.mock_theme_manager.surface_color = [0.9, 0.9, 0.9, 1.0]
         self.mock_theme_manager.outline_color = [0.5, 0.5, 0.5, 1.0]
+        self.mock_theme_manager.text_primary_color = [1.0, 1.0, 1.0, 1.0]
+        self.mock_theme_manager.text_secondary_color = [0.8, 0.8, 0.8, 1.0]
+        self.mock_theme_manager.text_surface_color = [0.2, 0.2, 0.2, 1.0]
+        self.mock_theme_manager.text_error_color = [1.0, 1.0, 1.0, 1.0]
+        self.mock_theme_manager.text_on_surface_color = [0.1, 0.1, 0.1, 1.0]
+        self.mock_theme_manager.secondary_color = [0.0, 1.0, 0.0, 1.0]
+        self.mock_theme_manager.error_color = [1.0, 0.0, 0.0, 1.0]
 
     class TestWidget(MorphColorThemeBehavior, Widget):
         """Test widget that combines Widget with MorphColorThemeBehavior."""
         
         def __init__(self, **kwargs):
             # Mock properties to avoid Kivy property issues
-            self.background_color = None
-            self.color = None
-            self.border_color = None
+            self.background_color = [1, 1, 1, 1]
+            self.color = [0, 0, 0, 1]
+            self.border_color = [0, 0, 0, 0]
+            self.text_color = [0, 0, 0, 1]
             Widget.__init__(self, **kwargs)
             MorphColorThemeBehavior.__init__(self, **kwargs)
 
     @patch('morphui.uix.behaviors.theming.MorphApp._theme_manager')
     def test_initialization(self, mock_app_theme_manager):
         """Test MorphColorThemeBehavior initialization."""
+        # Configure the mock to return our mock theme manager
+        mock_app_theme_manager.configure_mock(**{
+            'primary_color': [1.0, 0.0, 0.0, 1.0],
+            'text_primary_color': [1.0, 1.0, 1.0, 1.0],
+            'secondary_color': [0.0, 1.0, 0.0, 1.0],
+            'text_secondary_color': [0.8, 0.8, 0.8, 1.0],
+            'surface_color': [0.9, 0.9, 0.9, 1.0],
+            'text_surface_color': [0.2, 0.2, 0.2, 1.0],
+            'error_color': [1.0, 0.0, 0.0, 1.0],
+            'text_error_color': [1.0, 1.0, 1.0, 1.0],
+            'outline_color': [0.5, 0.5, 0.5, 1.0],
+            'text_on_surface_color': [0.1, 0.1, 0.1, 1.0],
+        })
         
         with patch.object(self.TestWidget, 'bind'), \
              patch.object(self.TestWidget, 'register_event_type'):
@@ -829,15 +900,27 @@ class TestMorphColorThemeBehavior:
             assert widget.theme_color_bindings == {}
             assert widget.theme_style == ''
 
-    @patch('morphui.uix.behaviors.theming.MorphApp._theme_manager')
+    @patch('morphui.uix.behaviors.theming.MorphApp._theme_manager')  
     def test_apply_theme_color(self, mock_app_theme_manager):
         """Test applying theme colors to widget properties."""
+        # Configure the mock to return our mock theme manager
+        mock_app_theme_manager.configure_mock(**{
+            'primary_color': [1.0, 0.0, 0.0, 1.0],
+            'text_primary_color': [1.0, 1.0, 1.0, 1.0],
+            'secondary_color': [0.0, 1.0, 0.0, 1.0],
+            'text_secondary_color': [0.8, 0.8, 0.8, 1.0],
+            'surface_color': [0.9, 0.9, 0.9, 1.0],
+            'text_surface_color': [0.2, 0.2, 0.2, 1.0],
+            'error_color': [1.0, 0.0, 0.0, 1.0],
+            'text_error_color': [1.0, 1.0, 1.0, 1.0],
+            'outline_color': [0.5, 0.5, 0.5, 1.0],
+            'text_on_surface_color': [0.1, 0.1, 0.1, 1.0],
+        })
         
         with patch.object(self.TestWidget, 'bind'), \
              patch.object(self.TestWidget, 'register_event_type'):
             
             widget = self.TestWidget()
-            widget._theme_manager = self.mock_theme_manager
             
             # Test successful color application
             result = widget.apply_theme_color('background_color', 'primary_color')
@@ -848,6 +931,19 @@ class TestMorphColorThemeBehavior:
     @patch('morphui.uix.behaviors.theming.MorphApp._theme_manager')
     def test_theme_style_application(self, mock_app_theme_manager):
         """Test applying predefined theme styles."""
+        # Configure the mock to return our mock theme manager
+        mock_app_theme_manager.configure_mock(**{
+            'primary_color': [1.0, 0.0, 0.0, 1.0],
+            'text_primary_color': [1.0, 1.0, 1.0, 1.0],
+            'secondary_color': [0.0, 1.0, 0.0, 1.0],
+            'text_secondary_color': [0.8, 0.8, 0.8, 1.0],
+            'surface_color': [0.9, 0.9, 0.9, 1.0],
+            'text_surface_color': [0.2, 0.2, 0.2, 1.0],
+            'error_color': [1.0, 0.0, 0.0, 1.0],
+            'text_error_color': [1.0, 1.0, 1.0, 1.0],
+            'outline_color': [0.5, 0.5, 0.5, 1.0],
+            'text_on_surface_color': [0.1, 0.1, 0.1, 1.0],
+        })
         
         with patch.object(self.TestWidget, 'bind'), \
              patch.object(self.TestWidget, 'register_event_type'), \
@@ -907,12 +1003,15 @@ class TestMorphTypographyBehavior:
     @patch('morphui.uix.behaviors.theming.MorphApp._typography')
     def test_apply_typography_style(self, mock_app_typography):
         """Test applying typography styles to widget."""
+        # Configure the mock to return our mock typography
+        mock_app_typography.configure_mock(**{
+            'get_text_style': self.mock_typography.get_text_style
+        })
         
         with patch.object(self.TestWidget, 'bind'), \
              patch.object(self.TestWidget, 'register_event_type'):
             
             widget = self.TestWidget()
-            widget._typography = self.mock_typography
             
             # Test successful typography application
             widget.apply_typography_style('Headline', 'large', 'Regular')
