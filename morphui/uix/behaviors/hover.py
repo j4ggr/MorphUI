@@ -193,7 +193,7 @@ class MorphHoverBehavior(EventDispatcher):
         --------
         ```python
         def on_enter(self):
-            self.background_color = (0, 1, 0, 0.3)  # Light green
+            self.surface_color = (0, 1, 0, 0.3)  # Light green
             Animation(opacity=0.8, duration=0.2).start(self)
         ```
         """
@@ -210,7 +210,7 @@ class MorphHoverBehavior(EventDispatcher):
         --------
         ```python
         def on_leave(self):
-            self.background_color = (1, 1, 1, 1)  # White
+            self.surface_color = (1, 1, 1, 1)  # White
             Animation(opacity=1.0, duration=0.2).start(self)
         ```
         """

@@ -93,7 +93,7 @@ class MorphElevationBehavior(EventDispatcher):
 
     The order of the corners is: top-left, top-right, bottom-right,
     bottom-left. If the widget has a `radius` property (e.g. from
-    `MorphBackgroundBehavior`), that value will be used instead.
+    `MorphSurfaceLayerBehavior`), that value will be used instead.
 
     :attr:`shadow_border_radius` is a
     :class:`~kivy.properties.ListProperty` and defaults to 

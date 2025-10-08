@@ -4,20 +4,19 @@ from typing import Dict
 from kivy.uix.label import Label
 
 from .behaviors import MorphThemeBehavior
-from .behaviors import MorphBackgroundBehavior
 from .behaviors import MorphAutoSizingBehavior
 from .behaviors import MorphIdentificationBehavior
+from .behaviors import MorphSurfaceLayerBehavior
 
 
 __all__ = [
-    'MorphLabel'
-]
+    'MorphLabel',]
 
 
 class MorphLabel(
         MorphIdentificationBehavior,
         MorphThemeBehavior,
-        MorphBackgroundBehavior,
+        MorphSurfaceLayerBehavior,
         MorphAutoSizingBehavior,
         Label):
     
@@ -25,8 +24,11 @@ class MorphLabel(
         halign='left',
         valign='middle',
         theme_color_bindings=dict(
-            color='text_surface_color',
-            background_color='surface_color',),)
+            text_color='text_surface_color',
+            surface_color='surface_color',),
+        typography_role='Label',
+        typography_size='medium',
+        typography_weight='Regular',)
     """Default settings for MorphLabel instances."""
 
     def __init__(self, **kwargs) -> None:

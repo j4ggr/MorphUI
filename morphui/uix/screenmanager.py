@@ -1,7 +1,7 @@
 from kivy.uix.screenmanager import Screen
 
 from .behaviors import MorphColorThemeBehavior
-from .behaviors import MorphBackgroundBehavior
+from .behaviors import MorphSurfaceLayerBehavior
 from .behaviors import MorphDeclarativeBehavior
 
 
@@ -12,7 +12,7 @@ __all__ = [
 class MorphScreen(
         MorphDeclarativeBehavior,
         MorphColorThemeBehavior,
-        MorphBackgroundBehavior,
+        MorphSurfaceLayerBehavior,
         Screen):
     """A Screen that supports declarative child widgets via
     :class:`~morphui.uix.behaviors.MorphDeclarativeBehavior`.
@@ -21,7 +21,7 @@ class MorphScreen(
     several MorphUI behaviors to enhance its capabilities:
     - `MorphDeclarativeBehavior`: Enables declarative property binding.
     - `MorphColorThemeBehavior`: Integrates color theming capabilities.
-    - `MorphBackgroundBehavior`: Provides background styling options.
+    - `MorphSurfaceLayerBehavior`: Provides surface styling options.
 
     Examples
     --------

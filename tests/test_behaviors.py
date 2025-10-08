@@ -16,7 +16,7 @@ from morphui.uix.behaviors import MorphTypographyBehavior
 from morphui.uix.behaviors import MorphThemeBehavior
 from morphui.uix.behaviors import MorphKeyPressBehavior
 from morphui.uix.behaviors import MorphDropdownBehavior
-from morphui.uix.behaviors import MorphBackgroundBehavior
+from morphui.uix.behaviors import MorphSurfaceLayerBehavior
 from morphui.uix.behaviors import MorphDeclarativeBehavior
 from morphui.uix.behaviors import MorphAppReferenceBehavior
 from morphui.uix.behaviors import MorphAutoSizingBehavior
@@ -257,36 +257,36 @@ class TestMorphHoverEnhancedBehavior:
         assert widget.edge_size == 2
 
 
-class TestMorphBackgroundBehavior:
-    """Test suite for MorphBackgroundBehavior class."""
+class TestMorphSurfaceLayerBehavior:
+    """Test suite for MorphSurfaceLayerBehavior class."""
 
-    class TestWidget(MorphBackgroundBehavior, Widget):
-        """Test widget that combines Widget with MorphBackgroundBehavior."""
+    class TestWidget(MorphSurfaceLayerBehavior, Widget):
+        """Test widget that combines Widget with MorphSurfaceLayerBehavior."""
         pass
 
     def test_initialization(self):
-        """Test basic initialization of MorphBackgroundBehavior."""
+        """Test basic initialization of MorphSurfaceLayerBehavior."""
         widget = self.TestWidget()
-        assert widget.background_color == [1, 1, 1, 1]
+        assert widget.surface_color == [1, 1, 1, 1]
         assert widget.radius == [0, 0, 0, 0]
         assert widget.border_width == 1
         assert widget.border_color == [0, 0, 0, 0]
 
-    def test_background_color_property(self):
-        """Test the background_color property."""
+    def test_surface_color_property(self):
+        """Test the surface_color property."""
         widget = self.TestWidget()
         
         test_color = [0.5, 0.5, 0.5, 0.8]
-        widget.background_color = test_color
-        assert widget.background_color == test_color
+        widget.surface_color = test_color
+        assert widget.surface_color == test_color
 
-    def test_background_radius_property(self):
-        """Test the background_radius property."""
+    def test_surface_radius_property(self):
+        """Test the surface_radius property."""
         widget = self.TestWidget()
         
         test_radius = [10, 10, 5, 5]
-        widget.background_radius = test_radius
-        assert widget.background_radius == test_radius
+        widget.surface_radius = test_radius
+        assert widget.surface_radius == test_radius
 
     def test_border_properties(self):
         """Test border-related properties."""
@@ -586,7 +586,7 @@ class TestMorphThemeBehavior:
         from morphui.theme.manager import ThemeManager
         self.mock_theme_manager = Mock(spec=ThemeManager)
         self.mock_theme_manager.primary_color = [1.0, 0.0, 0.0, 1.0]
-        self.mock_theme_manager.on_primary_color = [1.0, 1.0, 1.0, 1.0]
+        self.mock_theme_manager.text_primary_color = [1.0, 1.0, 1.0, 1.0]
         self.mock_theme_manager.surface_color = [0.9, 0.9, 0.9, 1.0]
         self.mock_theme_manager.outline_color = [0.5, 0.5, 0.5, 1.0]
 
@@ -595,7 +595,7 @@ class TestMorphThemeBehavior:
         
         def __init__(self, **kwargs):
             # Mock properties to avoid Kivy property issues
-            self.background_color = [1, 1, 1, 1]
+            self.surface_color = [1, 1, 1, 1]
             self.color = [0, 0, 0, 1]
             self.border_color = [0, 0, 0, 0]
             self.text_color = [0, 0, 0, 1]
@@ -658,13 +658,13 @@ class TestMorphThemeBehavior:
             
             widget = self.TestWidget()
             # Set up valid widget properties
-            widget.background_color = [1, 1, 1, 1]
+            widget.surface_color = [1, 1, 1, 1]
             
             # Test successful color application
-            result = widget.apply_theme_color('background_color', 'primary_color')
+            result = widget.apply_theme_color('surface_color', 'primary_color')
             
             assert result is True
-            assert widget.background_color == [1.0, 0.0, 0.0, 1.0]
+            assert widget.surface_color == [1.0, 0.0, 0.0, 1.0]
 
     @patch('morphui.uix.behaviors.theming.MorphApp._theme_manager')
     def test_apply_theme_color_failure_cases(self, mock_app_theme_manager):
@@ -687,12 +687,12 @@ class TestMorphThemeBehavior:
             
             widget = self.TestWidget()
             # Set up valid widget properties
-            widget.background_color = [1, 1, 1, 1]
+            widget.surface_color = [1, 1, 1, 1]
             
             # Test with non-existent theme color by patching hasattr directly
             with patch('builtins.hasattr') as mock_hasattr:
                 mock_hasattr.side_effect = lambda obj, attr: attr in ['primary_color', 'text_primary_color'] if obj is mock_app_theme_manager else hasattr(obj, attr)
-                result = widget.apply_theme_color('background_color', 'nonexistent_color')
+                result = widget.apply_theme_color('surface_color', 'nonexistent_color')
                 assert result is False
             
             # Test with non-existent widget property
@@ -702,7 +702,7 @@ class TestMorphThemeBehavior:
             # Test with None color value - temporarily set primary_color to None
             original_primary = mock_app_theme_manager.primary_color
             mock_app_theme_manager.primary_color = None
-            result = widget.apply_theme_color('background_color', 'primary_color')
+            result = widget.apply_theme_color('surface_color', 'primary_color')
             assert result is False
             # Restore the original value
             mock_app_theme_manager.primary_color = original_primary
@@ -730,7 +730,7 @@ class TestMorphThemeBehavior:
             
             widget = self.TestWidget()
             # Set up valid widget properties
-            widget.background_color = [1, 1, 1, 1]
+            widget.surface_color = [1, 1, 1, 1]
             widget.text_color = [0, 0, 0, 1]
             widget.border_color = [0, 0, 0, 0]
             
@@ -775,7 +775,7 @@ class TestMorphThemeBehavior:
             
             # Add a custom style
             custom_mappings = {
-                'background_color': 'tertiary_color',
+                'surface_color': 'tertiary_color',
                 'text_color': 'on_tertiary_color'
             }
             
@@ -803,7 +803,7 @@ class TestMorphThemeBehavior:
             assert widget1.theme_style_mappings is self.TestWidget.theme_style_mappings
             
             # Add custom style to widget1
-            widget1.add_custom_style('custom1', {'background_color': 'primary_color'})
+            widget1.add_custom_style('custom1', {'surface_color': 'primary_color'})
             
             # Now widget1 should have its own copy
             assert widget1.theme_style_mappings is not widget2.theme_style_mappings
@@ -851,7 +851,7 @@ class TestMorphColorThemeBehavior:
         from morphui.theme.manager import ThemeManager
         self.mock_theme_manager = Mock(spec=ThemeManager)
         self.mock_theme_manager.primary_color = [1.0, 0.0, 0.0, 1.0]
-        self.mock_theme_manager.on_primary_color = [1.0, 1.0, 1.0, 1.0]
+        self.mock_theme_manager.text_primary_color = [1.0, 1.0, 1.0, 1.0]
         self.mock_theme_manager.surface_color = [0.9, 0.9, 0.9, 1.0]
         self.mock_theme_manager.outline_color = [0.5, 0.5, 0.5, 1.0]
         self.mock_theme_manager.text_primary_color = [1.0, 1.0, 1.0, 1.0]
@@ -867,7 +867,7 @@ class TestMorphColorThemeBehavior:
         
         def __init__(self, **kwargs):
             # Mock properties to avoid Kivy property issues
-            self.background_color = [1, 1, 1, 1]
+            self.surface_color = [1, 1, 1, 1]
             self.color = [0, 0, 0, 1]
             self.border_color = [0, 0, 0, 0]
             self.text_color = [0, 0, 0, 1]
@@ -923,10 +923,10 @@ class TestMorphColorThemeBehavior:
             widget = self.TestWidget()
             
             # Test successful color application
-            result = widget.apply_theme_color('background_color', 'primary_color')
+            result = widget.apply_theme_color('surface_color', 'primary_color')
             
             assert result is True
-            assert widget.background_color == [1.0, 0.0, 0.0, 1.0]
+            assert widget.surface_color == [1.0, 0.0, 0.0, 1.0]
 
     @patch('morphui.uix.behaviors.theming.MorphApp._theme_manager')
     def test_theme_style_application(self, mock_app_theme_manager):
@@ -1009,7 +1009,8 @@ class TestMorphTypographyBehavior:
         })
         
         with patch.object(self.TestWidget, 'bind'), \
-             patch.object(self.TestWidget, 'register_event_type'):
+             patch.object(self.TestWidget, 'register_event_type'), \
+             patch.object(self.TestWidget, 'dispatch'):
             
             widget = self.TestWidget()
             
@@ -1023,7 +1024,8 @@ class TestMorphTypographyBehavior:
         """Test typography property changes."""
         
         with patch.object(self.TestWidget, 'bind'), \
-             patch.object(self.TestWidget, 'register_event_type'):
+             patch.object(self.TestWidget, 'register_event_type'), \
+             patch.object(self.TestWidget, 'dispatch'):
             
             widget = self.TestWidget()
             
@@ -1046,7 +1048,7 @@ class TestMorphThemeBehaviorSplit:
         
         def __init__(self, **kwargs):
             # Mock properties to avoid Kivy property issues
-            self.background_color = None
+            self.surface_color = None
             self.color = None
             self.border_color = None
             self.font_name = None

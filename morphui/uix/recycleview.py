@@ -1,7 +1,7 @@
 from kivy.uix.recycleview import RecycleView
 
 from .behaviors import MorphColorThemeBehavior
-from .behaviors import MorphBackgroundBehavior
+from .behaviors import MorphSurfaceLayerBehavior
 from .behaviors import MorphDeclarativeBehavior
 
 
@@ -12,7 +12,7 @@ __all__ = [
 class MorphRecycleView(
         MorphDeclarativeBehavior,
         MorphColorThemeBehavior,
-        MorphBackgroundBehavior,
+        MorphSurfaceLayerBehavior,
         RecycleView):
     """A RecycleView that supports declarative child widgets via
     :class:`~morphui.uix.behaviors.MorphDeclarativeBehavior`.
@@ -21,7 +21,7 @@ class MorphRecycleView(
     several MorphUI behaviors to enhance its capabilities:
     - `MorphDeclarativeBehavior`: Enables declarative property binding.
     - `MorphColorThemeBehavior`: Integrates color theming capabilities.
-    - `MorphBackgroundBehavior`: Provides background styling options.
+    - `MorphSurfaceLayerBehavior`: Provides surface styling options.
 
     Examples
     --------

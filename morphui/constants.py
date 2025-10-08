@@ -37,27 +37,27 @@ class _Theme_:
         Material Design patterns."""
         return {
             'primary': {
-                'background_color': 'primary_color',
+                'surface_color': 'primary_color',
                 'text_color': 'text_primary_color',
                 'border_color': 'primary_color',},
 
             'secondary': {
-                'background_color': 'secondary_color', 
+                'surface_color': 'secondary_color', 
                 'text_color': 'text_secondary_color',
                 'border_color': 'secondary_color',},
 
             'surface': {
-                'background_color': 'surface_color',
+                'surface_color': 'surface_color',
                 'text_color': 'text_surface_color',
                 'border_color': 'outline_color',},
 
             'error': {
-                'background_color': 'error_color',
+                'surface_color': 'error_color',
                 'text_color': 'text_error_color', 
                 'border_color': 'error_color',},
 
             'outline': {
-                'background_color': 'surface_color',
+                'surface_color': 'surface_color',
                 'text_color': 'text_on_surface_color',
                 'border_color': 'outline_color',},}
 THEME = _Theme_()

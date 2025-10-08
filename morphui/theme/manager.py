@@ -111,7 +111,7 @@ class ThemeManager(MorphDynamicColorPalette):
         THEME.LIGHT, options=[THEME.LIGHT, THEME.DARK])
     """The overall theme mode, either 'Light' or 'Dark'.
 
-    This property determines the base colors for backgrounds, text, and
+    This property determines the base colors for surfaces, text, and
     other UI elements. Changing this property will automatically update
     all widgets that have `auto_theme` enabled.
 
@@ -529,8 +529,8 @@ class ThemeManager(MorphDynamicColorPalette):
         --------
         ```python
         def update_widget_colors(self):
-            self.background_color = theme_manager.background_color
-            self.text_color = theme_manager.on_background_color
+            self.surface_color = theme_manager.background_color
+            self.text_color = theme_manager.text_background_color
 
         theme_manager.bind(on_colors_updated=update_widget_colors)
         ```

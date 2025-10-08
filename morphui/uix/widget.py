@@ -1,7 +1,7 @@
 from kivy.uix.widget import Widget
 
 from .behaviors import MorphThemeBehavior
-from .behaviors import MorphBackgroundBehavior
+from .behaviors import MorphSurfaceLayerBehavior
 from .behaviors import MorphAutoSizingBehavior
 from .behaviors import MorphIdentificationBehavior
 
@@ -13,13 +13,13 @@ __all__ = [
 class MorphWidget(
         MorphIdentificationBehavior,
         MorphThemeBehavior,
-        MorphBackgroundBehavior,
+        MorphSurfaceLayerBehavior,
         MorphAutoSizingBehavior,
         Widget):
     """Base widget class for MorphUI components.
     
     MorphWidget extends Kivy's Widget class with automatic sizing 
-    capabilities and background styling through behavior mixins.
+    capabilities and surface styling through behavior mixins.
 
     This class combines the following behaviors:
     - `MorphIdentificationBehavior`: Enables identity-based widget 
@@ -29,10 +29,10 @@ class MorphWidget(
       widget to adapt its colors based on the current theme.
       for more information see
       :class:`~morphui.uix.behaviors.MorphThemeBehavior`.
-    - `MorphBackgroundBehavior`: Provides background styling options for
+    - `MorphSurfaceLayerBehavior`: Provides surface styling options for
       the widget.
       for more information see
-      :class:`~morphui.uix.behaviors.MorphBackgroundBehavior`.
+      :class:`~morphui.uix.behaviors.MorphSurfaceLayerBehavior`.
     - `MorphAutoSizingBehavior`: Enables automatic sizing of the widget
       based on its content.
       for more information see

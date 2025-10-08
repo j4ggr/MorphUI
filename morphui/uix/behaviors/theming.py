@@ -2,12 +2,10 @@ import warnings
 
 from typing import Any
 from typing import Dict
-from typing import List
 from typing import Literal
 
 from kivy.event import EventDispatcher
 from kivy.properties import DictProperty
-from kivy.properties import ColorProperty
 from kivy.properties import StringProperty
 from kivy.properties import OptionProperty
 from kivy.properties import BooleanProperty
@@ -35,8 +33,8 @@ class MorphColorThemeBehavior(EventDispatcher):
     configurations for common Material Design patterns.
     
     The behavior integrates seamlessly with other MorphUI behaviors, 
-    particularly :class:`MorphBackgroundBehavior`, to provide 
-    comprehensive color theming capabilities including background 
+    particularly :class:`MorphSurfaceLayerBehavior`, to provide 
+    comprehensive color theming capabilities including surface 
     colors, border colors, text colors, and other visual properties.
     
     Key Features
@@ -61,15 +59,15 @@ class MorphColorThemeBehavior(EventDispatcher):
     
     ```python
     from morphui.uix.behaviors.theming import MorphColorThemeBehavior
-    from morphui.uix.behaviors.background import MorphBackgroundBehavior
+    from morphui.uix.behaviors.layer import MorphSurfaceLayerBehavior
     from kivy.uix.label import Label
     
-    class ThemedButton(MorphColorThemeBehavior, MorphBackgroundBehavior, Label):
+    class ThemedButton(MorphColorThemeBehavior, MorphSurfaceLayerBehavior, Label):
         def __init__(self, **kwargs):
             super().__init__(**kwargs)
             # Bind widget properties to theme colors
             self.theme_color_bindings = {
-                'background_color': 'primary_color',
+                'surface_color': 'primary_color',
                 'border_color': 'outline_color',
                 'text_color': 'text_primary_color'  # text color
             }
@@ -78,7 +76,7 @@ class MorphColorThemeBehavior(EventDispatcher):
     Using predefined styles:
     
     ```python
-    class QuickButton(MorphColorThemeBehavior, MorphBackgroundBehavior, Label):
+    class QuickButton(MorphColorThemeBehavior, MorphSurfaceLayerBehavior, Label):
         def __init__(self, **kwargs):
             super().__init__(**kwargs)
             # Apply a predefined Material Design style
@@ -92,14 +90,14 @@ class MorphColorThemeBehavior(EventDispatcher):
         def on_theme_changed(self):
             # Custom logic when theme changes
             if self.theme_manager.theme_mode == 'Dark':
-                self.apply_theme_color('background_color', 'surface_dim_color')
+                self.apply_theme_color('surface_color', 'surface_dim_color')
             else:
-                self.apply_theme_color('background_color', 'surface_bright_color')
+                self.apply_theme_color('surface_color', 'surface_bright_color')
     ```
     
     See Also
     --------
-    - MorphBackgroundBehavior : Provides background and border styling 
+    - MorphSurfaceLayerBehavior : Provides surface and border styling 
       capabilities
     - MorphTypographyBehavior : Provides typography and text styling
       capabilities
@@ -145,7 +143,7 @@ class MorphColorThemeBehavior(EventDispatcher):
     - **'outline'**: Low-emphasis outlined style
     - **''**: Empty string (no predefined style)
 
-    Each style configures appropriate color bindings for background,
+    Each style configures appropriate color bindings for surface,
     text, and border colors according to Material Design guidelines.
 
     :attr:`theme_style` is a :class:`~kivy.properties.StringProperty`
@@ -157,7 +155,7 @@ class MorphColorThemeBehavior(EventDispatcher):
     
     This dictionary defines the automatic color binding configuration 
     for the widget. Each key represents a widget property name (such as 
-    'background_color', 'text_color', 'border_color') and each value 
+    'surface_color', 'text_color', 'border_color') and each value 
     represents the corresponding theme color property name from the 
     :class:`ThemeManager` (such as 'primary_color', 'surface_color').
 
@@ -170,7 +168,7 @@ class MorphColorThemeBehavior(EventDispatcher):
     
     ```python
     widget.theme_color_bindings = {
-        'background_color': 'primary_color',
+        'surface_color': 'primary_color',
         'text_color': 'text_primary_color',
         'border_color': 'outline_color'
     }
@@ -180,7 +178,7 @@ class MorphColorThemeBehavior(EventDispatcher):
     
     ```python
     widget.theme_color_bindings = {
-        'background_color': 'error_color',
+        'surface_color': 'error_color',
         'text_color': 'text_error_color',
         'border_color': 'error_color'
     }
@@ -188,19 +186,6 @@ class MorphColorThemeBehavior(EventDispatcher):
     
     :attr:`theme_color_bindings` is a
     :class:`~kivy.properties.DictProperty` and defaults to {}.
-    """
-
-    text_color: List[float] | None = ColorProperty(None)
-    """Explicit text color property for theme binding disambiguation.
-    
-    This property provides a clear, dedicated binding target for text
-    colors in theme configurations. Since Kivy uses the generic 
-    'text_color' property for text rendering, this explicit `text_color`
-    property allows theme bindings to unambiguously specify text color
-    intentions in :attr:`theme_color_bindings`.
-
-    :attr:`text_color` is a :class:`~kivy.properties.ColorProperty`
-    and defaults to None.
     """
 
     theme_style_mappings: Dict[str, Dict[str, str]] = THEME.STYLES
@@ -219,11 +204,6 @@ class MorphColorThemeBehavior(EventDispatcher):
         super().__init__(**kwargs)
 
         self.theme_manager.bind(on_colors_updated=self._update_colors)
-        
-        if hasattr(self, 'color'):
-            self.bind(text_color=self.setter('color'))
-            if self.text_color is not None:
-                self.color = self.text_color
 
     @property
     def theme_manager(self) -> ThemeManager:
@@ -252,7 +232,7 @@ class MorphColorThemeBehavior(EventDispatcher):
         bindings : Dict[str, str]
             The new dictionary mapping widget properties to theme color
             names. Where keys are widget property names (e.g.,
-            'background_color') and values are theme color names (e.g.,
+            'surface_color') and values are theme color names (e.g.,
             'primary_color').
         """
         self._update_colors()
@@ -273,7 +253,7 @@ class MorphColorThemeBehavior(EventDispatcher):
         ----------
         widget_property : str
             The name of the widget property to update. Must be a valid
-            property on this widget instance (e.g., 'background_color',
+            property on this widget instance (e.g., 'surface_color',
             'text_color', 'border_color').
         theme_color : str
             The name of the theme color property to use. Must be a valid
@@ -289,10 +269,10 @@ class MorphColorThemeBehavior(EventDispatcher):
             
         Examples
         --------
-        Apply primary color to background:
+        Apply primary color to surface:
         
         ```python
-        success = widget.apply_theme_color('background_color', 'primary_color')
+        success = widget.apply_theme_color('surface_color', 'primary_color')
         if success:
             print("Color applied successfully")
         ```
@@ -301,9 +281,9 @@ class MorphColorThemeBehavior(EventDispatcher):
         
         ```python
         if widget.theme_manager.theme_mode == 'Dark':
-            widget.apply_theme_color('background_color', 'surface_dim_color')
+            widget.apply_theme_color('surface_color', 'surface_dim_color')
         else:
-            widget.apply_theme_color('background_color', 'surface_bright_color')
+            widget.apply_theme_color('surface_color', 'surface_bright_color')
         ```
         """
         if hasattr(self.theme_manager, theme_color):
@@ -341,7 +321,7 @@ class MorphColorThemeBehavior(EventDispatcher):
         :attr:`theme_color_bindings` based on Material Design component
         roles and states.
         
-        Each style configures appropriate color bindings for background,
+        Each style configures appropriate color bindings for surface,
         text, and border colors according to Material Design guidelines.
         
         Parameters
@@ -353,30 +333,30 @@ class MorphColorThemeBehavior(EventDispatcher):
             options:
             
             - **'primary'**: High-emphasis style for primary actions
-              - Uses primary_color for background and borders
+              - Uses primary_color for surface and borders
               - Uses on_primary_color for text/content
               - Ideal for: Main action buttons, important controls
               
             - **'secondary'**: Medium-emphasis style for secondary 
               actions
-              - Uses secondary_color for background and borders
+              - Uses secondary_color for surface and borders
               - Uses on_secondary_color for text/content
               - Ideal for: Secondary buttons, complementary actions
               
             - **'surface'**: Standard surface style for content areas
-              - Uses surface_color for background
+              - Uses surface_color for surface
               - Uses outline_color for borders
               - Uses on_surface_color for text/content
               - Ideal for: Cards, panels, content containers
               
             - **'error'**: Error state style for warnings and alerts
-              - Uses error_color for background and borders
+              - Uses error_color for surface and borders
               - Uses on_error_color for text/content
               - Ideal for: Error messages, warning dialogs, destructive
                 actions
               
             - **'outline'**: Low-emphasis outlined style
-              - Uses surface_color for background
+              - Uses surface_color for surface
               - Uses outline_color for borders (creates outlined
                 appearance)
               - Uses on_surface_color for text/content
@@ -468,7 +448,7 @@ class MorphColorThemeBehavior(EventDispatcher):
         
         ```python
         widget.add_custom_style('warning', {
-            'background_color': 'error_container_color',
+            'surface_color': 'error_container_color',
             'text_color': 'text_error_container_color',
             'border_color': 'outline_color'
         })
@@ -481,7 +461,7 @@ class MorphColorThemeBehavior(EventDispatcher):
         
         ```python
         widget.add_custom_style('subtle', {
-            'background_color': 'surface_variant_color',
+            'surface_color': 'surface_variant_color',
             'text_color': 'text_surface_variant_color',
             'border_color': 'outline_variant_color'
         })
@@ -639,18 +619,13 @@ class MorphTypographyBehavior(EventDispatcher):
     
     def __init__(self, **kwargs) -> None:
         self.register_event_type('on_typography_updated')
-        typography_properties = (
-            'typography_role',
-            'typography_size',
-            'typography_weight',)
         super().__init__(**kwargs)
 
+        self.fbind('typography_role', self._update_typography)
+        self.fbind('typography_size', self._update_typography)
+        self.fbind('typography_weight', self._update_typography)
         self.typography.bind(
             on_typography_changed=self._update_typography)
-        self.bind(**{p: self._update_typography for p in typography_properties})
-
-        if any(p in kwargs for p in typography_properties):
-            self.refresh_typography()
 
     @property
     def typography(self) -> Typography:
@@ -758,11 +733,11 @@ class MorphThemeBehavior(MorphColorThemeBehavior, MorphTypographyBehavior):
     Using the combined behavior:
     
     ```python
+    from morphui.uix.behaviors.layer import MorphSurfaceLayerBehavior
     from morphui.uix.behaviors.theming import MorphThemeBehavior
-    from morphui.uix.behaviors.background import MorphBackgroundBehavior
     from kivy.uix.label import Label
     
-    class FullyThemedLabel(MorphThemeBehavior, MorphBackgroundBehavior, Label):
+    class FullyThemedLabel(MorphThemeBehavior, MorphSurfaceLayerBehavior, Label):
         def __init__(self, **kwargs):
             super().__init__(**kwargs)
             self.theme_style = 'primary'

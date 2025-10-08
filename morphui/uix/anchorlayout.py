@@ -1,7 +1,7 @@
 from kivy.uix.anchorlayout import AnchorLayout
 
 from .behaviors import MorphColorThemeBehavior
-from .behaviors import MorphBackgroundBehavior
+from .behaviors import MorphSurfaceLayerBehavior
 from .behaviors import MorphDeclarativeBehavior
 
 
@@ -12,7 +12,7 @@ __all__ = [
 class MorphAnchorLayout(
         MorphDeclarativeBehavior,
         MorphColorThemeBehavior,
-        MorphBackgroundBehavior,
+        MorphSurfaceLayerBehavior,
         AnchorLayout):
     """An AnchorLayout that supports declarative child widgets via
     :class:`~morphui.uix.behaviors.MorphDeclarativeBehavior`.
@@ -21,7 +21,7 @@ class MorphAnchorLayout(
     several MorphUI behaviors to enhance its capabilities:
     - `MorphDeclarativeBehavior`: Enables declarative property binding.
     - `MorphColorThemeBehavior`: Integrates color theming capabilities.
-    - `MorphBackgroundBehavior`: Provides background styling options.
+    - `MorphSurfaceLayerBehavior`: Provides surface styling options.
     
     Examples
     --------

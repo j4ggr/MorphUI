@@ -1,7 +1,7 @@
 from kivy.uix.boxlayout import BoxLayout
 
 from .behaviors import MorphColorThemeBehavior
-from .behaviors import MorphBackgroundBehavior
+from .behaviors import MorphSurfaceLayerBehavior
 from .behaviors import MorphAutoSizingBehavior
 from .behaviors import MorphDeclarativeBehavior
 
@@ -13,7 +13,7 @@ __all__ = [
 class MorphBoxLayout(
         MorphDeclarativeBehavior,
         MorphColorThemeBehavior,
-        MorphBackgroundBehavior,
+        MorphSurfaceLayerBehavior,
         MorphAutoSizingBehavior,
         BoxLayout):
     """A BoxLayout that supports declarative child widgets via
@@ -23,7 +23,7 @@ class MorphBoxLayout(
     several MorphUI behaviors to enhance its capabilities:
     - `MorphDeclarativeBehavior`: Enables declarative property binding.
     - `MorphColorThemeBehavior`: Integrates color theming capabilities.
-    - `MorphBackgroundBehavior`: Provides background styling options.
+    - `MorphSurfaceLayerBehavior`: Provides surface styling options.
     - `MorphAutoSizingBehavior`: Enables automatic sizing based on content.
 
     Examples
@@ -40,7 +40,7 @@ class MorphBoxLayout(
                     identity="label1",
                     text="Label 1",
                     theme_color_bindings={
-                        'background_color': 'surface_container_color',
+                        'surface_color': 'surface_container_color',
                         'text_color': 'text_surface_color',
                         'border_color': 'outline_color',},
                     radius=[5, 25, 5, 25],),
@@ -48,7 +48,7 @@ class MorphBoxLayout(
                     identity="label2",
                     text="Label 2",
                     theme_color_bindings={
-                        'background_color': 'surface_container_low_color',
+                        'surface_color': 'surface_container_low_color',
                         'text_color': 'text_surface_color',
                         'border_color': 'outline_variant_color',},
                     radius=[25, 5, 25, 5],),

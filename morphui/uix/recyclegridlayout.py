@@ -1,7 +1,7 @@
 from kivy.uix.recyclegridlayout import RecycleGridLayout
 
 from .behaviors import MorphColorThemeBehavior
-from .behaviors import MorphBackgroundBehavior
+from .behaviors import MorphSurfaceLayerBehavior
 from .behaviors import MorphDeclarativeBehavior
 
 
@@ -12,7 +12,7 @@ __all__ = [
 class MorphRecycleGridLayout(
         MorphDeclarativeBehavior,
         MorphColorThemeBehavior,
-        MorphBackgroundBehavior,
+        MorphSurfaceLayerBehavior,
         RecycleGridLayout):
     """A RecycleGridLayout that supports declarative child widgets via
     :class:`~morphui.uix.behaviors.MorphDeclarativeBehavior`.
@@ -21,7 +21,7 @@ class MorphRecycleGridLayout(
     several MorphUI behaviors to enhance its capabilities:
     - `MorphDeclarativeBehavior`: Enables declarative property binding.
     - `MorphColorThemeBehavior`: Integrates color theming capabilities.
-    - `MorphBackgroundBehavior`: Provides background styling options.
+    - `MorphSurfaceLayerBehavior`: Provides surface styling options.
 
     Examples
     --------

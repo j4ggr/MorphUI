@@ -1,18 +1,36 @@
+from .appreference import MorphAppReferenceBehavior
+
+from .states import MorphStatesBehavior
+
+from .layer import MorphSurfaceLayerBehavior
+from .layer import MorphInteractionLayerBehavior
+from .layer import MorphContentLayerBehavior
+from .layer import MorphOverlayLayerBehavior
+
 from .hover import MorphHoverBehavior
 from .hover import MorphHoverEnhancedBehavior
+
 from .theming import MorphColorThemeBehavior
 from .theming import MorphTypographyBehavior
 from .theming import MorphThemeBehavior
+
 from .keypress import MorphKeyPressBehavior
+
 from .dropdown import MorphDropdownBehavior
-from .background import MorphBackgroundBehavior
+
 from .declarative import MorphDeclarativeBehavior
 from .declarative import MorphIdentificationBehavior
-from .appreference import MorphAppReferenceBehavior
+
 from .autosizing import MorphAutoSizingBehavior
-from .statelayer import MorphStateLayerBehavior
+
 
 __all__ = [
+    'MorphAppReferenceBehavior',    # App reference handling
+    'MorphStatesBehavior',          # Interactive state properties
+    'MorphSurfaceLayerBehavior',    # Surface and border styling
+    'MorphInteractionLayerBehavior',# Interaction layer (state-layer) management
+    'MorphContentLayerBehavior',    # Content layer styling
+    'MorphOverlayLayerBehavior',    # Overlay layer styling
     'MorphHoverBehavior',           # Basic hover behavior
     'MorphHoverEnhancedBehavior',   # Enhanced hover with edges/corners
     'MorphColorThemeBehavior',      # Color theme integration only
@@ -20,10 +38,7 @@ __all__ = [
     'MorphThemeBehavior',           # Combined theme integration (compatibility)
     'MorphKeyPressBehavior',        # Key press handling
     'MorphDropdownBehavior',        # Dropdown functionality
-    'MorphBackgroundBehavior',      # Background and border styling
     'MorphDeclarativeBehavior',     # Declarative property binding
     'MorphIdentificationBehavior',  # Identity management
-    'MorphAppReferenceBehavior',    # App reference handling
     'MorphAutoSizingBehavior',      # Automatic sizing
-    'MorphStateLayerBehavior',      # State layer management
 ]
