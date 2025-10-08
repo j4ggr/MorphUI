@@ -538,7 +538,7 @@ class MorphContentLayerBehavior(BaseLayerBehavior):
         pass
 
 
-class MorphOverlayLayerBehavior(EventDispatcher):
+class MorphOverlayLayerBehavior(BaseLayerBehavior):
     """A behavior class that provides an overlay layer capability.
 
     This behavior adds an overlay color on top of widgets, allowing them
@@ -597,7 +597,7 @@ class MorphOverlayLayerBehavior(EventDispatcher):
             radius=self._update_overlay_layer,
             overlay_color=self._update_overlay_layer,)
 
-        with self.canvas.before:
+        with self.canvas.after:
             self._overlay_color_instruction = Color(
                 rgba=self.overlay_color)
             self._overlay_instruction = RoundedRectangle(

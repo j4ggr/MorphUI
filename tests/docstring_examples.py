@@ -20,7 +20,9 @@ sys.path.append(str(Path(__file__).parents[1].resolve()))
 
 from kivy.clock import Clock
 from morphui.app import MorphApp
+from kivy.uix.label import Label
 from morphui.uix.label import MorphLabel
+from morphui.uix.label import MorphIconLabel
 from morphui.uix.boxlayout import MorphBoxLayout
 from morphui.uix.behaviors import MorphHoverBehavior
 from morphui.uix.behaviors import MorphInteractionLayerBehavior
@@ -54,8 +56,17 @@ class MyApp(MorphApp):
             theme_style='secondary',
             disabled=True,)
         layout = MorphBoxLayout(
-            HoverLabel(text="Hover Me", theme_style='primary'),
+            HoverLabel(
+                text="Hover Me",
+                theme_style='primary'),
             self.w2,
+            MorphIconLabel(
+                icon='home',
+                content_color='black'),
+            Label(
+                font_name='MaterialIcons',
+                text="Regular Kivy Label",
+                color='black'),
             orientation='vertical',
             padding=100,
             spacing=10,
@@ -65,7 +76,7 @@ class MyApp(MorphApp):
     def on_start(self):
         dt = 2
         Clock.schedule_interval(self.w2.switch_state, dt)
-        Clock.schedule_interval(self.theme_manager.toggle_theme_mode, dt * 2)
+        # Clock.schedule_interval(self.theme_manager.toggle_theme_mode, dt * 2)
         return super().on_start()
 
 if __name__ == '__main__':
