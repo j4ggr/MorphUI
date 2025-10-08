@@ -1,3 +1,5 @@
+import tomllib
+
 from typing import Dict
 from typing import Tuple
 from typing import Literal
@@ -6,20 +8,10 @@ from dataclasses import dataclass
 from materialyoucolor.utils.platform_utils import SCHEMES
 
 __all__ = [
-    'ICON',
     'THEME',
     'PATH',
+    'ICON',
     'FONTS',]
-
-
-@dataclass
-class _Icon_:
-    DD_MENU_CLOSED: Literal['chevron-up'] = 'chevron-up'
-    """Icon for the closed dropdown menu."""
-    DD_MENU_OPEN: Literal['chevron-down'] = 'chevron-down'
-    """Icon for the open dropdown menu."""
-ICON = _Icon_()
-"""Container for icon constants."""
 
 
 @dataclass
@@ -87,6 +79,21 @@ class _Path_:
 PATH = _Path_()
 """Container for path constants."""
 
+with open(PATH.ROOT/'icon_map.toml', 'rb') as f:
+    _icon_map_ = tomllib.load(f)['icons']
+
+@dataclass
+class _Icon_:
+    DD_MENU_CLOSED: Literal['chevron-up'] = 'chevron-up'
+    """Icon for the closed dropdown menu."""
+    DD_MENU_OPEN: Literal['chevron-down'] = 'chevron-down'
+    """Icon for the open dropdown menu."""
+    @property
+    def MAP(self) -> Dict[str, str]:
+        """Mapping of icon names to their Unicode characters."""
+        return _icon_map_.copy()
+ICON = _Icon_()
+"""Container for icon constants."""
 
 @dataclass
 class _Fonts_:
@@ -447,7 +454,6 @@ class _Fonts_:
                 small=dict(
                     font_size='10sp',
                     line_height=1.16,),),)
-    
 
 FONTS = _Fonts_()
 """Container for font-related constants and configurations.
@@ -473,3 +479,4 @@ LabelBase.register(**FONTS.DMSANS_REGULAR)
 label = Label(font_name='DMSans', text='Hello World')
 ```
 """
+

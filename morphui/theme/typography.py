@@ -13,6 +13,7 @@ from kivy.core.text import LabelBase
 from kivy.properties import DictProperty
 from kivy.properties import StringProperty
 
+from ..constants import ICON
 from ..constants import FONTS
 
 
@@ -242,6 +243,17 @@ class Typography(EventDispatcher):
     }
     typography.content_styles = custom_styles
     ```
+    """
+
+    icon_map: Dict[str, str] = DictProperty(ICON.MAP)
+    """Mapping of icon names to their Unicode characters.
+
+    Provides a dictionary mapping icon names to their corresponding Unicode
+    characters. This allows easy reference to icons by name when using icon
+    fonts in text widgets.
+
+    :attr:`icon_map` is a :class:`~kivy.properties.DictProperty` and
+    defaults to `ICON.MAP`.
     """
 
     _registered_fonts: Tuple[str, ...]
