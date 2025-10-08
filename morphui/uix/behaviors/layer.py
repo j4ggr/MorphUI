@@ -1,5 +1,6 @@
 from typing import Any
 from typing import List
+from typing import Dict
 
 from kivy.event import EventDispatcher
 from kivy.graphics import Color
@@ -476,10 +477,25 @@ class MorphContentLayerBehavior(BaseLayerBehavior):
         self.bind(
             content_color=self._update_content_layer,
             disabled=self._update_content_layer,)
+        
+        # bindings for Labels and Buttons
         if hasattr(self, 'color'):
             self.bind(content_color=self.setter('color'))
+            self.color=self.content_color or self.color
         if hasattr(self, 'disabled_color'):
             self.bind(disabled_content_color=self.setter('disabled_color'))
+            self.disabled_color=(
+                self.disabled_content_color or self.disabled_color)
+        
+        # bindings for TextInput
+        if hasattr(self, 'foreground_color'):
+            self.bind(content_color=self.setter('foreground_color'))
+            self.foreground_color=self.content_color or self.foreground_color
+        if hasattr(self, 'disabled_foreground_color'):
+            self.bind(
+                disabled_content_color=self.setter('disabled_foreground_color'))
+            self.disabled_foreground_color=(
+                self.disabled_content_color or self.disabled_foreground_color)
     
     def _update_content_layer(self, *args) -> None:
         """Update the content layer based on the current properties.
@@ -488,14 +504,6 @@ class MorphContentLayerBehavior(BaseLayerBehavior):
         such as `content_color` or `disabled`. It applies the
         appropriate content color based on the current state.
         """
-        if hasattr(self, 'color'):
-            if self.disabled and self.disabled_content_color:
-                color = self.disabled_content_color
-            elif self.content_color:
-                color = self.content_color
-            else:
-                color = self.color
-            self.apply_content(color)
         self.dispatch('on_content_updated')
     
     def apply_content(self, color: List[float]) -> None:

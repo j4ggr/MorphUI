@@ -36,6 +36,10 @@ class HoverLabel(
 class DisabledLabel(
         MorphInteractionLayerBehavior,
         MorphLabel):
+    
+    def switch_state(self, *args) -> None:
+        print(f'Switching disabled state from {self.disabled} to {not self.disabled}')
+        self.disabled = not self.disabled
 
     def on_disabled(self, instance, disabled) -> None:
         self.text = "Disabled" if disabled else "Enabled"
@@ -60,10 +64,8 @@ class MyApp(MorphApp):
 
     def on_start(self):
         dt = 2
-        Clock.schedule_interval(
-            lambda dt: setattr(self.w2, 'disabled', not self.w2.disabled), dt)
-        Clock.schedule_interval(
-            lambda dt: self.theme_manager.toggle_theme_mode(), dt * 2)
+        Clock.schedule_interval(self.w2.switch_state, dt)
+        Clock.schedule_interval(self.theme_manager.toggle_theme_mode, dt * 2)
         return super().on_start()
 
 if __name__ == '__main__':

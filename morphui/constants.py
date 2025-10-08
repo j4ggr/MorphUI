@@ -39,16 +39,23 @@ class _Theme_:
             'primary': {
                 'surface_color': 'primary_color',
                 'content_color': 'content_primary_color',
+                'disabled_content_color': 'outline_color',
                 'border_color': 'primary_color',},
 
             'secondary': {
                 'surface_color': 'secondary_color', 
                 'content_color': 'content_secondary_color',
+                'disabled_content_color': 'outline_color',
                 'border_color': 'secondary_color',},
+
+            'tertiary': {
+                'surface_color': 'tertiary_color',
+                'content_color': 'content_tertiary_color',
+                'disabled_content_color': 'outline_color',
+                'border_color': 'tertiary_color',},
 
             'surface': {
                 'surface_color': 'surface_color',
-                'content_color': 'content_surface_color',
                 'border_color': 'outline_color',},
 
             'error': {
@@ -58,8 +65,8 @@ class _Theme_:
 
             'outline': {
                 'surface_color': 'surface_color',
-                'content_color': 'content_on_surface_color',
-                'border_color': 'outline_color',},}
+                'border_color': 'outline_color',
+                'disabled_border_color': 'outline_variant_color',},}
 THEME = _Theme_()
 """Container for theme-related constants."""
 

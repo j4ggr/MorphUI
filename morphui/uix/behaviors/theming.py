@@ -125,9 +125,10 @@ class MorphColorThemeBehavior(EventDispatcher):
     handler.
     
     This provides a quick way to style widgets according to established
-    Material Design roles such as 'primary', 'secondary', 'surface', 
-    'error', and 'outline'. The property uses Kivy's StringProperty 
-    binding system, so changes are automatically detected and applied.
+    Material Design roles such as 'primary', 'secondary', 'tertiary',
+    'surface', 'error', and 'outline'. The property uses Kivy's 
+    StringProperty binding system, so changes are automatically 
+    detected and applied.
     
     When an invalid style name is provided, the change is silently 
     ignored and the property retains its previous value. Setting to an
@@ -137,7 +138,8 @@ class MorphColorThemeBehavior(EventDispatcher):
     Available Styles
     ----------------
     - **'primary'**: High-emphasis style for primary actions
-    - **'secondary'**: Medium-emphasis style for secondary actions  
+    - **'secondary'**: Medium-emphasis style for secondary actions
+    - **'tertiary'**: Medium-emphasis style for tertiary actions
     - **'surface'**: Standard surface style for content areas
     - **'error'**: Error state style for warnings and alerts
     - **'outline'**: Low-emphasis outlined style
@@ -389,6 +391,9 @@ class MorphColorThemeBehavior(EventDispatcher):
         
         # Medium-emphasis action  
         widget.theme_style = 'secondary'
+
+        # Medium-emphasis action
+        widget.theme_style = 'tertiary'
         
         # Low-emphasis action
         widget.theme_style = 'outline'
