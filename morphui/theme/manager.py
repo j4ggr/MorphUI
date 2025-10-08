@@ -160,6 +160,11 @@ class ThemeManager(MorphDynamicColorPalette):
     def available_seed_colors(self) -> Tuple[str, ...]:
         """List of available seed colors (read-only)."""
         return self._available_seed_colors
+    
+    @property
+    def is_dark_mode(self) -> bool:
+        """Check if the current theme mode is dark (read-only)."""
+        return self.theme_mode == THEME.DARK
 
     @property
     def inverse_mode(self) -> Literal['Light', 'Dark']:
@@ -168,7 +173,7 @@ class ThemeManager(MorphDynamicColorPalette):
         Returns the opposite of the current theme_mode. If current mode
         is 'Light', returns 'Dark', and vice versa.
         """
-        return THEME.DARK if self.theme_mode == THEME.LIGHT else THEME.LIGHT
+        return THEME.LIGHT if self.is_dark_mode else THEME.DARK
 
     @property
     def material_schemes(self) -> Dict[str, Type[MaterialDynamicScheme]]:
@@ -484,7 +489,7 @@ class ThemeManager(MorphDynamicColorPalette):
         hct = DislikeAnalyzer.fix_if_disliked(Hct.from_int(argb))
         scheme = self.material_schemes[self.color_scheme](
             source_color_hct=hct,
-            is_dark=self.theme_mode == THEME.DARK,
+            is_dark=self.is_dark_mode,
             contrast_level=self.color_scheme_contrast,)
         return scheme
 
