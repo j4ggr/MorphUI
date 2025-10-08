@@ -95,15 +95,39 @@ class MorphStateLayerBehavior(EventDispatcher):
     :attr:`focus_state_opacity` is a
     :class:`~kivy.properties.NumericProperty` and defaults to `0.10`."""
 
-    allow_state_layer: bool = BooleanProperty(True)
-    """Whether to allow the state layer to be displayed.
+    disabled_state_opacity: float = NumericProperty(0.16)
+    """Opacity of the state layer when the widget is disabled.
+
+    The opacity is specified as a float between 0 and 1. A value of 0
+    means no state layer, while a value of 1 means a fully opaque state.
+
+    :attr:`disabled_state_opacity` is a
+    :class:`~kivy.properties.NumericProperty` and defaults to `0.16`."""
+
+    state_layer_enabled: bool = BooleanProperty(True)
+    """Whether to enable the state layer to be displayed.
     
-    :attr:`allow_state_layer` is a :class:`~kivy.properties.BooleanProperty`
+    :attr:`state_layer_enabled` is a :class:`~kivy.properties.BooleanProperty`
     and defaults to `True`."""
 
+    state_layer_color: ColorProperty = ColorProperty([0, 0, 0, 0])
+    """Color of the state layer.
+
+    The color should be provided as a list of RGBA values between 0 and
+    1. Example: `[0, 0, 0, 0.1]` for a semi-transparent black layer.
+
+    :attr:`state_layer_color` is a 
+    :class:`~kivy.properties.ColorProperty` and defaults to 
+    `[0, 0, 0, 0]`."""
+
     _supported_states: Tuple[str, ...] = (
-        'pressed', 'focused', 'hovered',)
-    """States that the state layer behavior can respond to."""
+        'disabled', 'pressed', 'focused', 'hovered', 'active')
+    """States that the state layer behavior can respond to.
+
+    The values are sorted by precedence, with higher precedence states
+    appearing earlier in the tuple. This is used to determine which
+    state layer to apply when multiple states are active.
+    """
 
     _state_layer_color_instruction: Color
     """Kivy Color instruction for the state layer color."""
@@ -112,21 +136,27 @@ class MorphStateLayerBehavior(EventDispatcher):
     """Kivy Rectangle instruction for the state layer shape."""
 
     def __init__(self, **kwargs) -> None:
-        self.register_event_type('on_state_layer_update')
+        self.register_event_type('on_state_layer_updated')
         super().__init__(**kwargs)
+        
+        self.bind(
+            pos=self._update_state_layer,
+            size=self._update_state_layer,
+            radius=self._update_state_layer,
+            state_layer_color=self._update_state_layer,)
+
+        for s in self.supported_states:
+            self.bind(**{s: lambda _, v, s=s: self._on_state_change(s, v)})
+
         with self.canvas.before:
-            self._state_layer_color_instruction = Color(rgba=[0, 0, 0, 0])
+            self._state_layer_color_instruction = Color(
+                rgba=self.state_layer_color)
             self._state_layer_instruction = RoundedRectangle(
                 pos=self.pos,
                 size=self.size,
                 radius=self.radius,)
-        self.bind(
-            pos=self._update_state_layer,
-            size=self._update_state_layer,
-            radius=self._update_state_layer,)
-        
-        for s in self.supported_states:
-            self.bind(**{s: lambda _, v, s=s: self._on_state_change(s, v)})
+
+        self.refresh_state_layer()
 
     @property
     def theme_manager(self) -> ThemeManager:
@@ -146,9 +176,10 @@ class MorphStateLayerBehavior(EventDispatcher):
         This ensures that the state layer is visible against the
         background. The returned list contains RGB values only.
         """
+        color = [0.0, 0.0, 0.0]
         if self.theme_manager.theme_mode == THEME.DARK:
-            return [1, 1, 1]
-        return [0, 0, 0]
+            color = [1 - c for c in color]
+        return color
     
     @property
     def supported_states(self) -> Tuple[str, ...]:
@@ -158,6 +189,10 @@ class MorphStateLayerBehavior(EventDispatcher):
         This tuple defines the interactive states that the behavior
         recognizes and can apply state layers for. Widgets using this
         behavior should have corresponding properties for these states.
+
+        The values are sorted by precedence, with higher precedence
+        states appearing earlier in the tuple. This is used to determine
+        which state layer to apply when multiple states are active.
         """
         return tuple(s for s in self._supported_states if hasattr(self, s))
     
@@ -166,7 +201,8 @@ class MorphStateLayerBehavior(EventDispatcher):
         self._state_layer_instruction.pos = self.pos
         self._state_layer_instruction.size = self.size
         self._state_layer_instruction.radius = self.radius
-        self.dispatch('on_state_layer_update')
+        self._state_layer_color_instruction.rgba = self.state_layer_color
+        self.dispatch('on_state_layer_updated')
 
     def _has_other_active_states(self, exclude_state: str) -> bool:
         """Check if any state other than the excluded one is currently
@@ -207,26 +243,95 @@ class MorphStateLayerBehavior(EventDispatcher):
         one or more of the expected state properties by using getattr
         with a default value of False.
         """
-        other_states = (
-            s for s in self.supported_states if s != exclude_state)
-        return any(
-            getattr(self, state, False) for state in other_states)
-    
-    def _on_state_change(self, state: str, value: bool) -> None:
-        """Handle changes to the specified state."""
-        if not self.allow_state_layer or self._has_other_active_states(state):
-            return None
-        
-        if state in ('hovered', 'pressed', 'focused'):
-            if value:
-                opacity = getattr(self, f'{state}_state_opacity', 0)
-                color = (*self._base_layer_color, opacity)
-            else:
-                color = self.theme_manager.transparent_color
-            self._state_layer_color_instruction.rgba = color
-            self.dispatch('on_state_layer_update')
+        for state in self.supported_states:
+            if state == exclude_state:
+                continue
+            if state in self.supported_states and getattr(self, state, False):
+                return True
 
-    def on_state_layer_update(self, *args) -> None:
+        return False
+    
+    def apply_state_layer(self, state: str, opacity: float) -> None:
+        """Apply the state layer color for the specified state with the
+        given opacity.
+
+        This method sets the state layer color based on the widget's
+        current theme (light or dark) and the specified opacity. It is
+        called when a state becomes active to visually indicate that
+        state.
+
+        Parameters
+        ----------
+        state : Literal['hovered', 'pressed', 'focused', 'disabled', 'active']
+            The interactive state that is being applied. This should be
+            one of the states defined in :attr:`supported_states`.
+        opacity : float
+            The opacity of the state layer, specified as a float
+            between 0 and 1. A value of 0 means no state layer, while a
+            value of 1 means a fully opaque state layer.
+
+        Examples
+        --------
+        Apply a hover state layer with 8% opacity:
+        
+        ```python
+        self.apply_state_layer('hovered', 0.08)
+        ```
+
+        Notes
+        -----
+        - This method assumes that the widget using this behavior has
+          properties corresponding to the states defined in
+          :attr:`supported_states`.
+        - The method does not check if other states are active; it is
+          assumed that precedence logic is handled elsewhere.
+        
+        Raises
+        ------
+        AssertionError
+            If the specified state is not in :attr:`supported_states`.
+        """
+        assert state in self.supported_states, (
+            f'State {state!r} is not supported. Supported states are: '
+            f'{self.supported_states}')
+            
+        self.state_layer_color = [*self._base_layer_color[:3], opacity]
+
+    def _on_state_change(self, state: str, value: bool) -> None:
+        """Handle changes to the specified state.
+        
+        This method is called whenever one of the widget's interactive
+        states changes (e.g., hovered, pressed, focused). It updates the
+        state layer color based on the new state and its precedence.
+        """
+        if not self.state_layer_enabled or self._has_other_active_states(state):
+            return None
+
+        if value:
+            self.apply_state_layer(
+                state,
+                getattr(self, f'{state}_state_opacity', 0))
+        else:
+            self.state_layer_color = self.theme_manager.transparent_color
+    
+    def refresh_state_layer(self) -> None:
+        """Reapply the current state layer based on the widget's state.
+
+        This method is useful when the theme changes or when the
+        widget's state properties are modified externally. It ensures
+        that the state layer reflects the current state and theme.
+        """
+        enabled = self.state_layer_enabled
+        self.state_layer_enabled = True
+        for state in self.supported_states:
+            if getattr(self, state, False):
+                self._on_state_change(state, True)
+                return
+        color = self.theme_manager.transparent_color
+        self._state_layer_color_instruction.rgba = color
+        self.state_layer_enabled = enabled
+
+    def on_state_layer_updated(self, *args) -> None:
         """Event dispatched when the state layer is updated.
 
         This can be overridden by subclasses to perform additional

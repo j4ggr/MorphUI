@@ -697,6 +697,7 @@ class MorphTypographyBehavior(EventDispatcher):
         for key, value in style.items():
             if hasattr(self, key):
                 setattr(self, key, value)
+        self.dispatch('on_typography_updated')
 
     def _update_typography(self, *args) -> None:
         """Update typography based on current settings.
@@ -716,7 +717,6 @@ class MorphTypographyBehavior(EventDispatcher):
             role=self.typography_role,
             size=self.typography_size,
             font_weight=self.typography_weight)
-        self.dispatch('on_typography_updated')
     
     def refresh_typography(self) -> None:
         """Manually refresh typography style.
