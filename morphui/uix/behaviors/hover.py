@@ -43,7 +43,7 @@ class MorphHoverBehavior(EventDispatcher):
     
     Properties
     ----------
-    - :attr:`allow_hover`: Enable/disable hover detection
+    - :attr:`hover_enabled`: Enable/disable hover detection
     - :attr:`hovered`: Current hover state
     - :attr:`enter_pos`: Position where mouse entered (widget coords)
     - :attr:`leave_pos`: Position where mouse left (widget coords) 
@@ -77,14 +77,31 @@ class MorphHoverBehavior(EventDispatcher):
     ```
     """
 
-    allow_hover = BooleanProperty(True)
-    """Enable or disable hover behavior.
+    hover_enabled = BooleanProperty(True)
+    """Enable or disable hover behavior and event detection.
     
-    When False, the behavior will not track mouse position or fire
-    hover events. Useful for temporarily disabling hover effects.
+    When set to False, the behavior will not track mouse position or fire
+    hover events, effectively disabling all hover functionality. This is
+    useful for temporarily disabling hover effects without removing the
+    behavior from the widget.
     
-    :attr:`allow_hover` is a :class:`~kivy.properties.BooleanProperty` 
+    Setting this to False will also clear any current hover state and
+    stop all hover-related event dispatching until re-enabled.
+    
+    :attr:`hover_enabled` is a :class:`~kivy.properties.BooleanProperty` 
     and defaults to True.
+    
+    Examples
+    --------
+    ```python
+    # Temporarily disable hover during animations
+    widget.hover_enabled = False
+    animation.start(widget)
+    animation.bind(on_complete=lambda *args: setattr(widget, 'hover_enabled', True))
+    
+    # Conditionally enable hover based on widget state
+    widget.hover_enabled = not widget.disabled
+    ```
     """
 
     hovered = BooleanProperty(False)
@@ -132,7 +149,7 @@ class MorphHoverBehavior(EventDispatcher):
         pos : Tuple[float, float]
             Mouse position in window coordinates
         """
-        if not self.is_displayed or not self.allow_hover:
+        if not self.is_displayed or not self.hover_enabled:
             return
 
         # Convert to widget coordinates
@@ -409,7 +426,7 @@ class MorphHoverEnhancedBehavior(MorphHoverBehavior):
         # Call parent method for basic hover detection
         super().on_mouse_pos(instance, pos)
         
-        if not self.is_displayed or not self.allow_hover:
+        if not self.is_displayed or not self.hover_enabled:
             return
 
         # Only calculate edges if we're hovering over the widget

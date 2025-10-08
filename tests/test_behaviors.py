@@ -18,7 +18,7 @@ from morphui.uix.behaviors import MorphKeyPressBehavior
 from morphui.uix.behaviors import MorphDropdownBehavior
 from morphui.uix.behaviors import MorphBackgroundBehavior
 from morphui.uix.behaviors import MorphDeclarativeBehavior
-from morphui.uix.behaviors import MorphMCVReferenceBehavior
+from morphui.uix.behaviors import MorphAppReferenceBehavior
 from morphui.uix.behaviors import MorphAutoSizingBehavior
 
 
@@ -136,7 +136,7 @@ class TestMorphHoverBehavior:
     def test_initialization(self, mock_window):
         """Test basic initialization of MorphHoverBehavior."""
         widget = self.TestWidget()
-        assert widget.allow_hover is True
+        assert widget.hover_enabled is True
         assert widget.hovered is False
         assert widget.enter_pos == (0, 0)
         assert widget.leave_pos == (0, 0)
@@ -154,16 +154,16 @@ class TestMorphHoverBehavior:
         assert callable(widget.on_leave)
 
     @patch('kivy.core.window.Window')
-    def test_allow_hover_property(self, mock_window):
-        """Test the allow_hover property."""
+    def test_hover_enabled_property(self, mock_window):
+        """Test the hover_enabled property."""
         widget = self.TestWidget()
         
         # Test default value and setting
-        widget.allow_hover = False
-        assert widget.allow_hover is False
+        widget.hover_enabled = False
+        assert widget.hover_enabled is False
         
-        widget.allow_hover = True
-        assert widget.allow_hover is True
+        widget.hover_enabled = True
+        assert widget.hover_enabled is True
 
     @patch('kivy.core.window.Window')
     def test_is_displayed_property(self, mock_window):
@@ -191,7 +191,7 @@ class TestMorphHoverEnhancedBehavior:
     def test_enhanced_initialization(self, mock_window):
         """Test basic initialization of MorphHoverEnhancedBehavior."""
         widget = self.TestWidget()
-        assert widget.allow_hover is True
+        assert widget.hover_enabled is True
         assert widget.hovered is False
         assert widget.hovered_edges == []
         assert widget.hovered_corner == 'none'
@@ -485,15 +485,15 @@ class TestMorphDropdownBehavior:
         assert isinstance(widget._menu_state_icon, dict)
 
 
-class TestMorphMCVReferenceBehavior:
-    """Test suite for MorphMCVReferenceBehavior class."""
+class TestMorphAppReferenceBehavior:
+    """Test suite for MorphAppReferenceBehavior class."""
 
-    class TestWidget(Widget, MorphMCVReferenceBehavior):
-        """Test widget that combines Widget with MorphMCVReferenceBehavior."""
+    class TestWidget(Widget, MorphAppReferenceBehavior):
+        """Test widget that combines Widget with MorphAppReferenceBehavior."""
         pass
 
     def test_initialization(self):
-        """Test basic initialization of MorphMCVReferenceBehavior."""
+        """Test basic initialization of MorphAppReferenceBehavior."""
         widget = self.TestWidget()
         assert widget._app is None
 
