@@ -342,7 +342,7 @@ class TestMorphKeyPressBehavior:
     def test_initialization(self):
         """Test basic initialization of MorphKeyPressBehavior."""
         widget = self.TestWidget()
-        assert widget.disable_key_press is False
+        assert widget.key_press_enabled is True
         assert widget.tab_widgets == []
         assert widget.index_last_focus == -1
         assert widget.index_next_focus == 0
@@ -350,15 +350,15 @@ class TestMorphKeyPressBehavior:
         assert widget.key_text == ''
         assert widget.keycode == -1
 
-    def test_disable_key_press_property(self):
-        """Test the disable_key_press property."""
+    def test_key_press_enabled_property(self):
+        """Test the key_press_enabled property."""
         widget = self.TestWidget()
         
-        widget.disable_key_press = True
-        assert widget.disable_key_press is True
+        widget.key_press_enabled = False
+        assert widget.key_press_enabled is False
         
-        widget.disable_key_press = False
-        assert widget.disable_key_press is False
+        widget.key_press_enabled = True
+        assert widget.key_press_enabled is True
 
     def test_tab_widgets_property(self):
         """Test the tab_widgets property."""

@@ -27,11 +27,11 @@ class MorphKeyPressBehavior(EventDispatcher):
     move to the next widget in the list.
     """
 
-    disable_key_press: bool = BooleanProperty(False)
-    """Disable key press events if True.
+    key_press_enabled: bool = BooleanProperty(True)
+    """Disable key press events if False.
     
-    :attr:`disable_key_press` is a 
-    :class:`~kivy.properties.BooleanProperty` and defaults to False."""
+    :attr:`key_press_enabled` is a 
+    :class:`~kivy.properties.BooleanProperty` and defaults to True."""
 
     tab_widgets: List[Any] = ListProperty([])
     """List of widgets to focus on tab key press.
@@ -190,7 +190,7 @@ class MorphKeyPressBehavior(EventDispatcher):
     
     def _skip_keypress_event(self, keycode: int) -> bool:
         """Return True if key press event should be ignored.
-        By default, key press events are ignored if `disable_key_press`
+        By default, key press events are ignored if `key_press_enabled`
         is True, `ignore_key_press` is True, or the keycode is not in
         `key_map`.
         
@@ -205,13 +205,17 @@ class MorphKeyPressBehavior(EventDispatcher):
             True if the key press event should be ignored.
         """
         skip = any((
-            self.disable_key_press,
+            not self.key_press_enabled,
             self.ignore_key_press,
             keycode not in self.key_map.keys(),))
         return skip
 
     def on_key_press(
-            self, instance: Any, keyboard: int, keycode: int, text: str | None,
+            self,
+            instance: Any,
+            keyboard: int,
+            keycode: int,
+            text: str | None,
             modifiers: List[str]) -> None:
         """Callback for key press events. Binds to the Window's
         on_key_down event.
