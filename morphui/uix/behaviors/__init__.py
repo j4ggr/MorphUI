@@ -6,11 +6,11 @@ from .theming import MorphThemeBehavior
 from .keypress import MorphKeyPressBehavior
 from .dropdown import MorphDropdownBehavior
 from .background import MorphBackgroundBehavior
-from .background import MorphStateLayerBehavior
 from .declarative import MorphDeclarativeBehavior
 from .declarative import MorphIdentificationBehavior
-from .mcvreference import MorphMCVReferenceBehavior
+from .appreference import MorphAppReferenceBehavior
 from .autosizing import MorphAutoSizingBehavior
+from .statelayer import MorphStateLayerBehavior
 
 __all__ = [
     'MorphHoverBehavior',           # Basic hover behavior
@@ -23,7 +23,7 @@ __all__ = [
     'MorphBackgroundBehavior',      # Background and border styling
     'MorphDeclarativeBehavior',     # Declarative property binding
     'MorphIdentificationBehavior',  # Identity management
-    'MorphMCVReferenceBehavior',    # MCV reference handling
+    'MorphAppReferenceBehavior',    # App reference handling
     'MorphAutoSizingBehavior',      # Automatic sizing
     'MorphStateLayerBehavior',      # State layer management
 ]
