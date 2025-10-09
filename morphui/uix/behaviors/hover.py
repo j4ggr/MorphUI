@@ -160,26 +160,10 @@ class MorphHoverBehavior(EventDispatcher):
         if inside and not self.hovered:
             self.enter_pos = self.current_pos
             self.hovered = True
+            self.dispatch('on_enter')
         elif not inside and self.hovered:
             self.leave_pos = self.current_pos
             self.hovered = False
-
-    def on_hovered(self, instance: Any, hovered: bool) -> None:
-        """Event fired when hover state changes.
-        
-        Automatically dispatches on_enter or on_leave events based
-        on the new hover state.
-        
-        Parameters
-        ----------
-        instance : Any
-            The widget instance
-        hovered : bool
-            New hover state
-        """
-        if hovered:
-            self.dispatch('on_enter')
-        else:
             self.dispatch('on_leave')
 
     def on_enter(self) -> None:
@@ -513,7 +497,8 @@ class MorphHoverEnhancedBehavior(MorphHoverBehavior):
                 self.dispatch('on_enter_corner', corner)
 
     # Event methods to override
-    def on_enter_edge(self, edge: Literal['left', 'right', 'top', 'bottom']) -> None:
+    def on_enter_edge(
+            self, edge: Literal['left', 'right', 'top', 'bottom']) -> None:
         """Event fired when mouse enters any edge.
         
         Parameters
@@ -534,7 +519,8 @@ class MorphHoverEnhancedBehavior(MorphHoverBehavior):
         """
         pass
 
-    def on_leave_edge(self, edge: Literal['left', 'right', 'top', 'bottom']) -> None:
+    def on_leave_edge(
+            self, edge: Literal['left', 'right', 'top', 'bottom']) -> None:
         """Event fired when mouse leaves any edge.
         
         Parameters
@@ -544,7 +530,10 @@ class MorphHoverEnhancedBehavior(MorphHoverBehavior):
         """
         pass
 
-    def on_enter_corner(self, corner: Literal['top-left', 'top-right', 'bottom-left', 'bottom-right']) -> None:
+    def on_enter_corner(
+            self,
+            corner: Literal['top-left', 'top-right', 'bottom-left', 'bottom-right']
+            ) -> None:
         """Event fired when mouse enters any corner.
         
         Parameters
@@ -564,7 +553,10 @@ class MorphHoverEnhancedBehavior(MorphHoverBehavior):
         """
         pass
 
-    def on_leave_corner(self, corner: Literal['top-left', 'top-right', 'bottom-left', 'bottom-right']) -> None:
+    def on_leave_corner(
+            self,
+            corner: Literal['top-left', 'top-right', 'bottom-left', 'bottom-right']
+            ) -> None:
         """Event fired when mouse leaves any corner.
         
         Parameters
