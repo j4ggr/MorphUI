@@ -1,8 +1,6 @@
 from typing import Any
 from typing import List
-from typing import Dict
 
-from kivy.event import EventDispatcher
 from kivy.graphics import Color
 from kivy.graphics import Rectangle
 from kivy.graphics import SmoothLine
@@ -97,6 +95,15 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
     :class:`~kivy.properties.ColorProperty` and defaults to 
     `[0, 0, 0, 0]` (transparent)."""
 
+    selected_surface_color: ColorProperty = ColorProperty([0, 0, 0, 0])
+    """Background color when the widget is selected.
+
+    This color is applied when the widget is in a selected state.
+
+    :attr:`selected_surface_color` is a
+    :class:`~kivy.properties.ColorProperty` and defaults to
+    `[0, 0, 0, 0]` (transparent)."""
+
     border_color: ColorProperty = ColorProperty([0, 0, 0, 0])
     """Border color of the widget.
     
@@ -112,6 +119,15 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
     This color is applied when the widget is in a disabled state.
 
     :attr:`disabled_border_color` is a
+    :class:`~kivy.properties.ColorProperty` and defaults to
+    `[0, 0, 0, 0]` (transparent)."""
+
+    selected_border_color: ColorProperty = ColorProperty([0, 0, 0, 0])
+    """Border color when the widget is selected.
+
+    This color is applied when the widget is in a selected state.
+
+    :attr:`selected_border_color` is a
     :class:`~kivy.properties.ColorProperty` and defaults to
     `[0, 0, 0, 0]` (transparent)."""
 
@@ -154,7 +170,8 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
             radius=self._update_surface_layer,
             border_color=self._update_surface_layer,
             border_width=self._update_surface_layer,
-            disabled=self._update_surface_layer,)
+            disabled=self._update_surface_layer,
+            selected=self._update_surface_layer,)
         
         with self.canvas.before:
             self._surface_color_instruction = Color(
@@ -174,6 +191,9 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
         if self.disabled:
             surface_color = self.disabled_surface_color
             border_color = self.disabled_border_color
+        elif self.selected:
+            surface_color = self.selected_surface_color
+            border_color = self.selected_border_color
         else:
             surface_color = self.surface_color
             border_color = self.border_color
@@ -201,7 +221,7 @@ class MorphInteractionLayerBehavior(BaseLayerBehavior):
     """A behavior class that provides state layer capabilities.
 
     This behavior adds a state layer on top of widgets, allowing them to
-    display an overlay color based on their state (e.g., pressed, focused,
+    display an overlay color based on their state (e.g., pressed, focus,
     hovered). It automatically manages the canvas graphics instructions to
     render the state layer.
 
@@ -227,9 +247,9 @@ class MorphInteractionLayerBehavior(BaseLayerBehavior):
     - The interaction layer color is determined by the current theme 
       (light or dark) to ensure visibility against the surface.
     - The opacity of the state layer can be customized for different
-        states (hovered, pressed, focused).
+        states (hovered, pressed, focus).
     - This behavior assumes that the widget using it has `hovered`,
-      `pressed`, and `focused` properties. If these properties are not
+      `pressed`, and `focus` properties. If these properties are not
       present, the corresponding state layers will not be applied.
     - The state layer is implemented as a semi-transparent rectangle
       that covers the entire widget area.
@@ -255,8 +275,8 @@ class MorphInteractionLayerBehavior(BaseLayerBehavior):
     :attr:`pressed_state_opacity` is a
     :class:`~kivy.properties.NumericProperty` and defaults to `0.10`."""
 
-    focused_state_opacity: float = NumericProperty(0.10)
-    """Opacity of the state layer when the widget is focused.
+    focus_state_opacity: float = NumericProperty(0.10)
+    """Opacity of the state layer when the widget is focus.
 
     The opacity is specified as a float between 0 and 1. A value of 0
     means no state layer, while a value of 1 means a fully opaque state.
@@ -341,7 +361,7 @@ class MorphInteractionLayerBehavior(BaseLayerBehavior):
         """Handle changes to the specified state.
         
         This method is called whenever one of the widget's interactive
-        states changes (e.g., hovered, pressed, focused, etc.). It
+        states changes (e.g., hovered, pressed, focus, etc.). It
         updates the interaction layer color based on the new state and
         its precedence.
         """
@@ -366,7 +386,8 @@ class MorphInteractionLayerBehavior(BaseLayerBehavior):
 
         Parameters
         ----------
-        state : Literal['hovered', 'pressed', 'focused', 'disabled', 'active']
+        state : Literal[
+                'disabled', 'pressed', 'selected', 'focus', 'hovered', 'active']
             The interactive state that is being applied. This should be
             one of the states defined in :attr:`supported_states`.
         opacity : float

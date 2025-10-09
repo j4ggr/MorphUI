@@ -13,7 +13,7 @@ class MorphStatesBehavior(EventDispatcher):
     """A behavior class that provides interactive state properties.
     
     This behavior adds properties for common interactive states such as
-    `disabled`, `pressed`, `focused`, `hovered`, and `active`. It also
+    `disabled`, `pressed`, `focus`, `hovered`, and `active`. It also
     includes a `state_enabled` property to enable or disable state
     handling.
     
@@ -35,15 +35,22 @@ class MorphStatesBehavior(EventDispatcher):
     and defaults to `False`.
     """
 
-    focused: bool = BooleanProperty(False)
-    """Whether the widget is focused.
+    selected: bool = BooleanProperty(False)
+    """Whether the widget is selected.
 
-    :attr:`focused` is a :class:`~kivy.properties.BooleanProperty`
+    :attr:`selected` is a :class:`~kivy.properties.BooleanProperty`
+    and defaults to `False`.
+    """
+
+    focus: bool = BooleanProperty(False)
+    """Whether the widget has focus.
+
+    :attr:`focus` is a :class:`~kivy.properties.BooleanProperty`
     and defaults to `False`.
     """
 
     hovered: bool = BooleanProperty(False)
-    """Whether the widget is hovered.
+    """Whether the mouse is hovering over the widget.
 
     :attr:`hovered` is a :class:`~kivy.properties.BooleanProperty`
     and defaults to `False`.
@@ -67,7 +74,7 @@ class MorphStatesBehavior(EventDispatcher):
     """
 
     _supported_states: Tuple[str, ...] = (
-        'disabled', 'pressed', 'focused', 'hovered', 'active')
+        'disabled', 'pressed', 'selected', 'focus', 'hovered', 'active')
     """States that the state layer behavior can respond to.
 
     The values are sorted by precedence, with higher precedence states
@@ -108,7 +115,8 @@ class MorphStatesBehavior(EventDispatcher):
         
         Parameters
         ----------
-        exclude_state : Literal['hovered', 'pressed', 'focused', 'disabled', 'active']
+        exclude_state : Literal[
+                'disabled', 'pressed', 'selected', 'focus', 'hovered', 'active']
             The state to exclude from the check. Typically this is the
             state that is currently being evaluated for
             activation/deactivation.
