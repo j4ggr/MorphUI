@@ -46,11 +46,23 @@ class DisabledLabel(
     def on_disabled(self, instance, disabled) -> None:
         self.text = "Disabled" if disabled else "Enabled"
 
+class AutoSizeIcon(
+        MorphIconLabel):
+
+    def switch_auto_size(self, *args) -> None:
+        new_state = not self.auto_size
+        self.auto_size = new_state
+        self.icon = 'language-java' if new_state else 'language-python'
+        print(f'Switching auto_size to {new_state}, {self.size}, {self.size_hint}')
 
 class MyApp(MorphApp):
     def build(self) -> MorphBoxLayout:
         self.theme_manager.seed_color = 'Purple'
 
+        self.icon_label = AutoSizeIcon(
+            size_hint=(1, 1),
+            icon='language-python',
+            theme_style='tertiary')
         self.w2 = DisabledLabel(
             text="Disabled",
             theme_style='secondary',
@@ -58,13 +70,10 @@ class MyApp(MorphApp):
         layout = MorphBoxLayout(
             HoverLabel(
                 text="Hover Me",
-                theme_style='primary'),
+                theme_style='primary',),
             self.w2,
-            MorphIconLabel(
-                icon='language-python',
-                content_color='black'),
+            self.icon_label,
             Label(
-                font_name='MaterialIcons',
                 text="Regular Kivy Label",
                 color='black'),
             orientation='vertical',
@@ -76,6 +85,7 @@ class MyApp(MorphApp):
     def on_start(self):
         dt = 2
         Clock.schedule_interval(self.w2.switch_state, dt)
+        Clock.schedule_interval(self.icon_label.switch_auto_size, dt)
         # Clock.schedule_interval(self.theme_manager.toggle_theme_mode, dt * 2)
         return super().on_start()
 

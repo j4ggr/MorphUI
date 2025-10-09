@@ -22,7 +22,44 @@ class MorphLabel(
         MorphAutoSizingBehavior,
         Label,
         ):
-    
+    """A themed label widget with automatic sizing and typography 
+    support.
+
+    This class extends the standard Kivy Label to integrate MorphUI's
+    theming, text layering, and auto-sizing behaviors. It provides a
+    flexible label component that adapts to the app's theme and
+    typography settings.
+
+    Examples
+    --------
+    ```python
+    from morphui.app import MorphApp
+    from morphui.uix.label import MorphLabel
+    from morphui.uix.boxlayout import MorphBoxLayout
+
+    class MyApp(MorphApp):
+        def build(self):
+            return MorphBoxLayout(
+                MorphLabel(text='Hello, World!'),
+                orientation='vertical',
+                padding=50,
+                spacing=15,
+                theme_style='surface',)
+    MyApp().run()
+    ```
+
+    Notes
+    -----
+    - The `theme_color_bindings` are automatically removed when 
+      `theme_style` is specified.
+    - Typography properties are applied if the typography behavior is
+      included.
+    - Auto-sizing properties can be used to make the label adjust its
+      size based on content.
+    - Passing `font_size`, `line_height` or other typography-related
+      properties in kwargs will override the typography settings.
+    """
+
     default_config: Dict[str, Any] = dict(
         halign='left',
         valign='middle',
@@ -95,6 +132,17 @@ class MorphIconLabel(MorphLabel):
             )
     MyApp().run()
     ```
+
+    Notes
+    -----
+    - The `theme_color_bindings` are automatically removed when 
+      `theme_style` is specified.
+    - Typography properties are applied if the typography behavior is
+      included.
+    - Auto-sizing properties can be used to make the label adjust its
+      size based on content.
+    - Passing `font_size`, `line_height` or other typography-related
+      properties in kwargs will override the typography settings.
     """
 
     icon: str = StringProperty('')
@@ -108,7 +156,7 @@ class MorphIconLabel(MorphLabel):
         theme_color_bindings=dict(
             content_color='primary_color',
             surface_color='transparent_color',),
-        font_size='36sp',
+        font_size='24sp',
         auto_size=True,)
     """Default configuration values for MorphIconLabel instances.
     
