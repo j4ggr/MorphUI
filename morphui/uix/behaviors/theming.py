@@ -631,6 +631,7 @@ class MorphTypographyBehavior(EventDispatcher):
         self.fbind('typography_weight', self._update_typography)
         self.typography.bind(
             on_typography_changed=self._update_typography)
+        self.refresh_typography()
 
     @property
     def typography(self) -> Typography:
@@ -647,6 +648,7 @@ class MorphTypographyBehavior(EventDispatcher):
 
     def apply_typography_style(
             self,
+            font_name: str | None,
             role: Literal['Display', 'Headline', 'Title', 'Body', 'Label'],
             size: Literal['large', 'medium', 'small'],
             font_weight: Literal['Thin', 'Regular', 'Heavy'] = 'Regular'
@@ -660,6 +662,10 @@ class MorphTypographyBehavior(EventDispatcher):
         
         Parameters
         ----------
+        font_name : str | None
+            Optional font name to override the default font family from
+            the typography system. If None, uses the default font family
+            defined in the typography settings.
         role : str
             Typography role ('Display', 'Headline', 'Title', 'Body', 'Label')
         size : str
@@ -668,7 +674,7 @@ class MorphTypographyBehavior(EventDispatcher):
             Font weight ('Thin', 'Regular', 'Heavy'), defaults to 'Regular'
         """ 
         style = self.typography.get_text_style(
-            role=role, size=size, font_weight=font_weight)
+            font_name=font_name, role=role, size=size, font_weight=font_weight)
         
         # Apply font properties if widget has them
         if hasattr(self, 'font_name') and 'name' in style:
@@ -694,6 +700,7 @@ class MorphTypographyBehavior(EventDispatcher):
             return None
             
         self.apply_typography_style(
+            font_name=getattr(self, 'font_name', None),
             role=self.typography_role,
             size=self.typography_size,
             font_weight=self.typography_weight)
