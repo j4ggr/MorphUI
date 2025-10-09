@@ -343,6 +343,7 @@ class Typography(EventDispatcher):
 
     def get_text_style(
             self,
+            font_name: str | None,
             role: Literal['Display', 'Headline', 'Title', 'Body', 'Label'],
             size: Literal['large', 'medium', 'small'],
             font_weight: Literal['Regular', 'Thin', 'Heavy'] = 'Regular'
@@ -356,6 +357,10 @@ class Typography(EventDispatcher):
         
         Parameters
         ----------
+        font_name : str | None
+            The name of the text style to retrieve. If None, uses the
+            current :attr:`font_name` property to resolve the font 
+            family.
         role : {'Display', 'Headline', 'Title', 'Body', 'Label'}
             Typography role defining the text's hierarchical importance:
             - 'Display': Large, impactful text for hero sections (24-36sp)
@@ -419,21 +424,128 @@ class Typography(EventDispatcher):
         assert size in FONTS.SIZE_VARIANTS, (
             f'Invalid size {size!r}, must be one of {FONTS.SIZE_VARIANTS}')
 
-        default_name = 'InterRegular'
-        if self.font_name in self._registered_fonts:
-            resolved_name = self.font_name
-        else:
-            resolved_name = f'{self.font_name}{font_weight}'
-            if resolved_name not in self._registered_fonts:
-                warnings.warn(
-                    f'Font {self.font_name!r} and {resolved_name!r} not '
-                    f'registered, falling back to {default_name!r}',
-                    UserWarning)
-                resolved_name = default_name
+        resolved_name = self._resolve_font_name(font_name, font_weight)
+
 
         content_style = self.content_styles[role][size].copy()
         content_style['name'] = resolved_name
         return content_style
+
+    def _resolve_font_name(
+            self,
+            font_name: str | None,
+            font_weight: Literal['Regular', 'Thin', 'Heavy']) -> str:
+        """Resolve the actual font family name to use based on registration.
+        
+        Checks if the specified font name or its weight variant is
+        registered. If not, falls back to the base :attr:`font_name`
+        property. If still not found, falls back to any registered font.
+        Ultimately defaults to 'InterRegular' if no suitable font is
+        found.
+        
+        Parameters
+        ----------
+        font_name : str
+            The base font family name to resolve.
+        font_weight : str
+            The font weight variant to append (e.g., 'Regular', 'Thin',
+            'Heavy').
+        
+        Returns
+        -------
+        str | None
+            The resolved font family name if registered, otherwise None.
+        """
+        if font_name is None:
+            assert self.font_name is not None, (
+                'font_name property cannot be None')
+            return self._resolve_font_name(self.font_name, font_weight)
+
+        if font_name in self._registered_fonts:
+            return font_name
+        
+        if f'{font_name}{font_weight}' in self._registered_fonts:
+            return f'{font_name}{font_weight}'
+        
+        if font_name != self.font_name:
+            return self._resolve_font_name(self.font_name, font_weight)
+
+        if self._registered_fonts:
+            for registered in self._registered_fonts:
+                if registered.endswith(font_weight):
+                    warnings.warn(
+                        f'Font {font_name!r} with weight {font_weight!r} is not '
+                        f'registered. Falling back to {registered!r}.',
+                        UserWarning)
+                    return registered
+            
+        warnings.warn(
+            f'Font {font_name!r} with weight {font_weight!r} is not '
+            'registered. Falling back to InterRegular.',
+            UserWarning)
+        return 'InterRegular'
+
+    def get_icon_character(self, icon_name: str) -> str:
+        """Convert icon name to its corresponding Unicode character.
+        
+        Looks up the icon name in the icon map and converts the hexadecimal
+        value to its Unicode character representation. This is useful for
+        displaying icons from icon fonts in text widgets.
+        
+        Parameters
+        ----------
+        icon_name : str
+            The name of the icon as defined in the icon map.
+            
+        Returns
+        -------
+        str
+            The Unicode character corresponding to the icon.
+
+        Raises
+        ------
+        AssertionError
+            If the icon name is not found in the icon map.
+        ValueError
+            If the hex value in the icon map cannot be converted to 
+            integer.
+            
+        Examples
+        --------
+        ```python
+        typography = Typography()
+        
+        # Get python icon character
+        python_char = typography.get_icon_character('language-python')
+        
+        # Use in a label
+        label = Label(
+            text=python_char,
+            font_name='MaterialIcons'
+        )
+        
+        # Check if icon exists before conversion
+        if 'custom-icon' in typography.icon_map:
+            icon_char = typography.get_icon_character('custom-icon')
+        ```
+        
+        Notes
+        -----
+        - Icon names must exist in the icon_map dictionary.
+        - The icon map values should be hexadecimal strings (e.g., 
+          "0F01C9").
+        - The resulting character should be used with appropriate icon 
+          fonts.
+        """
+        assert icon_name in self.icon_map, (
+            f'Icon {icon_name!r} not found in icon map')
+        
+        hex_value = self.icon_map[icon_name]
+        try:
+            return chr(int(hex_value, 16))
+        except ValueError as e:
+            raise ValueError(
+                f'Invalid hex value "{hex_value}" for icon {icon_name!r}') from e
     
     def on_typography_changed(self, *args) -> None:
         """Event handler called when typography configuration changes.
