@@ -23,6 +23,8 @@ from morphui.app import MorphApp
 from kivy.uix.label import Label
 from morphui.uix.label import MorphLabel
 from morphui.uix.label import MorphIconLabel
+from morphui.uix.button import MorphButton
+from morphui.uix.button import MorphIconButton
 from morphui.uix.boxlayout import MorphBoxLayout
 from morphui.uix.behaviors import MorphHoverBehavior
 from morphui.uix.behaviors import MorphInteractionLayerBehavior
@@ -76,10 +78,14 @@ class MyApp(MorphApp):
             Label(
                 text="Regular Kivy Label",
                 color='black'),
-            orientation='vertical',
-            padding=100,
-            spacing=10,
-            theme_style='surface',)
+            MorphButton(
+                text="Morph Button",
+                theme_style='primary',
+                round_sides=True,
+                elevation=2),
+            MorphIconButton(
+                icon='language-python',
+                theme_style='surface',))
         return layout
 
     def on_start(self):

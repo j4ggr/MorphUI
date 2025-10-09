@@ -19,6 +19,8 @@ from .theming import MorphThemeBehavior
 
 from .keypress import MorphKeyPressBehavior
 
+from .elevation import MorphElevationBehavior
+
 from .dropdown import MorphDropdownBehavior
 
 from .declarative import MorphDeclarativeBehavior
@@ -28,6 +30,8 @@ from .autosizing import MorphAutoSizingBehavior
 
 from .touchripple import MorphTouchRippleBehavior
 from .touchripple import MorphTouchRippleButtonBehavior
+
+from .shape import MorphRoundSidesBehavior
 
 
 __all__ = [
@@ -46,10 +50,12 @@ __all__ = [
     'MorphTypographyBehavior',          # Typography integration only
     'MorphThemeBehavior',               # Combined theme integration (compatibility)
     'MorphKeyPressBehavior',            # Key press handling
+    'MorphElevationBehavior',           # Elevation and shadow effects
     'MorphDropdownBehavior',            # Dropdown functionality
     'MorphDeclarativeBehavior',         # Declarative property binding
     'MorphIdentificationBehavior',      # Identity management
     'MorphAutoSizingBehavior',          # Automatic sizing
     'MorphTouchRippleBehavior',         # Touch ripple effects
     'MorphTouchRippleButtonBehavior',   # Touch ripple for buttons
+    'MorphRoundSidesBehavior',          # Automatic rounded sides
 ]
