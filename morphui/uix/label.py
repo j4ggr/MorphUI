@@ -7,6 +7,7 @@ from kivy.properties import StringProperty
 from .behaviors import MorphThemeBehavior
 from .behaviors import MorphTextLayerBehavior
 from .behaviors import MorphAutoSizingBehavior
+from .behaviors import MorphRoundSidesBehavior
 from .behaviors import MorphIdentificationBehavior
 
 
@@ -16,6 +17,7 @@ __all__ = [
 
 
 class MorphLabel(
+        MorphRoundSidesBehavior,
         MorphIdentificationBehavior,
         MorphThemeBehavior,
         MorphTextLayerBehavior,
