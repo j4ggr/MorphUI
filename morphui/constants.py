@@ -81,10 +81,7 @@ PATH = _Path_()
 
 
 with open(PATH.ICON_FONTS/'material_icons.toml', 'rb') as f:
-    _raw_icon_map = tomllib.load(f)['icons']
-_icon_map_ = {
-    name: chr(int(codepoint[2:], 16)) 
-    for name, codepoint in _raw_icon_map.items()}
+    _icon_map_ = tomllib.load(f)['icons']
 
 @dataclass
 class _Icon_:
@@ -321,7 +318,7 @@ class _Fonts_:
         """
         return {
             'name': 'MaterialIcons',
-            'fn_regular': str(PATH.ICON_FONTS/'MaterialDesignIconsDesktop.ttf'),}
+            'fn_regular': str(PATH.ICON_FONTS/'MaterialDesignIcons-Desktop.ttf'),}
     
     @property
     def DEFAULT_AUTOREGISTERED_FONTS(self) -> Tuple[Dict[str, str], ...]:

@@ -61,7 +61,7 @@ class MyApp(MorphApp):
                 theme_style='primary'),
             self.w2,
             MorphIconLabel(
-                icon='home',
+                icon='language-python',
                 content_color='black'),
             Label(
                 font_name='MaterialIcons',

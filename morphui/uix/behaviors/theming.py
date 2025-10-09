@@ -10,6 +10,8 @@ from kivy.properties import StringProperty
 from kivy.properties import OptionProperty
 from kivy.properties import BooleanProperty
 
+from .appreference import MorphAppReferenceBehavior
+
 from ...app import MorphApp
 from ...constants import THEME
 from ...theme.manager import ThemeManager
@@ -22,7 +24,34 @@ __all__ = [
     'MorphThemeBehavior']
 
 
-class MorphColorThemeBehavior(EventDispatcher):
+class BaseThemeBehavior(EventDispatcher, MorphAppReferenceBehavior):
+    """Base class for theme-related behaviors.
+    
+    This class serves as a common ancestor for theme-related behaviors,
+    providing shared functionality and properties. It is not intended
+    to be used directly, but rather to be extended by specific theme
+    behaviors such as :class:`MorphColorThemeBehavior` and 
+    :class:`MorphTypographyBehavior`.
+    
+    Key Features
+    ------------
+    - Inherits from :class:`MorphAppReferenceBehavior` to provide access
+      to the application instance and theme manager.
+    - Serves as a foundation for more specialized theming behaviors.
+    
+    See Also
+    --------
+    - MorphColorThemeBehavior : Provides automatic color theme 
+      integration for widgets.
+    - MorphTypographyBehavior : Provides typography and text styling 
+      capabilities.
+    - MorphAppReferenceBehavior : Provides access to app instances and 
+      MVC components.
+    """
+    pass
+
+
+class MorphColorThemeBehavior(BaseThemeBehavior):
     """Behavior that provides automatic color theme integration for 
     MorphUI widgets.
     
@@ -206,19 +235,6 @@ class MorphColorThemeBehavior(EventDispatcher):
         super().__init__(**kwargs)
 
         self.theme_manager.bind(on_colors_updated=self._update_colors)
-
-    @property
-    def theme_manager(self) -> ThemeManager:
-        """Access the theme manager for theming and style management
-        (read-only).
-
-        The :attr:`theme_manager` attribute provides access to the
-        :class:`ThemeManager` instance, which handles theming and style
-        management. This instance is automatically initialized as a
-        class attribute and shared across all instances of this
-        behavior.
-        """
-        return MorphApp._theme_manager
 
     def on_theme_color_bindings(
             self, instance: Any, bindings: Dict[str, str]) -> None:
@@ -512,7 +528,7 @@ class MorphColorThemeBehavior(EventDispatcher):
         pass
 
 
-class MorphTypographyBehavior(EventDispatcher):
+class MorphTypographyBehavior(BaseThemeBehavior):
     """Behavior that provides automatic typography integration for 
     MorphUI widgets.
     
@@ -632,19 +648,6 @@ class MorphTypographyBehavior(EventDispatcher):
         self.typography.bind(
             on_typography_changed=self._update_typography)
         self.refresh_typography()
-
-    @property
-    def typography(self) -> Typography:
-        """Access the global typography manager for text style
-        management (read-only).
-
-        The :attr:`typography` attribute provides access to the
-        :class:`Typography` instance, which handles typography and text
-        style management. This instance is automatically initialized as 
-        a class attribute and shared across all instances of this 
-        behavior.
-        """
-        return MorphApp._typography
 
     def apply_typography_style(
             self,

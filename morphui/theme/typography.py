@@ -266,6 +266,47 @@ class Typography(EventDispatcher):
         self.bind(font_name=self.on_typography_changed)
         self.bind(content_styles=self.on_typography_changed)
 
+    @property
+    def available_style_properties(self) -> Tuple[str, ...]:
+        """Get all available style property names from content styles.
+        
+        Extracts and returns all unique property names from the innermost
+        dictionaries of the content_styles structure. These are the actual
+        property names that can be applied to labels and other text widgets.
+        
+        Returns
+        -------
+        Tuple[str, ...]
+            Sorted tuple of unique property names found in content styles.
+            Common properties include 'font_size', 'line_height', etc.
+            
+        Examples
+        --------
+        ```python
+        typography = Typography()
+        
+        # Get all available style properties
+        properties = typography.available_style_properties
+        # Returns: ('font_size', 'line_height', ...)
+        
+        # Use in dynamic style application
+        for prop in properties:
+            if prop in custom_overrides:
+                style[prop] = custom_overrides[prop]
+        ```
+        
+        Notes
+        -----
+        - Properties are extracted from all roles and size variants
+        - The returned tuple is sorted for consistent ordering
+        - Properties may vary if content_styles is customized
+        """
+        properties = set()
+        for role_styles in self.content_styles.values():
+            for size_styles in role_styles.values():
+                properties.update(size_styles.keys())
+        return tuple(sorted(properties))
+
     def register_font(
             self,
             name: str,
@@ -425,7 +466,6 @@ class Typography(EventDispatcher):
             f'Invalid size {size!r}, must be one of {FONTS.SIZE_VARIANTS}')
 
         resolved_name = self._resolve_font_name(font_name, font_weight)
-
 
         content_style = self.content_styles[role][size].copy()
         content_style['name'] = resolved_name

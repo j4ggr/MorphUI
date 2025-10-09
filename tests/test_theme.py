@@ -757,3 +757,42 @@ class TestTypography:
                 fn_bold=Path('fonts/bold.ttf'),
                 fn_bolditalic=Path('fonts/bolditalic.ttf')
             )
+
+    def test_available_style_properties(self):
+        """Test available_style_properties property returns correct property names."""
+        typography = Typography()
+        
+        # Test that the property returns a tuple
+        properties = typography.available_style_properties
+        assert isinstance(properties, tuple)
+        
+        # Test that it contains expected default properties
+        assert 'font_size' in properties
+        assert 'line_height' in properties
+        
+        # Test that properties are sorted
+        assert properties == tuple(sorted(properties))
+        
+        # Test that all properties are strings
+        assert all(isinstance(prop, str) for prop in properties)
+
+    def test_available_style_properties_with_custom_styles(self):
+        """Test available_style_properties with custom content styles."""
+        typography = Typography()
+        
+        # Add custom styles with additional properties
+        custom_styles = typography.content_styles.copy()
+        custom_styles['Display']['large']['custom_property'] = 'test_value'
+        custom_styles['Body']['medium']['another_property'] = 42
+        typography.content_styles = custom_styles
+        
+        properties = typography.available_style_properties
+        
+        # Should include the new custom properties
+        assert 'custom_property' in properties
+        assert 'another_property' in properties
+        assert 'font_size' in properties  # Original properties still there
+        assert 'line_height' in properties
+        
+        # Should still be sorted
+        assert properties == tuple(sorted(properties))

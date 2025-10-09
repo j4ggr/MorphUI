@@ -59,7 +59,7 @@ def extract_icons_from_html(html_file_path: Union[str, Path]) -> Dict[str, str]:
         
         try:
             unicode_int = int(hex_code, 16)
-            unicode_str = f"U+{unicode_int:04X}"
+            unicode_str = f"0F{unicode_int:04X}"
             icons_dict[name] = unicode_str
         except ValueError:
             # Skip icons with invalid hex codes
