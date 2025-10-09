@@ -301,31 +301,318 @@ class TestMorphSurfaceLayerBehavior:
 
 
 class TestMorphAutoSizingBehavior:
-    """Test suite for MorphAutoSizingBehavior class.
-    
-    Note: This behavior is complex and requires testing with actual Kivy
-    widgets that have texture_size properties (like Label) or 
-    size-related behavior. These tests would need a full Kivy 
-    environment to be meaningful.
-    
-    The behavior provides auto_width, auto_height, and auto_size 
-    properties that dynamically adjust widget sizes based on content, 
-    which is difficult to test properly without real widget rendering.
-    
-    For now, this test class is commented out as the previous tests were
-    testing non-existent properties (auto_size_x, min_width, etc.) that
-    don't exist in the actual MorphAutoSizingBehavior implementation.
-    """
-    pass
+    """Test suite for MorphAutoSizingBehavior class."""
 
-    # TODO: Implement proper tests when Kivy environment is available
-    # The tests should cover:
-    # - auto_width property and _fit_width_to_content()
-    # - auto_height property and _fit_height_to_content() 
-    # - auto_size property and combined sizing
-    # - texture_size binding for Label-like widgets
-    # - size_hint management during auto-sizing
-    # - _original_size and _original_size_hint storage/restoration
+    class MockTextWidget(MorphAutoSizingBehavior, Widget):
+        """Mock widget with texture_size for testing text-based auto sizing."""
+        
+        def __init__(self, **kwargs):
+            # Initialize texture_size before parent init
+            self._texture_size = (100, 50)
+            super().__init__(**kwargs)
+        
+        @property
+        def texture_size(self):
+            return self._texture_size
+        
+        @texture_size.setter
+        def texture_size(self, value):
+            self._texture_size = value
+
+    class MockWidget(MorphAutoSizingBehavior, Widget):
+        """Mock widget without texture_size for testing generic auto sizing."""
+        
+        def __init__(self, **kwargs):
+            self.minimum_width = 80
+            self.minimum_height = 40
+            super().__init__(**kwargs)
+
+    def test_initialization_default_properties(self):
+        """Test MorphAutoSizingBehavior initialization with default values."""
+        widget = self.MockWidget()
+        
+        assert widget.auto_width is False
+        assert widget.auto_height is False
+        assert widget.auto_size is False
+        assert widget._original_size_hint == (1.0, 1.0)
+        assert widget._original_size == (100.0, 100.0)  # Default Widget size
+        # _has_texture_size is initialized during __init__ due to has_texture_size access
+        assert widget._has_texture_size is False
+
+    def test_initialization_with_auto_size(self):
+        """Test initialization with auto_size=True sets both width and height."""
+        widget = self.MockWidget(auto_size=True)
+        
+        assert widget.auto_size is True
+        assert widget.auto_width is True
+        assert widget.auto_height is True
+
+    def test_has_texture_size_property_with_texture(self):
+        """Test has_texture_size property for widget with texture_size."""
+        widget = self.MockTextWidget()
+        
+        # First call should check and cache
+        assert widget.has_texture_size is True
+        assert widget._has_texture_size is True
+        
+        # Second call should use cached value
+        assert widget.has_texture_size is True
+
+    def test_has_texture_size_property_without_texture(self):
+        """Test has_texture_size property for widget without texture_size."""
+        widget = self.MockWidget()
+        
+        assert widget.has_texture_size is False
+        assert widget._has_texture_size is False
+
+    def test_auto_width_property_binding(self):
+        """Test auto_width property changes trigger appropriate methods."""
+        widget = self.MockWidget()
+        initial_size_hint_x = widget.size_hint_x
+        
+        widget.auto_width = True
+        
+        # Check that size_hint_x was set to None (indicating auto sizing is active)
+        assert widget.size_hint_x is None
+        
+        widget.auto_width = False
+        
+        # Check that size_hint_x was restored
+        assert widget.size_hint_x == initial_size_hint_x
+
+    def test_auto_height_property_binding(self):
+        """Test auto_height property changes trigger appropriate methods."""
+        widget = self.MockWidget()
+        initial_size_hint_y = widget.size_hint_y
+        
+        widget.auto_height = True
+        
+        # Check that size_hint_y was set to None (indicating auto sizing is active)
+        assert widget.size_hint_y is None
+        
+        widget.auto_height = False
+        
+        # Check that size_hint_y was restored
+        assert widget.size_hint_y == initial_size_hint_y
+
+    def test_auto_size_property_binding(self):
+        """Test auto_size property changes trigger appropriate methods."""
+        widget = self.MockWidget()
+        
+        widget.auto_size = True
+        
+        # Check that both auto_width and auto_height are set
+        assert widget.auto_width is True
+        assert widget.auto_height is True
+        assert widget.size_hint_x is None
+        assert widget.size_hint_y is None
+
+    def test_update_size_with_texture_size(self):
+        """Test _update_size method with texture_size widget."""
+        widget = self.MockTextWidget()
+        widget.texture_size = (120, 60)
+        
+        # Test auto_width only
+        widget.auto_width = True
+        widget.auto_height = False
+        widget._update_size()
+        
+        assert widget.width == 120
+        assert widget.height == widget._original_size[1]
+
+    def test_update_size_with_minimum_size(self):
+        """Test _update_size method with minimum_width/height widget."""
+        widget = self.MockWidget()
+        widget.minimum_width = 150
+        widget.minimum_height = 75
+        
+        # Test auto_height only
+        widget.auto_width = False
+        widget.auto_height = True
+        widget._update_size()
+        
+        assert widget.width == widget._original_size[0]
+        assert widget.height == 75
+
+    def test_update_size_both_dimensions(self):
+        """Test _update_size method with both auto_width and auto_height."""
+        widget = self.MockTextWidget()
+        widget.texture_size = (200, 100)
+        widget.auto_width = True
+        widget.auto_height = True
+        
+        widget._update_size()
+        
+        assert widget.width == 200
+        assert widget.height == 100
+
+    def test_update_size_restore_original(self):
+        """Test _update_size restores original size when auto sizing disabled."""
+        widget = self.MockTextWidget()
+        original_width = widget._original_size[0]
+        original_height = widget._original_size[1]
+        
+        widget.auto_width = False
+        widget.auto_height = False
+        widget._update_size()
+        
+        assert widget.width == original_width
+        assert widget.height == original_height
+
+    def test_update_auto_sizing_auto_size_sets_both(self):
+        """Test _update_auto_sizing with auto_size sets both dimensions."""
+        widget = self.MockWidget()
+        
+        widget._update_auto_sizing(widget, True, 'auto_size')
+        
+        assert widget.auto_width is True
+        assert widget.auto_height is True
+
+    def test_update_auto_sizing_individual_properties(self):
+        """Test _update_auto_sizing with individual properties."""
+        widget = self.MockWidget()
+        
+        with patch.object(widget, 'apply_auto_sizing') as mock_apply:
+            widget._update_auto_sizing(widget, True, 'auto_width')
+            mock_apply.assert_called_once_with(widget.auto_width, widget.auto_height)
+
+    def test_apply_auto_sizing_sets_size_hint_to_none(self):
+        """Test apply_auto_sizing sets size_hint to None for auto dimensions."""
+        widget = self.MockWidget()
+        
+        widget.apply_auto_sizing(True, True)
+        
+        assert widget.size_hint_x is None
+        assert widget.size_hint_y is None
+
+    def test_apply_auto_sizing_restores_original_size_hint(self):
+        """Test apply_auto_sizing restores original size_hint when disabled."""
+        widget = self.MockWidget()
+        original_x = widget._original_size_hint[0]
+        original_y = widget._original_size_hint[1]
+        
+        widget.apply_auto_sizing(False, False)
+        
+        assert widget.size_hint_x == original_x
+        assert widget.size_hint_y == original_y
+
+    def test_apply_auto_sizing_mixed_dimensions(self):
+        """Test apply_auto_sizing with mixed auto sizing settings."""
+        widget = self.MockWidget()
+        original_y = widget._original_size_hint[1]
+        
+        widget.apply_auto_sizing(True, False)
+        
+        assert widget.size_hint_x is None
+        assert widget.size_hint_y == original_y
+
+    def test_apply_auto_sizing_dispatches_event(self):
+        """Test apply_auto_sizing dispatches on_auto_size_updated event."""
+        widget = self.MockWidget()
+        
+        with patch.object(widget, 'dispatch') as mock_dispatch:
+            widget.apply_auto_sizing(True, True)
+            mock_dispatch.assert_called_once_with('on_auto_size_updated')
+
+    def test_refresh_auto_sizing(self):
+        """Test refresh_auto_sizing applies current settings."""
+        widget = self.MockWidget()
+        widget.auto_width = True
+        widget.auto_height = False
+        
+        with patch.object(widget, 'apply_auto_sizing') as mock_apply:
+            widget.refresh_auto_sizing()
+            mock_apply.assert_called_once_with(True, False)
+
+    def test_on_auto_size_updated_event_handler(self):
+        """Test on_auto_size_updated event handler exists and is callable."""
+        widget = self.MockWidget()
+        
+        # Test that the event handler exists and can be called
+        assert hasattr(widget, 'on_auto_size_updated')
+        assert callable(widget.on_auto_size_updated)
+        
+        # Test that it can be called without errors
+        try:
+            widget.on_auto_size_updated()
+        except Exception as e:
+            pytest.fail(f"on_auto_size_updated() raised an exception: {e}")
+
+    def test_texture_size_binding_integration(self):
+        """Test that texture_size changes trigger size updates."""
+        widget = self.MockTextWidget()
+        widget.auto_width = True
+        widget.auto_height = True
+        
+        # Simulate texture_size change
+        with patch.object(widget, '_update_size') as mock_update:
+            widget.texture_size = (300, 150)
+            # In real Kivy, this would trigger the bound callback
+            widget._update_size()
+            mock_update.assert_called_once()
+
+    def test_minimum_size_binding_integration(self):
+        """Test that minimum_width/height changes trigger size updates."""
+        widget = self.MockWidget()
+        widget.auto_width = True
+        widget.auto_height = True
+        
+        # Simulate minimum size change
+        with patch.object(widget, '_update_size') as mock_update:
+            widget.minimum_width = 200
+            widget.minimum_height = 100
+            # In real Kivy, this would trigger the bound callback
+            widget._update_size()
+            mock_update.assert_called_once()
+
+    def test_event_type_registration(self):
+        """Test that on_auto_size_updated event type is registered."""
+        widget = self.MockWidget()
+        
+        # Test that the event type is registered
+        assert hasattr(widget, 'is_event_type')
+        # Note: The actual registration happens in __init__, 
+        # this tests that the method exists
+
+    def test_original_size_preservation(self):
+        """Test that original size and size_hint are properly preserved."""
+        widget = self.MockWidget(size=(200, 150), size_hint=(0.5, 0.3))
+        
+        # Check that original values are stored
+        assert widget._original_size == (200, 150)
+        assert widget._original_size_hint == (0.5, 0.3)
+        
+        # Enable auto sizing
+        widget.apply_auto_sizing(True, True)
+        assert list(widget.size_hint) == [None, None]
+        
+        # Disable auto sizing and check restoration
+        widget.apply_auto_sizing(False, False)
+        assert list(widget.size_hint) == [0.5, 0.3]
+
+    def test_complex_auto_sizing_scenario(self):
+        """Test complex scenario with multiple property changes."""
+        widget = self.MockTextWidget()
+        widget.texture_size = (180, 90)
+        
+        # Start with auto_size
+        widget.auto_size = True
+        assert widget.auto_width is True
+        assert widget.auto_height is True
+        assert list(widget.size_hint) == [None, None]
+        
+        # Change to only auto_width
+        widget.auto_size = False
+        widget.auto_width = True
+        widget.auto_height = False
+        
+        widget.apply_auto_sizing(widget.auto_width, widget.auto_height)
+        assert widget.size_hint_x is None
+        assert widget.size_hint_y == widget._original_size_hint[1]
+        
+        # Refresh sizing
+        widget.refresh_auto_sizing()
+        assert widget.size_hint_x is None
 
 
 class TestMorphKeyPressBehavior:

@@ -72,143 +72,150 @@ class MorphAutoSizingBehavior(EventDispatcher):
     This is used to restore the size when auto sizing is disabled.
     """
 
-    def on_auto_size(self, instance: Any, auto_size: bool) -> None:
-        """Handle auto_size property changes.
-        
-        Parameters
-        ----------
-        instance : Any
-            The widget instance that triggered the event.
-        auto_size : bool
-            The new value of the auto_size property.
-            
-        Notes
-        -----
-        When auto_size is enabled, stores original size_hint and size,
-        then sets size_hint to (None, None) and adjusts width to content.
-        When disabled, restores the original size_hint and size values.
-        """
-        if auto_size:
-            self._original_size_hint = self.size_hint
-            self._original_size = self.size
-            self.size_hint = (None, None)
-            self._fit_width_to_content()
+    _has_texture_size: bool | None = None
+    """Cache whether the widget has a texture_size attribute. This is
+    used to optimize checks for text-based widgets that can use
+    texture_size for auto sizing.
+    """
+
+    def __init__(self, **kwargs) -> None:
+        self.register_event_type('on_auto_size_updated')
+        super().__init__(**kwargs)
+
+        self._original_size = (self.size[0], self.size[1])
+        self._original_size_hint = (self.size_hint[0], self.size_hint[1])
+        if kwargs.get('auto_size'):
+            self.auto_width = True
+            self.auto_height = True
+
+        if self.has_texture_size:
+            self.fbind('texture_size', self._update_size)
         else:
-            self.size_hint = self._original_size_hint
-            self.width, self.height = self._original_size
+            self.fbind('minimum_width', self._update_size)
+            self.fbind('minimum_height', self._update_size)
+        for prop in ('auto_size', 'auto_width', 'auto_height'):
+            self.fbind(prop, self._update_auto_sizing, prop=prop)
+
+        self.refresh_auto_sizing()
     
-    def on_auto_width(self, instance: Any, auto_width: bool) -> None:
-        """Handle auto_width property changes.
-        
-        Parameters
-        ----------
-        instance : Any
-            The widget instance that triggered the event.
-        auto_width : bool
-            The new value of the auto_width property.
-            
-        Notes
-        -----
-        When auto_width is enabled, stores original size_hint_x and width,
-        then sets size_hint_x to None and adjusts width to content.
-        When disabled, restores the original size_hint_x and width values.
+    @property
+    def has_texture_size(self) -> bool:
+        """Check if the widget has a texture_size attribute.
+
+        This property is used to determine if the widget can use
+        texture_size for auto sizing. It returns True if the widget
+        has a texture_size attribute, which is common for text-based
+        widgets like Label.
         """
-        if auto_width:
-            self._original_size_hint = (self.size_hint_x, self.size_hint[1])
-            self._original_size = (self.width, self.size[1])
-            self.size_hint_x = None
-            self._fit_width_to_content()
+        if self._has_texture_size is None:
+            self._has_texture_size = hasattr(self, 'texture_size')
+        return self._has_texture_size
+
+    def _update_size(self, *args) -> None:
+        """Update size based on current auto sizing settings.
+
+        This method adjusts the widget's width and/or height based on
+        the current values of :attr:`auto_width` and :attr:`auto_height`.
+        It uses texture_size if available, otherwise falls back to
+        minimum_width and minimum_height.
+
+        This method is called whenever the relevant size properties
+        change, ensuring that the widget's size remains consistent with
+        its content.
+        """
+        if self.auto_width:
+            if self.has_texture_size:
+                self.width = self.texture_size[0]
+            else:
+                self.width = self.minimum_width
         else:
-            self.size_hint_x = self._original_size_hint[0]
             self.width = self._original_size[0]
 
-    def on_auto_height(self, instance: Any, auto_height: bool) -> None:
-        """Handle auto_height property changes.
-        
+        if self.auto_height:
+            if self.has_texture_size:
+                self.height = self.texture_size[1]
+            else:
+                self.height = self.minimum_height
+        else:
+            self.height = self._original_size[1]
+
+    def _update_auto_sizing(
+            self, instance: Any, value: bool, prop: str) -> None:
+        """Update auto sizing based on property changes.
+
+        This method is called whenever one of the auto sizing properties
+        changes. It ensures that the appropriate sizing adjustments are
+        made to the widget. If :attr:`auto_size` is changed, it sets
+        both :attr:`auto_width` and :attr:`auto_height` to the same
+        value, triggering their respective handlers.
+
         Parameters
         ----------
         instance : Any
             The widget instance that triggered the event.
-        auto_height : bool
-            The new value of the auto_height property.
-            
-        Notes
-        -----
-        When auto_height is enabled, stores original size_hint_y and height,
-        then sets size_hint_y to None and adjusts height to content.
-        When disabled, restores the original size_hint_y and height values.
+        value : bool
+            The new value of the property that changed.
+        prop : str
+            The name of the property that changed. One of 'auto_size',
+            'auto_width', 'auto_height'.
         """
+        if prop == 'auto_size':
+            self.auto_height = value
+            self.auto_width = value
+            return
+
+        self.apply_auto_sizing(self.auto_width, self.auto_height)
+
+    def apply_auto_sizing(self, auto_width: bool, auto_height: bool) -> None:
+        """Enforce auto sizing based on provided flags. This will
+        not change the property values, but will apply the sizing
+        adjustments as if the properties were set.
+
+        This method is responsible for applying the appropriate sizing
+        adjustments to the widget based on the provided flags. It stores
+        the original size and size_hint before making any changes,
+        allowing for restoration when auto sizing is disabled.
+
+        Parameters
+        ----------
+        auto_width : bool
+            Whether to apply auto width sizing.
+        auto_height : bool
+            Whether to apply auto height sizing.
+        """
+        if auto_width:
+            self.size_hint_x = None
+        else:
+            self.size_hint_x = self._original_size_hint[0]
+
         if auto_height:
-            self._original_size_hint = (self.size_hint[0], self.size_hint_y)
-            self._original_size = (self.size[0], self.height)
             self.size_hint_y = None
-            self._fit_height_to_content()
         else:
             self.size_hint_y = self._original_size_hint[1]
-            self.height = self._original_size[1]
-    
-    def _fit_width_to_content(self) -> None:
-        """Calculate and set the minimum required width based on content.
         
-        Notes
-        -----
-        For widgets with texture_size (like Label), binds to texture_size
-        changes and sets width to texture width. For other widgets, binds
-        to minimum_width property to automatically update width.
-        """
-        if hasattr(self, 'texture_size'):
-            self.bind(texture_size=self._fit_width_on_texture_change)
-            self._fit_width_on_texture_change(self, self.texture_size)
-        else:
-            self.bind(minimum_width=self.setter('width'))
+        self._update_size()
+        self.dispatch('on_auto_size_updated')
 
-    def _fit_width_on_texture_change(
-            self, instance: Any, texture_size: Tuple[float, float]) -> None:
-        """Update width when the texture size changes.
-        
-        Parameters
-        ----------
-        instance : Any
-            The widget instance that triggered the texture size change.
-        texture_size : Tuple[float, float]
-            The new texture size as (width, height).
-            
-        Notes
-        -----
-        Sets the widget width to match the texture width, ensuring the
-        widget is sized to fit its rendered content.
-        """
-        self.width = texture_size[0]
+    def refresh_auto_sizing(self) -> None:
+        """Re-apply the current auto sizing settings.
 
-    def _fit_height_to_content(self) -> None:
-        """Calculate and set the minimum required height based on content.
-        
-        Notes
-        -----
-        For widgets with texture_size (like Label), binds to texture_size
-        changes and sets height to texture height. For other widgets, binds
-        to minimum_height property to automatically update height.
-        """
-        if hasattr(self, 'texture_size'):
-            self.bind(texture_size=self._fit_height_on_texture_change)
-            self._fit_height_on_texture_change(self, self.texture_size)
-        else:
-            self.bind(minimum_height=self.setter('height'))
+        This method can be called to refresh the auto sizing behavior,
+        for example after dynamic changes to the widget that may affect
+        sizing. It re-applies the sizing adjustments based on the current
+        values of :attr:`auto_width` and :attr:`auto_height`.
 
-    def _fit_height_on_texture_change(
-            self, instance: Any, texture_size: Tuple[float, float]) -> None:
-        """Update height when the texture size changes.
-        
-        Parameters
-        ----------
-        instance : Any
-            The widget instance that triggered the texture size change.
-        texture_size : Tuple[float, float]
-            The new texture size as (width, height).
-            
-        Notes
-        -----
-        Sets the widget height to match the texture height, ensuring the
-        widget is sized to fit its rendered content.
+        This method preserves the original size and size_hint
+        before re-applying the sizing adjustments, ensuring that the
+        widget can return to its original size if needed.
         """
-        self.height = texture_size[1]
+        self.apply_auto_sizing(self.auto_width, self.auto_height)
+
+    def on_auto_size_updated(self, *args) -> None:
+        """Event fired after auto sizing has been applied or refreshed.
+
+        This event can be used to perform additional actions after the
+        widget's size has been adjusted based on its content. It is
+        triggered at the end of the :meth:`apply_auto_sizing` method.
+        """
+        pass
+
