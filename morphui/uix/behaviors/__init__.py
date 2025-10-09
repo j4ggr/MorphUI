@@ -26,25 +26,30 @@ from .declarative import MorphIdentificationBehavior
 
 from .autosizing import MorphAutoSizingBehavior
 
+from .touchripple import MorphTouchRippleBehavior
+from .touchripple import MorphTouchRippleButtonBehavior
+
 
 __all__ = [
-    'MorphAppReferenceBehavior',    # App reference handling
-    'MorphStatesBehavior',          # Interactive state properties
-    'MorphSurfaceLayerBehavior',    # Surface and border styling
-    'MorphInteractionLayerBehavior',# Interaction layer (state-layer) management
-    'MorphContentLayerBehavior',    # Content layer styling
-    'MorphOverlayLayerBehavior',    # Overlay layer styling
-    'MorphInteractiveLayerBehavior',# Combined surface + interaction layers
-    'MorphTextLayerBehavior',       # Combined surface + content layers
-    'MorphCompleteLayerBehavior',   # All layer behaviors combined
-    'MorphHoverBehavior',           # Basic hover behavior
-    'MorphHoverEnhancedBehavior',   # Enhanced hover with edges/corners
-    'MorphColorThemeBehavior',      # Color theme integration only
-    'MorphTypographyBehavior',      # Typography integration only
-    'MorphThemeBehavior',           # Combined theme integration (compatibility)
-    'MorphKeyPressBehavior',        # Key press handling
-    'MorphDropdownBehavior',        # Dropdown functionality
-    'MorphDeclarativeBehavior',     # Declarative property binding
-    'MorphIdentificationBehavior',  # Identity management
-    'MorphAutoSizingBehavior',      # Automatic sizing
+    'MorphAppReferenceBehavior',        # App reference handling
+    'MorphStatesBehavior',              # Interactive state properties
+    'MorphSurfaceLayerBehavior',        # Surface and border styling
+    'MorphInteractionLayerBehavior',    # Interaction layer (state-layer) management
+    'MorphContentLayerBehavior',        # Content layer styling
+    'MorphOverlayLayerBehavior',        # Overlay layer styling
+    'MorphInteractiveLayerBehavior',    # Combined surface + interaction layers
+    'MorphTextLayerBehavior',           # Combined surface + content layers
+    'MorphCompleteLayerBehavior',       # All layer behaviors combined
+    'MorphHoverBehavior',               # Basic hover behavior
+    'MorphHoverEnhancedBehavior',       # Enhanced hover with edges/corners
+    'MorphColorThemeBehavior',          # Color theme integration only
+    'MorphTypographyBehavior',          # Typography integration only
+    'MorphThemeBehavior',               # Combined theme integration (compatibility)
+    'MorphKeyPressBehavior',            # Key press handling
+    'MorphDropdownBehavior',            # Dropdown functionality
+    'MorphDeclarativeBehavior',         # Declarative property binding
+    'MorphIdentificationBehavior',      # Identity management
+    'MorphAutoSizingBehavior',          # Automatic sizing
+    'MorphTouchRippleBehavior',         # Touch ripple effects
+    'MorphTouchRippleButtonBehavior',   # Touch ripple for buttons
 ]
