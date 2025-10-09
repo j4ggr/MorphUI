@@ -39,7 +39,7 @@ class MorphDropdownBehavior:
 
     menu_open_delay: float = NumericProperty(0.1)
     """Delay in seconds before opening the dropdown menu when the
-    text field is focused."""
+    text field is focus."""
 
     _menu_state_icon: Dict[str, str] = {
         ICON.DD_MENU_OPEN: ICON.DD_MENU_CLOSED,
@@ -103,9 +103,9 @@ class MorphDropdownBehavior:
         Dict[str, Any]:
             A dictionary representing the menu item instruction."""
         instruction = {
-                'viewclass': self.item_viewclass,
-                'on_release': lambda x=item: self.item_callback(x),
-                'text': self._item_text(item),
+            'viewclass': self.item_viewclass,
+            'on_release': lambda x=item: self.item_callback(x),
+            'text': self._item_text(item),
             } | getattr(item, 'instruction', {})
         return instruction
     

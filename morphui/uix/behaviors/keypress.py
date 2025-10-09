@@ -41,23 +41,23 @@ class MorphKeyPressBehavior(EventDispatcher):
     in the list when the tab key is pressed. If no widget has focus
     and :attr:`persist_focus_state` is False, it will start from the
     beginning of the list. Otherwise it will continue from the last
-    focused widget. If the last widget has focus, it will wrap around
+    focus widget. If the last widget has focus, it will wrap around
     to the first widget.
     
     :attr:`tab_widgets` is a :class:`~kivy.properties.ListProperty` and
     defaults to an empty list."""
 
     index_last_focus: int = NumericProperty(-1)
-    """Index of last focused widget. 
+    """Index of last focus widget. 
     
     Equal to -1 if no widget has focus and :attr:`persist_focus_state` 
-    is False. Otherwise, it retains the index of the last focused widget.
+    is False. Otherwise, it retains the index of the last focus widget.
     
     :attr:`index_last_focus` is a 
     :class:`~kivy.properties.NumericProperty` and defaults to -1."""
 
     index_next_focus: int = NumericProperty(0)
-    """Index of next focused text field.
+    """Index of next focus text field.
     
     Wraps around to 0 if it exceeds the length of :attr:`tab_widgets`.
     
@@ -279,7 +279,7 @@ class MorphKeyPressBehavior(EventDispatcher):
         instance : Any
             The instance of the KeyPressBehavior.
         index_last_focus : int
-            The last focused index.
+            The last focus index.
         """
         pass
 
@@ -293,7 +293,7 @@ class MorphKeyPressBehavior(EventDispatcher):
         instance : Any
             The instance of the KeyPressBehavior.
         index_next_focus : int
-            The next focused index.
+            The next focus index.
         """
         if self.index_next_focus >= len(self.tab_widgets):
             self.index_next_focus = 0

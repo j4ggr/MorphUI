@@ -12,10 +12,7 @@ from kivy.properties import BooleanProperty
 
 from .appreference import MorphAppReferenceBehavior
 
-from ...app import MorphApp
 from ...constants import THEME
-from ...theme.manager import ThemeManager
-from ...theme.typography import Typography
 
 
 __all__ = [
@@ -649,6 +646,26 @@ class MorphTypographyBehavior(BaseThemeBehavior):
             on_typography_changed=self._update_typography)
         self.refresh_typography()
 
+    def _update_typography(self, *args) -> None:
+        """Update typography based on current settings.
+        
+        This method applies the typography style to the widget
+        based on the current :attr:`typography_role`, 
+        :attr:`typography_size`, and :attr:`typography_weight`.
+        
+        If :attr:`auto_typography` is False, the method does nothing.
+        This method is typically called when typography-related
+        properties change or when the typography system is updated.
+        """
+        if not self.auto_typography:
+            return None
+            
+        self.apply_typography_style(
+            font_name=getattr(self, 'font_name', None),
+            role=self.typography_role,
+            size=self.typography_size,
+            font_weight=self.typography_weight)
+
     def apply_typography_style(
             self,
             font_name: str | None,
@@ -687,26 +704,6 @@ class MorphTypographyBehavior(BaseThemeBehavior):
             if hasattr(self, key):
                 setattr(self, key, value)
         self.dispatch('on_typography_updated')
-
-    def _update_typography(self, *args) -> None:
-        """Update typography based on current settings.
-        
-        This method applies the typography style to the widget
-        based on the current :attr:`typography_role`, 
-        :attr:`typography_size`, and :attr:`typography_weight`.
-        
-        If :attr:`auto_typography` is False, the method does nothing.
-        This method is typically called when typography-related
-        properties change or when the typography system is updated.
-        """
-        if not self.auto_typography:
-            return None
-            
-        self.apply_typography_style(
-            font_name=getattr(self, 'font_name', None),
-            role=self.typography_role,
-            size=self.typography_size,
-            font_weight=self.typography_weight)
     
     def refresh_typography(self) -> None:
         """Manually refresh typography style.
