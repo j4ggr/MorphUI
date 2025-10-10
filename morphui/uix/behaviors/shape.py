@@ -17,6 +17,12 @@ class MorphRoundSidesBehavior(EventDispatcher):
     automatically adjusts the widget's `radius` property to half of its
     height. This creates perfectly rounded left and right sides, useful
     for pill-shaped buttons, badges, or labels.
+
+    If `height` is greater than `width`, the radius will be set to
+    half of the `width`, resulting in a fully rounded shape. Otherwise,
+    the radius will be half of the `height`, creating rounded sides.
+    This ensures that the widget maintains a visually appealing shape
+    regardless of its dimensions.
     """
     
     round_sides: bool = BooleanProperty(False)
@@ -41,16 +47,11 @@ class MorphRoundSidesBehavior(EventDispatcher):
         super().__init__(**kwargs)
         self._original_radius = getattr(self, 'radius', None)
         self.bind(round_sides=self._update_round_sides)
-        self.bind(height=self._update_radius_for_round_sides)
+        self.bind(size=self._update_round_sides)
         self._update_round_sides(self, self.round_sides)
 
-    def _update_round_sides(self, instance: Any, round_sides: bool) -> None:
-        if round_sides:
-            self.radius = self.height / 2
+    def _update_round_sides(self, *args) -> None:
+        if self.round_sides:
+            self.radius = min(self.size) / 2
         elif self._original_radius is not None:
             self.radius = self._original_radius
-
-    def _update_radius_for_round_sides(
-            self, instance: Any, height: float) -> None:
-        if self.round_sides:
-            self.radius = height / 2
