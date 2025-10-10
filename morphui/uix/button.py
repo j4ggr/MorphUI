@@ -1,7 +1,5 @@
-from kivy.uix.behaviors import ButtonBehavior
-
 from .behaviors import MorphElevationBehavior
-from .behaviors import MorphTouchRippleButtonBehavior
+from .behaviors import MorphCircularRippleBehavior
 
 from .label import MorphLabel
 from .label import MorphIconLabel
@@ -12,9 +10,8 @@ __all__ = [
 
 
 class MorphButton(
-        MorphTouchRippleButtonBehavior,
-        MorphElevationBehavior,
-        ButtonBehavior,
+        MorphCircularRippleBehavior,
+        # MorphElevationBehavior,
         MorphLabel):
     """A button widget with ripple effect and MorphUI theming.
     
@@ -26,9 +23,8 @@ class MorphButton(
 
 
 class MorphIconButton(
-        MorphTouchRippleButtonBehavior,
-        MorphElevationBehavior,
-        ButtonBehavior,
+        MorphCircularRippleBehavior,
+        # MorphElevationBehavior,
         MorphIconLabel):
     """A button widget designed for icon display with ripple effect 
     and MorphUI theming.

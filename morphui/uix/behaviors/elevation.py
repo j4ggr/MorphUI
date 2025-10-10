@@ -108,6 +108,11 @@ class MorphElevationBehavior(EventDispatcher):
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         
+        with self.canvas.before:
+            self._shadow_color_instruction = Color(rgba=self.shadow_color)
+            self._shadow_instruction = BoxShadow(
+                **{k: v for k, v in self.shadow_params.items() if k != 'color'})
+        
         self.bind(
             pos=self._update_elevation,
             size=self._update_elevation,
@@ -120,11 +125,6 @@ class MorphElevationBehavior(EventDispatcher):
         if hasattr(self, 'radius'):
             self.bind(radius=self.setter('shadow_border_radius'))
             self.shadow_border_radius = self.radius
-        
-        with self.canvas.before:
-            self._shadow_color_instruction = Color(rgba=self.shadow_color)
-            self._shadow_instruction = BoxShadow(
-                **{k: v for k, v in self.shadow_params.items() if k != 'color'})
 
     @property
     def shadow_blur_radius(self) -> float:

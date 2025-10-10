@@ -163,16 +163,6 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
         """
         self.register_event_type('on_surface_updated')
         super().__init__(**kwargs)
-        self.bind(
-            surface_color=self._update_surface_layer,
-            size=self._update_surface_layer,
-            pos=self._update_surface_layer,
-            radius=self._update_surface_layer,
-            border_color=self._update_surface_layer,
-            border_width=self._update_surface_layer,
-            disabled=self._update_surface_layer,
-            selected=self._update_surface_layer,)
-        
         with self.canvas.before:
             self._surface_color_instruction = Color(
                 rgba=self.surface_color)
@@ -185,6 +175,16 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
             self._border_instruction = SmoothLine(
                 width=self.border_width,
                 rounded_rectangle=self._rectangle_params)
+            
+        self.bind(
+            surface_color=self._update_surface_layer,
+            size=self._update_surface_layer,
+            pos=self._update_surface_layer,
+            radius=self._update_surface_layer,
+            border_color=self._update_surface_layer,
+            border_width=self._update_surface_layer,
+            disabled=self._update_surface_layer,
+            selected=self._update_surface_layer,)
     
     def _update_surface_layer(self, *args) -> None:
         """Update the surface when any relevant property changes."""
@@ -319,12 +319,6 @@ class MorphInteractionLayerBehavior(BaseLayerBehavior):
     def __init__(self, **kwargs) -> None:
         self.register_event_type('on_interaction_updated')
         super().__init__(**kwargs)
-        
-        self.bind(
-            pos=self._update_interaction_layer,
-            size=self._update_interaction_layer,
-            radius=self._update_interaction_layer,
-            interaction_color=self._update_interaction_layer,)
 
         with self.canvas.before:
             self._interaction_color_instruction = Color(
@@ -333,6 +327,12 @@ class MorphInteractionLayerBehavior(BaseLayerBehavior):
                 pos=self.pos,
                 size=self.size,
                 radius=self.radius,)
+        
+        self.bind(
+            pos=self._update_interaction_layer,
+            size=self._update_interaction_layer,
+            radius=self._update_interaction_layer,
+            interaction_color=self._update_interaction_layer,)
 
         self.refresh_interaction()
 
@@ -611,12 +611,6 @@ class MorphOverlayLayerBehavior(BaseLayerBehavior):
     def __init__(self, **kwargs) -> None:
         self.register_event_type('on_overlay_updated')
         super().__init__(**kwargs)
-        
-        self.bind(
-            pos=self._update_overlay_layer,
-            size=self._update_overlay_layer,
-            radius=self._update_overlay_layer,
-            overlay_color=self._update_overlay_layer,)
 
         with self.canvas.after:
             self._overlay_color_instruction = Color(
@@ -625,6 +619,12 @@ class MorphOverlayLayerBehavior(BaseLayerBehavior):
                 pos=self.pos,
                 size=self.size,
                 radius=self.radius)
+        
+        self.bind(
+            pos=self._update_overlay_layer,
+            size=self._update_overlay_layer,
+            radius=self._update_overlay_layer,
+            overlay_color=self._update_overlay_layer,)
 
     def _update_overlay_layer(self, *args) -> None:
         """Update the overlay position and size."""

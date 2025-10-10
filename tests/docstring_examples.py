@@ -21,6 +21,12 @@ sys.path.append(str(Path(__file__).parents[1].resolve()))
 from kivy.clock import Clock
 from morphui.app import MorphApp
 from kivy.uix.label import Label
+from kivy.uix.button import Button
+from kivy.properties import BooleanProperty
+from kivy.uix.behaviors import ButtonBehavior
+from kivy.uix.behaviors import TouchRippleBehavior
+from kivy.uix.behaviors import TouchRippleButtonBehavior
+
 from morphui.uix.label import MorphLabel
 from morphui.uix.label import MorphIconLabel
 from morphui.uix.button import MorphButton
@@ -57,6 +63,27 @@ class AutoSizeIcon(
         self.icon = 'language-java' if new_state else 'language-python'
         print(f'Switching auto_size to {new_state}, {self.size}, {self.size_hint}')
 
+class RippleButton(TouchRippleBehavior, Button):
+
+    isRippled = BooleanProperty(False)
+
+    def __init__(self, **kwargs):
+        super(RippleButton, self).__init__(**kwargs)
+
+    def on_touch_down(self, touch):
+        collide_point = self.collide_point(touch.x, touch.y)
+        if collide_point and not self.isRippled:
+            self.isRippled = True
+            self.ripple_show(touch)
+        return super(RippleButton, self).on_touch_down(touch)
+
+    def on_touch_up(self, touch):
+        collide_point = self.collide_point(touch.x, touch.y)
+        if collide_point and self.isRippled:
+            self.isRippled = False
+            self.ripple_fade()
+        return super(RippleButton, self).on_touch_up(touch)
+
 class MyApp(MorphApp):
     def build(self) -> MorphBoxLayout:
         self.theme_manager.seed_color = 'Purple'
@@ -81,11 +108,13 @@ class MyApp(MorphApp):
             MorphButton(
                 text="Morph Button",
                 theme_style='primary',
-                round_sides=True,
-                elevation=2),
+                round_sides=True,),
             MorphIconButton(
                 icon='language-python',
-                theme_style='surface',))
+                theme_style='surface',),
+            orientation='vertical',
+            padding=50,
+            spacing=15,)
         return layout
 
     def on_start(self):
