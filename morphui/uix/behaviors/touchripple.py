@@ -6,10 +6,11 @@ from kivy.clock import Clock
 from kivy.event import EventDispatcher
 from kivy.graphics import Color
 from kivy.graphics import Ellipse
-from kivy.graphics import StencilPush
 from kivy.graphics import StencilUse
 from kivy.graphics import StencilPop
+from kivy.graphics import StencilPush
 from kivy.graphics import StencilUnUse
+from kivy.graphics import RoundedRectangle
 from kivy.animation import Animation
 from kivy.properties import ListProperty
 from kivy.properties import ColorProperty
@@ -22,7 +23,8 @@ from kivy.uix.relativelayout import RelativeLayout
 
 __all__ = [
     'MorphRippleBaseBehavior',
-    'MorphCircularRippleBehavior',]
+    'MorphCircularRippleBehavior',
+    'MorphRectangularRippleBehavior',]
 
 
 class MorphRippleBaseBehavior(EventDispatcher):
@@ -564,3 +566,80 @@ class MorphCircularRippleBehavior(MorphRippleBaseBehavior):
                 group=name)
             StencilPop(group=name)
 
+
+class MorphRectangularRippleBehavior(MorphRippleBaseBehavior):
+    """Rectangular ripple effect mixin for Kivy widgets.
+
+    Extends MorphRippleBaseBehavior to provide a material design-style
+    rectangular ripple animation that expands from the touch point. The
+    ripple is clipped to the widget's bounds and provides visual
+    feedback for user interactions.
+
+    The behavior dispatches press/release events similar to
+    :class:`~kivy.uix.behaviors.ButtonBehavior`.
+
+    Events
+    ------
+    on_press() -> None
+        Event fired when the widget is pressed.
+    on_release() -> None  
+        Event fired when the widget is released.
+
+    Examples
+    --------
+    Create a button with rectangular ripple effect:
+
+    ```python
+    class RippleButton(MorphRectangularRippleBehavior, Label):
+        pass
+
+    button = RippleButton(text="Click me")
+    button.ripple_color = [0.2, 0.6, 1.0, 0.3]  # Blue ripple
+    ```
+    """
+
+    def ripple_canvas_instructions(self) -> None:
+        """Define the canvas instructions for rendering the rectangular
+        ripple effect.
+
+        This method creates the necessary canvas instructions to draw
+        a rounded rectangular ripple effect that expands from the touch 
+        point.
+
+        Notes
+        -----
+        - The ripple is drawn using a RoundedRectangle instruction, with 
+          its size determined by the current ripple radius.
+        - Stencil instructions are used to ensure the ripple is clipped
+          to the bounds of the widget.
+        - Call :meth:`_evaluate_ripple_pos` before invoking this
+          method to set the correct ripple position.
+        """
+        name = 'rectangular_ripple'
+        radius = getattr(self, 'radius', [0])
+        if isinstance(radius, (int, float)):
+            radius = [radius,]
+        with self.canvas.after:
+            StencilPush(group=name)
+            RoundedRectangle(
+                size=self.size,
+                pos=self.pos,
+                radius=radius,
+                group=name)
+            StencilUse(group=name)
+            self._ripple_color_instruction = Color(rgba=self.ripple_color)
+            self._ripple_shape_instruction = RoundedRectangle(
+                size=(
+                    self.ripple_initial_radius,
+                    self.ripple_initial_radius),
+                pos=(
+                    self.ripple_pos[0] - self._current_ripple_radius / 2,
+                    self.ripple_pos[1] - self._current_ripple_radius / 2),
+                group=name)
+            StencilUnUse(group=name)
+            RoundedRectangle(
+                size=self.size,
+                pos=self.pos,
+                radius=radius,
+                group=name)
+            StencilPop(group=name)

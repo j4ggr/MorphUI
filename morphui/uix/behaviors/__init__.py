@@ -30,6 +30,7 @@ from .autosizing import MorphAutoSizingBehavior
 
 from .touchripple import MorphRippleBaseBehavior
 from .touchripple import MorphCircularRippleBehavior
+from .touchripple import MorphRectangularRippleBehavior
 
 from .shape import MorphRoundSidesBehavior
 
@@ -57,5 +58,6 @@ __all__ = [
     'MorphAutoSizingBehavior',          # Automatic sizing
     'MorphRippleBaseBehavior',          # Base ripple effects for buttons
     'MorphCircularRippleBehavior',      # Circular ripple for buttons
+    'MorphRectangularRippleBehavior',   # Rectangular ripple for buttons
     'MorphRoundSidesBehavior',          # Automatic rounded sides
 ]

@@ -73,7 +73,7 @@ class MorphStateBehavior(EventDispatcher):
     """
 
     def __init__(self, **kwargs) -> None:
-        self._available_states = set()
+        self._available_states = set('normal')
         super().__init__(**kwargs)
 
         self.update_available_states()
@@ -107,6 +107,7 @@ class MorphStateBehavior(EventDispatcher):
             if hasattr(self, state):
                 self._available_states.add(state)
                 self.fbind(state, self._update_current_state, state=state)
+        self._available_states.add('normal')
 
     def _update_current_state(
             self,

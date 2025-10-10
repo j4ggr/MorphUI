@@ -104,6 +104,13 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
     :class:`~kivy.properties.ColorProperty` and defaults to
     `[0, 0, 0, 0]` (transparent)."""
 
+    active_surface_color: ColorProperty = ColorProperty([0, 0, 0, 0])
+    """Background color when the widget is active.
+
+    :attr:`active_surface_color` is a
+    :class:`~kivy.properties.ColorProperty` and defaults to
+    `[0, 0, 0, 0]` (transparent)."""
+
     border_color: ColorProperty = ColorProperty([0, 0, 0, 0])
     """Border color of the widget.
     
@@ -128,6 +135,13 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
     This color is applied when the widget is in a selected state.
 
     :attr:`selected_border_color` is a
+    :class:`~kivy.properties.ColorProperty` and defaults to
+    `[0, 0, 0, 0]` (transparent)."""
+
+    active_border_color: ColorProperty = ColorProperty([0, 0, 0, 0])
+    """Border color when the widget is active.
+
+    :attr:`active_border_color` is a
     :class:`~kivy.properties.ColorProperty` and defaults to
     `[0, 0, 0, 0]` (transparent)."""
 
@@ -183,20 +197,23 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
             radius=self._update_surface_layer,
             border_color=self._update_surface_layer,
             border_width=self._update_surface_layer,
-            disabled=self._update_surface_layer,
-            selected=self._update_surface_layer,)
+            current_state=self._update_surface_layer,)
     
     def _update_surface_layer(self, *args) -> None:
         """Update the surface when any relevant property changes."""
-        if self.disabled:
-            surface_color = self.disabled_surface_color
-            border_color = self.disabled_border_color
-        elif self.selected:
-            surface_color = self.selected_surface_color
-            border_color = self.selected_border_color
-        else:
-            surface_color = self.surface_color
-            border_color = self.border_color
+        match self.current_state:
+            case 'disabled':
+                surface_color = self.disabled_surface_color
+                border_color = self.disabled_border_color
+            case 'selected':
+                surface_color = self.selected_surface_color
+                border_color = self.selected_border_color
+            case 'active':
+                surface_color = self.active_surface_color
+                border_color = self.active_border_color
+            case _:
+                surface_color = self.surface_color
+                border_color = self.border_color
 
         self._surface_color_instruction.rgba = surface_color
         self._surface_instruction.pos = self.pos
@@ -357,7 +374,7 @@ class MorphInteractionLayerBehavior(BaseLayerBehavior):
         self._interaction_color_instruction.rgba = self.interaction_color
         self.dispatch('on_interaction_updated')
 
-    def _on_state_change(self, instance: Any, value: bool, state: str) -> None:
+    def _on_state_change(self, instance: Any, value: bool) -> None:
         """Handle changes to the specified state.
         
         This method is called whenever one of the widget's interactive
@@ -365,13 +382,13 @@ class MorphInteractionLayerBehavior(BaseLayerBehavior):
         updates the interaction layer color based on the new state and
         its precedence.
         """
-        if not self.interaction_enabled or self._has_other_active_states(state):
+        if not self.interaction_enabled:
             return None
 
         if value:
             self.apply_interaction(
-                state,
-                getattr(self, f'{state}_state_opacity', 0))
+                self.current_state,
+                getattr(self, f'{self.current_state}_state_opacity', 0))
         else:
             self.interaction_color = self.theme_manager.transparent_color
     
@@ -414,12 +431,12 @@ class MorphInteractionLayerBehavior(BaseLayerBehavior):
         Raises
         ------
         AssertionError
-            If the specified state is not in :attr:`supported_states`.
+            If the specified state is not in :attr:`available_states`.
         """
-        assert state in self.supported_states, (
+        assert state in self.available_states, (
             f'State {state!r} is not supported. Supported states are: '
-            f'{self.supported_states}')
-            
+            f'{self.available_states}')
+
         self.interaction_color = [*self._interaction_color[:3], opacity]
     
     def refresh_interaction(self) -> None:
@@ -431,10 +448,7 @@ class MorphInteractionLayerBehavior(BaseLayerBehavior):
         """
         enabled = self.interaction_enabled
         self.interaction_enabled = True
-        for state in self.supported_states:
-            if getattr(self, state, False):
-                self._on_state_change(self, True, state)
-                return
+        self._on_state_change(self, True)
             
         color = self.theme_manager.transparent_color
         self._interaction_color_instruction.rgba = color
