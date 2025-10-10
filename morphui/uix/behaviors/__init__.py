@@ -1,6 +1,6 @@
 from .appreference import MorphAppReferenceBehavior
 
-from .states import MorphStatesBehavior
+from .states import MorphStateBehavior
 
 from .layer import MorphSurfaceLayerBehavior
 from .layer import MorphInteractionLayerBehavior
@@ -36,7 +36,7 @@ from .shape import MorphRoundSidesBehavior
 
 __all__ = [
     'MorphAppReferenceBehavior',        # App reference handling
-    'MorphStatesBehavior',              # Interactive state properties
+    'MorphStateBehavior',               # Interactive state properties
     'MorphSurfaceLayerBehavior',        # Surface and border styling
     'MorphInteractionLayerBehavior',    # Interaction layer (state-layer) management
     'MorphContentLayerBehavior',        # Content layer styling

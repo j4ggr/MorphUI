@@ -1,162 +1,126 @@
 from typing import Any
+from typing import Set
 from typing import Tuple
+from typing import Literal
+from kivy.properties import OptionProperty
 
 from kivy.event import EventDispatcher
-from kivy.properties import BooleanProperty
 
 
 __all__ = [
-    'MorphStatesBehavior',]
+    'MorphStateBehavior',]
 
 
-class MorphStatesBehavior(EventDispatcher):
+class MorphStateBehavior(EventDispatcher):
     """A behavior class that provides interactive state properties.
-    
-    This behavior adds properties for common interactive states such as
-    `disabled`, `pressed`, `focus`, `hovered`, and `active`. It also
-    includes a `state_enabled` property to enable or disable state
-    handling.
-    
-    Widgets using this behavior can respond to changes in these state
-    properties to update their appearance or behavior accordingly.
+
+    This behavior adds the properties necessary to manage and track
+    the current and most relevant interactive state of a widget. If
+    multiple states are active, the behavior determines the most
+    relevant state based on the defined precedence.
+
+    If a widget does not implement any of the state properties,
+    it will default to the 'normal' state.
+
+    Notes
+    -----
+    This behavior does not implement any visual changes itself. It is 
+    intended to be used in conjunction with other behaviors that handle
+    visual state changes, such as the layer behaviors:
+    - :class:`.layer.MorphSurfaceLayerBehavior`
+    - :class:`.layer.MorphInteractionLayerBehavior`
+    - :class:`.layer.MorphContentLayerBehavior`
+    - :class:`.layer.MorphOverlayLayerBehavior`
     """
 
-    disabled: bool = BooleanProperty(False)
-    """Whether the widget is disabled.
+    current_state: Literal[
+        'normal', 'disabled', 'pressed', 'selected', 'focus', 'hovered',
+        'active'
+        ] = OptionProperty('normal', options=[
+            'disabled', 'pressed', 'selected', 'focus', 'hovered',
+            'active', 'normal'])
+    """The current interactive state of the widget.
 
-    :attr:`disabled` is a :class:`~kivy.properties.BooleanProperty`
-    and defaults to `False`.
+    This property reflects the widget's current state based on the
+    active state properties. It can be one of the following values:
+    'normal', 'disabled', 'pressed', 'selected', 'focus', 'hovered',
+    or 'active'. The value is determined by the precedence of the states
+    defined in :attr:`states_precedence`.
+
+    :attr:`current_state` is a :class:`~kivy.properties.StringProperty` 
+    and defaults to 'normal'.
     """
 
-    pressed: bool = BooleanProperty(False)
-    """Whether the widget is pressed.
-
-    :attr:`pressed` is a :class:`~kivy.properties.BooleanProperty`
-    and defaults to `False`.
-    """
-
-    selected: bool = BooleanProperty(False)
-    """Whether the widget is selected.
-
-    :attr:`selected` is a :class:`~kivy.properties.BooleanProperty`
-    and defaults to `False`.
-    """
-
-    focus: bool = BooleanProperty(False)
-    """Whether the widget has focus.
-
-    :attr:`focus` is a :class:`~kivy.properties.BooleanProperty`
-    and defaults to `False`.
-    """
-
-    hovered: bool = BooleanProperty(False)
-    """Whether the mouse is hovering over the widget.
-
-    :attr:`hovered` is a :class:`~kivy.properties.BooleanProperty`
-    and defaults to `False`.
-    """
-
-    active: bool = BooleanProperty(False)
-    """Whether the widget is active.
-
-    :attr:`active` is a :class:`~kivy.properties.BooleanProperty`
-    and defaults to `False`.
-    """
-
-    state_enabled: bool = BooleanProperty(True)
-    """Whether state handling is enabled.
-
-    Disabling state handling will prevent the application of state 
-    layers and any visual changes associated with interactive states.
-
-    :attr:`state_enabled` is a :class:`~kivy.properties.BooleanProperty`
-    and defaults to `True`.
-    """
-
-    _supported_states: Tuple[str, ...] = (
-        'disabled', 'pressed', 'selected', 'focus', 'hovered', 'active')
+    states_precedence: Tuple[
+        Literal['disabled'], Literal['pressed'], Literal['selected'], 
+        Literal['focus'], Literal['hovered'], Literal['active'],
+        Literal['normal']] = (
+        'disabled', 'pressed', 'selected', 'focus', 'hovered', 'active',
+        'normal')
     """States that the state layer behavior can respond to.
 
     The values are sorted by precedence, with higher precedence states
     appearing earlier in the tuple. This is used to determine which
     state layer to apply when multiple states are active.
     """
-    
+
+    _available_states: Set[str]
+    """States that are currently available for the widget.
+
+    This is a subset of :attr:`_states_precedence` that the widget
+    actually implements. It is determined dynamically based on which
+    state properties are currently active.
+    """
+
     def __init__(self, **kwargs) -> None:
+        self._available_states = set()
         super().__init__(**kwargs)
 
-        for state in self.supported_states:
-            self.fbind(state, self._on_state_change, state=state)
+        self.update_available_states()
     
     @property
-    def supported_states(self) -> Tuple[str, ...]:
-        """States that the state layer behavior can respond to
+    def available_states(self) -> Set[str]:
+        """States that are currently available for the widget
         (read-only).
-        
-        This tuple defines the interactive states that the behavior
-        recognizes and can apply state layers for. Widgets using this
-        behavior should have corresponding properties for these states.
 
-        The values are sorted by precedence, with higher precedence
-        states appearing earlier in the tuple. This is used to determine
-        which state layer to apply when multiple states are active.
+        This set keeps track of the states that the widget currently
+        has properties for and can respond to. It is a subset of
+        :attr:`states_precedence`. To automatically manage available
+        states based on the widget's properties, call
+        :meth:`update_available_states`.
         """
-        return tuple(s for s in self._supported_states if hasattr(self, s))
-    
-    def _has_other_active_states(self, exclude_state: str) -> bool:
-        """Check if any state other than the excluded one is currently
-        active.
+        return self._available_states
 
-        This method determines whether any of the widget's interactive
-        states (see :attr:`supported_states`) are currently active, 
-        excluding the specified state. This is useful for state
-        precedence logic where certain states should take priority over
-        others.
-        
-        Parameters
-        ----------
-        exclude_state : Literal[
-                'disabled', 'pressed', 'selected', 'focus', 'hovered', 'active']
-            The state to exclude from the check. Typically this is the
-            state that is currently being evaluated for
-            activation/deactivation.
-            
-        Returns
-        -------
-        bool
-            True if any state other than `exclude_state` is currently
-            active, False if no other states are active.
-            
-        Examples
-        --------
-        Check if other states are active when handling hover:
-        
-        ```python
-        if not self._has_other_active_states('hovered'):
-            # Safe to apply hover state layer
-            self.apply_hover_layer()
-        ```
-        
-        Notes
-        -----
-        This method safely handles cases where the widget doesn't have
-        one or more of the expected state properties by using getattr
-        with a default value of False.
+    def update_available_states(self) -> None:
+        """Update the set of available states based on the widget's
+        properties.
+
+        This method checks which of the states defined in
+        :attr:`states_precedence` the widget currently has properties
+        for and updates the :attr:`available_states` set accordingly.
         """
-        for state in self.supported_states:
-            if state == exclude_state:
-                continue
-            if state in self.supported_states and getattr(self, state, False):
-                return True
+        for state in self.available_states:
+            self.funbind(state, self._update_current_state)
+        self._available_states.clear()
+        
+        for state in self.states_precedence:
+            if hasattr(self, state):
+                self._available_states.add(state)
+                self.fbind(state, self._update_current_state, state=state)
 
-        return False
-
-    def _on_state_change(self, instance: Any, value: bool, state: str) -> None:
+    def _update_current_state(
+            self,
+            instance: Any,
+            value: bool,
+            state: Literal[
+                'disabled', 'pressed', 'selected', 'focus', 'hovered', 
+                'active', 'normal']
+            ) -> None:
         """Handle changes to state properties.
 
         This method is called whenever one of the state properties
-        changes. It can be overridden by subclasses to implement custom
-        behavior in response to state changes.
+        changes. It updates the :attr:`current_state` property based on
+        the active states and their precedence.
 
         Parameters
         ----------
@@ -166,5 +130,44 @@ class MorphStatesBehavior(EventDispatcher):
             The new value of the property.
         state : str
             The name of the state property that changed.
+        """
+        if state == self.current_state and not value:
+            self.current_state = 'normal'
+            return None
+        
+        resolved_state = state if value else 'normal'
+        for resolved_state in self.states_precedence:
+            if resolved_state not in self.available_states:
+                continue
+
+            if getattr(self, resolved_state, False):
+                self.current_state = resolved_state
+                return None
+            
+            if resolved_state == state and not value:
+                self.current_state = 'normal'
+                return None
+
+        self.current_state = resolved_state
+    
+    def on_current_state(
+            self,
+            instance: Any,
+            value: Literal[
+                'normal', 'disabled', 'pressed', 'selected', 'focus',
+                'hovered', 'active']
+            ) -> None:
+        """Handle changes to the current_state property.
+
+        This method is called whenever the :attr:`current_state`
+        property changes. It can be overridden in subclasses to
+        implement custom behavior when the current state changes.
+
+        Parameters
+        ----------
+        instance : Any
+            The instance of the class where the property changed.
+        value : str
+            The new value of the current_state property.
         """
         pass

@@ -1,4 +1,3 @@
-from typing import Any
 from typing import List
 
 from kivy.event import EventDispatcher

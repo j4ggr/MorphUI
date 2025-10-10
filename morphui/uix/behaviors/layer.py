@@ -12,7 +12,7 @@ from kivy.properties import VariableListProperty
 from kivy.uix.relativelayout import RelativeLayout
 
 from .appreference import MorphAppReferenceBehavior
-from .states import MorphStatesBehavior
+from .states import MorphStateBehavior
 
 
 __all__ = [
@@ -25,7 +25,7 @@ __all__ = [
 
 
 class BaseLayerBehavior(
-        MorphStatesBehavior,
+        MorphStateBehavior,
         MorphAppReferenceBehavior):
     """Base class for layer behaviors to provide common functionality."""
 
