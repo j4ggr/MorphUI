@@ -50,6 +50,17 @@ class MorphRippleBaseBehavior(EventDispatcher):
     ([0.75, 0.75, 0.75, 0.5]).
     """
 
+    _current_ripple_color: List[float] = ColorProperty()
+    """The current color of the ripple effect during animation.
+
+    This internal property tracks the color of the ripple effect as it
+    animates from its initial color to transparent. It is updated during
+    the ripple animation.
+
+    :attr:`_current_ripple_color` is a
+    :class:`~kivy.properties.ColorProperty` and is managed internally.
+    """
+
     ripple_duration_in: float = NumericProperty(0.3)
     """The duration of the ripple fade-in animation in seconds.
 
@@ -62,7 +73,7 @@ class MorphRippleBaseBehavior(EventDispatcher):
     :class:`~kivy.properties.NumericProperty` and defaults to 0.3.
     """
 
-    ripple_duration_in_long: float = NumericProperty(0.6)
+    ripple_duration_in_long: float = NumericProperty(1.5)
     """The duration of the ripple fade-in animation for long presses.
 
     This property defines how long it takes for the ripple effect to
@@ -143,14 +154,14 @@ class MorphRippleBaseBehavior(EventDispatcher):
     :class:`~kivy.properties.NumericProperty` and defaults to 15.
     """
 
-    _ripple_radius: float = NumericProperty()
+    _current_ripple_radius: float = NumericProperty()
     """The current radius of the ripple effect during animation.
     
     This internal property tracks the size of the ripple effect as it
     animates from its initial radius to its final radius. It is updated
     during the animation process to create the expanding ripple effect.
     
-    :attr:`_ripple_radius` is a
+    :attr:`_current_ripple_radius` is a
     :class:`~kivy.properties.NumericProperty` and is managed internally.
     """
 
@@ -202,8 +213,8 @@ class MorphRippleBaseBehavior(EventDispatcher):
         super().__init__(**kwargs)
 
         self.bind(
-            ripple_color=self._update_ripple_instruction,
-            _ripple_radius=self._update_ripple_instruction,)
+            _current_ripple_color=self._update_ripple_instruction,
+            _current_ripple_radius=self._update_ripple_instruction,)
         if hasattr(self, 'disabled'):
             self.fbind('disabled', self.fade_ripple_animation)
     
@@ -360,16 +371,17 @@ class MorphRippleBaseBehavior(EventDispatcher):
             return None
         
         if self._ripple_in_progress:
-            Animation.cancel_all(self, '_ripple_radius')
+            Animation.cancel_all(self, '_current_ripple_radius')
             if self._ripple_is_fading:
-                Animation.cancel_all(self, 'ripple_color')
+                Animation.cancel_all(self, '_current_ripple_color')
             self._on_ripple_complete()
-        print('Showing ripple effect')
+
         self._ripple_in_progress = True
         self._ripple_is_fading = False
         self._ripple_is_finishing = False
-        self._ripple_radius = self.ripple_initial_radius
-        self._ripple_final_radius = max(self.size)
+        self._current_ripple_radius = self.ripple_initial_radius
+        self._current_ripple_color = self.ripple_color
+        self._ripple_final_radius = max(self.size) * 2
         self._evaluate_ripple_pos(touch)
         self.ripple_canvas_instructions()
         self.start_ripple_animation()
@@ -379,10 +391,9 @@ class MorphRippleBaseBehavior(EventDispatcher):
         """
         if self._ripple_is_fading or not self._ripple_in_progress:
             return None
-        
-        print('Starting ripple animation with long duration')
+
         animation = Animation(
-            _ripple_radius=self._ripple_final_radius,
+            _current_ripple_radius=self._ripple_final_radius,
             duration=self.ripple_duration_in_long,
             t=self.ripple_function_in)
         animation.bind(on_complete=self.fade_ripple_animation)
@@ -394,12 +405,11 @@ class MorphRippleBaseBehavior(EventDispatcher):
         if self._ripple_is_fading or not self._ripple_in_progress:
             return None
         
-        print('Finishing ripple animation by fast-forwarding to end')
         self._ripple_is_finishing = True
-        Animation.cancel_all(self, '_ripple_radius')
+        Animation.cancel_all(self, '_current_ripple_radius')
         animation = Animation(
-            _ripple_radius=self._ripple_final_radius,
-            duration=self.ripple_duration_in_long,
+            _current_ripple_radius=self._ripple_final_radius,
+            duration=self.ripple_duration_in,
             t=self.ripple_function_in)
         animation.bind(on_complete=self.fade_ripple_animation)
         animation.start(self)
@@ -410,12 +420,11 @@ class MorphRippleBaseBehavior(EventDispatcher):
         if self._ripple_is_fading or not self._ripple_in_progress:
             return None
         
-        print('Fading ripple effect')
         self._ripple_is_finishing = False
         self._ripple_is_fading = True
-        Animation.cancel_all(self, "ripple_color")
+        Animation.cancel_all(self, '_current_ripple_color')
         animation = Animation(
-            ripple_color=self.ripple_color[:3] + [0],
+            _current_ripple_color=self.ripple_color[:3] + [0],
             duration=self.ripple_duration_out,
             t=self.ripple_function_out)
         animation.bind(on_complete=self._on_ripple_complete)
@@ -443,25 +452,27 @@ class MorphRippleBaseBehavior(EventDispatcher):
         self._ripple_is_finishing = False
         self._ripple_is_fading = False
         self.canvas.after.remove_group('circular_ripple')
+        self.canvas.after.remove_group('rectangular_ripple')
 
     def _update_ripple_instruction(self, *args) -> None:
         """Update the size and position of the ripple shape during
         animation.
 
-        This method is called whenever the :attr:`_ripple_radius` 
-        property or the :attr:`ripple_color` property changes, either
-        during the animation or the changes. It updates the size and
-        position and color of the ripple instructions to reflect the
+        This method is called whenever the :attr:`_current_ripple_radius` 
+        property or the :attr:`_current_ripple_color` property changes,
+        either during the animation or the changes. It updates the size
+        and position and color of the ripple instructions to reflect the
         current radius and color.
         """
-        radius = self._ripple_radius
         if hasattr(self, '_ripple_shape_instruction'):
-            self._ripple_shape_instruction.size = (radius, radius)
+            self._evaluate_ripple_pos(self.last_touch)
+            self._ripple_shape_instruction.size = (
+                self._current_ripple_radius, self._current_ripple_radius)
             self._ripple_shape_instruction.pos = (
-                self.ripple_pos[0] - radius / 2,
-                self.ripple_pos[1] - radius / 2)
+                self.ripple_pos[0] - self._current_ripple_radius / 2,
+                self.ripple_pos[1] - self._current_ripple_radius / 2)
         if hasattr(self, '_ripple_color_instruction'):
-            self._ripple_color_instruction.rgba = self.ripple_color
+            self._ripple_color_instruction.rgba = self._current_ripple_color
     
     def on_press(self) -> None:
         """Event fired when the widget is pressed.
@@ -539,9 +550,12 @@ class MorphCircularRippleBehavior(MorphRippleBaseBehavior):
             StencilUse(group=name)
             self._ripple_color_instruction = Color(rgba=self.ripple_color)
             self._ripple_shape_instruction = Ellipse(
-                size=(self._ripple_radius, self._ripple_radius),
-                pos=(self.ripple_pos[0] - self._ripple_radius / 2,
-                     self.ripple_pos[1] - self._ripple_radius / 2),
+                size=(
+                    self.ripple_initial_radius,
+                    self.ripple_initial_radius),
+                pos=(
+                    self.ripple_pos[0] - self._current_ripple_radius / 2,
+                    self.ripple_pos[1] - self._current_ripple_radius / 2),
                 group=name)
             StencilUnUse(group=name)
             Ellipse(
@@ -549,3 +563,4 @@ class MorphCircularRippleBehavior(MorphRippleBaseBehavior):
                 pos=self.pos,
                 group=name)
             StencilPop(group=name)
+

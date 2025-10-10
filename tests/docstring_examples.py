@@ -48,7 +48,7 @@ class DisabledLabel(
         MorphLabel):
     
     def switch_state(self, *args) -> None:
-        print(f'Switching disabled state from {self.disabled} to {not self.disabled}')
+        # print(f'Switching disabled state from {self.disabled} to {not self.disabled}')
         self.disabled = not self.disabled
 
     def on_disabled(self, instance, disabled) -> None:
@@ -61,7 +61,7 @@ class AutoSizeIcon(
         new_state = not self.auto_size
         self.auto_size = new_state
         self.icon = 'language-java' if new_state else 'language-python'
-        print(f'Switching auto_size to {new_state}, {self.size}, {self.size_hint}')
+        # print(f'Switching auto_size to {new_state}, {self.size}, {self.size_hint}')
 
 class RippleButton(TouchRippleBehavior, Button):
 
