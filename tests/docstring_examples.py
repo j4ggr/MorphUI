@@ -102,7 +102,7 @@ class MyApp(MorphApp):
                 text="Hover Me",
                 theme_style='primary',
                 radius=[25] * 4,
-                border_color=(1, 1, 1, 0.2),
+                border_color=(1, 1, 1, 0.8),
                 border_width=1.2),
             self.w2,
             self.icon_label,

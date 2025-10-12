@@ -192,7 +192,6 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
         self.register_event_type('on_surface_updated')
         super().__init__(**kwargs)
         group='surface_layer'
-        self.canvas.before.clear()
         with self.canvas.before:
             self._surface_color_instruction = Color(
                 rgba=self.surface_color,
@@ -357,14 +356,17 @@ class MorphInteractionLayerBehavior(BaseLayerBehavior):
         self.register_event_type('on_interaction_updated')
         super().__init__(**kwargs)
 
+        group = 'interaction_layer'
         with self.canvas.before:
             self._interaction_color_instruction = Color(
-                rgba=self.interaction_color)
+                rgba=self.interaction_color,
+                group=group)
             self._interaction_instruction = RoundedRectangle(
                 pos=self.pos,
                 size=self.size,
-                radius=self.radius,)
-        
+                radius=self.radius,
+                group=group)
+
         self.bind(
             pos=self._update_interaction_layer,
             size=self._update_interaction_layer,
