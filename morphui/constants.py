@@ -11,10 +11,11 @@ __all__ = [
     'THEME',
     'PATH',
     'ICON',
+    'INSTRUCTION_GROUP',
     'FONTS',]
 
 
-@dataclass
+@dataclass(frozen=True)
 class _Theme_:
     LIGHT: Literal['Light'] = 'Light'
     """Light theme mode."""
@@ -62,9 +63,10 @@ class _Theme_:
 THEME = _Theme_()
 """Container for theme-related constants."""
 
+
 _root_path_: Path = Path(__file__).parent
 
-@dataclass
+@dataclass(frozen=True)
 class _Path_:
     ROOT: Path = _root_path_
     """Root directory of the project."""
@@ -83,7 +85,7 @@ PATH = _Path_()
 with open(PATH.ICON_FONTS/'material_icons.toml', 'rb') as f:
     _icon_map_ = tomllib.load(f)['icons']
 
-@dataclass
+@dataclass(frozen=True)
 class _Icon_:
     DD_MENU_CLOSED: Literal['chevron-up'] = 'chevron-up'
     """Icon for the closed dropdown menu."""
@@ -112,7 +114,23 @@ class _Icon_:
 ICON = _Icon_()
 """Container for icon constants."""
 
-@dataclass
+
+@dataclass(frozen=True)
+class _InstructionGroup_:
+    """Instruction group names used for canvas management."""
+    SURFACE: str = 'surface_layer'
+    """Instruction group name for surface layer."""
+    INTERACTION: str = 'interaction_layer'
+    """Instruction group name for interaction layer."""
+    CONTENT: str = 'content_layer'
+    """Instruction group name for content layer."""
+    OVERLAY: str = 'overlay_layer'
+    """Instruction group name for overlay layer."""
+INSTRUCTION_GROUP = _InstructionGroup_()
+"""Container for instruction group name constants."""
+
+
+@dataclass(frozen=True)
 class _Fonts_:
     
     # Typography role constants

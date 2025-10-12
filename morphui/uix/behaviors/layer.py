@@ -1,15 +1,17 @@
 from typing import Any
 from typing import List
 
-from kivy.graphics import Line
 from kivy.graphics import Color
 from kivy.graphics import Rectangle
+from kivy.graphics import SmoothLine
 from kivy.graphics import RoundedRectangle
 from kivy.properties import ColorProperty
 from kivy.properties import NumericProperty
 from kivy.properties import BooleanProperty
 from kivy.properties import VariableListProperty
 from kivy.uix.relativelayout import RelativeLayout
+
+from ...constants import INSTRUCTION_GROUP
 
 from .appreference import MorphAppReferenceBehavior
 from .states import MorphStateBehavior
@@ -39,43 +41,29 @@ class BaseLayerBehavior(
     and defaults to `[0, 0, 0, 0]`."""
     
     @property
-    def _border_bezier_params(self) -> List[float]:
-        """Get the parameters for creating a rounded rectangle border
-        using bezier curves (read-only).
+    def _rectangle_params(self) -> List[float]:
+        """Get the parameters for creating a rounded rectangle
+        (read-only).
 
         The parameters are returned as a list suitable for use in
         :class:`~kivy.graphics.instructions.SmoothLine` instruction. If 
         the widget is a `RelativeLayout`, the position is set to (0, 0)
         to ensure correct rendering within the layout's coordinate
         system.
-
-        This method draws a rounded rectangle border using bezier
-        curves, starting from the top-left corner (after the radius) and
-        proceeding clockwise around the rectangle.
-
+        
         Returns
         -------
         list of float
             List containing [x, y, width, height, *radius] for the 
-            rounded rectangle border.
+            rounded rectangle.
         """
         is_relative = isinstance(self, RelativeLayout)
-        x = 0 if is_relative else self.x + self.border_width / 2
-        y = 0 if is_relative else self.y + self.border_width / 2
         params = [
-            x + self.radius[0], self.top,
-            self.right - self.radius[1], self.top,
-            self.right, self.top,
-            self.right, self.top - self.radius[1],
-            self.right, y + self.radius[2],
-            self.right, y,
-            self.right - self.radius[2], y,
-            x + self.radius[3], y,
-            x, y,
-            x, y + self.radius[3],
-            x, self.top - self.radius[0],
-            x, self.top,
-            x + self.radius[0], self.top,]
+            0 if is_relative else self.x,
+            0 if is_relative else self.y,
+            self.width,
+            self.height,
+            *self.radius,]
         return params
     
 
@@ -177,8 +165,8 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
     _border_color_instruction: Color
     """Kivy Color instruction for the border color."""
 
-    _border_instruction: Line
-    """Kivy Line instruction for the border."""
+    _border_instruction: SmoothLine
+    """Kivy SmoothLine instruction for the border."""
 
     def __init__(self, **kwargs) -> None:
         """Initialize the surface behavior with canvas graphics 
@@ -191,7 +179,8 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
         """
         self.register_event_type('on_surface_updated')
         super().__init__(**kwargs)
-        group='surface_layer'
+
+        group = INSTRUCTION_GROUP.SURFACE
         with self.canvas.before:
             self._surface_color_instruction = Color(
                 rgba=self.surface_color,
@@ -204,11 +193,11 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
             self._border_color_instruction = Color(
                 rgba=self.border_color,
                 group=group)
-            self._border_instruction = Line(
+            self._border_instruction = SmoothLine(
                 width=self.border_width,
-                bezier=self._border_bezier_params,
+                rounded_rectangle=self._rectangle_params,
                 group=group)
-            
+
         self.bind(
             surface_color=self._update_surface_layer,
             size=self._update_surface_layer,
@@ -241,7 +230,7 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
         
         self._border_color_instruction.rgba = border_color
         self._border_instruction.width = self.border_width
-        self._border_instruction.bezier = self._border_bezier_params
+        self._border_instruction.rounded_rectangle = self._rectangle_params
 
         self.dispatch('on_surface_updated')
 
@@ -356,7 +345,7 @@ class MorphInteractionLayerBehavior(BaseLayerBehavior):
         self.register_event_type('on_interaction_updated')
         super().__init__(**kwargs)
 
-        group = 'interaction_layer'
+        group = INSTRUCTION_GROUP.INTERACTION
         with self.canvas.before:
             self._interaction_color_instruction = Color(
                 rgba=self.interaction_color,
@@ -366,7 +355,7 @@ class MorphInteractionLayerBehavior(BaseLayerBehavior):
                 size=self.size,
                 radius=self.radius,
                 group=group)
-
+        
         self.bind(
             pos=self._update_interaction_layer,
             size=self._update_interaction_layer,
@@ -648,13 +637,16 @@ class MorphOverlayLayerBehavior(BaseLayerBehavior):
         self.register_event_type('on_overlay_updated')
         super().__init__(**kwargs)
 
+        group = INSTRUCTION_GROUP.OVERLAY
         with self.canvas.after:
             self._overlay_color_instruction = Color(
-                rgba=self.overlay_color)
+                rgba=self.overlay_color,
+                group=group)
             self._overlay_instruction = RoundedRectangle(
                 pos=self.pos,
                 size=self.size,
-                radius=self.radius)
+                radius=self.radius,
+                group=group)
         
         self.bind(
             pos=self._update_overlay_layer,
