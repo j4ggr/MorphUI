@@ -360,7 +360,8 @@ class MorphInteractionLayerBehavior(BaseLayerBehavior):
             pos=self._update_interaction_layer,
             size=self._update_interaction_layer,
             radius=self._update_interaction_layer,
-            interaction_color=self._update_interaction_layer,)
+            interaction_color=self._update_interaction_layer,
+            current_state=self._on_state_change,)
 
         self.refresh_interaction()
 
@@ -459,7 +460,7 @@ class MorphInteractionLayerBehavior(BaseLayerBehavior):
         """
         enabled = self.interaction_enabled
         self.interaction_enabled = True
-        self._on_state_change(self, True)
+        self._on_state_change(self, getattr(self, self.current_state, False))
             
         color = self.theme_manager.transparent_color
         self._interaction_color_instruction.rgba = color
@@ -516,32 +517,33 @@ class MorphContentLayerBehavior(BaseLayerBehavior):
     :class:`~kivy.properties.ColorProperty` and defaults to None.
     """
 
+    hovered_content_color: List[float] | None = ColorProperty(None)
+    """Content color to use when the widget is hovered.
+
+    This property allows you to specify a different content color for
+    the widget when it is in the hovered state. If not set, the default
+    content color will be used.
+
+    :attr:`hovered_content_color` is a :class:`~kivy.properties.ColorProperty`
+    and defaults to None.
+    """
+
     def __init__(self, **kwargs) -> None:
         self.register_event_type('on_content_updated')
         super().__init__(**kwargs)
+        if self.content_color is None:
+            if hasattr(self, 'color'):
+                self.content_color = self.color
+            elif hasattr(self, 'foreground_color'):
+                self.content_color = self.foreground_color
+            else:
+                self.content_color = self.theme_manager.text_color
 
         self.bind(
             content_color=self._update_content_layer,
-            disabled=self._update_content_layer,)
+            disabled_content_color=self._update_content_layer,)
         
-        # bindings for Labels and Buttons
-        if hasattr(self, 'color'):
-            self.bind(content_color=self.setter('color'))
-            self.color=self.content_color or self.color
-        if hasattr(self, 'disabled_color'):
-            self.bind(disabled_content_color=self.setter('disabled_color'))
-            self.disabled_color=(
-                self.disabled_content_color or self.disabled_color)
-        
-        # bindings for TextInput
-        if hasattr(self, 'foreground_color'):
-            self.bind(content_color=self.setter('foreground_color'))
-            self.foreground_color=self.content_color or self.foreground_color
-        if hasattr(self, 'disabled_foreground_color'):
-            self.bind(
-                disabled_content_color=self.setter('disabled_foreground_color'))
-            self.disabled_foreground_color=(
-                self.disabled_content_color or self.disabled_foreground_color)
+        self.refresh_content()
     
     def _update_content_layer(self, *args) -> None:
         """Update the content layer based on the current properties.
@@ -550,7 +552,25 @@ class MorphContentLayerBehavior(BaseLayerBehavior):
         such as `content_color` or `disabled`. It applies the
         appropriate content color based on the current state.
         """
-        self.dispatch('on_content_updated')
+        if hasattr(self, 'disabled_color'):
+            self.disabled_color = (
+                self.disabled_content_color or self.disabled_color)
+        if hasattr(self, 'disabled_foreground_color'):
+            self.disabled_foreground_color = (
+                self.disabled_content_color or self.disabled_foreground_color)
+        
+        if self.current_state == 'disabled':
+            self.dispatch('on_content_updated')
+            return None
+
+        color = None
+        if self.current_state == 'hovered':
+            color = self.hovered_content_color or self.content_color
+        elif self.current_state == 'normal':
+            color = self.content_color or self.theme_manager.text_color
+
+        if color is not None:
+            self.apply_content(color)
     
     def apply_content(self, color: List[float]) -> None:
         """Apply the specified content color to the widget.
@@ -565,7 +585,11 @@ class MorphContentLayerBehavior(BaseLayerBehavior):
             The RGBA color to apply to the content, with values between
             0 and 1. Example: `[1, 0, 0, 1]` for solid red.
         """
-        self.content_color = color
+        if hasattr(self, 'color'):
+            self.color = color
+        if hasattr(self, 'foreground_color'):
+            self.foreground_color = color
+        self.dispatch('on_content_updated')
     
     def refresh_content(self) -> None:
         """Reapply the current content color based on the widget's state.

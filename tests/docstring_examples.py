@@ -40,60 +40,34 @@ class HoverLabel(
         MorphHoverBehavior,
         MorphInteractionLayerBehavior,
         MorphLabel):
-    pass
-
-
-class DisabledLabel(
-        MorphInteractionLayerBehavior,
-        MorphLabel):
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        print(self.available_states)
     
+
+
+class DisabledButton(MorphButton):
+
     def switch_state(self, *args) -> None:
-        # print(f'Switching disabled state from {self.disabled} to {not self.disabled}')
         self.disabled = not self.disabled
 
     def on_disabled(self, instance, disabled) -> None:
         self.text = "Disabled" if disabled else "Enabled"
 
-class AutoSizeIcon(
-        MorphIconLabel):
+class AutoSizeIcon(MorphIconLabel):
 
     def switch_auto_size(self, *args) -> None:
         new_state = not self.auto_size
         self.auto_size = new_state
         self.icon = 'language-java' if new_state else 'language-python'
-        # print(f'Switching auto_size to {new_state}, {self.size}, {self.size_hint}')
-
-class RippleButton(TouchRippleBehavior, Button):
-
-    isRippled = BooleanProperty(False)
-
-    def __init__(self, **kwargs):
-        super(RippleButton, self).__init__(**kwargs)
-
-    def on_touch_down(self, touch):
-        collide_point = self.collide_point(touch.x, touch.y)
-        if collide_point and not self.isRippled:
-            self.isRippled = True
-            self.ripple_show(touch)
-        return super(RippleButton, self).on_touch_down(touch)
-
-    def on_touch_up(self, touch):
-        collide_point = self.collide_point(touch.x, touch.y)
-        if collide_point and self.isRippled:
-            self.isRippled = False
-            self.ripple_fade()
-        return super(RippleButton, self).on_touch_up(touch)
 
 class MyApp(MorphApp):
     def build(self) -> MorphBoxLayout:
         self.theme_manager.seed_color = 'Purple'
 
         self.icon_label = AutoSizeIcon(
-            size_hint=(1, 1),
-            icon='language-python',
-            theme_style='tertiary',
-            radius=[5] * 4)
-        self.w2 = DisabledLabel(
+            icon='language-python')
+        self.disabled_button = DisabledButton(
             text="Disabled",
             theme_style='secondary',
             disabled=True,)
@@ -104,7 +78,7 @@ class MyApp(MorphApp):
                 radius=[25] * 4,
                 border_color=(1, 1, 1, 0.8),
                 border_width=1.2),
-            self.w2,
+            self.disabled_button,
             self.icon_label,
             Label(
                 text="Regular Kivy Label",
@@ -114,8 +88,7 @@ class MyApp(MorphApp):
                 theme_style='primary',
                 round_sides=True,),
             MorphIconButton(
-                icon='language-python',
-                theme_style='surface',),
+                icon='language-python',),
             orientation='vertical',
             padding=50,
             spacing=15,)
@@ -123,7 +96,7 @@ class MyApp(MorphApp):
 
     def on_start(self):
         dt = 2
-        Clock.schedule_interval(self.w2.switch_state, dt)
+        Clock.schedule_interval(self.disabled_button.switch_state, dt)
         Clock.schedule_interval(self.icon_label.switch_auto_size, dt)
         # Clock.schedule_interval(self.theme_manager.toggle_theme_mode, dt * 2)
         return super().on_start()
