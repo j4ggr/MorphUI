@@ -1,6 +1,5 @@
-from .behaviors import MorphElevationBehavior
-from .behaviors import MorphCircularRippleBehavior
-from .behaviors import MorphRectangularRippleBehavior
+from .behaviors import MorphButtonBehavior
+from .behaviors import MorphRippleBehavior
 
 from .label import MorphLabel
 from .label import MorphIconLabel
@@ -11,8 +10,8 @@ __all__ = [
 
 
 class MorphButton(
-        MorphRectangularRippleBehavior,
-        # MorphElevationBehavior,
+        MorphRippleBehavior,
+        MorphButtonBehavior,
         MorphLabel):
     """A button widget with ripple effect and MorphUI theming.
     
@@ -26,8 +25,8 @@ class MorphButton(
 
 
 class MorphIconButton(
-        MorphRectangularRippleBehavior,
-        # MorphElevationBehavior,
+        MorphRippleBehavior,
+        MorphButtonBehavior,
         MorphIconLabel):
     """A button widget designed for icon display with ripple effect 
     and MorphUI theming.

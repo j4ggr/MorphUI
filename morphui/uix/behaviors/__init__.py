@@ -28,9 +28,8 @@ from .declarative import MorphIdentificationBehavior
 
 from .autosizing import MorphAutoSizingBehavior
 
-from .touchripple import MorphRippleBaseBehavior
-from .touchripple import MorphCircularRippleBehavior
-from .touchripple import MorphRectangularRippleBehavior
+from .touch import MorphButtonBehavior
+from .touch import MorphRippleBehavior
 
 from .shape import MorphRoundSidesBehavior
 
@@ -56,8 +55,7 @@ __all__ = [
     'MorphDeclarativeBehavior',         # Declarative property binding
     'MorphIdentificationBehavior',      # Identity management
     'MorphAutoSizingBehavior',          # Automatic sizing
-    'MorphRippleBaseBehavior',          # Base ripple effects for buttons
-    'MorphCircularRippleBehavior',      # Circular ripple for buttons
-    'MorphRectangularRippleBehavior',   # Rectangular ripple for buttons
+    'MorphButtonBehavior',              # Button touch behavior
+    'MorphRippleBehavior',              # Ripple effects for buttons
     'MorphRoundSidesBehavior',          # Automatic rounded sides
 ]
