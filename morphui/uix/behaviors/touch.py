@@ -19,6 +19,8 @@ from kivy.properties import BooleanProperty
 from kivy.input.motionevent import MotionEvent
 from kivy.uix.relativelayout import RelativeLayout
 
+from ...constants import INSTRUCTION_GROUP
+
 
 __all__ = [
     'MorphButtonBehavior',
@@ -560,14 +562,15 @@ class MorphRippleBehavior(EventDispatcher):
         - Call :meth:`_evaluate_ripple_pos` before invoking this
           method to set the correct ripple position.
         """
-        group = 'rectangular_ripple'
         radius = getattr(self, 'radius', [0])
         if isinstance(radius, (int, float)):
             radius = [radius,]
+        group = INSTRUCTION_GROUP.RIPPLE
         if self.ripple_layer == 'overlay':
             canvas = self.canvas.after
         else:
             canvas = self.canvas.before
+
         with canvas:
             StencilPush(group=group)
             RoundedRectangle(
@@ -605,8 +608,13 @@ class MorphRippleBehavior(EventDispatcher):
         self._ripple_in_progress = False
         self._ripple_is_finishing = False
         self._ripple_is_fading = False
-        self.canvas.after.remove_group('circular_ripple')
-        self.canvas.after.remove_group('rectangular_ripple')
+        
+        group = INSTRUCTION_GROUP.RIPPLE
+        if self.ripple_layer == 'overlay':
+            canvas = self.canvas.after
+        else:
+            canvas = self.canvas.before
+        canvas.remove_group(group)
 
     def _update_ripple_instruction(self, *args) -> None:
         """Update the size and position of the ripple shape during
