@@ -11,6 +11,9 @@ from .behaviors import MorphRoundSidesBehavior
 from .behaviors import MorphIdentificationBehavior
 
 
+from ..utils import clean_default_config
+
+
 __all__ = [
     'MorphLabel',
     'MorphIconLabel',]
@@ -90,10 +93,7 @@ class MorphLabel(
     """
 
     def __init__(self, **kwargs) -> None:
-        config = self.default_config.copy()
-        if 'theme_style' in kwargs:
-            config.pop('theme_color_bindings')
-        config.update(kwargs)
+        config = clean_default_config(self.default_config) | kwargs
         super().__init__(**config)
         for option in self.typography.available_style_properties:
             if option in kwargs and hasattr(self, option):
@@ -174,10 +174,7 @@ class MorphIconLabel(MorphLabel):
     """
 
     def __init__(self, **kwargs) -> None:
-        config = self.default_config.copy()
-        if 'theme_style' in kwargs:
-            config.pop('theme_color_bindings')
-        config.update(kwargs)
+        config = clean_default_config(self.default_config) | kwargs
         super().__init__(**config)
         self.bind(icon=self._apply_icon)
         self._apply_icon(self, self.icon)

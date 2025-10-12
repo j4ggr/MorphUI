@@ -126,6 +126,8 @@ class _InstructionGroup_:
     """Instruction group name for content layer."""
     OVERLAY: str = 'overlay_layer'
     """Instruction group name for overlay layer."""
+    RIPPLE: str = 'ripple'
+    """Instruction group name for ripple effects."""
 INSTRUCTION_GROUP = _InstructionGroup_()
 """Container for instruction group name constants."""
 
