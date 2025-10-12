@@ -34,10 +34,10 @@ class MorphStateBehavior(EventDispatcher):
     """
 
     current_state: Literal[
-        'normal', 'disabled', 'pressed', 'selected', 'focus', 'hovered',
+        'normal', 'disabled', 'selected', 'focus', 'hovered', 'pressed',
         'active'
         ] = OptionProperty('normal', options=[
-            'disabled', 'pressed', 'selected', 'focus', 'hovered',
+            'disabled', 'selected', 'focus', 'hovered', 'pressed',
             'active', 'normal'])
     """The current interactive state of the widget.
 
@@ -52,10 +52,14 @@ class MorphStateBehavior(EventDispatcher):
     """
 
     states_precedence: Tuple[
-        Literal['disabled'], Literal['pressed'], Literal['selected'], 
-        Literal['focus'], Literal['hovered'], Literal['active'],
+        Literal['disabled'],
+        Literal['selected'], 
+        Literal['focus'],
+        Literal['hovered'],
+        Literal['pressed'],
+        Literal['active'],
         Literal['normal']] = (
-        'disabled', 'pressed', 'selected', 'focus', 'hovered', 'active',
+        'disabled', 'selected', 'focus', 'hovered', 'pressed','active', 
         'normal')
     """States that the state layer behavior can respond to.
 

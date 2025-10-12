@@ -541,7 +541,8 @@ class MorphContentLayerBehavior(BaseLayerBehavior):
 
         self.bind(
             content_color=self._update_content_layer,
-            disabled_content_color=self._update_content_layer,)
+            disabled_content_color=self._update_content_layer,
+            current_state=self._update_content_layer,)
         
         self.refresh_content()
     

@@ -1,7 +1,6 @@
 from typing import Any
 from typing import Dict
 
-from kivy.metrics import sp
 from kivy.uix.label import Label
 from kivy.properties import StringProperty
 

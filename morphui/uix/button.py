@@ -4,6 +4,7 @@ from typing import Dict
 from kivy.uix.label import Label
 from kivy.properties import StringProperty
 
+from .behaviors import MorphHoverBehavior
 from .behaviors import MorphThemeBehavior
 from .behaviors import MorphButtonBehavior
 from .behaviors import MorphRippleBehavior
@@ -24,6 +25,7 @@ __all__ = [
 class MorphButton(
         MorphRoundSidesBehavior,
         MorphIdentificationBehavior,
+        MorphHoverBehavior,
         MorphThemeBehavior,
         MorphRippleBehavior,
         MorphCompleteLayerBehavior,
@@ -42,6 +44,7 @@ class MorphButton(
         theme_color_bindings={
             'surface_color': 'surface_container_color',
             'content_color': 'content_surface_color',
+            'hovered_content_color': 'content_surface_variant_color',
             'border_color': 'outline_color',},
         ripple_enabled=True,
         ripple_color=None,
@@ -68,6 +71,7 @@ class MorphButton(
 class MorphIconButton(
         MorphRoundSidesBehavior,
         MorphIdentificationBehavior,
+        MorphHoverBehavior,
         MorphThemeBehavior,
         MorphRippleBehavior,
         MorphCompleteLayerBehavior,
@@ -101,6 +105,7 @@ class MorphIconButton(
         theme_color_bindings={
             'surface_color': 'surface_container_color',
             'content_color': 'content_surface_color',
+            'hovered_content_color': 'content_surface_variant_color',
             'border_color': 'outline_color',},
         typography_role=MorphIconLabel.default_config['typography_role'],
         typography_size=MorphIconLabel.default_config['typography_size'],

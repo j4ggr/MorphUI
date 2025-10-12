@@ -42,9 +42,8 @@ class HoverLabel(
         MorphLabel):
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
-        print(self.available_states)
-    
-
+        self.theme_color_bindings['hovered_content_color'] = (
+            'primary_color')
 
 class DisabledButton(MorphButton):
 
