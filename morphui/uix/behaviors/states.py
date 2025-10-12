@@ -47,7 +47,7 @@ class MorphStateBehavior(EventDispatcher):
     or 'active'. The value is determined by the precedence of the states
     defined in :attr:`states_precedence`.
 
-    :attr:`current_state` is a :class:`~kivy.properties.StringProperty` 
+    :attr:`current_state` is a :class:`~kivy.properties.OptionProperty` 
     and defaults to 'normal'.
     """
 
@@ -136,21 +136,14 @@ class MorphStateBehavior(EventDispatcher):
             self.current_state = 'normal'
             return None
         
-        resolved_state = state if value else 'normal'
         for resolved_state in self.states_precedence:
             if resolved_state not in self.available_states:
                 continue
 
-            if getattr(self, resolved_state, False):
-                self.current_state = resolved_state
-                return None
-            
-            if resolved_state == state and not value:
-                self.current_state = 'normal'
+            if resolved_state == state:
+                self.current_state = state if value else 'normal'
                 return None
 
-        self.current_state = resolved_state
-    
     def on_current_state(
             self,
             instance: Any,
