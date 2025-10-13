@@ -205,11 +205,11 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
             radius=self._update_surface_layer,
             border_color=self._update_surface_layer,
             border_width=self._update_surface_layer,
-            current_state=self._update_surface_layer,)
+            current_surface_state=self._update_surface_layer,)
     
     def _update_surface_layer(self, *args) -> None:
         """Update the surface when any relevant property changes."""
-        match self.current_state:
+        match self.current_surface_state:
             case 'disabled':
                 surface_color = self.disabled_surface_color
                 border_color = self.disabled_border_color
@@ -361,7 +361,7 @@ class MorphInteractionLayerBehavior(BaseLayerBehavior):
             size=self._update_interaction_layer,
             radius=self._update_interaction_layer,
             interaction_color=self._update_interaction_layer,
-            current_state=self._on_state_change,)
+            current_interaction_state=self._on_state_change,)
 
         self.refresh_interaction()
 
@@ -398,9 +398,9 @@ class MorphInteractionLayerBehavior(BaseLayerBehavior):
             return None
 
         if value:
+            state = self.current_interaction_state
             self.apply_interaction(
-                self.current_state,
-                getattr(self, f'{self.current_state}_state_opacity', 0))
+                state, getattr(self, f'{state}_state_opacity', 0))
         else:
             self.interaction_color = self.theme_manager.transparent_color
     
@@ -460,7 +460,8 @@ class MorphInteractionLayerBehavior(BaseLayerBehavior):
         """
         enabled = self.interaction_enabled
         self.interaction_enabled = True
-        self._on_state_change(self, getattr(self, self.current_state, False))
+        self._on_state_change(
+            self, getattr(self, self.current_interaction_state, False))
             
         color = self.theme_manager.transparent_color
         self._interaction_color_instruction.rgba = color
@@ -542,7 +543,7 @@ class MorphContentLayerBehavior(BaseLayerBehavior):
         self.bind(
             content_color=self._update_content_layer,
             disabled_content_color=self._update_content_layer,
-            current_state=self._update_content_layer,)
+            current_content_state=self._update_content_layer,)
         
         self.refresh_content()
     
@@ -560,14 +561,14 @@ class MorphContentLayerBehavior(BaseLayerBehavior):
             self.disabled_foreground_color = (
                 self.disabled_content_color or self.disabled_foreground_color)
         
-        if self.current_state == 'disabled':
+        if self.current_content_state == 'disabled':
             self.dispatch('on_content_updated')
             return None
 
         color = None
-        if self.current_state == 'hovered':
+        if self.current_content_state == 'hovered':
             color = self.hovered_content_color or self.content_color
-        elif self.current_state == 'normal':
+        elif self.current_content_state == 'normal':
             color = self.content_color or self.theme_manager.text_color
 
         if color is not None:
