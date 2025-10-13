@@ -13,6 +13,8 @@ from .layer import MorphCompleteLayerBehavior
 from .hover import MorphHoverBehavior
 from .hover import MorphHoverEnhancedBehavior
 
+from .resize import MorphResizeBehavior
+
 from .theming import MorphColorThemeBehavior
 from .theming import MorphTypographyBehavior
 from .theming import MorphThemeBehavior
@@ -46,6 +48,7 @@ __all__ = [
     'MorphCompleteLayerBehavior',       # All layer behaviors combined
     'MorphHoverBehavior',               # Basic hover behavior
     'MorphHoverEnhancedBehavior',       # Enhanced hover with edges/corners
+    'MorphResizeBehavior',              # Interactive resize functionality
     'MorphColorThemeBehavior',          # Color theme integration only
     'MorphTypographyBehavior',          # Typography integration only
     'MorphThemeBehavior',               # Combined theme integration (compatibility)

@@ -254,6 +254,43 @@ class FrozenGeometry:
         """
         return self.width / self.height if self.height > 0 else 1.0
 
+    def point_delta(self, x: float, y: float) -> Tuple[float, float]:
+        """Calculate the delta from a point to this geometry's position.
+        
+        This method computes how far a given point is from the widget's
+        bottom-left corner (its position). It returns the horizontal and
+        vertical differences as a tuple.
+        
+        Parameters
+        ----------
+        x : float
+            The x-coordinate of the point.
+        y : float
+            The y-coordinate of the point.
+            
+        Returns
+        -------
+        Tuple[float, float]
+            A tuple (dx, dy) representing the difference in x and y 
+            coordinates from the point to the widget's position.
+            
+        Examples
+        --------
+        Calculate how far a mouse click is from the widget's origin:
+        
+        ```python
+        geometry = FrozenGeometry.from_widget(my_widget)
+        mouse_x, mouse_y = get_mouse_position()
+        
+        dx, dy = geometry.point_delta(mouse_x, mouse_y)
+        print(f"Mouse is {dx} pixels right and {dy} pixels up from widget origin")
+        ```
+        """
+        dx = x - self.x
+        dy = y - self.y
+        return (dx, dy)
+
+
     def scaled(self, scale_factor: float) -> 'FrozenGeometry':
         """Create a new geometry with scaled dimensions.
         
