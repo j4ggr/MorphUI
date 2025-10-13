@@ -119,17 +119,27 @@ ICON = _Icon_()
 class _Name_:
     """Standardized names for component parts and rendering layers."""
     
-    # Component geometry
     EDGES: Tuple[
-        Literal['left'], Literal['right'], Literal['top'], Literal['bottom']
-        ] = ('left', 'right', 'top', 'bottom')
+        Literal['left'], Literal['top'], Literal['right'], Literal['bottom']
+        ] = ('left', 'top', 'right', 'bottom')
     """Standard edge names for component boundaries."""
-    
+
+    HORIZONTAL_EDGES: Tuple[
+        Literal['top'], Literal['bottom']] = ('top', 'bottom')
+    """Horizontal edges for components."""
+
+    VERTICAL_EDGES: Tuple[
+        Literal['left'], Literal['right']] = ('left', 'right')
+    """Vertical edges for components."""
+
     CORNERS: Tuple[
-        Literal['top_left'], Literal['top_right'],
-        Literal['bottom_left'], Literal['bottom_right']
-        ] = ('top_left', 'top_right', 'bottom_left', 'bottom_right')
+        Literal['top-left'], Literal['top-right'],
+        Literal['bottom-left'], Literal['bottom-right']
+        ] = ('top-left', 'top-right', 'bottom-left', 'bottom-right')
     """Standard corner names for component vertices."""
+
+    SEP_CORNER: Literal['-'] = '-'
+    """Separator used in corner naming conventions."""
     
     # Canvas instruction groups
     SURFACE_LAYER: Literal['surface'] = 'surface'

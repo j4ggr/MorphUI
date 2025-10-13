@@ -20,7 +20,6 @@ from kivy.properties import ListProperty
 from kivy.properties import StringProperty
 from kivy.properties import NumericProperty
 from kivy.properties import BooleanProperty
-from kivy.properties import OptionProperty
 from kivy.core.window import Window
 
 from ...constants import NAME
@@ -360,9 +359,9 @@ class MorphHoverEnhancedBehavior(MorphHoverBehavior):
         if not self.hovered or len(self.hovered_edges) != 2:
             return None
 
-        corner = '-'.join(self.hovered_edges)
+        corner = NAME.SEP_CORNER.join(self.hovered_edges)
         if corner not in NAME.CORNERS:
-            corner = '-'.join(reversed(self.hovered_edges))
+            corner = NAME.SEP_CORNER.join(reversed(self.hovered_edges))
         return corner if corner in NAME.CORNERS else None
 
     def get_hovered_edges(self) -> List[str]:
