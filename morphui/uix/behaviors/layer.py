@@ -1,6 +1,8 @@
 from typing import Any
 from typing import List
+from typing import Dict
 
+from kivy.graphics import Line
 from kivy.graphics import Color
 from kivy.graphics import Rectangle
 from kivy.graphics import SmoothLine
@@ -11,7 +13,7 @@ from kivy.properties import BooleanProperty
 from kivy.properties import VariableListProperty
 from kivy.uix.relativelayout import RelativeLayout
 
-from ...constants import INSTRUCTION_GROUP
+from ...constants import NAME
 
 from .appreference import MorphAppReferenceBehavior
 from .states import MorphStateBehavior
@@ -180,7 +182,7 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
         self.register_event_type('on_surface_updated')
         super().__init__(**kwargs)
 
-        group = INSTRUCTION_GROUP.SURFACE
+        group = NAME.SURFACE_LAYER
         with self.canvas.before:
             self._surface_color_instruction = Color(
                 rgba=self.surface_color,
@@ -345,7 +347,7 @@ class MorphInteractionLayerBehavior(BaseLayerBehavior):
         self.register_event_type('on_interaction_updated')
         super().__init__(**kwargs)
 
-        group = INSTRUCTION_GROUP.INTERACTION
+        group = NAME.INTERACTION_LAYER
         with self.canvas.before:
             self._interaction_color_instruction = Color(
                 rgba=self.interaction_color,
@@ -653,17 +655,59 @@ class MorphOverlayLayerBehavior(BaseLayerBehavior):
     :class:`~kivy.properties.ColorProperty` and defaults to 
     `[0, 0, 0, 0]`."""
 
+    overlay_edge_color: ColorProperty = ColorProperty([0, 0, 0, 0])
+    """Edge color of the overlay.
+
+    The edge color should be provided as a list of RGBA values between 
+    0 and 1. Example: `[0, 0, 0, 0.1]` for a semi-transparent black edge.
+    The edges can be used to show a resize border when hovering.
+
+    :attr:`overlay_edge_color` is a
+    :class:`~kivy.properties.ColorProperty` and defaults to
+    `[0, 0, 0, 0]`."""
+
+    overlay_edge_width: float = NumericProperty(4)
+    """Width of the overlay edge.
+
+    :attr:`overlay_edge_width` is a
+    :class:`~kivy.properties.NumericProperty` and defaults to 4."""
+
+    visible_edges : List[str] = VariableListProperty([])
+    """List of edges to show for the overlay.
+
+    The edges can be 'top', 'right', 'bottom', 'left'. If empty, no
+    edges are shown. Example: `['top', 'bottom']` to show only the top
+    and bottom edges.
+
+    :attr:`visible_edges ` is a
+    :class:`~kivy.properties.VariableListProperty` and defaults to an 
+    empty list.
+    """
+
     _overlay_color_instruction: Color
     """Kivy Color instruction for the overlay color."""
 
     _overlay_instruction: Rectangle
     """Kivy Rectangle instruction for the overlay shape."""
 
+    _overlay_edges_color_instructions: Dict[str, Line]
+    """Kivy Color instructions for the overlay edges.
+    
+    The edges are drawn in the order: top, right, bottom, left."""
+
+    _overlay_edges_instruction: Dict[str, Line]
+    """Kivy Line instructions for the overlay edges.
+    
+    The edges are drawn in the order: top, right, bottom, left."""
+
     def __init__(self, **kwargs) -> None:
         self.register_event_type('on_overlay_updated')
         super().__init__(**kwargs)
 
-        group = INSTRUCTION_GROUP.OVERLAY
+        self._overlay_edges_color_instructions = {}
+        self._overlay_edges_instruction = {}
+
+        group = NAME.OVERLAY_LAYER
         with self.canvas.after:
             self._overlay_color_instruction = Color(
                 rgba=self.overlay_color,
@@ -673,12 +717,54 @@ class MorphOverlayLayerBehavior(BaseLayerBehavior):
                 size=self.size,
                 radius=self.radius,
                 group=group)
-        
+            for name, points in self._overlay_edges_params.items():
+                self._overlay_edges_color_instructions[name] = Color(
+                    rgba=self.theme_manager.transparent_color,
+                    group=group)
+                self._overlay_edges_instruction[name] = Line(
+                    points=points,
+                    width=self.overlay_edge_width,
+                    cap='none',
+                    group=group)
+
         self.bind(
             pos=self._update_overlay_layer,
             size=self._update_overlay_layer,
             radius=self._update_overlay_layer,
-            overlay_color=self._update_overlay_layer,)
+            overlay_color=self._update_overlay_layer,
+            overlay_edge_color=self._update_overlay_layer,
+            overlay_edge_width=self._update_overlay_layer,
+            visible_edges=self._update_overlay_layer,)
+
+        self.refresh_overlay()
+        
+    @property
+    def _overlay_edges_params(self) -> Dict[str, List[float]]:
+        """Get the parameters for creating overlay edge lines
+        (read-only).
+
+        The parameters are returned as a list of lists, each inner list
+        containing the points for one edge line. The edges are defined
+        in the order: top, right, bottom, left.
+        
+        Returns
+        -------
+        dict of str to list of float
+            List containing four lists, each with [x1, y1, x2, y2]
+            coordinates for the edge lines.
+        """
+        is_relative = isinstance(self, RelativeLayout)
+        left, bottom = (0, 0) if is_relative else (self.x, self.y)
+        right = left + self.width
+        top = bottom + self.height
+
+        edges = {
+            'top': [left, top, right, top],
+            'right': [right, top, right, bottom],
+            'bottom': [right, bottom, left, bottom],
+            'left': [left, bottom, left, top],
+        }
+        return edges
 
     def _update_overlay_layer(self, *args) -> None:
         """Update the overlay position and size."""
@@ -686,6 +772,16 @@ class MorphOverlayLayerBehavior(BaseLayerBehavior):
         self._overlay_instruction.size = self.size
         self._overlay_instruction.radius = self.radius
         self._overlay_color_instruction.rgba = self.overlay_color
+
+        for name, line in self._overlay_edges_instruction.items():
+            line.points = self._overlay_edges_params[name]
+            line.width = self.overlay_edge_width
+            if name in self.visible_edges:
+                self._overlay_edges_color_instructions[name].rgba = (
+                    self.overlay_edge_color)
+            else:
+                self._overlay_edges_color_instructions[name].rgba = (
+                    self.theme_manager.transparent_color)
         self.dispatch('on_overlay_updated')
     
     def apply_overlay(self, color: List[float]) -> None:

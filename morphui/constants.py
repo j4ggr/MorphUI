@@ -11,7 +11,7 @@ __all__ = [
     'THEME',
     'PATH',
     'ICON',
-    'INSTRUCTION_GROUP',
+    'NAME',
     'FONTS',]
 
 
@@ -116,20 +116,38 @@ ICON = _Icon_()
 
 
 @dataclass(frozen=True)
-class _InstructionGroup_:
-    """Instruction group names used for canvas management."""
-    SURFACE: str = 'surface_layer'
-    """Instruction group name for surface layer."""
-    INTERACTION: str = 'interaction_layer'
-    """Instruction group name for interaction layer."""
-    CONTENT: str = 'content_layer'
-    """Instruction group name for content layer."""
-    OVERLAY: str = 'overlay_layer'
-    """Instruction group name for overlay layer."""
-    RIPPLE: str = 'ripple'
-    """Instruction group name for ripple effects."""
-INSTRUCTION_GROUP = _InstructionGroup_()
-"""Container for instruction group name constants."""
+class _Name_:
+    """Standardized names for component parts and rendering layers."""
+    
+    # Component geometry
+    EDGES: Tuple[
+        Literal['left'], Literal['right'], Literal['top'], Literal['bottom']
+        ] = ('left', 'right', 'top', 'bottom')
+    """Standard edge names for component boundaries."""
+    
+    CORNERS: Tuple[
+        Literal['top_left'], Literal['top_right'],
+        Literal['bottom_left'], Literal['bottom_right']
+        ] = ('top_left', 'top_right', 'bottom_left', 'bottom_right')
+    """Standard corner names for component vertices."""
+    
+    # Canvas instruction groups
+    SURFACE_LAYER: Literal['surface'] = 'surface'
+    """Canvas instruction group for surface rendering (backgrounds, borders)."""
+    
+    INTERACTION_LAYER: Literal['interaction'] = 'interaction'
+    """Canvas instruction group for interaction state overlays."""
+    
+    CONTENT_LAYER: Literal['content'] = 'content'
+    """Canvas instruction group for content rendering (text, icons)."""
+    
+    OVERLAY_LAYER: Literal['overlay'] = 'overlay'
+    """Canvas instruction group for overlay effects and decorations."""
+    
+    RIPPLE_LAYER: Literal['ripple'] = 'ripple'
+    """Canvas instruction group for ripple animations and effects."""
+NAME = _Name_()
+
 
 
 @dataclass(frozen=True)

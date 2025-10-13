@@ -20,7 +20,10 @@ from kivy.properties import ListProperty
 from kivy.properties import StringProperty
 from kivy.properties import NumericProperty
 from kivy.properties import BooleanProperty
+from kivy.properties import OptionProperty
 from kivy.core.window import Window
+
+from ...constants import NAME
 
 
 __all__ = [
@@ -284,16 +287,15 @@ class MorphHoverEnhancedBehavior(MorphHoverBehavior):
     and defaults to an empty list.
     """
 
-    hovered_corner: str = StringProperty(
-        'none',
-        options=('top-left', 'top-right', 'bottom-left', 'bottom-right', 'none'))
+    hovered_corner: str | None = StringProperty(
+        None, options=NAME.CORNERS, allow_none=True)
     """The corner currently being hovered over.
     
     Automatically determined from hovered_edges when exactly two adjacent
-    edges are hovered. Possible values are corner names or 'none'.
+    edges are hovered. Possible values are corner names or None.
     
     :attr:`hovered_corner` is a :class:`~kivy.properties.StringProperty`
-    and defaults to 'none'.
+    and defaults to None.
     """
 
     # Individual edge hover states
@@ -336,52 +338,32 @@ class MorphHoverEnhancedBehavior(MorphHoverBehavior):
     and defaults to 4.
     """
 
+    _last_hovered_corner: str | None = None
+    """Internal tracking of last hovered corner for event dispatching."""
+
     def __init__(self, **kwargs) -> None:
-        super().__init__(**kwargs)
-        
-        # Track last corner for proper event dispatching
-        self._last_hovered_corner: str = 'none'
-        
-        # Register additional events
         self.register_event_type('on_enter_edge')
         self.register_event_type('on_leave_edge')
         self.register_event_type('on_enter_corner')
         self.register_event_type('on_leave_corner')
+        super().__init__(**kwargs)
 
-    @property
-    def EDGES(self) -> Tuple[str, str, str, str]:
-        """Tuple of valid edge names."""
-        return ('left', 'right', 'top', 'bottom')
-
-    @property
-    def CORNERS(self) -> Tuple[str, str, str, str]:
-        """Tuple of valid corner names."""
-        return ('top-left', 'top-right', 'bottom-left', 'bottom-right')
-
-    def get_hovered_corner(self) -> str:
+    def get_hovered_corner(self) -> str | None:
         """Determine corner from currently hovered edges.
         
         Returns
         -------
-        str
+        str | None
             Corner name if exactly two adjacent edges are hovered,
-            'none' otherwise.
+            None otherwise.
         """
         if not self.hovered or len(self.hovered_edges) != 2:
-            return 'none'
-        
-        # Convert edge combination to corner name
-        edges = sorted(self.hovered_edges)
-        if len(edges) == 2:
-            edge_tuple = (edges[0], edges[1])
-            corner_map = {
-                ('bottom', 'left'): 'bottom-left',
-                ('bottom', 'right'): 'bottom-right',
-                ('left', 'top'): 'top-left',
-                ('right', 'top'): 'top-right'
-            }
-            return corner_map.get(edge_tuple, 'none')
-        return 'none'
+            return None
+
+        corner = '-'.join(self.hovered_edges)
+        if corner not in NAME.CORNERS:
+            corner = '-'.join(reversed(self.hovered_edges))
+        return corner if corner in NAME.CORNERS else None
 
     def get_hovered_edges(self) -> List[str]:
         """Get list of currently hovered edges.
@@ -391,8 +373,8 @@ class MorphHoverEnhancedBehavior(MorphHoverBehavior):
         List[str]
             List of edge names that are currently hovered.
         """
-        return [edge for edge in self.EDGES 
-                if getattr(self, f'{edge}_edge_hovered')]
+        return [
+            name for name in NAME.EDGES if getattr(self, f'{name}_edge_hovered')]
 
     def on_mouse_pos(self, instance: Any, pos: Tuple[float, float]) -> None:
         """Enhanced mouse position handling with edge detection.
@@ -444,7 +426,7 @@ class MorphHoverEnhancedBehavior(MorphHoverBehavior):
         self.bottom_edge_hovered = False
         self.hovered_edges = []
         self._last_hovered_corner = self.hovered_corner
-        self.hovered_corner = 'none'
+        self.hovered_corner = None
 
     def _dispatch_edge_event(self, edge: str, hovered: bool) -> None:
         """Dispatch appropriate edge event based on hover state.
@@ -496,10 +478,15 @@ class MorphHoverEnhancedBehavior(MorphHoverBehavior):
             if corner != 'none':
                 self.dispatch('on_enter_corner', corner)
 
-    # Event methods to override
     def on_enter_edge(
             self, edge: Literal['left', 'right', 'top', 'bottom']) -> None:
         """Event fired when mouse enters any edge.
+
+        The edge names are 'left', 'right', 'top', and 'bottom'. This
+        event is triggered whenever the mouse cursor moves into the edge
+        area defined by the `edge_size` property. You can override this
+        method in subclasses to implement custom behavior when an edge
+        is entered.
         
         Parameters
         ----------
@@ -522,7 +509,13 @@ class MorphHoverEnhancedBehavior(MorphHoverBehavior):
     def on_leave_edge(
             self, edge: Literal['left', 'right', 'top', 'bottom']) -> None:
         """Event fired when mouse leaves any edge.
-        
+
+        The edge names are 'left', 'right', 'top', and 'bottom'. This
+        event is triggered whenever the mouse cursor moves out of the
+        edge area defined by the `edge_size` property. You can override
+        this method in subclasses to implement custom behavior when an
+        edge is left.
+
         Parameters
         ----------
         edge : Literal['left', 'right', 'top', 'bottom']
@@ -535,7 +528,13 @@ class MorphHoverEnhancedBehavior(MorphHoverBehavior):
             corner: Literal['top-left', 'top-right', 'bottom-left', 'bottom-right']
             ) -> None:
         """Event fired when mouse enters any corner.
-        
+
+        The corner names are 'top-left', 'top-right', 'bottom-left',
+        and 'bottom-right'. This event is triggered whenever the mouse
+        cursor moves into a corner area defined by the intersection of
+        two adjacent edges. You can override this method in subclasses
+        to implement custom behavior when a corner is entered.
+
         Parameters
         ----------
         corner : Literal['top-left', 'top-right', 'bottom-left', 'bottom-right']
@@ -559,6 +558,12 @@ class MorphHoverEnhancedBehavior(MorphHoverBehavior):
             ) -> None:
         """Event fired when mouse leaves any corner.
         
+        The corner names are 'top-left', 'top-right', 'bottom-left',
+        and 'bottom-right'. This event is triggered whenever the mouse
+        cursor moves out of a corner area defined by the intersection
+        of two adjacent edges. You can override this method in subclasses
+        to implement custom behavior when a corner is left.
+
         Parameters
         ----------
         corner : Literal['top-left', 'top-right', 'bottom-left', 'bottom-right']

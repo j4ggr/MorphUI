@@ -19,7 +19,7 @@ from kivy.properties import BooleanProperty
 from kivy.input.motionevent import MotionEvent
 from kivy.uix.relativelayout import RelativeLayout
 
-from ...constants import INSTRUCTION_GROUP
+from ...constants import NAME
 
 
 __all__ = [
@@ -565,7 +565,7 @@ class MorphRippleBehavior(EventDispatcher):
         radius = getattr(self, 'radius', [0])
         if isinstance(radius, (int, float)):
             radius = [radius,]
-        group = INSTRUCTION_GROUP.RIPPLE
+        group = NAME.RIPPLE_LAYER
         if self.ripple_layer == 'overlay':
             canvas = self.canvas.after
         else:
@@ -608,8 +608,8 @@ class MorphRippleBehavior(EventDispatcher):
         self._ripple_in_progress = False
         self._ripple_is_finishing = False
         self._ripple_is_fading = False
-        
-        group = INSTRUCTION_GROUP.RIPPLE
+
+        group = NAME.RIPPLE_LAYER
         if self.ripple_layer == 'overlay':
             canvas = self.canvas.after
         else:
