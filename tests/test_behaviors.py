@@ -889,7 +889,7 @@ class TestMorphThemeBehavior:
             Widget.__init__(self, **kwargs)
             MorphThemeBehavior.__init__(self, **kwargs)
 
-    @patch('morphui.uix.behaviors.theming.MorphApp._theme_manager')
+    @patch('morphui.app.MorphApp._theme_manager')
     def test_init_default_properties(self, mock_app_theme_manager):
         """Test MorphThemeBehavior initialization with default values."""
         
@@ -904,7 +904,7 @@ class TestMorphThemeBehavior:
             assert widget.theme_style == ''
             assert widget._theme_bound is False
 
-    @patch('morphui.uix.behaviors.theming.MorphApp._theme_manager')
+    @patch('morphui.app.MorphApp._theme_manager')
     def test_theme_style_mappings_class_attribute(self, mock_app_theme_manager):
         """Test that theme_style_mappings is properly set from constants."""
         
@@ -925,7 +925,7 @@ class TestMorphThemeBehavior:
             # Check that it references THEME.STYLES
             assert widget.theme_style_mappings == THEME.STYLES
 
-    @patch('morphui.uix.behaviors.theming.MorphApp._theme_manager')
+    @patch('morphui.app.MorphApp._theme_manager')
     def test_apply_theme_color_success(self, mock_app_theme_manager):
         """Test successful theme color application."""
         # Configure the mock to return our mock theme manager
@@ -956,7 +956,7 @@ class TestMorphThemeBehavior:
             assert result is True
             assert widget.surface_color == [1.0, 0.0, 0.0, 1.0]
 
-    @patch('morphui.uix.behaviors.theming.MorphApp._theme_manager')
+    @patch('morphui.app.MorphApp._theme_manager')
     def test_apply_theme_color_failure_cases(self, mock_app_theme_manager):
         """Test theme color application failure cases."""
         # Configure the mock to return our mock theme manager
@@ -998,7 +998,7 @@ class TestMorphThemeBehavior:
             # Restore the original value
             mock_app_theme_manager.primary_color = original_primary
 
-    @patch('morphui.uix.behaviors.theming.MorphApp._theme_manager')
+    @patch('morphui.app.MorphApp._theme_manager')
     def test_on_theme_style_with_valid_style(self, mock_app_theme_manager):
         """Test on_theme_style method with valid predefined styles."""
         # Configure the mock to return our mock theme manager
@@ -1037,7 +1037,7 @@ class TestMorphThemeBehavior:
                 assert widget_prop in widget.theme_color_bindings
                 assert widget.theme_color_bindings[widget_prop] == theme_color
 
-    @patch('morphui.uix.behaviors.theming.MorphApp._theme_manager')
+    @patch('morphui.app.MorphApp._theme_manager')
     def test_on_theme_style_with_invalid_style(self, mock_app_theme_manager):
         """Test on_theme_style with invalid style name."""
         
@@ -1056,7 +1056,7 @@ class TestMorphThemeBehavior:
             # Bindings should remain unchanged
             assert widget.theme_color_bindings == initial_bindings
 
-    @patch('morphui.uix.behaviors.theming.MorphApp._theme_manager')
+    @patch('morphui.app.MorphApp._theme_manager')
     def test_add_custom_style(self, mock_app_theme_manager):
         """Test add_custom_style method."""
         
@@ -1081,7 +1081,7 @@ class TestMorphThemeBehavior:
             # Check that original styles are still there
             assert 'primary' in widget.theme_style_mappings
 
-    @patch('morphui.uix.behaviors.theming.MorphApp._theme_manager')
+    @patch('morphui.app.MorphApp._theme_manager')
     def test_add_custom_style_copy_on_write(self, mock_app_theme_manager):
         """Test that adding custom style creates instance copy."""
         
@@ -1110,7 +1110,7 @@ class TestMorphThemeBehavior:
             assert 'custom1' in widget1.theme_style_mappings
             assert 'custom1' not in widget2.theme_style_mappings
 
-    @patch('morphui.uix.behaviors.theming.MorphApp._theme_manager')
+    @patch('morphui.app.MorphApp._theme_manager')
     def test_refresh_theme_colors(self, mock_app_theme_manager):
         """Test refresh_theme_colors method."""
         
@@ -1169,7 +1169,7 @@ class TestMorphColorThemeBehavior:
             Widget.__init__(self, **kwargs)
             MorphColorThemeBehavior.__init__(self, **kwargs)
 
-    @patch('morphui.uix.behaviors.theming.MorphApp._theme_manager')
+    @patch('morphui.app.MorphApp._theme_manager')
     def test_initialization(self, mock_app_theme_manager):
         """Test MorphColorThemeBehavior initialization."""
         # Configure the mock to return our mock theme manager
@@ -1195,7 +1195,7 @@ class TestMorphColorThemeBehavior:
             assert widget.theme_color_bindings == {}
             assert widget.theme_style == ''
 
-    @patch('morphui.uix.behaviors.theming.MorphApp._theme_manager')  
+    @patch('morphui.app.MorphApp._theme_manager')  
     def test_apply_theme_color(self, mock_app_theme_manager):
         """Test applying theme colors to widget properties."""
         # Configure the mock to return our mock theme manager
@@ -1223,7 +1223,7 @@ class TestMorphColorThemeBehavior:
             assert result is True
             assert widget.surface_color == [1.0, 0.0, 0.0, 1.0]
 
-    @patch('morphui.uix.behaviors.theming.MorphApp._theme_manager')
+    @patch('morphui.app.MorphApp._theme_manager')
     def test_theme_style_application(self, mock_app_theme_manager):
         """Test applying predefined theme styles."""
         # Configure the mock to return our mock theme manager
@@ -1281,7 +1281,7 @@ class TestMorphTypographyBehavior:
             Widget.__init__(self, **kwargs)
             MorphTypographyBehavior.__init__(self, **kwargs)
 
-    @patch('morphui.uix.behaviors.theming.MorphApp._typography')
+    @patch('morphui.app.MorphApp._typography')
     def test_initialization(self, mock_app_typography):
         """Test MorphTypographyBehavior initialization."""
         
@@ -1296,7 +1296,7 @@ class TestMorphTypographyBehavior:
             assert widget.typography_weight == 'Regular'
             assert widget.auto_typography is True
 
-    @patch('morphui.uix.behaviors.theming.MorphApp._typography')
+    @patch('morphui.app.MorphApp._typography')
     def test_apply_typography_style(self, mock_app_typography):
         """Test applying typography styles to widget."""
         # Configure the mock to return our mock typography
@@ -1317,7 +1317,7 @@ class TestMorphTypographyBehavior:
                 font_name=None, role='Headline', size='large',
                 font_weight='Regular')
 
-    @patch('morphui.uix.behaviors.theming.MorphApp._typography')
+    @patch('morphui.app.MorphApp._typography')
     def test_typography_properties(self, mock_app_typography):
         """Test typography property changes."""
         
@@ -1354,8 +1354,8 @@ class TestMorphThemeBehaviorSplit:
             Widget.__init__(self, **kwargs)
             MorphThemeBehavior.__init__(self, **kwargs)
 
-    @patch('morphui.uix.behaviors.theming.MorphApp._theme_manager')
-    @patch('morphui.uix.behaviors.theming.MorphApp._typography')
+    @patch('morphui.app.MorphApp._theme_manager')
+    @patch('morphui.app.MorphApp._typography')
     def test_combined_behavior_inheritance(self, mock_app_typography, mock_app_theme_manager):
         """Test that MorphThemeBehavior combines both behaviors."""
         
