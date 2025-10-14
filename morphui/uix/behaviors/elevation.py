@@ -1,6 +1,7 @@
 from typing import List
 
 from kivy.event import EventDispatcher
+from kivy.metrics import dp
 from kivy.graphics import Color
 from kivy.graphics import BoxShadow
 from kivy.properties import ListProperty
@@ -141,7 +142,7 @@ class MorphElevationBehavior(EventDispatcher):
         The blur radius is determined by multiplying the 
         :attr:`elevation` by the :attr:`shadow_blur_factor`.
         """
-        return self.elevation * self.shadow_blur_factor
+        return dp(self.elevation * self.shadow_blur_factor)
 
     def _update_elevation(self, *args) -> None:
         """Update the shadow based on current elevation and properties."""

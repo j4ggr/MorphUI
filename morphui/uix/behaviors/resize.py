@@ -15,9 +15,10 @@ The resize behavior supports:
 from typing import List
 from typing import Tuple
 
-from kivy.core.window import Window
+from kivy.metrics import dp
 from kivy.properties import ListProperty
 from kivy.properties import BooleanProperty
+from kivy.core.window import Window
 from kivy.input.motionevent import MotionEvent
 
 from ...constants import NAME
@@ -237,9 +238,9 @@ class MorphResizeBehavior(
         It is called automatically when the overlay edge width changes.
         """
         if self.overlay_edge_inside:
-            self.edge_detection_size = self.overlay_edge_width * 2
+            self.edge_detection_size = dp(self.overlay_edge_width * 2)
         else:
-            self.edge_detection_size = self.overlay_edge_width
+            self.edge_detection_size = dp(self.overlay_edge_width)
 
     def _update_resize_feedback(self, *args) -> None:
         """Update visual feedback based on current hover state.

@@ -2,6 +2,7 @@ from typing import Any
 from typing import List
 from typing import Dict
 
+from kivy.metrics import dp
 from kivy.graphics import Line
 from kivy.graphics import Color
 from kivy.graphics import Rectangle
@@ -197,7 +198,7 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
                 rgba=self.border_color,
                 group=group)
             self._border_instruction = SmoothLine(
-                width=self.border_width,
+                width=dp(self.border_width),
                 rounded_rectangle=self._rectangle_params,
                 group=group)
 
@@ -232,7 +233,7 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
         self._surface_instruction.radius = self.radius
         
         self._border_color_instruction.rgba = border_color
-        self._border_instruction.width = self.border_width
+        self._border_instruction.width = dp(self.border_width)
         self._border_instruction.rounded_rectangle = self._rectangle_params
 
         self.dispatch('on_surface_updated')
@@ -778,7 +779,7 @@ class MorphOverlayLayerBehavior(BaseLayerBehavior):
                     group=group)
                 self._overlay_edges_instruction[name] = Line(
                     points=points,
-                    width=self.overlay_edge_width,
+                    width=dp(self.overlay_edge_width),
                     cap='none',
                     group=group)
 
@@ -813,7 +814,7 @@ class MorphOverlayLayerBehavior(BaseLayerBehavior):
         bottom = (0 if is_relative else self.y)
         right = left + self.width
         top = bottom + self.height
-        offset = self.overlay_edge_width if self.overlay_edge_inside else 0
+        offset = dp(self.overlay_edge_width) if self.overlay_edge_inside else 0
 
         edges = {
             'top': [left, top-offset, right, top-offset],
@@ -841,7 +842,7 @@ class MorphOverlayLayerBehavior(BaseLayerBehavior):
 
         for name, line in self._overlay_edges_instruction.items():
             line.points = self._overlay_edges_params[name]
-            line.width = self.overlay_edge_width
+            line.width = dp(self.overlay_edge_width)
             if name in self.visible_edges:
                 self._overlay_edges_color_instructions[name].rgba = edge_color
             else:
