@@ -11,7 +11,9 @@ from kivy.core.text import Label as CoreLabel
 __all__ = [
     'clean_default_config',
     'calculate_text_size',
+    'clamp',
     'FrozenGeometry',]
+
 
 def clean_default_config(config: Dict[str, Any]) -> Dict[str, Any]:
     """Clean default config by removing conflicting entries
@@ -44,6 +46,80 @@ def calculate_text_size(text, font_size=16, font_name=None):
     
     label.refresh()
     return label.content_size
+
+
+def clamp(
+        value: float, 
+        min_value: float | None = None, 
+        max_value: float | None = None
+        ) -> float:
+    """Constrain a numeric value to lie within a specified range.
+    
+    This function ensures that a value falls within the bounds defined by
+    minimum and maximum values. If the value is below the minimum, it returns
+    the minimum. If the value is above the maximum, it returns the maximum.
+    Otherwise, it returns the original value unchanged.
+    
+    Parameters
+    ----------
+    value : float
+        The value to constrain.
+    min_value : float | None, optional
+        The minimum allowed value. If None, no minimum constraint is applied.
+        Defaults to None.
+    max_value : float | None, optional
+        The maximum allowed value. If None, no maximum constraint is applied.
+        Defaults to None.
+        
+    Returns
+    -------
+    float
+        The constrained value within the specified range.
+        
+    Raises
+    ------
+    ValueError
+        If min_value is greater than max_value when both are specified.
+        
+    Examples
+    --------
+    Basic clamping with both bounds:
+    
+    ```python
+    # Clamp to range [0, 100]
+    result = clamp(150, 0, 100)  # Returns 100
+    result = clamp(-10, 0, 100)  # Returns 0
+    result = clamp(50, 0, 100)   # Returns 50
+    ```
+    
+    Clamping with only minimum:
+    
+    ```python
+    # Ensure value is at least 0
+    result = clamp(-5, min_value=0)  # Returns 0
+    result = clamp(10, min_value=0)  # Returns 10
+    ```
+    
+    Clamping with only maximum:
+    
+    ```python
+    # Ensure value is at most 255
+    result = clamp(300, max_value=255)  # Returns 255
+    result = clamp(100, max_value=255)  # Returns 100
+    ```
+    """
+    if min_value is not None and max_value is not None: 
+        assert min_value <= max_value, (
+            f'min_value ({min_value}) cannot be greater than '
+            f'max_value ({max_value})')
+    
+    # Apply constraints
+    if min_value is not None:
+        value = max(min_value, value)
+    if max_value is not None:
+        value = min(max_value, value)
+        
+    return value
 
 
 @dataclass(frozen=True)
