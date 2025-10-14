@@ -194,8 +194,8 @@ class TestMorphHoverEnhancedBehavior:
         assert widget.hover_enabled is True
         assert widget.hovered is False
         assert widget.hovered_edges == []
-        assert widget.hovered_corner == 'none'
-        assert widget.edge_size == 4
+        assert widget.hovered_corner is None
+        assert widget.edge_detection_size == 4
         assert widget.left_edge_hovered is False
         assert widget.right_edge_hovered is False
         assert widget.top_edge_hovered is False
@@ -215,13 +215,6 @@ class TestMorphHoverEnhancedBehavior:
         assert hasattr(widget, 'on_leave_corner')
 
     @patch('kivy.core.window.Window')
-    def test_edge_constants(self, mock_window):
-        """Test edge and corner constants."""
-        widget = self.TestWidget()
-        assert widget.EDGES == ('left', 'right', 'top', 'bottom')
-        assert widget.CORNERS == ('top-left', 'top-right', 'bottom-left', 'bottom-right')
-
-    @patch('kivy.core.window.Window')
     def test_corner_detection(self, mock_window):
         """Test corner detection from edges."""
         widget = self.TestWidget()
@@ -229,7 +222,7 @@ class TestMorphHoverEnhancedBehavior:
         # Test no corner when not hovered
         widget.hovered = False
         widget.hovered_edges = ['left', 'top']
-        assert widget.get_hovered_corner() == 'none'
+        assert widget.get_hovered_corner() is None
         
         # Test corner detection
         widget.hovered = True

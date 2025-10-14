@@ -8,6 +8,7 @@ from .behaviors import MorphHoverBehavior
 from .behaviors import MorphThemeBehavior
 from .behaviors import MorphButtonBehavior
 from .behaviors import MorphRippleBehavior
+from .behaviors import MorphElevationBehavior
 from .behaviors import MorphAutoSizingBehavior
 from .behaviors import MorphRoundSidesBehavior
 from .behaviors import MorphCompleteLayerBehavior
@@ -31,6 +32,7 @@ class MorphButton(
         MorphCompleteLayerBehavior,
         MorphButtonBehavior,
         MorphAutoSizingBehavior,
+        MorphElevationBehavior,
         Label):
     """A button widget with ripple effect and MorphUI theming.
     
@@ -77,6 +79,7 @@ class MorphIconButton(
         MorphCompleteLayerBehavior,
         MorphButtonBehavior,
         MorphAutoSizingBehavior,
+        MorphElevationBehavior,
         Label):
     """A button widget designed for icon display with ripple effect 
     and MorphUI theming.

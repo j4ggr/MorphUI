@@ -21,11 +21,6 @@ sys.path.append(str(Path(__file__).parents[1].resolve()))
 from kivy.clock import Clock
 from morphui.app import MorphApp
 from kivy.uix.label import Label
-from kivy.uix.button import Button
-from kivy.properties import BooleanProperty
-from kivy.uix.behaviors import ButtonBehavior
-from kivy.uix.behaviors import TouchRippleBehavior
-from kivy.uix.behaviors import TouchRippleButtonBehavior
 
 from morphui.uix.label import MorphLabel
 from morphui.uix.label import MorphIconLabel
@@ -49,6 +44,7 @@ class DisabledButton(MorphButton):
 
     def switch_state(self, *args) -> None:
         self.disabled = not self.disabled
+        self.elevation = 0 if self.disabled else 3
 
     def on_disabled(self, instance, disabled) -> None:
         self.text = "Disabled" if disabled else "Enabled"
@@ -85,9 +81,11 @@ class MyApp(MorphApp):
             MorphButton(
                 text="Morph Button",
                 theme_style='primary',
-                round_sides=True,),
+                round_sides=True,
+                elevation=1),
             MorphIconButton(
-                icon='language-python',),
+                icon='language-python',
+                elevation=2),
             orientation='vertical',
             padding=50,
             spacing=15,)
