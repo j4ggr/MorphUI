@@ -7,12 +7,10 @@ from unittest.mock import Mock, patch
 sys.path.append(str(Path(__file__).parent.resolve()))
 
 from morphui.utils.dotdict import DotDict
-from morphui.utils.helpers import (
-    clean_default_config,
-    calculate_text_size, 
-    clamp,
-    FrozenGeometry
-)
+from morphui.utils.helpers import clamp
+from morphui.utils.helpers import FrozenGeometry
+from morphui.utils.helpers import calculate_text_size
+from morphui.utils.helpers import clean_default_config
 
 
 class TestDotDict:

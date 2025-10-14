@@ -33,10 +33,10 @@ __all__ = [
 class MorphHoverBehavior(EventDispatcher):
     """Basic hover behavior that detects mouse enter and leave events.
     
-    This is a lightweight behavior that provides core hover functionality
-    without the overhead of edge and corner detection. Use this when you
-    only need basic hover states for simple effects like color changes,
-    cursor updates, or simple animations.
+    This is a lightweight behavior that provides core hover 
+    functionality without the overhead of edge and corner detection. Use
+    this when you only need basic hover states for simple effects like
+    color changes, cursor updates, or simple animations.
     
     Events
     ------
@@ -82,10 +82,10 @@ class MorphHoverBehavior(EventDispatcher):
     hover_enabled = BooleanProperty(True)
     """Enable or disable hover behavior and event detection.
     
-    When set to False, the behavior will not track mouse position or fire
-    hover events, effectively disabling all hover functionality. This is
-    useful for temporarily disabling hover effects without removing the
-    behavior from the widget.
+    When set to False, the behavior will not track mouse position or
+    fire hover events, effectively disabling all hover functionality.
+    This is useful for temporarily disabling hover effects without 
+    removing the behavior from the widget.
     
     Setting this to False will also clear any current hover state and
     stop all hover-related event dispatching until re-enabled.
@@ -222,8 +222,9 @@ class MorphHoverEnhancedBehavior(MorphHoverBehavior):
     --------------------
     - :attr:`hovered_edges`: List of currently hovered edges
     - :attr:`hovered_corner`: Currently hovered corner
-    - :attr:`edge_size`: Size of edge detection area in pixels
-    - Individual edge properties: left_edge_hovered, right_edge_hovered, etc.
+    - :attr:`edge_detection_size`: Size of edge detection area in pixels
+    - Individual edge properties: left_edge_hovered, right_edge_hovered,
+      etc.
     
     Common Use Cases
     ---------------
@@ -280,14 +281,14 @@ class MorphHoverEnhancedBehavior(MorphHoverBehavior):
     
     Contains edge names from ['left', 'right', 'top', 'bottom'] that
     are currently under the mouse cursor. Updated automatically based
-    on mouse position and edge_size.
+    on mouse position and edge_detection_size.
     
     :attr:`hovered_edges` is a :class:`~kivy.properties.ListProperty`
     and defaults to an empty list.
     """
 
     hovered_corner: str | None = StringProperty(
-        None, options=NAME.CORNERS, allow_none=True)
+        None, options=NAME.CORNERS, allownone=True)
     """The corner currently being hovered over.
     
     Automatically determined from hovered_edges when exactly two adjacent
@@ -326,14 +327,14 @@ class MorphHoverEnhancedBehavior(MorphHoverBehavior):
     and defaults to False.
     """
 
-    edge_size = NumericProperty(4)
+    edge_detection_size = NumericProperty(4)
     """Size of the edge area for detection in pixels.
     
     Determines how many pixels from the widget edge count as "edge area"
     for hover detection. Larger values make edges easier to target but
     reduce the center area.
-    
-    :attr:`edge_size` is a :class:`~kivy.properties.NumericProperty`
+
+    :attr:`edge_detection_size` is a :class:`~kivy.properties.NumericProperty`
     and defaults to 4.
     """
 
@@ -407,10 +408,10 @@ class MorphHoverEnhancedBehavior(MorphHoverBehavior):
         y = self.current_pos[1] - self.y
 
         # Update individual edge states
-        self.left_edge_hovered = (x <= self.edge_size)
-        self.right_edge_hovered = (x >= self.width - self.edge_size)
-        self.top_edge_hovered = (y >= self.height - self.edge_size)
-        self.bottom_edge_hovered = (y <= self.edge_size)
+        self.left_edge_hovered = (x <= self.edge_detection_size)
+        self.right_edge_hovered = (x >= self.width - self.edge_detection_size)
+        self.top_edge_hovered = (y >= self.height - self.edge_detection_size)
+        self.bottom_edge_hovered = (y <= self.edge_detection_size)
 
         # Update edge list and corner detection
         self.hovered_edges = self.get_hovered_edges()
@@ -483,7 +484,7 @@ class MorphHoverEnhancedBehavior(MorphHoverBehavior):
 
         The edge names are 'left', 'right', 'top', and 'bottom'. This
         event is triggered whenever the mouse cursor moves into the edge
-        area defined by the `edge_size` property. You can override this
+        area defined by the `edge_detection_size` property. You can override this
         method in subclasses to implement custom behavior when an edge
         is entered.
         
@@ -511,7 +512,7 @@ class MorphHoverEnhancedBehavior(MorphHoverBehavior):
 
         The edge names are 'left', 'right', 'top', and 'bottom'. This
         event is triggered whenever the mouse cursor moves out of the
-        edge area defined by the `edge_size` property. You can override
+        edge area defined by the `edge_detection_size` property. You can override
         this method in subclasses to implement custom behavior when an
         edge is left.
 

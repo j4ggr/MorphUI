@@ -11,6 +11,7 @@ from kivy.properties import StringProperty
 from ..._typing import State
 from ..._typing import SurfaceState
 from ..._typing import ContentState
+from ..._typing import OverlayState
 from ..._typing import InteractionState
 
 
@@ -77,6 +78,18 @@ class MorphStateBehavior(EventDispatcher):
     :class:`~kivy.properties.StringProperty` and defaults to 'normal'.
     """
 
+    current_overlay_state: OverlayState = StringProperty('normal')
+    """The current overlay state of the widget.
+
+    This property reflects the widget's current state used for overlay
+    interactions. It can be one of the following values: 'disabled',
+    'resizing', 'dragging' or 'normal'. The value is determined by the
+    precedence of the states defined in :attr:`states_precedence`.
+
+    :attr:`current_overlay_state` is a
+    :class:`~kivy.properties.StringProperty` and defaults to 'normal'.
+    """
+
     possible_states: Set[str] = set(get_args(State))
     """All possible states that can be used by the widget.
 
@@ -118,14 +131,14 @@ class MorphStateBehavior(EventDispatcher):
     Default order is defined by :class:`~morphui._typing.ContentState`.
     """
 
-    content_state_precedence: Tuple[str, ...] = get_args(ContentState)
-    """The precedence order for content states.
+    overlay_state_precedence: Tuple[str, ...] = get_args(OverlayState)
+    """The precedence order for overlay states.
 
-    This tuple defines the order of precedence for content states,
+    This tuple defines the order of precedence for overlay states,
     with the first state having the highest precedence and the last
     state having the lowest precedence.
 
-    Default order is defined by :class:`~morphui._typing.ContentState`.
+    Default order is defined by :class:`~morphui._typing.OverlayState`.
     """
 
     _available_states: Set[str]
@@ -219,6 +232,14 @@ class MorphStateBehavior(EventDispatcher):
                 new_state=state,
                 current_state=self.current_content_state,
                 precedence=self.content_state_precedence,
+                value=value))
+        
+        self.current_overlay_state = cast(
+            OverlayState,
+            self._resolve_state(
+                new_state=state,
+                current_state=self.current_overlay_state,
+                precedence=self.overlay_state_precedence,
                 value=value))
         self.dispatch('on_current_state_changed')
 

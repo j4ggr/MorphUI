@@ -17,7 +17,8 @@ __all__ = [
     'State',
     'SurfaceState',
     'InteractionState',
-    'ContentState',]
+    'ContentState',
+    'OverlayState',]
 
 MaterialDynamicScheme: TypeAlias = (
     SchemeTonalSpot
@@ -38,6 +39,8 @@ State: TypeAlias = Literal[
     'focus',
     'selected',
     'active',
+    'resizing',
+    'dragging',
     'normal',]
 """TypeAlias for all possible states.
 
@@ -97,6 +100,23 @@ appearance of a widget. They are used to indicate the widget's
 interaction state, such as whether it is disabled, active, or
 selected. The 'normal' state represents the default state
 when no other states are active.
+
+Notes
+-----
+These states are ordered by precedence, with 'disabled' having the
+highest precedence and 'normal' the lowest.
+"""
+
+OverlayState: TypeAlias = Literal[
+    'disabled',
+    'resizing',
+    'dragging',
+    'normal',]
+"""TypeAlias for overlay-related states.
+
+These states typically affect overlay elements, such as resizing and 
+dragging. They are used to manage the appearance and behavior of overlay
+elements based on user interactions and other conditions.
 
 Notes
 -----

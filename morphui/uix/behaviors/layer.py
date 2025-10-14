@@ -7,6 +7,7 @@ from kivy.graphics import Color
 from kivy.graphics import Rectangle
 from kivy.graphics import SmoothLine
 from kivy.graphics import RoundedRectangle
+from kivy.properties import ListProperty
 from kivy.properties import ColorProperty
 from kivy.properties import NumericProperty
 from kivy.properties import BooleanProperty
@@ -655,6 +656,27 @@ class MorphOverlayLayerBehavior(BaseLayerBehavior):
     :class:`~kivy.properties.ColorProperty` and defaults to 
     `[0, 0, 0, 0]`."""
 
+    disabled_overlay_color: ColorProperty = ColorProperty([0, 0, 0, 0])
+    """Color of the overlay when the widget is disabled.
+
+    This color is applied when the widget is in a disabled state.
+
+    :attr:`disabled_overlay_color` is a
+    :class:`~kivy.properties.ColorProperty` and defaults to 
+    `[0, 0, 0, 0]`.
+    """
+
+    resizing_overlay_color: ColorProperty = ColorProperty([0, 0, 0, 0])
+    """Color of the overlay during resizing.
+
+    The color should be provided as a list of RGBA values between 0 and
+    1. Example: `[0, 0, 0, 0.1]` for a semi-transparent black overlay.
+
+    :attr:`resizing_overlay_color` is a
+    :class:`~kivy.properties.ColorProperty` and defaults to
+    `[0, 0, 0, 0]`.
+    """
+
     overlay_edge_color: ColorProperty = ColorProperty([0, 0, 0, 0])
     """Edge color of the overlay.
 
@@ -666,13 +688,46 @@ class MorphOverlayLayerBehavior(BaseLayerBehavior):
     :class:`~kivy.properties.ColorProperty` and defaults to
     `[0, 0, 0, 0]`."""
 
-    overlay_edge_width: float = NumericProperty(4)
+    disabled_overlay_edge_color: ColorProperty = ColorProperty([0, 0, 0, 0])
+    """Edge color of the overlay when the widget is disabled.
+
+    This color is applied when the widget is in a disabled state.
+
+    :attr:`disabled_overlay_edge_color` is a
+    :class:`~kivy.properties.ColorProperty` and defaults to
+    `[0, 0, 0, 0]`.
+    """
+
+    resizing_overlay_edge_color: ColorProperty = ColorProperty([0, 0, 0, 0])
+    """Edge color of the overlay during resizing.
+
+    The edge color should be provided as a list of RGBA values between
+    0 and 1. Example: `[0, 0, 0, 0.1]` for a semi-transparent black edge.
+    The edges can be used to show a resize border when hovering.
+
+    :attr:`resizing_overlay_edge_color` is a
+    :class:`~kivy.properties.ColorProperty` and defaults to
+    `[0, 0, 0, 0]`.
+    """
+
+    overlay_edge_width: float = NumericProperty(2)
     """Width of the overlay edge.
 
     :attr:`overlay_edge_width` is a
-    :class:`~kivy.properties.NumericProperty` and defaults to 4."""
+    :class:`~kivy.properties.NumericProperty` and defaults to 3.
+    """
 
-    visible_edges : List[str] = VariableListProperty([])
+    overlay_edge_inside: bool = BooleanProperty(True)
+    """Whether the overlay edges are drawn inside the widget bounds.
+
+    If True, the edges are drawn inside the widget bounds. If False,
+    the edges are drawn centered on the widget bounds.
+
+    :attr:`overlay_edges_inside` is a
+    :class:`~kivy.properties.BooleanProperty` and defaults to True.
+    """
+
+    visible_edges : List[str] = ListProperty([])
     """List of edges to show for the overlay.
 
     The edges can be 'top', 'right', 'bottom', 'left'. If empty, no
@@ -680,7 +735,7 @@ class MorphOverlayLayerBehavior(BaseLayerBehavior):
     and bottom edges.
 
     :attr:`visible_edges ` is a
-    :class:`~kivy.properties.VariableListProperty` and defaults to an 
+    :class:`~kivy.properties.ListProperty` and defaults to an 
     empty list.
     """
 
@@ -754,31 +809,41 @@ class MorphOverlayLayerBehavior(BaseLayerBehavior):
             coordinates for the edge lines.
         """
         is_relative = isinstance(self, RelativeLayout)
-        left, bottom = (0, 0) if is_relative else (self.x, self.y)
+        left = (0 if is_relative else self.x)
+        bottom = (0 if is_relative else self.y)
         right = left + self.width
         top = bottom + self.height
+        offset = self.overlay_edge_width if self.overlay_edge_inside else 0
 
         edges = {
-            'top': [left, top, right, top],
-            'right': [right, top, right, bottom],
-            'bottom': [right, bottom, left, bottom],
-            'left': [left, bottom, left, top],
-        }
+            'top': [left, top-offset, right, top-offset],
+            'right': [right-offset, top, right-offset, bottom],
+            'bottom': [right, bottom+offset, left, bottom+offset],
+            'left': [left+offset, bottom, left+offset, top],}
         return edges
 
     def _update_overlay_layer(self, *args) -> None:
         """Update the overlay position and size."""
+        if self.current_overlay_state == 'disabled':
+            color = self.disabled_overlay_color
+            edge_color = self.disabled_overlay_edge_color
+        elif self.current_overlay_state == 'resizing':
+            color = self.resizing_overlay_color
+            edge_color = self.resizing_overlay_edge_color
+        else:
+            color = self.overlay_color
+            edge_color = self.overlay_edge_color
+
         self._overlay_instruction.pos = self.pos
         self._overlay_instruction.size = self.size
         self._overlay_instruction.radius = self.radius
-        self._overlay_color_instruction.rgba = self.overlay_color
+        self._overlay_color_instruction.rgba = color
 
         for name, line in self._overlay_edges_instruction.items():
             line.points = self._overlay_edges_params[name]
             line.width = self.overlay_edge_width
             if name in self.visible_edges:
-                self._overlay_edges_color_instructions[name].rgba = (
-                    self.overlay_edge_color)
+                self._overlay_edges_color_instructions[name].rgba = edge_color
             else:
                 self._overlay_edges_color_instructions[name].rgba = (
                     self.theme_manager.transparent_color)

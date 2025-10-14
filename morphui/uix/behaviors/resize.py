@@ -12,20 +12,17 @@ The resize behavior supports:
 - Minimum and maximum size constraints
 - Aspect ratio preservation (optional)
 """
-
-from typing import Any
 from typing import List
 from typing import Tuple
-from typing import Optional
 
 from kivy.core.window import Window
 from kivy.properties import ListProperty
-from kivy.properties import NumericProperty
 from kivy.properties import BooleanProperty
 from kivy.input.motionevent import MotionEvent
 
 from ...constants import NAME
 
+from ...utils import clamp
 from ...utils import FrozenGeometry
 
 from .hover import MorphHoverEnhancedBehavior
@@ -40,18 +37,22 @@ __all__ = [
 class MorphResizeBehavior(
         MorphHoverEnhancedBehavior,
         MorphOverlayLayerBehavior):
-    """A behavior that enables widgets to be resized by dragging edges and corners.
+    """A behavior that enables widgets to be resized by dragging edges 
+    and corners.
     
-    This behavior combines enhanced hover detection with overlay layer functionality
-    to provide interactive resizing capabilities. It automatically detects when the
-    mouse is over resizable edges or corners and provides visual feedback through
-    edge highlighting and cursor changes.
+    This behavior combines enhanced hover detection with overlay layer
+    functionality to provide interactive resizing capabilities. It
+    automatically detects when the mouse is over resizable edges or
+    corners and provides visual feedback through edge highlighting and
+    cursor changes.
     
     Features
     --------
-    - **Edge Resizing**: Resize by dragging left, right, top, or bottom edges
+    - **Edge Resizing**: Resize by dragging left, right, top, or bottom
+      edges
     - **Corner Resizing**: Resize diagonally by dragging corners
-    - **Visual Feedback**: Highlighted edges and appropriate cursor changes
+    - **Visual Feedback**: Highlighted edges and appropriate cursor
+      changes
     - **Size Constraints**: Minimum and maximum size limits
     - **Aspect Ratio**: Optional aspect ratio preservation
     - **Animation**: Smooth transitions for visual feedback
@@ -59,9 +60,7 @@ class MorphResizeBehavior(
     
     Events
     ------
-    - :meth:`on_resize_start`: Fired when resize operation begins
-    - :meth:`on_resize`: Fired during resize (real-time updates)
-    - :meth:`on_resize_end`: Fired when resize operation completes
+    - :meth:`on_resize_progress`: Fired during resize (real-time updates)
     
     Properties
     ----------
@@ -70,7 +69,7 @@ class MorphResizeBehavior(
     - :attr:`min_size`: Minimum width and height constraints
     - :attr:`max_size`: Maximum width and height constraints
     - :attr:`preserve_aspect_ratio`: Whether to maintain aspect ratio
-    - :attr:`resize_animation_duration`: Duration for visual feedback animations
+      animations
     
     Examples
     --------
@@ -85,42 +84,15 @@ class MorphResizeBehavior(
             super().__init__(**kwargs)
             self.size = (200, 150)
             self.pos = (100, 100)
-    ```
-    
-    Resizable with constraints:
-    
-    ```python
-    class ConstrainedWidget(MorphResizeBehavior, Widget):
-        def __init__(self, **kwargs):
-            super().__init__(**kwargs)
-            self.min_size = (100, 75)
-            self.max_size = (400, 300)
-            self.preserve_aspect_ratio = True
             
-        def on_resize_start(self, edge_or_corner):
-            print(f"Starting resize from {edge_or_corner}")
-            
-        def on_resize_end(self, edge_or_corner):
-            print(f"Finished resizing from {edge_or_corner}")
-    ```
-    
-    Custom resize feedback:
-    
-    ```python
-    class CustomResizeWidget(MorphResizeBehavior, Widget):
-        def __init__(self, **kwargs):
-            super().__init__(**kwargs)
-            self.resize_edge_color = [0, 1, 0, 0.6]  # Green highlight
-            self.resize_animation_duration = 0.15
-            
-        def on_resize(self, edge_or_corner, new_size, new_pos):
-            # Custom resize logic here
-            self.size = new_size
-            self.pos = new_pos
+        def on_resizing(self, instance, resizing):
+            if resizing:
+                print(f"Starting resize from {self.resize_edge_or_corner}")
+            else:
+                print(f"Finished resizing")
     ```
     """
 
-    # Resize functionality properties
     resize_enabled: bool = BooleanProperty(True)
     """Enable or disable resize functionality.
     
@@ -143,25 +115,26 @@ class MorphResizeBehavior(
     and defaults to all edges (left, right, top, bottom).
     """
 
-    min_size: List[float] = ListProperty([50, 50])
+    min_size: List[float | None] = ListProperty([None], length=2)
     """Minimum size constraints [width, height].
     
     Prevents the widget from being resized smaller than these dimensions.
     Useful for maintaining usability and preventing widgets from becoming
-    too small to interact with.
+    too small to interact with. Use [None, None] to disable minimum size
+    constraints.
     
     :attr:`min_size` is a :class:`~kivy.properties.ListProperty`
-    and defaults to [50, 50].
+    and defaults to [None, None].
     """
 
-    max_size: List[float] = ListProperty([1000, 1000])
+    max_size: List[float | None] = ListProperty([None], length=2)
     """Maximum size constraints [width, height].
     
     Prevents the widget from being resized larger than these dimensions.
-    Use [0, 0] or negative values to disable maximum size constraints.
+    Use [None, None] to disable maximum size constraints.
     
     :attr:`max_size` is a :class:`~kivy.properties.ListProperty`
-    and defaults to [1000, 1000].
+    and defaults to [None, None].
     """
 
     preserve_aspect_ratio: bool = BooleanProperty(False)
@@ -175,57 +148,65 @@ class MorphResizeBehavior(
     and defaults to False.
     """
 
-    resize_animation_duration: float = NumericProperty(0.2)
-    """Duration for visual feedback animations in seconds.
-    
-    Controls how long it takes for edge highlighting and other visual
-    effects to transition. Shorter values create snappier feedback,
-    longer values create smoother transitions.
-    
-    :attr:`resize_animation_duration` is a :class:`~kivy.properties.NumericProperty`
-    and defaults to 0.2.
-    """
+    resizing: bool = BooleanProperty(False)
+    """Indicates whether a resize operation is currently in progress.
 
-    # Internal state tracking
-    _resize_in_progress: bool = False
-    """Whether a resize operation is currently in progress."""
+    This property is True while the user is actively dragging an edge or
+    corner to resize the widget, and False otherwise. It can be used to
+    conditionally change behavior or appearance during resize 
+    operations. For example, you might want to disable certain 
+    interactions while resizing is happening.
+    The :class:`morphui.uix.behaviors.states.MorphStateBehavior` 
+    listens to this property and so does the 
+    :class:`morphui.uix.behaviors.layer.MorphOverlayLayerBehavior`.
+
+    :attr:`resizing` is a :class:`~kivy.properties.BooleanProperty` 
+    and defaults to False.
+    """
 
     _resize_reference_geometry: FrozenGeometry
     """Frozen reference geometry for mouse movements when resize 
     operation started."""
-    
-    _resize_start_pos: Tuple[float, float] = (0, 0)
-    """Mouse position where resize operation started."""
-    
-    _resize_start_size: Tuple[float, float] = (0, 0)
-    """Widget size when resize operation started."""
-    
-    _resize_start_widget_pos: Tuple[float, float] = (0, 0)
-    """Widget position when resize operation started."""
-    
-    _resize_edge_or_corner: Optional[str] = None
+
+    _start_touch_pos: Tuple[float, float] = (0, 0)
+    """The mouse position where the resize operation started."""
+
+    _original_size_hint : Tuple[float | None, float | None] = (1.0, 1.0)
+    """Internal storage for the original size_hint before resizing.
+    This is used to restore the size_hint after resizing."""
+
+    _resize_edge_or_corner: str | None = None
     """The edge or corner being used for current resize operation."""
-    
-    _original_aspect_ratio: float = 1.0
-    """Original aspect ratio for preservation during resize."""
+
+    _resize_in_progress: bool = False
+    """Internal flag indicating if a resize operation is in progress."""
 
     def __init__(self, **kwargs) -> None:
-        # Register resize events
         self.register_event_type('on_resize_start')
-        self.register_event_type('on_resize')
+        self.register_event_type('on_resize_progress')
         self.register_event_type('on_resize_end')
-        
         super().__init__(**kwargs)
         
-        # Bind to touch events for resize functionality
-        self.bind(on_touch_down=self._handle_resize_touch_down)
-        self.bind(on_touch_move=self._handle_resize_touch_move)
-        self.bind(on_touch_up=self._handle_resize_touch_up)
-        
-        # Update cursor and visuals based on hover state
         self.bind(
             hovered_edges=self._update_resize_feedback,
-            hovered_corner=self._update_resize_feedback,)
+            hovered_corner=self._update_resize_feedback,
+            overlay_edge_width=self._update_edge_detection_size,
+            overlay_edge_inside=self._update_edge_detection_size,)
+        
+        self._update_edge_detection_size()
+
+    @property
+    def resize_edge_or_corner(self) -> str | None:
+        """The edge or corner currently being used for resize operation
+        (read-only).
+        
+        This property is set when a resize operation starts and cleared
+        when it ends. It indicates which edge ('left', 'right', 'top',
+        'bottom') or corner ('top-left', 'top-right', 'bottom-left',
+        'bottom-right') is being dragged to resize the widget.
+        If no resize operation is in progress, this will be None.
+        """
+        return self._resize_edge_or_corner
     
     @property
     def hovered_resizable_edges(self) -> List[str]:
@@ -235,53 +216,30 @@ class MorphResizeBehavior(
         If resize is disabled, this will always be an empty list."""
         if not self.resize_enabled:
             return []
-        return list(filter(self._is_edge_resizable, self.hovered_edges))
+        
+        return [e for e in self.hovered_edges if e in self.resizable_edges]
     
     @property
     def hovered_resizable_corner(self) -> str | None:
         """Currently hovered corner if it is resizable, else None."""
         if not self.resize_enabled or self.hovered_corner is None:
             return None
-        if self.is_corner_resizable(self.hovered_corner):
+        
+        corner_edges = self.hovered_corner.split(NAME.SEP_CORNER)
+        if all(edge in self.resizable_edges for edge in corner_edges):
             return self.hovered_corner
-        return None
-
-    def _is_edge_resizable(self, edge: str) -> bool:
-        """Check if a specific edge can be used for resizing.
+    
+    def _update_edge_detection_size(self, *args) -> None:
+        """Update edge detection size based on current overlay edge width.
         
-        Parameters
-        ----------
-        edge : str
-            Edge name to check ('left', 'right', 'top', 'bottom')
-            
-        Returns
-        -------
-        bool
-            True if the edge can be used for resizing
+        This method ensures that the area used for detecting hover over
+        edges is always in sync with the visual overlay edge width.
+        It is called automatically when the overlay edge width changes.
         """
-        return self.resize_enabled and edge in self.resizable_edges
-
-    def is_corner_resizable(self, corner: str | None) -> bool:
-        """Check if a specific corner can be used for resizing.
-
-        A corner is considered resizable if both adjacent edges are 
-        resizable.
-        
-        Parameters
-        ----------
-        corner : str | None
-            Corner name to check (e.g., 'top-left', 'bottom-right')
-            
-        Returns
-        -------
-        bool
-            True if the corner can be used for resizing
-        """
-        if not self.resize_enabled or corner is None:
-            return False
-         
-        return all(
-            e in self.resizable_edges for e in corner.split(NAME.SEP_CORNER))
+        if self.overlay_edge_inside:
+            self.edge_detection_size = self.overlay_edge_width * 2
+        else:
+            self.edge_detection_size = self.overlay_edge_width
 
     def _update_resize_feedback(self, *args) -> None:
         """Update visual feedback based on current hover state.
@@ -302,6 +260,8 @@ class MorphResizeBehavior(
         if not self.resize_enabled:
             return None
         
+        self.resizing = (
+            bool(self.hovered_resizable_edges) or self._resize_in_progress)
         self.visible_edges = self.hovered_resizable_edges
         
         cursor = 'arrow'
@@ -315,138 +275,13 @@ class MorphResizeBehavior(
                 cursor = 'size_we'
         Window.set_system_cursor(cursor)
 
-    def _calculate_new_size_and_pos(
-            self,
-            mouse_pos: Tuple[float, float]
-            ) -> Tuple[Tuple[float, float], Tuple[float, float]]:
-        """Calculate new size and position based on mouse position
-        during resize operation.
-        
-        Parameters
-        ----------
-        edge_or_corner : str
-            The edge or corner being dragged
-        mouse_pos : Tuple[float, float]
-            Current mouse position
-            
-        Returns
-        -------
-        Tuple[Tuple[float, float], Tuple[float, float]]
-            New size (width, height) and new position (x, y)
-        """
-        reference = self._resize_reference_geometry
-        x, y = reference.pos
-        width, height = reference.size
-        dx, dy = reference.point_delta(*mouse_pos)
-
-        if self.hovered_resizable_corner is not None:
-            edges = self.hovered_resizable_corner.split(NAME.SEP_CORNER)
-        elif self.hovered_resizable_edges:
-            edges = [self.hovered_resizable_edges[0]]
-        else:
-            edges = []
-
-        for edge in edges:
-            if edge == 'left':
-                width -= dx
-                x += dx
-            elif edge == 'right':
-                width += dx
-            elif edge == 'top':
-                height += dy
-            elif edge == 'bottom':
-                height -= dy
-                y += dy
-        return (width, height), (x, y)
-
-    def _apply_resize_constraints(
-            self,
-            width: float,
-            height: float
-            ) -> Tuple[float, float]:
-        """Apply size constraints and aspect ratio preservation to 
-        resize dimensions.
-        
-        This method enforces minimum/maximum size limits and preserves
-        aspect ratio if enabled. It ensures that resize operations
-        respect all configured constraints while maintaining visual
-        consistency.
-        
-        Parameters
-        ----------
-        width : float
-            Proposed new width
-        height : float
-            Proposed new height
-
-        Returns
-        -------
-        Tuple[float, float]
-            Constrained size after applying all restrictions.
-            
-        Notes
-        -----
-        Constraints are applied in this order:
-        1. Aspect ratio preservation (if enabled)
-        2. Minimum size constraints
-        3. Maximum size constraints
-        
-        The aspect ratio is preserved by adjusting the dimension that 
-        would result in the smaller change, maintaining the most natural
-        resize feel.
-        """
-        reference = self._resize_reference_geometry
-        target_ratio = reference.aspect_ratio
-        
-        if self.preserve_aspect_ratio and target_ratio > 0:
-            current_ratio = width / height if height > 0 else 1.0
-            
-            if abs(current_ratio - target_ratio) > 0.001:  # Small tolerance for floating point
-                if current_ratio > target_ratio:
-                    # Width is too large relative to height
-                    width = height * target_ratio
-                else:
-                    # Height is too large relative to width
-                    height = width / target_ratio
-
-        width = max(self.min_size[0], width)
-        height = max(self.min_size[1], height)
-        
-        # Apply maximum size constraints (if specified)
-        if self.max_size[0] > 0:
-            width = min(self.max_size[0], width)
-        if self.max_size[1] > 0:
-            height = min(self.max_size[1], height)
-
-        return width, height
-
-    def apply_new_size_and_pos(
-            self, 
-            new_size: Tuple[float, float], 
-            new_pos: Tuple[float, float]
-            ) -> None:
-        """Apply new size and position to the widget.
-        
-        Parameters
-        ----------
-        new_size : Tuple[float, float]
-            New size (width, height)
-        new_pos : Tuple[float, float]
-            New position (x, y)
-        """
-        self.size = new_size
-        self.pos = new_pos
-
-    def _handle_resize_touch_down(self, instance: Any, touch: MotionEvent) -> bool:
+    def on_touch_down(self, touch: MotionEvent) -> bool:
         """Handle touch down events for resize operations.
-        
-        Parameters
-        ----------
-        instance : Any
-            Widget instance (self)
-        touch : MotionEvent
-            Touch event
-            
+
+        This method initiates a resize operation if the touch occurs
+        over a resizable edge or corner. It sets up the necessary state
+        for the resize operation to proceed.
+
         Returns
         -------
         bool
@@ -457,28 +292,44 @@ class MorphResizeBehavior(
                 not self.hovered_resizable_edges,
                 self._resize_in_progress,)):
             return False
-            
+        touch.grab(self)
+        touch.ud[self] = True
+        self._start_resize(touch.pos)
+        return True
+
+    def _start_resize(self, touch_pos: Tuple[float, float]) -> None:
+        """Internal method to handle the start of a resize operation.
+        
+        This method sets the resizing state to True. It is called when a
+        resize operation is initiated. It also stores the initial
+        geometry for reference during the resize.
+
+        Parameters
+        ----------
+        touch_pos : Tuple[float, float]
+            The mouse position where the resize started.
+        """
         self._resize_in_progress = True
-        self._resize_reference_geometry = FrozenGeometry(
-            x=touch.x,
-            y=touch.y,
-            width=self.width,
-            height=self.height)
+        self._original_size_hint = self.size_hint
+        self.size_hint = (None, None)
+        self._resize_reference_geometry = FrozenGeometry.from_widget(self)
+        self._start_touch_pos = touch_pos
         
         if self.hovered_resizable_corner is not None:
-            resize_target = self.hovered_resizable_corner
+            self._resize_edge_or_corner = self.hovered_resizable_corner
         else:
-            resize_target = self.hovered_resizable_edges[0]
-        self.dispatch('on_resize_start', resize_target)
-        return True
+            self._resize_edge_or_corner = self.hovered_resizable_edges[0]
+        self.dispatch('on_resize_start', self.resize_edge_or_corner)
 
-    def _handle_resize_touch_move(self, instance: Any, touch: MotionEvent) -> bool:
+    def on_touch_move(self, touch: MotionEvent) -> bool:
         """Handle touch move events during resize operations.
+
+        This method updates the size and position of the widget being
+        resized based on the current mouse position. It applies size
+        constraints and dispatches the appropriate resize event.
         
         Parameters
         ----------
-        instance : Any
-            Widget instance (self)
         touch : MotionEvent
             Touch event
             
@@ -487,28 +338,71 @@ class MorphResizeBehavior(
         bool
             True if touch was handled for resize
         """
-        if any((
-                not self._resize_in_progress,
-                touch.grab_current != self,
-                not self._resize_in_progress)):
+        if not self._resize_in_progress:
             return False
             
-        # Calculate new size and position
-        new_size, new_pos = self._calculate_new_size_and_pos(touch.pos)
-        new_size = self._apply_resize_constraints(*new_size)
-        
-        # Dispatch resize event with new dimensions
-        self.dispatch('on_resize', self._resize_edge_or_corner, new_size, new_pos)
-        
+        self._resize(touch.pos)
         return True
 
-    def _handle_resize_touch_up(self, instance: Any, touch: MotionEvent) -> bool:
+    def _resize(self, mouse_pos: Tuple[float, float]) -> None:
+        """Internal method to perform resize calculations and apply
+        new dimensions.
+        
+        This method calculates the new size and position based on the
+        current mouse position, applies constraints, and dispatches the
+        resize progress event.
+        
+        Parameters
+        ----------
+        mouse_pos : Tuple[float, float]
+            Current mouse position during resize
+        """
+        x, y = self._resize_reference_geometry.pos
+        w, h = self._resize_reference_geometry.size
+        dx = mouse_pos[0] - self._start_touch_pos[0]
+        dy = mouse_pos[1] - self._start_touch_pos[1]
+        target_ratio = self._resize_reference_geometry.aspect_ratio
+
+        if self.resize_edge_or_corner is not None:
+            edges = self.resize_edge_or_corner.split(NAME.SEP_CORNER)
+        else:
+            edges = []
+        for edge in edges:
+            if edge == 'left':
+                w -= dx
+                x += dx
+            elif edge == 'right':
+                w += dx
+            elif edge == 'top':
+                h += dy
+            elif edge == 'bottom':
+                h -= dy
+                y += dy
+
+        if self.preserve_aspect_ratio and target_ratio > 0:
+            current_ratio = w / h if h > 0 else 1.0
+
+            if round(current_ratio - target_ratio, 3) != 0:
+                if current_ratio > target_ratio: 
+                    w = h * target_ratio    # Width is too large relative to height
+                else: 
+                    h = w / target_ratio    # Height is too large relative to width
+
+        w = clamp(w, self.min_size[0], self.max_size[0])
+        h = clamp(h, self.min_size[1], self.max_size[1])
+        new_size = (w, h)
+        new_pos = (x, y)
+        self.dispatch(
+            'on_resize_progress', self.resize_edge_or_corner, new_size, new_pos)
+
+    def on_touch_up(self, touch: MotionEvent) -> bool:
         """Handle touch up events to end resize operations.
+
+        This method finalizes the resize operation, resets state, and
+        dispatches the resize end event.
         
         Parameters
         ----------
-        instance : Any
-            Widget instance (self)
         touch : MotionEvent
             Touch event
             
@@ -517,26 +411,28 @@ class MorphResizeBehavior(
         bool
             True if touch was handled for resize
         """
-        if not self._resize_in_progress or touch.grab_current != self:
+        if not self._resize_in_progress:
             return False
             
-        # End resize operation
-        edge_or_corner = self._resize_edge_or_corner
-        self._resize_in_progress = False
-        self._resize_edge_or_corner = None
-        
-        # Release touch grab
         touch.ungrab(self)
-        
-        # Dispatch resize end event
-        self.dispatch('on_resize_end', edge_or_corner)
-        
+        self._end_resize()
         return True
-
-    # Event methods (override in subclasses)
-    def on_resize_start(self, edge_or_corner: str) -> None:
-        """Event fired when a resize operation begins.
+    
+    def _end_resize(self) -> None:
+        """Internal method to handle the end of a resize operation.
         
+        This method resets the resizing state and restores the original
+        size_hint. It is called when a resize operation is completed.
+        """
+        self._resize_in_progress = False
+        self.size_hint = self._original_size_hint
+        self._original_size_hint = (1.0, 1.0)
+        self._resize_edge_or_corner = None
+        self.dispatch('on_resize_end', self.resize_edge_or_corner)
+
+    def on_resize_start(self, edge_or_corner: str) -> None:
+        """Event fired when a resize operation starts.
+
         This event is dispatched when the user starts dragging an edge or
         corner to resize the widget. Override this method to add custom
         behavior at the start of resize operations.
@@ -557,12 +453,12 @@ class MorphResizeBehavior(
         """
         pass
 
-    def on_resize(
+    def on_resize_progress(
             self, 
             edge_or_corner: str, 
             new_size: Tuple[float, float], 
             new_pos: Tuple[float, float]
-    ) -> None:
+            ) -> None:
         """Event fired during resize operations with new dimensions.
         
         This event is dispatched continuously while the user drags to resize
@@ -594,7 +490,6 @@ class MorphResizeBehavior(
             self.update_content_layout()
         ```
         """
-        # Default implementation: apply new size and position
         self.size = new_size
         self.pos = new_pos
 
@@ -622,10 +517,9 @@ class MorphResizeBehavior(
         """
         pass
 
-    # Override hover behavior to reset cursor when leaving widget
     def on_leave(self) -> None:
         """Override parent on_leave to reset cursor."""
         super().on_leave()
         if not self._resize_in_progress:
             Window.set_system_cursor('arrow')
-            self._update_edge_highlighting([])
+            self._update_overlay_layer([])
