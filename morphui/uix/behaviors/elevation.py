@@ -9,6 +9,9 @@ from kivy.properties import BooleanProperty
 from kivy.properties import BoundedNumericProperty
 
 
+from ...constants import NAME
+
+
 __all__ = [
     'MorphElevationBehavior',]
 
@@ -55,7 +58,7 @@ class MorphElevationBehavior(EventDispatcher):
     :attr:`shadow_inset` is a :class:`~kivy.properties.BooleanProperty`
     and defaults to `False` (outset)."""
 
-    shadow_offset: List[float] = ListProperty([0, 0], length=2)
+    shadow_offset: List[float] = ListProperty([2, -2], length=2)
     """Offset of the shadow in the x and y directions.
 
     Specifies shadow offsets in (horizontal, vertical) format. Positive
@@ -64,15 +67,15 @@ class MorphElevationBehavior(EventDispatcher):
     move to the left and/or down.
 
     :attr:`shadow_offset` is a :class:`~kivy.properties.ListProperty`
-    and defaults to `[0, 0]`."""
+    and defaults to `[1, -1]`."""
 
     shadow_blur_factor: int = BoundedNumericProperty(
-        4, min=1, max=5, val_type=int, errorhandler=lambda x: max(0, min(x, 5)))
+        4, min=1, max=7, val_type=int, errorhandler=lambda x: max(1, min(x, 7)))
     """Factor to calculate blur radius from elevation.
 
     This factor is multiplied by the elevation to determine the blur radius.
     Higher values result in more blurred shadows. The value is clamped
-    between 1 and 5 and must be an integer.
+    between 1 and 7 and must be an integer.
 
     :attr:`shadow_blur_factor` is a
     :class:`~kivy.properties.BoundedNumericProperty` and defaults to `4`.
@@ -108,10 +111,14 @@ class MorphElevationBehavior(EventDispatcher):
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         
+        group = NAME.SHADOW_LAYER
         with self.canvas.before:
-            self._shadow_color_instruction = Color(rgba=self.shadow_color)
+            self._shadow_color_instruction = Color(
+                rgba=self.shadow_color,
+                group=group)
             self._shadow_instruction = BoxShadow(
-                **{k: v for k, v in self.shadow_params.items() if k != 'color'})
+                group=group,
+                **self.shadow_params)
         
         self.bind(
             pos=self._update_elevation,
@@ -125,6 +132,7 @@ class MorphElevationBehavior(EventDispatcher):
         if hasattr(self, 'radius'):
             self.bind(radius=self.setter('shadow_border_radius'))
             self.shadow_border_radius = self.radius
+        self.refresh_elevation()
 
     @property
     def shadow_blur_radius(self) -> float:
@@ -137,19 +145,28 @@ class MorphElevationBehavior(EventDispatcher):
 
     def _update_elevation(self, *args) -> None:
         """Update the shadow based on current elevation and properties."""
-        if self.elevation > 0:
-            for key, value in self.shadow_params.items():
-                if key == 'color':
-                    self._shadow_color_instruction.rgba = value
-                else:
-                    setattr(self._shadow_instruction, key, value)
-        else:
-            self._shadow_instruction.opacity = 0
+        rgba = [0, 0, 0, 0] if self.elevation < 1 else self.shadow_color
+        self._shadow_color_instruction.rgba = rgba
+        for key, value in self.shadow_params.items():
+            setattr(self._shadow_instruction, key, value)
+                    
     
+    def refresh_elevation(self) -> None:
+        """Manually refresh the elevation and shadow effect.
+
+        This method can be called to force an update of the shadow
+        effect, for example after changing multiple properties at once.
+        """
+        self._update_elevation()
+
     @property
     def shadow_params(self) -> dict:
-        """Get current shadow parameters as a dictionary (read-only).
-        
+        """Get current shadow parameters as a dictionary used
+        for :class:`~kivy.graphics.instructions.BoxShadow` (read-only).
+
+        If the elevation is less than 1, the shadow will be disabled
+        by setting the offset to [0, 0] and blur_radius to 0.
+
         Returns
         -------
         dict
@@ -161,13 +178,22 @@ class MorphElevationBehavior(EventDispatcher):
             - 'blur_radius': Calculated blur radius.
             - 'border_radius': Current border radius for the shadow 
               corners.
-            - 'color': Current shadow color as a list [r, g, b, a].
+        
+        Notes
+        -----
+        This dictionary is used to update the BoxShadow instruction
+        whenever relevant properties change. The 'color' key is excluded
+        here since it is managed separately by the Color instruction.
         """
-        return dict(
+        params = dict(
             inset=self.shadow_inset,
             size=self.size,
             pos=self.pos,
             offset=self.shadow_offset,
             blur_radius=self.shadow_blur_radius,
-            border_radius=self.shadow_border_radius,
-            color=self.shadow_color,)
+            border_radius=self.shadow_border_radius,)
+        if self.elevation < 1:
+            params |= dict(
+                offset=[0, 0],
+                blur_radius=0,)
+        return params

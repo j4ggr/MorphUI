@@ -142,6 +142,9 @@ class _Name_:
     """Separator used in corner naming conventions."""
     
     # Canvas instruction groups
+    SHADOW_LAYER: Literal['shadow'] = 'shadow'
+    """Canvas instruction group for shadow rendering."""
+
     SURFACE_LAYER: Literal['surface'] = 'surface'
     """Canvas instruction group for surface rendering (backgrounds, borders)."""
     
