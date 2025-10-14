@@ -260,9 +260,11 @@ class MorphResizeBehavior(
         if not self.resize_enabled:
             return None
         
-        self.resizing = (
-            bool(self.hovered_resizable_edges) or self._resize_in_progress)
-        self.visible_edges = self.hovered_resizable_edges
+        if self._resize_in_progress:
+            self.resizing = True
+        else:
+            self.resizing = bool(self.hovered_resizable_edges)
+            self.visible_edges = self.hovered_resizable_edges
         
         cursor = 'arrow'
         if self.hovered_resizable_corner is not None:
