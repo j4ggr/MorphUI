@@ -42,6 +42,7 @@ def attribute_name_for_color(color: DynamicColor) -> str:
         # Convert 'on_background' -> 'content_background_color'
         # Convert 'on_primary' -> 'content_primary_color'
         name = 'content_' + name[3:]  # Remove 'on_' and add 'content_'
+    name = name.replace('_on_', '_content_')
 
     if not name.endswith('_color'):
         name += '_color'
@@ -262,11 +263,11 @@ class MorphDynamicColorPalette(EventDispatcher):
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    inverse_on_surface_color: List[float] | None = ColorProperty(None)
-    """Inverse on surface color.
+    inverse_content_surface_color: List[float] | None = ColorProperty(None)
+    """Inverse content surface color.
     This property holds the dynamic color value set by the theme.
 
-    :attr:`inverse_on_surface_color` is a
+    :attr:`inverse_content_surface_color` is a
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
