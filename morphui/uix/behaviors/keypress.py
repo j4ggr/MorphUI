@@ -3,7 +3,6 @@ from typing import List
 from typing import Dict
 
 from kivy.event import EventDispatcher
-from kivy.uix.widget import Widget
 from kivy.properties import ListProperty
 from kivy.properties import StringProperty
 from kivy.properties import BooleanProperty
@@ -22,10 +21,22 @@ class MorphKeyPressBehavior(EventDispatcher):
     dictionary in subclasses. The key names are used to create events
     like `on_<key_name>_press` and `on_<key_name>_release`.
     
-    The class also provides tab navigation between widgets in the
-    :attr:`tab_widgets` list. When the tab key is pressed, focus will 
-    move to the next widget in the list.
+    The class also provides tab navigation between widgets using groups.
+    Widgets can be assigned to tab groups by setting their `tab_group` 
+    property. When the tab key is pressed, focus will move to the next 
+    widget in the same group.
     """
+
+    # Class-level dictionary to store tab groups
+    tab_widgets: Dict[str, List[Any]] = {}
+    """Class-level dictionary mapping group names to lists of widgets.
+    
+    This allows multiple independent tab groups to exist. Each group
+    contains widgets that will participate in tab navigation within
+    that group only.
+    
+    :attr:`tab_widgets` is a class attribute and defaults to an empty
+    dictionary."""
 
     key_press_enabled: bool = BooleanProperty(True)
     """Disable key press events if False.
@@ -33,19 +44,16 @@ class MorphKeyPressBehavior(EventDispatcher):
     :attr:`key_press_enabled` is a 
     :class:`~kivy.properties.BooleanProperty` and defaults to True."""
 
-    tab_widgets: List[Any] = ListProperty([])
-    """List of widgets to focus on tab key press.
+    tab_group: str | None = StringProperty(None, allownone=True)
+    """Tab group name for this widget instance.
     
-    All widgets in this list must have a `focus` attribute (e.g.
-    TextInput, Button, etc.). The focus will move to the next widget
-    in the list when the tab key is pressed. If no widget has focus
-    and :attr:`persist_focus_state` is False, it will start from the
-    beginning of the list. Otherwise it will continue from the last
-    focus widget. If the last widget has focus, it will wrap around
-    to the first widget.
+    When set, this widget will be automatically added to the corresponding
+    group in the class-level :attr:`tab_widgets` dictionary. Widgets in
+    the same group participate in tab navigation together. Setting this
+    to None removes the widget from all tab groups.
     
-    :attr:`tab_widgets` is a :class:`~kivy.properties.ListProperty` and
-    defaults to an empty list."""
+    :attr:`tab_group` is a :class:`~kivy.properties.StringProperty` and
+    defaults to None."""
 
     index_last_focus: int = NumericProperty(-1)
     """Index of last focus widget. 
@@ -155,8 +163,18 @@ class MorphKeyPressBehavior(EventDispatcher):
     
     @property
     def has_focus(self) -> bool:
-        """True if any of the widgets in `tab_widgets` has focus."""
-        return any(getattr(w, 'focus', False) for w in self.tab_widgets)
+        """True if any of the widgets in this instance's tab group has
+        focus."""
+        if not self.tab_group or self.tab_group not in self.tab_widgets:
+            return False
+        return any(getattr(w, 'focus', False) for w in self.tab_widgets[self.tab_group])
+    
+    @property
+    def current_tab_widgets(self) -> List[Any]:
+        """Get the current tab widgets list for this instance's group."""
+        if not self.tab_group or self.tab_group not in self.tab_widgets:
+            return []
+        return self.tab_widgets[self.tab_group]
     
     def _press_event_name(self, key_name: str) -> str:
         """Return the event name for the given key name."""
@@ -166,27 +184,53 @@ class MorphKeyPressBehavior(EventDispatcher):
         """Return the event name for the given key name."""
         return f'on_{key_name}_release'
 
-    def on_tab_widgets(self, instance: Any, tab_widgets: List[Widget]) -> None:
-        """Reset index for last and next focus. Fired when the value of 
-        `tab_widgets` is changed.
+    def on_tab_group(self, instance: Any, tab_group: str | None) -> None:
+        """Handle changes to the tab_group property.
+        
+        When tab_group is set, adds this widget to the corresponding 
+        group. When set to None, removes this widget from all groups.
         
         Parameters
         ----------
         instance : Any
             The instance of the KeyPressBehavior.
-        tab_widgets : List[Widget]
-            The new list of tab widgets.
-        
-        Raises
-        ------
-        AssertionError
-            If any widget in `tab_widgets` does not have a `focus` 
-            attribute.
+        tab_group : str | None
+            The new tab group name or None.
         """
-        assert all(hasattr(w, 'focus') for w in tab_widgets), (
-            'All widgets in tab_widgets must have a focus attribute.')
+        # Remove from all groups first
+        for group_name, widgets in self.tab_widgets.items():
+            if self in widgets:
+                widgets.remove(self)
+                
+        # Add to new group if specified
+        if tab_group:
+            if tab_group not in self.tab_widgets:
+                self.tab_widgets[tab_group] = []
+            if self not in self.tab_widgets[tab_group]:
+                self.tab_widgets[tab_group].append(self)
+                # Validate that the widget has focus attribute
+                assert hasattr(self, 'focus'), (
+                    'Widget must have a focus attribute to be added to tab group.')
+        
+        # Reset focus indices when group changes
         self.index_last_focus = -1
         self.index_next_focus = 0
+
+    def on_index_next_focus(
+            self, instance: Any, index_next_focus: int) -> None:
+        """Ensure the next focus index is within bounds. Fired when the 
+        value of `index_next_focus` is changed.
+
+        Parameters
+        ----------
+        instance : Any
+            The instance of the KeyPressBehavior.
+        index_next_focus : int
+            The next focus index.
+        """
+        current_widgets = self.current_tab_widgets
+        if self.index_next_focus >= len(current_widgets):
+            self.index_next_focus = 0
     
     def _skip_keypress_event(self, keycode: int) -> bool:
         """Return True if key press event should be ignored.
@@ -283,45 +327,34 @@ class MorphKeyPressBehavior(EventDispatcher):
         """
         pass
 
-    def on_index_next_focus(
-            self, instance: Any, index_next_focus: int) -> None:
-        """Ensure the next focus index is within bounds. Fired when the 
-        value of `index_next_focus` is changed.
-
-        Parameters
-        ----------
-        instance : Any
-            The instance of the KeyPressBehavior.
-        index_next_focus : int
-            The next focus index.
-        """
-        if self.index_next_focus >= len(self.tab_widgets):
-            self.index_next_focus = 0
-
     def on_tab_press(self, *args) -> None:
         """Callback for the tab key. Dispatched when tab key is down.
-        It moves the focus to the next widget in the :attr:`tab_widgets`
-        list. If no widget has focus, it starts from the beginning of 
-        the list. If the last widget has focus, it wraps around to the 
+        It moves the focus to the next widget in the current tab group.
+        If no widget has focus, it starts from the beginning of the 
+        list. If the last widget has focus, it wraps around to the 
         first widget."""
-        if not self.tab_widgets:
+        current_widgets = self.current_tab_widgets
+        if not current_widgets:
             return
         
         if self.has_focus:
-            for i, widget in enumerate(self.tab_widgets):
-                if widget.focus:
+            for i, widget in enumerate(current_widgets):
+                if getattr(widget, 'focus', False):
                     self.index_last_focus = i
                     self.index_next_focus = i + 1
                     break
     
     def on_tab_release(self, *args) -> None:
         """Callback for the tab key. Dispatched when tab key is up.
-        It sets the focus to the next widget in the :attr:`tab_widgets`
-        list. If no widget has focus, it starts from the beginning of the
+        It sets the focus to the next widget in the current tab group.
+        If no widget has focus, it starts from the beginning of the
         list. If the last widget has focus, it wraps around to the first
         widget."""
-        if not self.tab_widgets:
+        current_widgets = self.current_tab_widgets
+        if not current_widgets:
             return
 
-        self.tab_widgets[self.index_last_focus].focus = False
-        self.tab_widgets[self.index_next_focus].focus = True
+        if self.index_last_focus >= 0 and self.index_last_focus < len(current_widgets):
+            current_widgets[self.index_last_focus].focus = False
+        if self.index_next_focus < len(current_widgets):
+            current_widgets[self.index_next_focus].focus = True

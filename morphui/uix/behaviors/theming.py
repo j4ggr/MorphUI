@@ -240,8 +240,9 @@ class MorphColorThemeBehavior(BaseThemeBehavior):
         :attr:`theme_color_bindings`. When both define the same widget
         property, the values from :attr:`theme_style` have priority.
         """
-        style_bindings = self.theme_style_mappings.get(self.theme_style, {})
-        merged = self.theme_color_bindings | style_bindings.copy()
+        merged = (
+            self.theme_color_bindings
+            | self._theme_style_color_bindings)
         return merged
 
     def on_theme_color_bindings(
