@@ -620,15 +620,19 @@ class TestMorphKeyPressBehavior:
         """Test widget that combines Widget with MorphKeyPressBehavior."""
         pass
 
-    class FocusWidget(FocusBehavior, Widget):
-        """Test widget that combines Widget with FocusBehavior."""
+    class FocusWidget(MorphKeyPressBehavior, FocusBehavior, Widget):
+        """Test widget that combines Widget with FocusBehavior and MorphKeyPressBehavior."""
         pass
+
+    def setup_method(self):
+        """Clear tab groups before each test."""
+        MorphKeyPressBehavior.tab_widgets.clear()
 
     def test_initialization(self):
         """Test basic initialization of MorphKeyPressBehavior."""
         widget = self.TestWidget()
         assert widget.key_press_enabled is True
-        assert widget.tab_widgets == []
+        assert widget.tab_group is None
         assert widget.index_last_focus == -1
         assert widget.index_next_focus == 0
         assert widget.keyboard == 0
@@ -645,48 +649,132 @@ class TestMorphKeyPressBehavior:
         widget.key_press_enabled = True
         assert widget.key_press_enabled is True
 
-    def test_tab_widgets_property(self):
-        """Test the tab_widgets property."""
-        widget = self.TestWidget()
-        test_widgets = [
-            self.FocusWidget(), self.FocusWidget(), self.FocusWidget()]
+    def test_tab_group_property(self):
+        """Test the tab_group property and group management."""
+        widget1 = self.FocusWidget()
+        widget2 = self.FocusWidget()
+        widget3 = self.FocusWidget()
         
-        widget.tab_widgets = test_widgets
-        assert widget.tab_widgets == test_widgets
-        assert len(widget.tab_widgets) == 3
-        assert not any(w.focus for w in widget.tab_widgets)
+        # Test setting tab group
+        widget1.tab_group = "form1"
+        assert widget1.tab_group == "form1"
+        assert "form1" in MorphKeyPressBehavior.tab_widgets
+        assert widget1 in MorphKeyPressBehavior.tab_widgets["form1"]
+        
+        # Test adding multiple widgets to same group
+        widget2.tab_group = "form1"
+        widget3.tab_group = "form1"
+        assert len(MorphKeyPressBehavior.tab_widgets["form1"]) == 3
+        assert widget2 in MorphKeyPressBehavior.tab_widgets["form1"]
+        assert widget3 in MorphKeyPressBehavior.tab_widgets["form1"]
+        
+        # Test moving widget to different group
+        widget3.tab_group = "form2"
+        assert len(MorphKeyPressBehavior.tab_widgets["form1"]) == 2
+        assert widget3 not in MorphKeyPressBehavior.tab_widgets["form1"]
+        assert widget3 in MorphKeyPressBehavior.tab_widgets["form2"]
+        
+        # Test removing widget from groups
+        widget1.tab_group = None
+        assert widget1 not in MorphKeyPressBehavior.tab_widgets["form1"]
+        assert len(MorphKeyPressBehavior.tab_widgets["form1"]) == 1
 
-        widget.on_key_press(
-            instance=self, keyboard=9, keycode=43, text=None, modifiers=[])
-        widget.on_key_release(instance=self, keyboard=9, keycode=43)
-        assert list(w.focus for w in widget.tab_widgets).count(True) == 1
-        assert widget.index_last_focus == -1
-        assert widget.index_next_focus == 0
-        assert widget.tab_widgets[0].focus is True
+    def test_current_tab_widgets_property(self):
+        """Test the current_tab_widgets property."""
+        widget1 = self.FocusWidget()
+        widget2 = self.FocusWidget()
+        widget3 = self.FocusWidget()
+        
+        # Test empty list when no group set
+        assert widget1.current_tab_widgets == []
+        
+        # Test current_tab_widgets returns correct group
+        widget1.tab_group = "form1"
+        widget2.tab_group = "form1"
+        widget3.tab_group = "form2"
+        
+        form1_widgets = widget1.current_tab_widgets
+        assert len(form1_widgets) == 2
+        assert widget1 in form1_widgets
+        assert widget2 in form1_widgets
+        assert widget3 not in form1_widgets
+        
+        form2_widgets = widget3.current_tab_widgets
+        assert len(form2_widgets) == 1
+        assert widget3 in form2_widgets
 
-        widget.on_key_press(
-            instance=self, keyboard=9, keycode=43, text=None, modifiers=[])
-        widget.on_key_release(instance=self, keyboard=9, keycode=43)
-        assert list(w.focus for w in widget.tab_widgets).count(True) == 1
-        assert widget.index_last_focus == 0
-        assert widget.index_next_focus == 1
-        assert widget.tab_widgets[1].focus is True
+    def test_has_focus_property(self):
+        """Test the has_focus property with groups."""
+        widget1 = self.FocusWidget()
+        widget2 = self.FocusWidget()
+        widget3 = self.FocusWidget()
+        
+        widget1.tab_group = "form1"
+        widget2.tab_group = "form1"
+        widget3.tab_group = "form2"
+        
+        # Test no focus initially
+        assert widget1.has_focus is False
+        assert widget3.has_focus is False
+        
+        # Test focus in group
+        widget1.focus = True
+        assert widget1.has_focus is True
+        assert widget2.has_focus is True  # Same group
+        assert widget3.has_focus is False  # Different group
 
-        widget.on_key_press(
-            instance=self, keyboard=9, keycode=43, text=None, modifiers=[])
-        widget.on_key_release(instance=self, keyboard=9, keycode=43)
-        assert list(w.focus for w in widget.tab_widgets).count(True) == 1
-        assert widget.index_last_focus == 1
-        assert widget.index_next_focus == 2
-        assert widget.tab_widgets[2].focus is True
+    def test_tab_navigation_with_groups(self):
+        """Test tab navigation within groups."""
+        widget1 = self.FocusWidget()
+        widget2 = self.FocusWidget()
+        widget3 = self.FocusWidget()
+        widget4 = self.FocusWidget()
+        
+        # Set up two groups
+        widget1.tab_group = "form1"
+        widget2.tab_group = "form1"
+        widget3.tab_group = "form2"
+        widget4.tab_group = "form2"
+        
+        # Test tab navigation in form1 group
+        current_widgets = widget1.current_tab_widgets
+        assert len(current_widgets) == 2
+        assert not any(w.focus for w in current_widgets)
 
-        widget.on_key_press(
+        # First tab press in group 1
+        widget1.on_key_press(
             instance=self, keyboard=9, keycode=43, text=None, modifiers=[])
-        widget.on_key_release(instance=self, keyboard=9, keycode=43)
-        assert list(w.focus for w in widget.tab_widgets).count(True) == 1
-        assert widget.index_last_focus == 2
-        assert widget.index_next_focus == 0
-        assert widget.tab_widgets[0].focus is True
+        widget1.on_key_release(instance=self, keyboard=9, keycode=43)
+        
+        form1_widgets = widget1.current_tab_widgets
+        assert sum(w.focus for w in form1_widgets) == 1
+        assert widget1.index_last_focus == -1
+        assert widget1.index_next_focus == 0
+        assert form1_widgets[0].focus is True
+
+        # Second tab press in group 1
+        widget1.on_key_press(
+            instance=self, keyboard=9, keycode=43, text=None, modifiers=[])
+        widget1.on_key_release(instance=self, keyboard=9, keycode=43)
+        
+        assert sum(w.focus for w in form1_widgets) == 1
+        assert widget1.index_last_focus == 0
+        assert widget1.index_next_focus == 1
+        assert form1_widgets[1].focus is True
+
+        # Third tab press (should wrap around)
+        widget1.on_key_press(
+            instance=self, keyboard=9, keycode=43, text=None, modifiers=[])
+        widget1.on_key_release(instance=self, keyboard=9, keycode=43)
+        
+        assert sum(w.focus for w in form1_widgets) == 1
+        assert widget1.index_last_focus == 1
+        assert widget1.index_next_focus == 0  # Wrapped around
+        assert form1_widgets[0].focus is True
+
+        # Verify form2 group is unaffected
+        form2_widgets = widget3.current_tab_widgets
+        assert not any(w.focus for w in form2_widgets)
 
     def test_key_properties(self):
         """Test key-related properties."""
@@ -1024,16 +1112,17 @@ class TestMorphThemeBehavior:
             widget.border_color = [0, 0, 0, 0]
             
             # Test setting primary style
-            widget.on_theme_style(widget, 'primary')
+            widget.theme_style = 'primary'
             
-            # Should update theme_color_bindings with the primary style mappings
+            # Should update effective_color_bindings with the primary style mappings
             from morphui.constants import THEME
             primary_style = THEME.STYLES['primary']
             
             # Check that all primary style bindings were added
             for widget_prop, theme_color in primary_style.items():
-                assert widget_prop in widget.theme_color_bindings
-                assert widget.theme_color_bindings[widget_prop] == theme_color
+                assert widget_prop in widget._theme_style_color_bindings
+                assert widget_prop in widget.effective_color_bindings
+                assert widget.effective_color_bindings[widget_prop] == theme_color
 
     @patch('morphui.app.MorphApp._theme_manager')
     def test_on_theme_style_with_invalid_style(self, mock_app_theme_manager):
@@ -1245,16 +1334,17 @@ class TestMorphColorThemeBehavior:
             widget = self.TestWidget()
             
             # Test setting primary style
-            widget.on_theme_style(widget, 'primary')
+            widget.theme_style = 'primary'
             
-            # Should update theme_color_bindings with the primary style mappings
+            # Should update effective_color_bindings with the primary style mappings
             from morphui.constants import THEME
             primary_style = THEME.STYLES['primary']
             
             # Check that all primary style bindings were added
             for widget_prop, theme_color in primary_style.items():
-                assert widget_prop in widget.theme_color_bindings
-                assert widget.theme_color_bindings[widget_prop] == theme_color
+                assert widget_prop in widget._theme_style_color_bindings
+                assert widget_prop in widget.effective_color_bindings
+                assert widget.effective_color_bindings[widget_prop] == theme_color
 
 
 class TestMorphTypographyBehavior:
@@ -1748,7 +1838,13 @@ class TestMorphInteractionLayerBehavior:
 
     class TestWidget(MorphInteractionLayerBehavior, Widget):
         """Test widget that combines Widget with MorphInteractionLayerBehavior."""
-        pass
+        
+        def __init__(self, **kwargs):
+            super().__init__(**kwargs)
+            # Add hovered property to support hovered state
+            self.hovered = False
+            # Update available states after adding new property
+            self.update_available_states()
 
     @patch('morphui.app.MorphApp._theme_manager')
     def test_initialization(self, mock_app_theme_manager):
@@ -1842,7 +1938,7 @@ class TestMorphInteractionLayerBehavior:
         
         widget = self.TestWidget()
         
-        with patch.object(widget, '_on_state_change') as mock_state_change:
+        with patch.object(widget, '_on_interaction_state_change') as mock_state_change:
             widget.refresh_interaction()
             mock_state_change.assert_called()
 

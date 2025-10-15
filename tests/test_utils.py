@@ -55,16 +55,6 @@ class TestCleanDefaultConfig:
         assert result == config
         assert result is not config  # Should return a copy
 
-    def test_theme_style_takes_precedence(self) -> None:
-        """Test that theme_style removes theme_color_bindings."""
-        config = {
-            'theme_color_bindings': {'color': 'primary'},
-            'width': 100}
-        kwargs = {'theme_style': 'secondary',}
-        result = clean_config(config, kwargs)
-        expected = {'theme_style': 'secondary', 'width': 100}
-        assert result == expected
-
     def test_theme_bindings_filtered_by_explicit_config(self) -> None:
         """Test that explicit config removes items from theme_color_bindings."""
         config = {
