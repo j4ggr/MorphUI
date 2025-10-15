@@ -1,6 +1,12 @@
+from math import pi
+from math import sin
+from math import cos
+
 from typing import Any
 from typing import List
 from typing import Dict
+from typing import Literal
+from typing import Generator
 
 from kivy.metrics import dp
 from kivy.graphics import Line
@@ -69,6 +75,107 @@ class BaseLayerBehavior(
             self.height,
             *self.radius,]
         return params
+    
+    def _generate_corner_arc_points(
+            self,
+            corner: Literal['top-left', 'top-right', 'bottom-left', 'bottom-right']
+            ) -> List[float]:
+        """Generate points for a quarter circle arc at the specified 
+        corner.
+        
+        Will return a single point if the radius is less than 1. There
+        will be `int(radius) + 1` points if the radius is greater than
+        1. The generated points will start at the corner and proceed
+        counter-clockwise around the quarter circle.
+
+        Parameters
+        ----------
+        corner : Literal['top-left', 'top-right', 'bottom-left', 'bottom-right']
+            The corner for which to generate the quarter circle points.
+
+        Returns
+        -------
+        List[float]
+            A flat list of x, y coordinates representing the quarter
+            circle points.
+
+        Raises
+        ------
+        ValueError
+            If an invalid corner is specified.
+        """
+        match corner:
+            case 'top-left':
+                start_angle = 0.5 * pi
+                radius = self.radius[0]
+                x_center = self.x + radius
+                y_center = self.top - radius
+            case 'bottom-left':
+                start_angle = pi
+                radius = self.radius[3]
+                x_center = self.x + radius
+                y_center = self.y + radius
+            case 'bottom-right':
+                start_angle = 1.5 * pi
+                radius = self.radius[2]
+                x_center = self.right - radius
+                y_center = self.y + radius
+            case 'top-right':
+                start_angle = 0
+                radius = self.radius[1]
+                x_center = self.right - radius
+                y_center = self.top - radius
+            case _:
+                raise ValueError("Invalid corner specified.")
+            
+        n_segments = int(radius) + 1
+        if n_segments <= 1:
+            return [x_center, y_center]
+
+        def _points(n: int) -> Generator[float, None, None]:
+            for i in range(n):
+                angle = 0.5 * pi * i / n + start_angle
+                x = x_center + radius * cos(angle)
+                y = y_center + radius * sin(angle)
+                yield x
+                yield y
+        return list(_points(n_segments))
+
+    def _calculate_border_path(self, open_length: float) -> List[float]:
+        """Calculate the complete border path points including corners
+        and edges.
+
+        This method generates a list of points that define the border
+        path of the rounded rectangle.
+
+        Parameters
+        ----------
+        open_length : float
+            Length of the open section of the border at the top edge.
+            A value of 0 means a closed border.
+
+        Returns
+        -------
+        List[float]
+            A flat list of x, y coordinates representing the border 
+            path.
+        """
+        points: List[float] = [
+            self.x + self.radius[0], self.top,
+            *self._generate_corner_arc_points('top-left'),
+            self.x, self.y + self.radius[0],
+            *self._generate_corner_arc_points('bottom-left'),
+            self.right - self.radius[2], self.y,
+            *self._generate_corner_arc_points('bottom-right'),
+            self.right, self.top - self.radius[1],
+            *self._generate_corner_arc_points('top-right'),]
+
+        if open_length > 0:
+            x_start = points[0]
+            x_end = min(x_start + open_length, points[-2])
+            points.extend([x_end, points[-1]])
+
+        return points
     
 
 class MorphSurfaceLayerBehavior(BaseLayerBehavior):
@@ -160,6 +267,17 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
     and defaults to `1` (1 pixel wide).
     """
 
+    border_open_length: float = NumericProperty(0, min=0)
+    """Length of the open section of the border at the top edge.
+
+    This property allows you to create an open border effect by
+    specifying a length in pixels for the open section. A value of 0
+    means a closed border.
+
+    :attr:`border_open_length` is a
+    :class:`~kivy.properties.NumericProperty` and defaults to `0`.
+    """
+
     _surface_color_instruction: Color
     """Kivy Color instruction for the surface color."""
 
@@ -199,18 +317,30 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
                 group=group)
             self._border_instruction = SmoothLine(
                 width=dp(self.border_width),
-                rounded_rectangle=self._rectangle_params,
+                points=self._calculate_border_path(self.border_open_length),
+                close=self.border_closed,
                 group=group)
 
         self.bind(
-            surface_color=self._update_surface_layer,
             size=self._update_surface_layer,
             pos=self._update_surface_layer,
             radius=self._update_surface_layer,
+            surface_color=self._update_surface_layer,
             border_color=self._update_surface_layer,
             border_width=self._update_surface_layer,
+            border_open_length=self._update_surface_layer,
             current_surface_state=self._update_surface_layer,)
+        self.refresh_surface()
     
+    @property
+    def border_closed(self) -> bool:
+        """Whether the border is closed (read-only).
+
+        This property returns True if the border is closed (i.e., 
+        `border_open_length` is 0), and False otherwise.
+        """
+        return self.border_open_length < dp(1)
+        
     def _update_surface_layer(self, *args) -> None:
         """Update the surface when any relevant property changes."""
         match self.current_surface_state:
@@ -234,9 +364,22 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
         
         self._border_color_instruction.rgba = border_color
         self._border_instruction.width = dp(self.border_width)
-        self._border_instruction.rounded_rectangle = self._rectangle_params
+        self._border_instruction.points = self._calculate_border_path(
+            self.border_open_length)
+        self._border_instruction.close = self.border_closed
 
         self.dispatch('on_surface_updated')
+    
+    def refresh_surface(self) -> None:
+        """Reapply the current surface and border colors based on the
+        widget's state.
+
+        This method is useful when the theme changes or when the
+        widget's state properties are modified externally. It ensures
+        that the surface and border colors reflect the current state
+        and theme.
+        """
+        self._update_surface_layer()
 
     def on_surface_updated(self, *args) -> None:
         """Event dispatched when the surface is updated.

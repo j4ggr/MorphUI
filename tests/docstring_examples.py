@@ -37,8 +37,6 @@ class HoverLabel(
         MorphLabel):
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
-        self.theme_color_bindings['hovered_content_color'] = (
-            'primary_color')
 
 class DisabledButton(MorphButton):
 
@@ -71,8 +69,9 @@ class MyApp(MorphApp):
                 text="Hover Me",
                 theme_style='primary',
                 radius=[25] * 4,
-                border_color=(1, 1, 1, 0.8),
-                border_width=1.2),
+                border_color=(0, 0.8, 0.5, 0.5),
+                border_width=2,
+                border_open_length=100,),
             self.disabled_button,
             self.icon_label,
             Label(
@@ -85,7 +84,8 @@ class MyApp(MorphApp):
                 elevation=1),
             MorphIconButton(
                 icon='language-python',
-                elevation=2),
+                elevation=2,
+                border_open_length=15,),
             orientation='vertical',
             padding=50,
             spacing=15,)
@@ -93,7 +93,7 @@ class MyApp(MorphApp):
 
     def on_start(self):
         dt = 2
-        Clock.schedule_interval(self.disabled_button.switch_state, dt)
+        # Clock.schedule_interval(self.disabled_button.switch_state, dt)
         Clock.schedule_interval(self.icon_label.switch_auto_size, dt)
         # Clock.schedule_interval(self.theme_manager.toggle_theme_mode, dt * 2)
         return super().on_start()
