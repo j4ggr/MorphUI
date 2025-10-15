@@ -35,6 +35,8 @@ from .touch import MorphRippleBehavior
 
 from .shape import MorphRoundSidesBehavior
 
+from .icon import MorphIconBehavior
+
 
 __all__ = [
     'MorphAppReferenceBehavior',        # App reference handling
@@ -61,4 +63,5 @@ __all__ = [
     'MorphButtonBehavior',              # Button touch behavior
     'MorphRippleBehavior',              # Ripple effects for buttons
     'MorphRoundSidesBehavior',          # Automatic rounded sides
+    'MorphIconBehavior',                # Icon functionality
 ]
