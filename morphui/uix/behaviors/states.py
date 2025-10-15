@@ -153,8 +153,7 @@ class MorphStateBehavior(EventDispatcher):
         self.register_event_type('on_current_state_changed')
         self._available_states = set('normal')
         super().__init__(**kwargs)
-
-        self.update_available_states()
+        self.refresh_state()
     
     @property
     def available_states(self) -> Set[str]:
@@ -242,6 +241,26 @@ class MorphStateBehavior(EventDispatcher):
                 precedence=self.overlay_state_precedence,
                 value=value))
         self.dispatch('on_current_state_changed')
+
+    def refresh_state(self) -> None:
+        """Re-evaluate the current state based on the widget's
+        properties.
+
+        This method is useful when the widget's properties are modified
+        externally and the state needs to be updated accordingly. It
+        ensures that the current state properties reflect the actual
+        state of the widget based on its properties.
+        """
+        
+        self.update_available_states()
+        for state in self.available_states:
+            value = getattr(self, state, False)
+            if not isinstance(value, bool):
+                continue
+            self._update_current_state(
+                instance=self, 
+                value=value,
+                state=state) # type: ignore
 
     def _resolve_state(
             self,
