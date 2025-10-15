@@ -194,7 +194,7 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
     """
 
     surface_color: ColorProperty = ColorProperty()
-    """Background color of the widget.
+    """Surface color of the widget.
     
     The color should be provided as a list of RGBA values between 0 and 
     1. Example: `[1, 0, 0, 1]` for solid red.
@@ -203,7 +203,7 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
     and defaults to `[1, 1, 1, 1]` (white)."""
 
     disabled_surface_color: List[float] | None = ColorProperty([0, 0, 0, 0])
-    """Background color when the widget is disabled.
+    """Surface color when the widget is disabled.
 
     This color is applied when the widget is in a disabled state.
     It should be a fully transparent color if you are using state layer.
@@ -213,19 +213,35 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
     :class:`~kivy.properties.ColorProperty` and defaults to
     `[0, 0, 0, 0]` (fully transparent)."""
 
-    selected_surface_color: List[float] | None = ColorProperty(None)
-    """Background color when the widget is selected.
+    error_surface_color: List[float] | None = ColorProperty(None)
+    """Surface color when the widget is in an error state.
 
-    This color is applied when the widget is in a selected state.
+    This color is applied when the widget is in an error state.
 
-    :attr:`selected_surface_color` is a
+    :attr:`error_surface_color` is a
+    :class:`~kivy.properties.ColorProperty` and defaults to
+    `None`."""
+
+    focus_surface_color: List[float] | None = ColorProperty(None)
+    """Surface color when the widget is focused.
+
+    :attr:`focus_surface_color` is a
     :class:`~kivy.properties.ColorProperty` and defaults to
     `None`."""
 
     active_surface_color: List[float] | None = ColorProperty(None)
-    """Background color when the widget is active.
+    """Surface color when the widget is active.
 
     :attr:`active_surface_color` is a
+    :class:`~kivy.properties.ColorProperty` and defaults to
+    `None`."""
+
+    selected_surface_color: List[float] | None = ColorProperty(None)
+    """Surface color when the widget is selected.
+
+    This color is applied when the widget is in a selected state.
+
+    :attr:`selected_surface_color` is a
     :class:`~kivy.properties.ColorProperty` and defaults to
     `None`."""
 
@@ -247,12 +263,17 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
     :class:`~kivy.properties.ColorProperty` and defaults to
     `None`."""
 
-    selected_border_color: List[float] | None = ColorProperty(None)
-    """Border color when the widget is selected.
+    error_border_color: List[float] | None = ColorProperty(None)
+    """Border color when the widget is in an error state.
 
-    This color is applied when the widget is in a selected state.
+    :attr:`error_border_color` is a
+    :class:`~kivy.properties.ColorProperty` and defaults to
+    `None`."""
 
-    :attr:`selected_border_color` is a
+    focus_border_color: List[float] | None = ColorProperty(None)
+    """Border color when the widget is focused.
+
+    :attr:`focus_border_color` is a
     :class:`~kivy.properties.ColorProperty` and defaults to
     `None`."""
 
@@ -260,6 +281,15 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
     """Border color when the widget is active.
 
     :attr:`active_border_color` is a
+    :class:`~kivy.properties.ColorProperty` and defaults to
+    `None`."""
+
+    selected_border_color: List[float] | None = ColorProperty(None)
+    """Border color when the widget is selected.
+
+    This color is applied when the widget is in a selected state.
+
+    :attr:`selected_border_color` is a
     :class:`~kivy.properties.ColorProperty` and defaults to
     `None`."""
 
@@ -714,6 +744,17 @@ class MorphContentLayerBehavior(BaseLayerBehavior):
     :class:`~kivy.properties.ColorProperty` and defaults to None.
     """
 
+    error_content_color: List[float] | None = ColorProperty(None)
+    """Content color to use when the widget is in an error state.
+
+    This property allows you to specify a different content color for
+    the widget when it is in an error state. If not set, the default
+    content color will be used.
+
+    :attr:`error_content_color` is a
+    :class:`~kivy.properties.ColorProperty` and defaults to None.
+    """
+
     hovered_content_color: List[float] | None = ColorProperty(None)
     """Content color to use when the widget is hovered.
 
@@ -722,6 +763,28 @@ class MorphContentLayerBehavior(BaseLayerBehavior):
     content color will be used.
 
     :attr:`hovered_content_color` is a :class:`~kivy.properties.ColorProperty`
+    and defaults to None.
+    """
+
+    active_content_color: List[float] | None = ColorProperty(None)
+    """Content color to use when the widget is active.
+
+    This property allows you to specify a different content color for
+    the widget when it is in the active state. If not set, the default
+    content color will be used.
+
+    :attr:`active_content_color` is a :class:`~kivy.properties.ColorProperty`
+    and defaults to None.
+    """
+
+    selected_content_color: List[float] | None = ColorProperty(None)
+    """Content color to use when the widget is selected.
+
+    This property allows you to specify a different content color for
+    the widget when it is in the selected state. If not set, the default
+    content color will be used.
+
+    :attr:`selected_content_color` is a :class:`~kivy.properties.ColorProperty`
     and defaults to None.
     """
 

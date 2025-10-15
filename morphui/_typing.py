@@ -38,8 +38,8 @@ State: TypeAlias = Literal[
     'pressed',
     'hovered',
     'focus',
-    'selected',
     'active',
+    'selected',
     'resizing',
     'dragging',
     'normal',]
