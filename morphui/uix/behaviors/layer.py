@@ -129,10 +129,10 @@ class BaseLayerBehavior(
             case _:
                 raise ValueError("Invalid corner specified.")
             
-        n_segments = int(radius) + 1
-        if n_segments <= 1:
+        if radius <= 1:
             return [x_center, y_center]
 
+        n_segments = int(radius) + 1
         def _points(n: int) -> Generator[float, None, None]:
             for i in range(n):
                 angle = 0.5 * pi * i / n + start_angle
@@ -141,6 +141,57 @@ class BaseLayerBehavior(
                 yield x
                 yield y
         return list(_points(n_segments))
+    
+    def _clamp_radius(self) -> None:
+        """Ensure the radius values do not exceed the widget's size.
+
+        This method adjusts the radius values to ensure that the sum of 
+        the vertical radius does not exceed the widget's height,
+        and the sum of the horizontal radius does not exceed the 
+        widget's width.
+        
+        The radius values are scaled down proportionally if they exceed
+        the widget's dimensions.
+        """
+        if self.width <= 0 or self.height <= 0:
+            self.radius = [0, 0, 0, 0]
+            return
+
+        v_radius = [r for r in self.radius]
+        h_radius = [r for r in self.radius]
+
+        # Check and fix vertical constraints (height)
+        left_sum = self.radius[0] + self.radius[3]  # top-left + bottom-left
+        if left_sum > self.height:
+            scale_factor = self.height / left_sum
+            v_radius[0] *= scale_factor
+            v_radius[3] *= scale_factor
+
+        right_sum = self.radius[1] + self.radius[2]  # top-right + bottom-right
+        if right_sum > self.height:
+            scale_factor = self.height / right_sum
+            v_radius[1] *= scale_factor
+            v_radius[2] *= scale_factor
+
+        # Check and fix horizontal constraints (width)
+        top_sum = self.radius[0] + self.radius[1]  # top-left + top-right
+        if top_sum > self.width:
+            scale_factor = self.width / top_sum
+            h_radius[0] *= scale_factor
+            h_radius[1] *= scale_factor
+
+        bottom_sum = self.radius[2] + self.radius[3]  # bottom-right + bottom-left
+        if bottom_sum > self.width:
+            scale_factor = self.width / bottom_sum
+            h_radius[2] *= scale_factor
+            h_radius[3] *= scale_factor
+
+        # Use the most restrictive constraint for each corner
+        self.radius = [
+            min(v_radius[0], h_radius[0]),
+            min(v_radius[1], h_radius[1]),
+            min(v_radius[2], h_radius[2]),
+            min(v_radius[3], h_radius[3]),]
 
     def calculate_border_path(self, open_length: float) -> List[float]:
         """Calculate the complete border path points including corners
@@ -165,6 +216,7 @@ class BaseLayerBehavior(
         if getattr(self, 'border_bottom_line_only', False):
             return [self.x, self.y, self.right, self.y]
         
+        self._clamp_radius()
         points: List[float] = [
             self.x + self.radius[0], self.top,
             *self._generate_corner_arc_points('top-left'),
