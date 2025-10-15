@@ -10,7 +10,7 @@ from morphui.utils.dotdict import DotDict
 from morphui.utils.helpers import clamp
 from morphui.utils.helpers import FrozenGeometry
 from morphui.utils.helpers import calculate_text_size
-from morphui.utils.helpers import clean_default_config
+from morphui.utils.helpers import clean_config
 
 
 class TestDotDict:
@@ -46,12 +46,12 @@ class TestDotDict:
 
 
 class TestCleanDefaultConfig:
-    """Test cases for the clean_default_config function."""
+    """Test cases for the clean_config function."""
 
     def test_no_theme_bindings(self) -> None:
         """Test config without theme_color_bindings."""
         config = {'width': 100, 'height': 50}
-        result = clean_default_config(config)
+        result = clean_config(config, {})
         assert result == config
         assert result is not config  # Should return a copy
 
@@ -59,10 +59,9 @@ class TestCleanDefaultConfig:
         """Test that theme_style removes theme_color_bindings."""
         config = {
             'theme_color_bindings': {'color': 'primary'},
-            'theme_style': 'secondary',
-            'width': 100
-        }
-        result = clean_default_config(config)
+            'width': 100}
+        kwargs = {'theme_style': 'secondary',}
+        result = clean_config(config, kwargs)
         expected = {'theme_style': 'secondary', 'width': 100}
         assert result == expected
 
@@ -73,7 +72,7 @@ class TestCleanDefaultConfig:
             'color': 'red',  # Explicit override
             'width': 100
         }
-        result = clean_default_config(config)
+        result = clean_config(config, {})
         expected = {
             'theme_color_bindings': {'background': 'surface'},
             'color': 'red',
@@ -87,7 +86,7 @@ class TestCleanDefaultConfig:
             'theme_color_bindings': {},
             'width': 100
         }
-        result = clean_default_config(config)
+        result = clean_config(config, {})
         expected = {'theme_color_bindings': {}, 'width': 100}
         assert result == expected
 
@@ -98,7 +97,7 @@ class TestCleanDefaultConfig:
             'color': 'red',
             'background': 'blue'
         }
-        result = clean_default_config(config)
+        result = clean_config(config, {})
         expected = {
             'theme_color_bindings': {},
             'color': 'red',
