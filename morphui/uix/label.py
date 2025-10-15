@@ -3,20 +3,23 @@ from typing import Dict
 
 from kivy.metrics import dp
 from kivy.uix.label import Label
-from kivy.properties import StringProperty
 
 from ..utils import clean_default_config
 
 from .behaviors import MorphThemeBehavior
 from .behaviors import MorphTextLayerBehavior
+from .behaviors import MorphContentLayerBehavior
 from .behaviors import MorphAutoSizingBehavior
 from .behaviors import MorphRoundSidesBehavior
 from .behaviors import MorphIdentificationBehavior
+from .behaviors import MorphIconBehavior
 
 
 __all__ = [
     'MorphLabel',
-    'MorphIconLabel',]
+    'MorphIconLabel',
+    'MorphSimpleLabel',
+    'MorphSimpleIconLabel',]
 
 
 class MorphLabel(
@@ -95,7 +98,7 @@ class MorphLabel(
                 setattr(self, option, kwargs[option])
 
 
-class MorphIconLabel(MorphLabel):
+class MorphIconLabel(MorphIconBehavior, MorphLabel):
     """A label designed to display icons using icon fonts.
 
     This class extends `MorphLabel` to facilitate the use of icon fonts,
@@ -142,18 +145,6 @@ class MorphIconLabel(MorphLabel):
       properties in kwargs will override the typography settings.
     """
 
-    icon: str = StringProperty('')
-    """The name of the icon to display, corresponding to the icon font 
-    mapping.
-    
-    This property should match a key in the typography's icon map.
-    Changing this property will update the button's label to show the
-    corresponding icon character.
-    
-    :attr:`icon` is a :class:`~kivy.properties.StringProperty`
-    and defaults to ''.
-    """
-
     default_config: Dict[str, Any] = dict(
         font_name='MaterialIcons',
         halign='center',
@@ -178,16 +169,130 @@ class MorphIconLabel(MorphLabel):
     instantiation.
     """
 
+
+class MorphSimpleLabel(
+        MorphIdentificationBehavior,
+        MorphThemeBehavior,
+        MorphContentLayerBehavior,
+        MorphAutoSizingBehavior,
+        Label,
+        ):
+    """A simplified themed label widget with only content theming.
+
+    This class provides a lightweight label that only handles content
+    color theming without background or border styling. It's ideal for
+    simple text display where you only need theme-aware text colors.
+
+    Examples
+    --------
+    ```python
+    from morphui.app import MorphApp
+    from morphui.uix.label import MorphSimpleLabel
+    from morphui.uix.boxlayout import MorphBoxLayout
+
+    class MyApp(MorphApp):
+        def build(self):
+            return MorphBoxLayout(
+                MorphSimpleLabel(text='Simple themed text'),
+                orientation='vertical',
+                padding=50,
+                spacing=15,)
+    MyApp().run()
+    ```
+
+    Notes
+    -----
+    - Only provides content color theming (no surface/border styling)
+    - Inherits typography support if typography behavior is available
+    - Auto-sizing properties can be used for content-based sizing
+    - Lighter weight than MorphLabel for simple text display needs
+    """
+
+    default_config: Dict[str, Any] = dict(
+        halign='left',
+        valign='middle',
+        theme_color_bindings=dict(
+            content_color='text_color',),
+        typography_role='Label',
+        typography_size='medium',
+        typography_weight='Regular',
+        padding=dp(8),)
+    """Default configuration values for MorphSimpleLabel instances.
+    
+    Provides minimal label appearance settings:
+    - Left alignment for text readability
+    - Middle vertical alignment for centered appearance
+    - Content color binding for theme integration
+    - Label typography role with medium sizing
+    
+    These values can be overridden by subclasses or during 
+    instantiation.
+    """
+
     def __init__(self, **kwargs) -> None:
         config = clean_default_config(self.default_config) | kwargs
         super().__init__(**config)
-        self.bind(icon=self._apply_icon)
-        self._apply_icon(self, self.icon)
+        for option in self.typography.available_style_properties:
+            if option in kwargs and hasattr(self, option):
+                setattr(self, option, kwargs[option])
 
-    def _apply_icon(self, instance: Any, icon: str) -> None:
-        """Update the label text when the icon property changes.
-        
-        This method looks up the icon name in the typography's icon map
-        and sets the label's text to the corresponding character.
-        """
-        self.text = self.typography.get_icon_character(icon)
+
+class MorphSimpleIconLabel(MorphIconBehavior, MorphSimpleLabel):
+    """A simplified icon label with only content theming.
+
+    This class extends `MorphSimpleLabel` to display icons using icon
+    fonts while only providing content color theming. It's ideal for
+    simple icon display without background or border styling.
+
+    Examples
+    --------
+    ```python
+    from morphui.app import MorphApp
+    from morphui.uix.label import MorphSimpleIconLabel
+    from morphui.uix.boxlayout import MorphBoxLayout
+
+    class MyApp(MorphApp):
+        def build(self):
+            return MorphBoxLayout(
+                MorphSimpleIconLabel(
+                    icon='home',
+                    typography_size='large',),
+                MorphSimpleIconLabel(
+                    icon='user',
+                    typography_size='large',),
+                orientation='vertical',
+                padding=50,
+                spacing=15,)
+    MyApp().run()
+    ```
+
+    Notes
+    -----
+    - Only provides content color theming (no surface/border styling)
+    - Inherits typography support for icon font rendering
+    - Auto-sizing properties available for icon-based sizing
+    - Lighter weight than MorphIconLabel for simple icon display
+    """
+
+    default_config: Dict[str, Any] = dict(
+        font_name='MaterialIcons',
+        halign='center',
+        valign='middle',
+        theme_color_bindings=dict(
+            content_color='primary_color',),
+        typography_role='Label',
+        typography_size='large',
+        auto_size=True,
+        padding=dp(8),)
+    """Default configuration values for MorphSimpleIconLabel instances.
+    
+    Provides minimal icon-specific display settings:
+    - MaterialIcons font for icon character rendering
+    - Center alignment for optimal icon positioning
+    - Primary color theme for icon prominence
+    - Large size suitable for icon visibility
+    - Auto-sizing to fit icon dimensions
+    
+    These values can be overridden by subclasses or during 
+    instantiation.
+    """

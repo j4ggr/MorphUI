@@ -2,8 +2,8 @@ from typing import Any
 from typing import Dict
 
 from kivy.uix.label import Label
-from kivy.properties import StringProperty
 
+from .behaviors import MorphIconBehavior
 from .behaviors import MorphHoverBehavior
 from .behaviors import MorphThemeBehavior
 from .behaviors import MorphButtonBehavior
@@ -71,34 +71,14 @@ class MorphButton(
 
 
 class MorphIconButton(
-        MorphRoundSidesBehavior,
-        MorphIdentificationBehavior,
-        MorphHoverBehavior,
-        MorphThemeBehavior,
-        MorphRippleBehavior,
-        MorphCompleteLayerBehavior,
-        MorphButtonBehavior,
-        MorphAutoSizingBehavior,
-        MorphElevationBehavior,
-        Label):
+        MorphIconBehavior,
+        MorphButton):
     """A button widget designed for icon display with ripple effect 
     and MorphUI theming.
     
     This class is similar to MorphButton but is intended for use with
     icon fonts or images, providing a button that supports ripple 
     effects and theming.
-    """
-
-    icon: str = StringProperty('')
-    """The name of the icon to display, corresponding to the icon font 
-    mapping.
-    
-    This property should match a key in the typography's icon map.
-    Changing this property will update the button's label to show the
-    corresponding icon character.
-    
-    :attr:`icon` is a :class:`~kivy.properties.StringProperty`
-    and defaults to ''.
     """
 
     default_config: Dict[str, Any] = dict(
@@ -132,17 +112,3 @@ class MorphIconButton(
     These values can be overridden by subclasses or during 
     instantiation.
     """
-
-    def __init__(self, **kwargs) -> None:
-        config = clean_default_config(self.default_config) | kwargs
-        super().__init__(**config)
-        self.bind(icon=self._apply_icon)
-        self._apply_icon(self, self.icon)
-
-    def _apply_icon(self, instance: Any, icon: str) -> None:
-        """Update the label text when the icon property changes.
-        
-        This method looks up the icon name in the typography's icon map
-        and sets the label's text to the corresponding character.
-        """
-        self.text = self.typography.get_icon_character(icon)

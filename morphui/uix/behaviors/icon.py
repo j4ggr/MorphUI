@@ -1,6 +1,5 @@
 from typing import Any
 
-from kivy.event import EventDispatcher
 from kivy.properties import StringProperty
 
 from .appreference import MorphAppReferenceBehavior
@@ -10,7 +9,7 @@ __all__ = [
     'MorphIconBehavior',]
 
 
-class MorphIconBehavior(MorphAppReferenceBehavior, EventDispatcher):
+class MorphIconBehavior(MorphAppReferenceBehavior):
     """A behavior that provides icon functionality to widgets.
 
     This behavior adds icon property and automatic text updating based
@@ -51,8 +50,7 @@ class MorphIconBehavior(MorphAppReferenceBehavior, EventDispatcher):
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
-        self.bind(icon=self._apply_icon)
-        # Apply initial icon if provided
+        self.bind(icon=self._apply_icon) # type: ignore
         if self.icon:
             self._apply_icon(self, self.icon)
 
