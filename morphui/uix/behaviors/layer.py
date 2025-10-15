@@ -5,6 +5,7 @@ from math import cos
 from typing import Any
 from typing import List
 from typing import Dict
+from typing import Tuple
 from typing import Literal
 from typing import Generator
 
@@ -141,7 +142,7 @@ class BaseLayerBehavior(
                 yield y
         return list(_points(n_segments))
 
-    def _calculate_border_path(self, open_length: float) -> List[float]:
+    def calculate_border_path(self, open_length: float) -> List[float]:
         """Calculate the complete border path points including corners
         and edges.
 
@@ -197,7 +198,7 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
     :attr:`surface_color` is a :class:`~kivy.properties.ColorProperty`
     and defaults to `[1, 1, 1, 1]` (white)."""
 
-    disabled_surface_color: ColorProperty = ColorProperty([0, 0, 0, 0])
+    disabled_surface_color: List[float] | None = ColorProperty(None)
     """Background color when the widget is disabled.
 
     This color is applied when the widget is in a disabled state.
@@ -206,57 +207,57 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
 
     :attr:`disabled_surface_color` is a
     :class:`~kivy.properties.ColorProperty` and defaults to 
-    `[0, 0, 0, 0]` (transparent)."""
+    `None`."""
 
-    selected_surface_color: ColorProperty = ColorProperty([0, 0, 0, 0])
+    selected_surface_color: List[float] | None = ColorProperty(None)
     """Background color when the widget is selected.
 
     This color is applied when the widget is in a selected state.
 
     :attr:`selected_surface_color` is a
     :class:`~kivy.properties.ColorProperty` and defaults to
-    `[0, 0, 0, 0]` (transparent)."""
+    `None`."""
 
-    active_surface_color: ColorProperty = ColorProperty([0, 0, 0, 0])
+    active_surface_color: List[float] | None = ColorProperty(None)
     """Background color when the widget is active.
 
     :attr:`active_surface_color` is a
     :class:`~kivy.properties.ColorProperty` and defaults to
-    `[0, 0, 0, 0]` (transparent)."""
+    `None`."""
 
-    border_color: ColorProperty = ColorProperty([0, 0, 0, 0])
+    border_color: List[float] = ColorProperty([0, 0, 0, 0])
     """Border color of the widget.
     
     The color should be provided as a list of RGBA values between 0 and 
     1. Example: `[0, 1, 0, 1]` for solid green.
 
     :attr:`border_color` is a :class:`~kivy.properties.ColorProperty`
-    and defaults to `[0, 0, 0, 0]` (transparent)."""
+    and defaults to `[0, 0, 0, 0]` (fully transparent)."""
 
-    disabled_border_color: ColorProperty = ColorProperty([0, 0, 0, 0])
+    disabled_border_color: List[float] | None = ColorProperty(None)
     """Border color when the widget is disabled.
 
     This color is applied when the widget is in a disabled state.
 
     :attr:`disabled_border_color` is a
     :class:`~kivy.properties.ColorProperty` and defaults to
-    `[0, 0, 0, 0]` (transparent)."""
+    `None`."""
 
-    selected_border_color: ColorProperty = ColorProperty([0, 0, 0, 0])
+    selected_border_color: List[float] | None = ColorProperty(None)
     """Border color when the widget is selected.
 
     This color is applied when the widget is in a selected state.
 
     :attr:`selected_border_color` is a
     :class:`~kivy.properties.ColorProperty` and defaults to
-    `[0, 0, 0, 0]` (transparent)."""
+    `None`."""
 
-    active_border_color: ColorProperty = ColorProperty([0, 0, 0, 0])
+    active_border_color: List[float] | None = ColorProperty(None)
     """Border color when the widget is active.
 
     :attr:`active_border_color` is a
     :class:`~kivy.properties.ColorProperty` and defaults to
-    `[0, 0, 0, 0]` (transparent)."""
+    `None`."""
 
     border_width: float = NumericProperty(1, min=0.01)
     """Width of the border.
@@ -317,7 +318,7 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
                 group=group)
             self._border_instruction = SmoothLine(
                 width=dp(self.border_width),
-                points=self._calculate_border_path(self.border_open_length),
+                points=self.calculate_border_path(self.border_open_length),
                 close=self.border_closed,
                 group=group)
 
@@ -340,9 +341,26 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
         `border_open_length` is 0), and False otherwise.
         """
         return self.border_open_length < dp(1)
-        
-    def _update_surface_layer(self, *args) -> None:
-        """Update the surface when any relevant property changes."""
+    
+    def get_resolved_surface_colors(
+            self) -> Tuple[List[float], List[float]]:
+        """Determine the appropriate surface and border colors based
+        on the current state.
+
+        This method checks the widget's current surface state and
+        returns the corresponding surface and border colors. If a
+        specific color for the state is not set, it falls back to the
+        default colors.
+
+        Override this method in subclasses to customize color
+        resolution logic.
+
+        Returns
+        -------
+        Tuple[List[float], List[float]]
+            A tuple containing the resolved surface color and border
+            color as lists of RGBA values.
+        """
         match self.current_surface_state:
             case 'disabled':
                 surface_color = self.disabled_surface_color
@@ -357,6 +375,17 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
                 surface_color = self.surface_color
                 border_color = self.border_color
 
+        if surface_color is None:
+            surface_color = self.surface_color
+        if border_color is None:
+            border_color = self.border_color
+
+        return surface_color, border_color
+        
+    def _update_surface_layer(self, *args) -> None:
+        """Update the surface when any relevant property changes."""
+        surface_color, border_color = self.get_resolved_surface_colors()
+
         self._surface_color_instruction.rgba = surface_color
         self._surface_instruction.pos = self.pos
         self._surface_instruction.size = self.size
@@ -364,7 +393,7 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
         
         self._border_color_instruction.rgba = border_color
         self._border_instruction.width = dp(self.border_width)
-        self._border_instruction.points = self._calculate_border_path(
+        self._border_instruction.points = self.calculate_border_path(
             self.border_open_length)
         self._border_instruction.close = self.border_closed
 
