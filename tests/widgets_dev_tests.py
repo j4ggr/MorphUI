@@ -24,6 +24,7 @@ from kivy.uix.label import Label
 
 from morphui.uix.label import MorphLabel
 from morphui.uix.label import MorphIconLabel
+from morphui.uix.label import MorphSimpleLabel
 from morphui.uix.button import MorphButton
 from morphui.uix.button import MorphIconButton
 from morphui.uix.boxlayout import MorphBoxLayout
@@ -77,6 +78,12 @@ class MyApp(MorphApp):
             Label(
                 text="Regular Kivy Label",
                 color='black'),
+            MorphLabel(
+                text="Morph default Label",),
+            MorphIconLabel(
+                icon='language-python',),
+            MorphSimpleLabel(
+                text="Morph Simple Label",),
             MorphButton(
                 text="Morph Button",
                 theme_style='primary',
@@ -84,8 +91,7 @@ class MyApp(MorphApp):
                 elevation=1),
             MorphIconButton(
                 icon='language-python',
-                elevation=2,
-                border_open_length=15,),
+                elevation=2,),
             orientation='vertical',
             padding=50,
             spacing=15,)
@@ -95,7 +101,7 @@ class MyApp(MorphApp):
         dt = 2
         # Clock.schedule_interval(self.disabled_button.switch_state, dt)
         Clock.schedule_interval(self.icon_label.switch_auto_size, dt)
-        # Clock.schedule_interval(self.theme_manager.toggle_theme_mode, dt * 2)
+        Clock.schedule_interval(self.theme_manager.toggle_theme_mode, dt * 2)
         return super().on_start()
 
 if __name__ == '__main__':

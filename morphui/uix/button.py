@@ -14,7 +14,7 @@ from .behaviors import MorphRoundSidesBehavior
 from .behaviors import MorphCompleteLayerBehavior
 from .behaviors import MorphIdentificationBehavior
 
-from ..utils import clean_default_config
+from ..utils import clean_config
 
 from .label import MorphIconLabel
 
@@ -66,7 +66,7 @@ class MorphButton(
     instantiation."""
 
     def __init__(self, **kwargs) -> None:
-        config = clean_default_config(self.default_config) | kwargs
+        config = clean_config(self.default_config, kwargs)
         super().__init__(**config)
 
 

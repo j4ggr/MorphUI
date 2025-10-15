@@ -60,5 +60,8 @@ class MorphBoxLayout(
             
     MyApp().run()
     """
+    default_config = dict(
+        orientation='horizontal',
+        theme_style='surface',)
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)

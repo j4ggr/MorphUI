@@ -6,7 +6,7 @@ from kivy.uix.widget import Widget
 from kivy.properties import StringProperty
 from kivy.properties import NumericProperty
 
-from ..utils import clean_default_config
+from ..utils import clean_config
 
 from .behaviors import MorphColorThemeBehavior
 from .behaviors import MorphSurfaceLayerBehavior
@@ -52,7 +52,7 @@ class MorphDivider(
                 orientation='vertical',
                 spacing=15,
                 padding=50,)
-                
+
     MyApp().run()
     ```
     """
@@ -84,7 +84,7 @@ class MorphDivider(
     """
 
     def __init__(self, **kwargs) -> None:
-        config = clean_default_config(self.default_config) | kwargs
+        config = clean_config(self.default_config, kwargs)
         super().__init__(**config)
         self.bind(
             orientation=self._update_appearance,

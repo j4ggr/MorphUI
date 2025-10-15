@@ -4,7 +4,7 @@ from typing import Dict
 from kivy.metrics import dp
 from kivy.uix.label import Label
 
-from ..utils import clean_default_config
+from ..utils import clean_config
 
 from .behaviors import MorphThemeBehavior
 from .behaviors import MorphTextLayerBehavior
@@ -73,7 +73,7 @@ class MorphLabel(
         valign='middle',
         theme_color_bindings=dict(
             content_color='content_surface_color',
-            surface_color='transparent_color',),
+            surface_color='surface_color',),
         typography_role='Label',
         typography_size='medium',
         typography_weight='Regular',
@@ -91,7 +91,7 @@ class MorphLabel(
     """
 
     def __init__(self, **kwargs) -> None:
-        config = clean_default_config(self.default_config) | kwargs
+        config = clean_config(self.default_config, kwargs)
         super().__init__(**config)
         for option in self.typography.available_style_properties:
             if option in kwargs and hasattr(self, option):
@@ -150,7 +150,7 @@ class MorphIconLabel(MorphIconBehavior, MorphLabel):
         halign='center',
         valign='middle',
         theme_color_bindings=dict(
-            content_color='primary_color',
+            content_color='content_surface_variant_color',
             surface_color='transparent_color',),
         typography_role='Label',
         typography_size='large',
@@ -212,11 +212,10 @@ class MorphSimpleLabel(
         halign='left',
         valign='middle',
         theme_color_bindings=dict(
-            content_color='text_color',),
+            content_color='content_surface_color',),
         typography_role='Label',
         typography_size='medium',
-        typography_weight='Regular',
-        padding=dp(8),)
+        typography_weight='Regular',)
     """Default configuration values for MorphSimpleLabel instances.
     
     Provides minimal label appearance settings:
@@ -230,7 +229,7 @@ class MorphSimpleLabel(
     """
 
     def __init__(self, **kwargs) -> None:
-        config = clean_default_config(self.default_config) | kwargs
+        config = clean_config(self.default_config, kwargs)
         super().__init__(**config)
         for option in self.typography.available_style_properties:
             if option in kwargs and hasattr(self, option):
@@ -279,11 +278,10 @@ class MorphSimpleIconLabel(MorphIconBehavior, MorphSimpleLabel):
         halign='center',
         valign='middle',
         theme_color_bindings=dict(
-            content_color='primary_color',),
+            content_color='content_surface_variant_color',),
         typography_role='Label',
         typography_size='large',
-        auto_size=True,
-        padding=dp(8),)
+        auto_size=True,)
     """Default configuration values for MorphSimpleIconLabel instances.
     
     Provides minimal icon-specific display settings:
