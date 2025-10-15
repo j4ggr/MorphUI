@@ -34,6 +34,7 @@ MaterialDynamicScheme: TypeAlias = (
 
 State: TypeAlias = Literal[
     'disabled',
+    'error',
     'pressed',
     'hovered',
     'focus',
@@ -52,6 +53,8 @@ conditions.
 
 SurfaceState: TypeAlias = Literal[
     'disabled',
+    'error',
+    'focus',
     'active',
     'selected',
     'normal',]
@@ -89,6 +92,7 @@ highest precedence and 'normal' the lowest.
 
 ContentState: TypeAlias = Literal[
     'disabled',
+    'error',
     'hovered',
     'active',
     'selected',

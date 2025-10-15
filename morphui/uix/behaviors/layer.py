@@ -161,6 +161,10 @@ class BaseLayerBehavior(
             A flat list of x, y coordinates representing the border 
             path.
         """
+        # If only bottom line is requested, return just the bottom line points
+        if getattr(self, 'border_bottom_line_only', False):
+            return [self.x, self.y, self.right, self.y]
+        
         points: List[float] = [
             self.x + self.radius[0], self.top,
             *self._generate_corner_arc_points('top-left'),
@@ -279,6 +283,16 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
     :class:`~kivy.properties.NumericProperty` and defaults to `0`.
     """
 
+    border_bottom_line_only: bool = BooleanProperty(False)
+    """Whether to show only a bottom line instead of the full border.
+
+    When True, only the bottom edge of the widget is drawn as a line.
+    When False, the full border outline is drawn as usual.
+
+    :attr:`border_bottom_line_only` is a
+    :class:`~kivy.properties.BooleanProperty` and defaults to `False`.
+    """
+
     _surface_color_instruction: Color
     """Kivy Color instruction for the surface color."""
 
@@ -330,6 +344,7 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
             border_color=self._update_surface_layer,
             border_width=self._update_surface_layer,
             border_open_length=self._update_surface_layer,
+            border_bottom_line_only=self._update_surface_layer,
             current_surface_state=self._update_surface_layer,)
         self.refresh_surface()
     
@@ -338,8 +353,13 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
         """Whether the border is closed (read-only).
 
         This property returns True if the border is closed (i.e., 
-        `border_open_length` is 0), and False otherwise.
+        `border_open_length` is 0), and False otherwise. When
+        `border_bottom_line_only` is True, this always returns False
+        since a single line cannot be closed.
         """
+        if self.border_bottom_line_only:
+            return False
+        
         return self.border_open_length < dp(1)
     
     def get_resolved_surface_colors(
