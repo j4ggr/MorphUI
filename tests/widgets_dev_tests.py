@@ -92,6 +92,7 @@ class MyApp(MorphApp):
             MorphIconButton(
                 icon='language-python',
                 elevation=2,),
+            theme_style='surface',
             orientation='vertical',
             padding=50,
             spacing=15,)
@@ -99,7 +100,7 @@ class MyApp(MorphApp):
 
     def on_start(self):
         dt = 2
-        # Clock.schedule_interval(self.disabled_button.switch_state, dt)
+        Clock.schedule_interval(self.disabled_button.switch_state, dt)
         Clock.schedule_interval(self.icon_label.switch_auto_size, dt)
         Clock.schedule_interval(self.theme_manager.toggle_theme_mode, dt * 2)
         return super().on_start()

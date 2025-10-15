@@ -145,37 +145,19 @@ class MorphColorThemeBehavior(BaseThemeBehavior):
     """Predefined theme style to apply to this widget.
 
     This property allows you to set a predefined Material Design style
-    configuration for the widget. When set to a valid style name, it
-    automatically applies the corresponding set of color bindings from
-    :attr:`theme_style_mappings` via the :meth:`on_theme_style` event 
-    handler.
-    
+    configuration for the widget. When set to a valid style name, it 
+    overrides any existing :attr:`theme_color_bindings` with the
+    corresponding color mappings for that style at
+    :attr:`effective_theme_color_bindings`.
+
     This provides a quick way to style widgets according to established
     Material Design roles such as 'primary', 'secondary', 'tertiary',
     'surface', 'error', and 'outline'. The property uses Kivy's 
     StringProperty binding system, so changes are automatically 
     detected and applied.
-    
-    When an invalid style name is provided, the change is silently 
-    ignored and the property retains its previous value. Setting to an
-    empty string ('') effectively disables any predefined style without
-    clearing existing color bindings.
 
-    Available Styles
-    ----------------
-    - **'primary'**: High-emphasis style for primary actions
-    - **'secondary'**: Medium-emphasis style for secondary actions
-    - **'tertiary'**: Medium-emphasis style for tertiary actions
-    - **'surface'**: Standard surface style for content areas
-    - **'error'**: Error state style for warnings and alerts
-    - **'outline'**: Low-emphasis outlined style
-    - **''**: Empty string (no predefined style)
-
-    Each style configures appropriate color bindings for surface,
-    text, and border colors according to Material Design guidelines.
-
-    :attr:`theme_style` is a :class:`~kivy.properties.StringProperty`
-    and defaults to ''.
+    :attr:`theme_style` is a :class:`~kivy.properties.StringProperty` 
+    and defaults to '' (no style).
     """
 
     theme_color_bindings: Dict[str, str] = DictProperty({})
@@ -224,6 +206,19 @@ class MorphColorThemeBehavior(BaseThemeBehavior):
     or additional style mappings.
     """
 
+    _theme_style_color_bindings: Dict[str, str] = {}
+    """Dictionary mapping theme style names to color bindings.
+
+    This dictionary is populated with the color bindings for each
+    theme style defined in :attr:`theme_style_mappings`. It allows
+    for quick lookups of color bindings based on the current theme
+    style.
+
+    The finally applied color bindings are a merge of the
+    :attr:`theme_color_bindings` and the bindings from the current
+    theme style.
+    """
+
     _theme_bound: bool = False
     """Track if theme manager events are bound."""
     
@@ -232,6 +227,22 @@ class MorphColorThemeBehavior(BaseThemeBehavior):
         super().__init__(**kwargs)
 
         self.theme_manager.bind(on_colors_updated=self._update_colors)
+
+    @property
+    def effective_color_bindings(self) -> Dict[str, str]:
+        """Get the effective color bindings after merging style and 
+        custom bindings.
+
+        This property returns the final dictionary of color bindings
+        that will be applied to the widget. It merges the current
+        :attr:`theme_color_bindings` with any bindings defined by the
+        current :attr:`theme_style`, giving precedence to explicit
+        :attr:`theme_color_bindings`. When both define the same widget
+        property, the values from :attr:`theme_style` have priority.
+        """
+        style_bindings = self.theme_style_mappings.get(self.theme_style, {})
+        merged = self.theme_color_bindings | style_bindings.copy()
+        return merged
 
     def on_theme_color_bindings(
             self, instance: Any, bindings: Dict[str, str]) -> None:
@@ -310,10 +321,11 @@ class MorphColorThemeBehavior(BaseThemeBehavior):
 
     def _update_colors(self, *args) -> None:
         """Update widget colors based on current theme."""
-        if not self.auto_theme or not self.theme_color_bindings:
+        color_bindings = self.effective_color_bindings
+        if not self.auto_theme or not color_bindings:
             return
-            
-        for widget_prop, theme_color in self.theme_color_bindings.items():
+
+        for widget_prop, theme_color in color_bindings.items():
             self.apply_theme_color(widget_prop, theme_color)
         self.dispatch('on_colors_updated')
 
@@ -430,11 +442,10 @@ class MorphColorThemeBehavior(BaseThemeBehavior):
         - :attr:`theme_style_mappings` : Class attribute containing the 
           style definitions
         """
-        style_mappings = self.theme_style_mappings.get(style_name, None)
-        if style_mappings is not None:
-            self.theme_color_bindings = (
-                self.theme_color_bindings.copy() | style_mappings)
-        elif style_name != '':
+        if style_name in self.theme_style_mappings:
+            self._theme_style_color_bindings = self.theme_style_mappings[
+                style_name]
+        elif style_name:
             warnings.warn(
                 f"Unknown theme_style '{style_name}', ignoring",
                 UserWarning)

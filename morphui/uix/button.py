@@ -45,9 +45,10 @@ class MorphButton(
         valign='middle',
         theme_color_bindings={
             'surface_color': 'surface_container_color',
+            'border_color': 'outline_color',
+            'disabled_border_color': 'outline_variant_color',
             'content_color': 'content_surface_color',
-            'hovered_content_color': 'content_surface_variant_color',
-            'border_color': 'outline_color',},
+            'hovered_content_color': 'content_surface_variant_color',},
         ripple_enabled=True,
         ripple_color=None,
         ripple_layer='interaction',

@@ -41,18 +41,13 @@ def clean_config(
     Dict[str, Any]
         The cleaned configuration dictionary.
     """
-    config = default_config.copy()
-    if 'theme_color_bindings' in config:
-        if 'theme_style' in new_config:
-            config.pop('theme_color_bindings')
-
-    config.update(new_config)
+    config = default_config.copy() | new_config
     if 'theme_color_bindings' in config:
         bound_color = config['theme_color_bindings'].copy()
         config['theme_color_bindings'] = {
             k: v for k, v in bound_color.items() if k not in config}
 
-    return config | new_config
+    return config
 
 
 def calculate_text_size(text, font_size=16, font_name=None):

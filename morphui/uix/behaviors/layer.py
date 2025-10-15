@@ -202,7 +202,7 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
     :attr:`surface_color` is a :class:`~kivy.properties.ColorProperty`
     and defaults to `[1, 1, 1, 1]` (white)."""
 
-    disabled_surface_color: List[float] | None = ColorProperty(None)
+    disabled_surface_color: List[float] | None = ColorProperty([0, 0, 0, 0])
     """Background color when the widget is disabled.
 
     This color is applied when the widget is in a disabled state.
@@ -210,8 +210,8 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
     Otherwise, it can be set to any RGBA color.
 
     :attr:`disabled_surface_color` is a
-    :class:`~kivy.properties.ColorProperty` and defaults to 
-    `None`."""
+    :class:`~kivy.properties.ColorProperty` and defaults to
+    `[0, 0, 0, 0]` (fully transparent)."""
 
     selected_surface_color: List[float] | None = ColorProperty(None)
     """Background color when the widget is selected.
