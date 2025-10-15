@@ -1,17 +1,17 @@
 from typing import Any
 from typing import Dict
 
+from kivy.metrics import dp
 from kivy.uix.label import Label
 from kivy.properties import StringProperty
+
+from ..utils import clean_default_config
 
 from .behaviors import MorphThemeBehavior
 from .behaviors import MorphTextLayerBehavior
 from .behaviors import MorphAutoSizingBehavior
 from .behaviors import MorphRoundSidesBehavior
 from .behaviors import MorphIdentificationBehavior
-
-
-from ..utils import clean_default_config
 
 
 __all__ = [
@@ -73,7 +73,8 @@ class MorphLabel(
             surface_color='transparent_color',),
         typography_role='Label',
         typography_size='medium',
-        typography_weight='Regular',)
+        typography_weight='Regular',
+        padding=dp(8),)
     """Default configuration values for MorphLabel instances.
     
     Provides standard label appearance and behavior settings:
@@ -163,7 +164,7 @@ class MorphIconLabel(MorphLabel):
         typography_role='Label',
         typography_size='large',
         auto_size=True,
-        padding=10,)
+        padding=dp(8),)
     """Default configuration values for MorphIconLabel instances.
     
     Provides icon-specific display and behavior settings:
