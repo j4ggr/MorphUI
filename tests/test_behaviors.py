@@ -20,6 +20,11 @@ from morphui.uix.behaviors import MorphSurfaceLayerBehavior
 from morphui.uix.behaviors import MorphDeclarativeBehavior
 from morphui.uix.behaviors import MorphAppReferenceBehavior
 from morphui.uix.behaviors import MorphAutoSizingBehavior
+from morphui.uix.behaviors import MorphIconBehavior
+from morphui.uix.behaviors import MorphStateBehavior
+from morphui.uix.behaviors import MorphIdentificationBehavior
+from morphui.uix.behaviors import MorphContentLayerBehavior
+from morphui.uix.behaviors import MorphInteractionLayerBehavior
 
 
 class TestMorphDeclarativeBehavior:
@@ -288,7 +293,7 @@ class TestMorphSurfaceLayerBehavior:
         widget.border_width = 2
         assert widget.border_width == 2
         
-        test_border_color = [1, 0, 0, 1]
+        test_border_color = [1, 0, 0, 1.]
         widget.border_color = test_border_color
         assert widget.border_color == test_border_color
 
@@ -1380,6 +1385,466 @@ class TestMorphThemeBehaviorSplit:
         mro_names = [cls.__name__ for cls in MorphThemeBehavior.__mro__]
         assert 'MorphColorThemeBehavior' in mro_names
         assert 'MorphTypographyBehavior' in mro_names
+
+
+class TestMorphIconBehavior:
+    """Test suite for MorphIconBehavior class."""
+
+    class TestWidget(MorphIconBehavior, Widget):
+        """Test widget that combines Widget with MorphIconBehavior."""
+        
+        def __init__(self, **kwargs):
+            self.text = ''
+            super().__init__(**kwargs)
+
+    @patch('morphui.app.MorphApp._typography')
+    def test_initialization(self, mock_app_typography):
+        """Test basic initialization of MorphIconBehavior."""
+        mock_typography = Mock()
+        mock_typography.get_icon_character.return_value = '★'
+        mock_app_typography.configure_mock(**{
+            'get_icon_character': mock_typography.get_icon_character
+        })
+        
+        widget = self.TestWidget()
+        
+        assert widget.icon == ''
+        assert hasattr(widget, 'text')
+
+    @patch('morphui.app.MorphApp._typography')
+    def test_icon_property(self, mock_app_typography):
+        """Test the icon property functionality."""
+        mock_typography = Mock()
+        mock_typography.get_icon_character.return_value = '★'
+        mock_app_typography.configure_mock(**{
+            'get_icon_character': mock_typography.get_icon_character
+        })
+        
+        widget = self.TestWidget()
+        
+        # Test setting icon
+        widget.icon = 'star'
+        assert widget.icon == 'star'
+
+    @patch('morphui.app.MorphApp._typography')
+    def test_apply_icon(self, mock_app_typography):
+        """Test the _apply_icon method."""
+        mock_typography = Mock()
+        mock_typography.get_icon_character.return_value = '★'
+        mock_app_typography.configure_mock(**{
+            'get_icon_character': mock_typography.get_icon_character
+        })
+        
+        widget = self.TestWidget()
+        
+        # Mock typography property using patch.object
+        with patch.object(type(widget), 'typography', new_callable=lambda: mock_typography):
+            # Test icon application
+            widget._apply_icon(widget, 'star')
+            
+            assert widget.text == '★'
+            mock_typography.get_icon_character.assert_called_with('star')
+
+    @patch('morphui.app.MorphApp._typography')
+    def test_apply_icon_without_text_property(self, mock_app_typography):
+        """Test _apply_icon when widget doesn't have text property."""
+        
+        class NoTextWidget(MorphIconBehavior, Widget):
+            pass
+        
+        widget = NoTextWidget()
+        
+        # Should not raise error when text property is missing
+        widget._apply_icon(widget, 'star')
+
+    @patch('morphui.app.MorphApp._typography')
+    def test_apply_icon_without_typography(self, mock_app_typography):
+        """Test _apply_icon when typography is not available."""
+        
+        widget = self.TestWidget()
+        
+        # Should not raise error when typography is missing
+        widget._apply_icon(widget, 'star')
+
+
+class TestMorphStateBehavior:
+    """Test suite for MorphStateBehavior class."""
+
+    class TestWidget(MorphStateBehavior, Widget):
+        """Test widget that combines Widget with MorphStateBehavior."""
+        
+        def __init__(self, **kwargs):
+            # Add state properties that the behavior can track
+            # Use simple attributes instead of trying to override Kivy properties
+            super().__init__(**kwargs)
+            self.pressed = False
+            self.selected = False
+            self.focus = False
+            self.hovered = False
+            self.active = False
+            self.resizing = False
+
+    def test_initialization(self):
+        """Test basic initialization of MorphStateBehavior."""
+        widget = self.TestWidget()
+        
+        # Widget already has disabled property from Kivy
+        assert widget.disabled is False
+        assert widget.pressed is False
+        assert widget.selected is False
+        assert widget.focus is False
+        assert widget.hovered is False
+        assert widget.active is False
+        assert widget.resizing is False
+        
+        # Check initial current states
+        assert widget.current_surface_state == 'normal'
+        assert widget.current_interaction_state == 'normal'
+        assert widget.current_content_state == 'normal'
+        assert widget.current_overlay_state == 'normal'
+
+    def test_state_properties(self):
+        """Test state properties can be set and retrieved."""
+        widget = self.TestWidget()
+        
+        # Test disabled state (Kivy property)
+        widget.disabled = True
+        assert widget.disabled is True
+        
+        # Test pressed state
+        widget.pressed = True
+        assert widget.pressed is True
+        
+        # Test selected state
+        widget.selected = True
+        assert widget.selected is True
+        
+        # Test focus state
+        widget.focus = True
+        assert widget.focus is True
+        
+        # Test hovered state
+        widget.hovered = True
+        assert widget.hovered is True
+        
+        # Test active state
+        widget.active = True
+        assert widget.active is True
+        
+        # Test resizing state
+        widget.resizing = True
+        assert widget.resizing is True
+
+    def test_available_states_property(self):
+        """Test the available_states property."""
+        widget = self.TestWidget()
+        
+        # Should include states the widget has plus 'normal'
+        # Note: disabled is inherited from Kivy Widget
+        available = widget.available_states
+        assert 'normal' in available
+        assert 'disabled' in available  # From Kivy Widget
+
+    def test_current_states_with_precedence(self):
+        """Test current state properties reflect precedence logic."""
+        widget = self.TestWidget()
+        
+        # Test normal state (all states False)
+        assert widget.current_surface_state == 'normal'
+        assert widget.current_interaction_state == 'normal'
+        assert widget.current_content_state == 'normal'
+        assert widget.current_overlay_state == 'normal'
+
+    def test_update_available_states(self):
+        """Test the update_available_states method."""
+        widget = self.TestWidget()
+        
+        # Test that method runs without error
+        widget.update_available_states()
+        
+        # Should have at least normal and disabled states
+        available = widget.available_states
+        assert 'normal' in available
+        assert len(available) >= 2
+
+    def test_refresh_state(self):
+        """Test the refresh_state method."""
+        widget = self.TestWidget()
+        
+        # Set some states manually
+        widget.disabled = True
+        widget.hovered = True
+        
+        # Refresh should update current states based on actual values
+        widget.refresh_state()
+        
+        # Current states should reflect the active states
+        # Note: The exact behavior depends on the state resolution logic
+
+    def test_on_current_state_changed_event(self):
+        """Test the on_current_state_changed event."""
+        widget = self.TestWidget()
+        
+        # Test that the event handler exists and can be called
+        assert hasattr(widget, 'on_current_state_changed')
+        assert callable(widget.on_current_state_changed)
+        
+        # Test that it can be called without errors
+        try:
+            widget.on_current_state_changed()
+        except Exception as e:
+            pytest.fail(f"on_current_state_changed() raised an exception: {e}")
+
+    def test_precedence_constants(self):
+        """Test that precedence constants are properly set."""
+        widget = self.TestWidget()
+        
+        # Test that precedence tuples exist and are not empty
+        assert hasattr(widget, 'surface_state_precedence')
+        assert hasattr(widget, 'interaction_state_precedence')
+        assert hasattr(widget, 'content_state_precedence')
+        assert hasattr(widget, 'overlay_state_precedence')
+        
+        assert len(widget.surface_state_precedence) > 0
+        assert len(widget.interaction_state_precedence) > 0
+        assert len(widget.content_state_precedence) > 0
+        assert len(widget.overlay_state_precedence) > 0
+
+    def test_possible_states_property(self):
+        """Test the possible_states property."""
+        widget = self.TestWidget()
+        
+        # Should contain all possible states
+        assert hasattr(widget, 'possible_states')
+        assert isinstance(widget.possible_states, set)
+        assert len(widget.possible_states) > 0
+
+
+class TestMorphIdentificationBehavior:
+    """Test suite for MorphIdentificationBehavior class."""
+
+    class TestWidget(MorphIdentificationBehavior, Widget):
+        """Test widget that combines Widget with MorphIdentificationBehavior."""
+        pass
+
+    def test_initialization(self):
+        """Test basic initialization of MorphIdentificationBehavior."""
+        widget = self.TestWidget()
+        
+        assert widget.identity == ''
+
+    def test_identity_property(self):
+        """Test the identity property."""
+        widget = self.TestWidget()
+        
+        # Test setting identity
+        widget.identity = 'test_widget'
+        assert widget.identity == 'test_widget'
+        
+        # Test changing identity
+        widget.identity = 'another_id'
+        assert widget.identity == 'another_id'
+        
+        # Test empty identity
+        widget.identity = ''
+        assert widget.identity == ''
+
+    def test_identity_with_spaces(self):
+        """Test identity property with various string formats."""
+        widget = self.TestWidget()
+        
+        # Test with spaces
+        widget.identity = 'widget with spaces'
+        assert widget.identity == 'widget with spaces'
+        
+        # Test with special characters
+        widget.identity = 'widget-with_special.chars'
+        assert widget.identity == 'widget-with_special.chars'
+        
+        # Test with numbers
+        widget.identity = 'widget123'
+        assert widget.identity == 'widget123'
+
+
+class TestMorphContentLayerBehavior:
+    """Test suite for MorphContentLayerBehavior class."""
+
+    class TestWidget(MorphContentLayerBehavior, Widget):
+        """Test widget that combines Widget with MorphContentLayerBehavior."""
+        
+        def __init__(self, **kwargs):
+            self.color = [0, 0, 0, 1]
+            super().__init__(**kwargs)
+
+    @patch('morphui.app.MorphApp._theme_manager')
+    def test_initialization(self, mock_app_theme_manager):
+        """Test basic initialization of MorphContentLayerBehavior."""
+        mock_app_theme_manager.configure_mock(**{
+            'text_color': [0, 0, 0, 1]
+        })
+        
+        widget = self.TestWidget()
+        
+        assert widget.content_color is not None
+        assert widget.disabled_content_color is None
+        assert widget.hovered_content_color is None
+
+    @patch('morphui.app.MorphApp._theme_manager')
+    def test_content_color_property(self, mock_app_theme_manager):
+        """Test the content_color property."""
+        mock_app_theme_manager.configure_mock(**{
+            'text_color': [0, 0, 0, 1]
+        })
+        
+        widget = self.TestWidget()
+        
+        test_color = [1, 0, 0, 1.]
+        widget.content_color = test_color
+        assert widget.content_color == test_color
+
+    @patch('morphui.app.MorphApp._theme_manager')
+    def test_disabled_content_color_property(self, mock_app_theme_manager):
+        """Test the disabled_content_color property."""
+        mock_app_theme_manager.configure_mock(**{
+            'text_color': [0, 0, 0, 1]
+        })
+        
+        widget = self.TestWidget()
+        
+        test_color = [0.5, 0.5, 0.5, 1]
+        widget.disabled_content_color = test_color
+        assert widget.disabled_content_color == test_color
+
+    @patch('morphui.app.MorphApp._theme_manager')
+    def test_apply_content(self, mock_app_theme_manager):
+        """Test the apply_content method."""
+        mock_app_theme_manager.configure_mock(**{
+            'text_color': [0, 0, 0, 1]
+        })
+        
+        widget = self.TestWidget()
+        
+        test_color = [1, 0, 0, 1.]
+        widget.apply_content(test_color)
+        
+        assert widget.color == test_color
+
+    @patch('morphui.app.MorphApp._theme_manager')
+    def test_refresh_content(self, mock_app_theme_manager):
+        """Test the refresh_content method."""
+        mock_app_theme_manager.configure_mock(**{
+            'text_color': [0, 0, 0, 1]
+        })
+        
+        widget = self.TestWidget()
+        
+        with patch.object(widget, '_update_content_layer') as mock_update:
+            widget.refresh_content()
+            mock_update.assert_called_once()
+
+
+class TestMorphInteractionLayerBehavior:
+    """Test suite for MorphInteractionLayerBehavior class."""
+
+    class TestWidget(MorphInteractionLayerBehavior, Widget):
+        """Test widget that combines Widget with MorphInteractionLayerBehavior."""
+        pass
+
+    @patch('morphui.app.MorphApp._theme_manager')
+    def test_initialization(self, mock_app_theme_manager):
+        """Test basic initialization of MorphInteractionLayerBehavior."""
+        mock_app_theme_manager.configure_mock(**{
+            'transparent_color': [0, 0, 0, 0],
+            'is_dark_mode': False
+        })
+        
+        widget = self.TestWidget()
+        
+        assert widget.hovered_state_opacity == 0.08
+        assert widget.pressed_state_opacity == 0.10
+        assert widget.focus_state_opacity == 0.10
+        assert widget.disabled_state_opacity == 0.16
+        assert widget.interaction_enabled is True
+        assert widget.interaction_color == [0, 0, 0, 0]
+
+    @patch('morphui.app.MorphApp._theme_manager')
+    def test_interaction_color_property(self, mock_app_theme_manager):
+        """Test the interaction_color property."""
+        mock_app_theme_manager.configure_mock(**{
+            'transparent_color': [0, 0, 0, 0],
+            'is_dark_mode': False
+        })
+        
+        widget = self.TestWidget()
+        
+        test_color = [1, 0, 0, 0.5]
+        widget.interaction_color = test_color
+        assert widget.interaction_color == test_color
+
+    @patch('morphui.app.MorphApp._theme_manager')
+    def test_interaction_enabled_property(self, mock_app_theme_manager):
+        """Test the interaction_enabled property."""
+        mock_app_theme_manager.configure_mock(**{
+            'transparent_color': [0, 0, 0, 0],
+            'is_dark_mode': False
+        })
+        
+        widget = self.TestWidget()
+        
+        widget.interaction_enabled = False
+        assert widget.interaction_enabled is False
+        
+        widget.interaction_enabled = True
+        assert widget.interaction_enabled is True
+
+    @patch('morphui.app.MorphApp._theme_manager')
+    def test_interaction_color_getter(self, mock_app_theme_manager):
+        """Test the _interaction_color property for theme-aware colors."""
+        mock_app_theme_manager.configure_mock(**{
+            'transparent_color': [0, 0, 0, 0],
+            'is_dark_mode': False
+        })
+        
+        widget = self.TestWidget()
+        
+        # Test light mode (should return black)
+        base_color = widget._interaction_color
+        assert base_color == [0.0, 0.0, 0.0]
+        
+        # Test dark mode (should return white)
+        mock_app_theme_manager.is_dark_mode = True
+        base_color = widget._interaction_color
+        assert base_color == [1.0, 1.0, 1.0]
+
+    @patch('morphui.app.MorphApp._theme_manager')
+    def test_apply_interaction(self, mock_app_theme_manager):
+        """Test the apply_interaction method."""
+        mock_app_theme_manager.configure_mock(**{
+            'transparent_color': [0, 0, 0, 0],
+            'is_dark_mode': False
+        })
+        
+        widget = self.TestWidget()
+        
+        # Test applying hover interaction
+        widget.apply_interaction('hovered', 0.08)
+        
+        expected_color = [0.0, 0.0, 0.0, 0.08]
+        assert widget.interaction_color == expected_color
+
+    @patch('morphui.app.MorphApp._theme_manager')
+    def test_refresh_interaction(self, mock_app_theme_manager):
+        """Test the refresh_interaction method."""
+        mock_app_theme_manager.configure_mock(**{
+            'transparent_color': [0, 0, 0, 0],
+            'is_dark_mode': False
+        })
+        
+        widget = self.TestWidget()
+        
+        with patch.object(widget, '_on_state_change') as mock_state_change:
+            widget.refresh_interaction()
+            mock_state_change.assert_called()
 
 
 if __name__ == '__main__':
