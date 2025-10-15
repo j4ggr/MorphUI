@@ -1,10 +1,19 @@
+from typing import Any
+from typing import Dict
+
+from kivy.metrics import dp
 from kivy.uix.widget import Widget
-from kivy.properties import ColorProperty
 from kivy.properties import StringProperty
 from kivy.properties import NumericProperty
 
+from ..utils import clean_default_config
+
 from .behaviors import MorphColorThemeBehavior
 from .behaviors import MorphSurfaceLayerBehavior
+
+
+__all__ = [
+    'MorphDivider',]
 
 
 class MorphDivider(
@@ -35,13 +44,15 @@ class MorphDivider(
                     theme_style='primary'),
                 MorphDivider(
                     orientation='horizontal',
-                    height=1,
-                    theme_style='surface',),
+                    thickness=1,),
                 MorphLabel(
                     text="Below the Divider",
                     theme_style='secondary',
                     auto_size=True,),
-                orientation='vertical',)
+                orientation='vertical',
+                spacing=15,
+                padding=50,)
+                
     MyApp().run()
     ```
     """
@@ -56,44 +67,38 @@ class MorphDivider(
     :class:`~kivy.properties.StringProperty` and defaults to 
     'horizontal'."""
 
-    divider_thickness: float = NumericProperty(1.0)
+    thickness: float = NumericProperty(1.0)
     """Thickness of the divider line in pixels.
 
-    :attr:`divider_thickness` is a
-    :class:`~kivy.properties.NumericProperty` and defaults to 1.0."""
+    :attr:`thickness` is a :class:`~kivy.properties.NumericProperty` and
+    defaults to 1.0."""
 
-    divider_color: list = ColorProperty([0.8, 0.8, 0.8, 1])
-    """Color of the divider line in RGBA format.
+    default_config: Dict[str, Any] = dict(
+        theme_color_bindings=dict(
+            surface_color='outline_color'))
+    """Default configuration values for MorphDivider.
 
-    The color should be provided as a list of RGBA values between 0 and
-    1. Example: `[0.8, 0.8, 0.8, 1]` for a light gray divider.
-
-    :attr:`divider_color` is a :class:`~kivy.properties.ColorProperty`
-    and defaults to `[0.8, 0.8, 0.8, 1]`.
+    Provides standard appearance and behavior settings:
+    - `theme_color_bindings`: Maps the `surface_color` to the
+        `outline_color` from the theme for consistent styling.
     """
 
     def __init__(self, **kwargs) -> None:
-        super().__init__(**kwargs)
+        config = clean_default_config(self.default_config) | kwargs
+        super().__init__(**config)
         self.bind(
-            pos=self._update_canvas,
-            size=self._update_canvas,
-            orientation=self._update_canvas,
-            divider_thickness=self._update_canvas,
-            divider_color=self._update_canvas,)
+            orientation=self._update_appearance,
+            thickness=self._update_appearance,)
         
-        self._update_divider()
+        self._update_appearance()
 
-    def _update_divider(self, *args) -> None:
+    def _update_appearance(self, *args) -> None:
         """Update the divider's visual properties."""
-
-        self.canvas.before.clear()
-        with self.canvas.before:
-            Color(*self.divider_color)
-            if self.orientation == 'horizontal':
-                Rectangle(
-                    pos=self.pos,
-                    size=(self.width, self.divider_thickness))
-            else:
-                Rectangle(
-                    pos=self.pos,
-                    size=(self.divider_thickness, self.height))
+        if self.orientation == 'horizontal':
+            self.size_hint_y = None
+            self.height = dp(self.thickness)
+            self.size_hint_x = 1
+        else:
+            self.size_hint_x = None
+            self.width = dp(self.thickness)
+            self.size_hint_y = 1

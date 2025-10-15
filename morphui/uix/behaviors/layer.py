@@ -537,7 +537,7 @@ class MorphInteractionLayerBehavior(BaseLayerBehavior):
             size=self._update_interaction_layer,
             radius=self._update_interaction_layer,
             interaction_color=self._update_interaction_layer,
-            current_interaction_state=self._on_state_change,)
+            current_interaction_state=self._on_interaction_state_change,)
 
         self.refresh_interaction()
 
@@ -562,7 +562,7 @@ class MorphInteractionLayerBehavior(BaseLayerBehavior):
         self._interaction_color_instruction.rgba = self.interaction_color
         self.dispatch('on_interaction_updated')
 
-    def _on_state_change(self, instance: Any, value: bool) -> None:
+    def _on_interaction_state_change(self, instance: Any, value: bool) -> None:
         """Handle changes to the specified state.
         
         This method is called whenever one of the widget's interactive
@@ -636,7 +636,7 @@ class MorphInteractionLayerBehavior(BaseLayerBehavior):
         """
         enabled = self.interaction_enabled
         self.interaction_enabled = True
-        self._on_state_change(
+        self._on_interaction_state_change(
             self, getattr(self, self.current_interaction_state, False))
             
         color = self.theme_manager.transparent_color

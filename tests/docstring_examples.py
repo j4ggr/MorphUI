@@ -18,85 +18,28 @@ import sys
 from pathlib import Path
 sys.path.append(str(Path(__file__).parents[1].resolve()))
 
-from kivy.clock import Clock
 from morphui.app import MorphApp
-from kivy.uix.label import Label
-
-from morphui.uix.label import MorphLabel
-from morphui.uix.label import MorphIconLabel
-from morphui.uix.button import MorphButton
-from morphui.uix.button import MorphIconButton
 from morphui.uix.boxlayout import MorphBoxLayout
-from morphui.uix.behaviors import MorphHoverBehavior
-from morphui.uix.behaviors import MorphInteractionLayerBehavior
-
-
-class HoverLabel(
-        MorphHoverBehavior,
-        MorphInteractionLayerBehavior,
-        MorphLabel):
-    def __init__(self, **kwargs) -> None:
-        super().__init__(**kwargs)
-
-class DisabledButton(MorphButton):
-
-    def switch_state(self, *args) -> None:
-        self.disabled = not self.disabled
-        self.elevation = 0 if self.disabled else 3
-
-    def on_disabled(self, instance, disabled) -> None:
-        self.text = "Disabled" if disabled else "Enabled"
-
-class AutoSizeIcon(MorphIconLabel):
-
-    def switch_auto_size(self, *args) -> None:
-        new_state = not self.auto_size
-        self.auto_size = new_state
-        self.icon = 'language-java' if new_state else 'language-python'
+from morphui.uix.divider import MorphDivider
+from morphui.uix.label import MorphLabel
 
 class MyApp(MorphApp):
     def build(self) -> MorphBoxLayout:
         self.theme_manager.seed_color = 'Purple'
-
-        self.icon_label = AutoSizeIcon(
-            icon='language-python')
-        self.disabled_button = DisabledButton(
-            text="Disabled",
-            theme_style='secondary',
-            disabled=True,)
-        layout = MorphBoxLayout(
-            HoverLabel(
-                text="Hover Me",
-                theme_style='primary',
-                radius=[25] * 4,
-                border_color=(0, 0.8, 0.5, 0.5),
-                border_width=2,
-                border_open_length=100,),
-            self.disabled_button,
-            self.icon_label,
-            Label(
-                text="Regular Kivy Label",
-                color='black'),
-            MorphButton(
-                text="Morph Button",
-                theme_style='primary',
-                round_sides=True,
-                elevation=1),
-            MorphIconButton(
-                icon='language-python',
-                elevation=2,
-                border_open_length=15,),
+        return MorphBoxLayout(
+            MorphLabel(
+                text="Above the Divider",
+                theme_style='primary'),
+            MorphDivider(
+                orientation='horizontal',
+                thickness=1,),
+            MorphLabel(
+                text="Below the Divider",
+                theme_style='secondary',
+                auto_size=True,),
             orientation='vertical',
-            padding=50,
-            spacing=15,)
-        return layout
-
-    def on_start(self):
-        dt = 2
-        # Clock.schedule_interval(self.disabled_button.switch_state, dt)
-        Clock.schedule_interval(self.icon_label.switch_auto_size, dt)
-        # Clock.schedule_interval(self.theme_manager.toggle_theme_mode, dt * 2)
-        return super().on_start()
-
+            spacing=15,
+            padding=50,)
+    
 if __name__ == '__main__':
     MyApp().run()
