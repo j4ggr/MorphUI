@@ -79,7 +79,8 @@ class BaseLayerBehavior(
     
     def _generate_corner_arc_points(
             self,
-            corner: Literal['top-left', 'top-right', 'bottom-left', 'bottom-right']
+            corner: Literal['top-left', 'top-right', 'bottom-left', 'bottom-right'],
+            radius: float
             ) -> List[float]:
         """Generate points for a quarter circle arc at the specified 
         corner.
@@ -93,6 +94,8 @@ class BaseLayerBehavior(
         ----------
         corner : Literal['top-left', 'top-right', 'bottom-left', 'bottom-right']
             The corner for which to generate the quarter circle points.
+        radius : float
+            The radius of the quarter circle.
 
         Returns
         -------
@@ -107,23 +110,19 @@ class BaseLayerBehavior(
         """
         match corner:
             case 'top-left':
-                start_angle = 0.5 * pi
-                radius = self.radius[0]
+                alpha = 0.5 * pi
                 x_center = self.x + radius
                 y_center = self.top - radius
             case 'bottom-left':
-                start_angle = pi
-                radius = self.radius[3]
+                alpha = pi
                 x_center = self.x + radius
                 y_center = self.y + radius
             case 'bottom-right':
-                start_angle = 1.5 * pi
-                radius = self.radius[2]
+                alpha = 1.5 * pi
                 x_center = self.right - radius
                 y_center = self.y + radius
             case 'top-right':
-                start_angle = 0
-                radius = self.radius[1]
+                alpha = 0
                 x_center = self.right - radius
                 y_center = self.top - radius
             case _:
@@ -135,14 +134,14 @@ class BaseLayerBehavior(
         n_segments = int(radius) + 1
         def _points(n: int) -> Generator[float, None, None]:
             for i in range(n):
-                angle = 0.5 * pi * i / n + start_angle
+                angle = 0.5 * pi * i / n + alpha
                 x = x_center + radius * cos(angle)
                 y = y_center + radius * sin(angle)
                 yield x
                 yield y
         return list(_points(n_segments))
     
-    def _clamp_radius(self) -> None:
+    def _clamp_radius(self) -> List[float]:
         """Ensure the radius values do not exceed the widget's size.
 
         This method adjusts the radius values to ensure that the sum of 
@@ -154,8 +153,7 @@ class BaseLayerBehavior(
         the widget's dimensions.
         """
         if self.width <= 0 or self.height <= 0:
-            self.radius = [0, 0, 0, 0]
-            return
+            return [0., 0., 0., 0.]
 
         v_radius = [r for r in self.radius]
         h_radius = [r for r in self.radius]
@@ -187,7 +185,7 @@ class BaseLayerBehavior(
             h_radius[3] *= scale_factor
 
         # Use the most restrictive constraint for each corner
-        self.radius = [
+        return [
             min(v_radius[0], h_radius[0]),
             min(v_radius[1], h_radius[1]),
             min(v_radius[2], h_radius[2]),
@@ -216,16 +214,16 @@ class BaseLayerBehavior(
         if getattr(self, 'border_bottom_line_only', False):
             return [self.x, self.y, self.right, self.y]
         
-        self._clamp_radius()
+        radius = self._clamp_radius()
         points: List[float] = [
-            self.x + self.radius[0], self.top,
-            *self._generate_corner_arc_points('top-left'),
-            self.x, self.y + self.radius[0],
-            *self._generate_corner_arc_points('bottom-left'),
-            self.right - self.radius[2], self.y,
-            *self._generate_corner_arc_points('bottom-right'),
-            self.right, self.top - self.radius[1],
-            *self._generate_corner_arc_points('top-right'),]
+            self.x + radius[0], self.top,
+            *self._generate_corner_arc_points('top-left', radius[0]),
+            self.x, self.y + radius[3],
+            *self._generate_corner_arc_points('bottom-left', radius[3]),
+            self.right - radius[2], self.y,
+            *self._generate_corner_arc_points('bottom-right', radius[2]),
+            self.right, self.top - radius[1],
+            *self._generate_corner_arc_points('top-right', radius[1]),]
 
         if open_length > 0:
             x_start = points[0]
