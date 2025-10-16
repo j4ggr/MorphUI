@@ -30,6 +30,7 @@ from morphui.uix.button import MorphIconButton
 from morphui.uix.boxlayout import MorphBoxLayout
 from morphui.uix.behaviors import MorphHoverBehavior
 from morphui.uix.behaviors import MorphInteractionLayerBehavior
+from morphui.uix.textfield import MorphTextField
 
 
 class HoverLabel(
@@ -68,7 +69,6 @@ class MyApp(MorphApp):
         layout = MorphBoxLayout(
             HoverLabel(
                 text="Hover Me",
-                theme_style='primary',
                 radius=[25] * 4,
                 border_color=(0, 0.8, 0.5, 0.5),
                 border_width=2,
@@ -92,6 +92,11 @@ class MyApp(MorphApp):
             MorphIconButton(
                 icon='language-python',
                 elevation=2,),
+            MorphTextField(
+                label_text="Username",
+                supporting_text="Enter your username",
+                leading_icon='account',
+                trailing_icon='close',),
             theme_style='surface',
             orientation='vertical',
             padding=50,

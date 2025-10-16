@@ -159,6 +159,31 @@ class _Name_:
     
     RIPPLE_LAYER: Literal['ripple'] = 'ripple'
     """Canvas instruction group for ripple animations and effects."""
+
+    # Identifiers for TextField component parts
+    TEXTFIELD_INPUT: Literal['textfield_input'] = 'textfield_input'
+    """Standard name for the text input area in a text field component,
+    used for identification."""
+    
+    TEXTFIELD_LABEL: Literal['textfield_label'] = 'textfield_label'
+    """Standard name for the label in a text field component, used for
+    identification."""
+
+    TEXTFIELD_SUPPORTING_LABEL: Literal[
+        'textfield_supporting_label'] = 'textfield_supporting_label'
+    """Standard name for the supporting text label in a text field 
+    component, used for identification."""
+
+    TEXTFIELD_LEADING_ICON_LABEL: Literal[
+        'textfield_leading_icon_label'] = 'textfield_leading_icon_label'
+    """Standard name for the leading icon in a text field component, 
+    used for identification."""
+
+    TEXTFIELD_TRAILING_ICON_BUTTON: Literal[
+        'textfield_trailing_icon_button'] = 'textfield_trailing_icon_button'
+    """Standard name for the trailing icon button in a text field component, 
+    used for identification."""
+
 NAME = _Name_()
 
 
