@@ -12,6 +12,7 @@ from typing import Generator
 from kivy.metrics import dp
 from kivy.graphics import Line
 from kivy.graphics import Color
+from kivy.graphics import BoxShadow
 from kivy.graphics import Rectangle
 from kivy.graphics import SmoothLine
 from kivy.graphics import RoundedRectangle
@@ -19,6 +20,7 @@ from kivy.properties import ListProperty
 from kivy.properties import ColorProperty
 from kivy.properties import NumericProperty
 from kivy.properties import BooleanProperty
+from kivy.properties import AliasProperty
 from kivy.properties import VariableListProperty
 from kivy.uix.relativelayout import RelativeLayout
 
@@ -191,47 +193,6 @@ class BaseLayerBehavior(
             min(v_radius[2], h_radius[2]),
             min(v_radius[3], h_radius[3]),]
 
-    def calculate_border_path(self, open_length: float) -> List[float]:
-        """Calculate the complete border path points including corners
-        and edges.
-
-        This method generates a list of points that define the border
-        path of the rounded rectangle.
-
-        Parameters
-        ----------
-        open_length : float
-            Length of the open section of the border at the top edge.
-            A value of 0 means a closed border.
-
-        Returns
-        -------
-        List[float]
-            A flat list of x, y coordinates representing the border 
-            path.
-        """
-        # If only bottom line is requested, return just the bottom line points
-        if getattr(self, 'border_bottom_line_only', False):
-            return [self.x, self.y, self.right, self.y]
-        
-        radius = self._clamp_radius()
-        points: List[float] = [
-            self.x + radius[0], self.top,
-            *self._generate_corner_arc_points('top-left', radius[0]),
-            self.x, self.y + radius[3],
-            *self._generate_corner_arc_points('bottom-left', radius[3]),
-            self.right - radius[2], self.y,
-            *self._generate_corner_arc_points('bottom-right', radius[2]),
-            self.right, self.top - radius[1],
-            *self._generate_corner_arc_points('top-right', radius[1]),]
-
-        if open_length > 0:
-            x_start = points[0]
-            x_end = min(x_start + open_length, points[-2])
-            points.extend([x_end, points[-1]])
-
-        return points
-    
 
 class MorphSurfaceLayerBehavior(BaseLayerBehavior):
     """A behavior class that provides surface and border styling 
@@ -372,6 +333,34 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
     :attr:`border_bottom_line_only` is a
     :class:`~kivy.properties.BooleanProperty` and defaults to `False`.
     """
+    
+    border_path = AliasProperty(
+        lambda self: self.calculate_border_path(),
+        bind=[
+            'x', 'y', 'size', 'pos', 'radius', 'border_bottom_line_only',
+            'border_open_length',],
+        cache=True)
+    """Get the border path points (read-only).
+
+    This property returns a flat list of x, y coordinates representing
+    the border path of the rounded rectangle. It is automatically
+    updated when any relevant property changes.
+
+    :attr:`border_path` is a :class:`~kivy.properties.AliasProperty`
+    """
+
+    border_closed = AliasProperty(
+        lambda self: (
+            not self.border_bottom_line_only 
+            and self.border_open_length < dp(1)),
+        bind=['border_bottom_line_only', 'border_open_length'])
+    """Whether the border is closed (read-only).
+
+    This property returns True if the border is closed (i.e., 
+    `border_open_length` is 0), and False otherwise. When
+    `border_bottom_line_only` is True, this always returns False since
+    a single line would be drawn twice.
+    """
 
     _surface_color_instruction: Color
     """Kivy Color instruction for the surface color."""
@@ -397,6 +386,10 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
         self.register_event_type('on_surface_updated')
         super().__init__(**kwargs)
 
+        for child in self.canvas.before.children:
+            if child.group is None and not isinstance(child, BoxShadow):
+                self.canvas.before.remove(child)
+
         group = NAME.SURFACE_LAYER
         with self.canvas.before:
             self._surface_color_instruction = Color(
@@ -412,35 +405,53 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
                 group=group)
             self._border_instruction = SmoothLine(
                 width=dp(self.border_width),
-                points=self.calculate_border_path(self.border_open_length),
+                points=self.border_path,
                 close=self.border_closed,
                 group=group)
-
+            
         self.bind(
-            size=self._update_surface_layer,
-            pos=self._update_surface_layer,
-            radius=self._update_surface_layer,
-            surface_color=self._update_surface_layer,
             border_color=self._update_surface_layer,
             border_width=self._update_surface_layer,
-            border_open_length=self._update_surface_layer,
-            border_bottom_line_only=self._update_surface_layer,
+            border_path=self._update_surface_layer,
+            border_closed=self._update_surface_layer,
+            surface_color=self._update_surface_layer,
             current_surface_state=self._update_surface_layer,)
         self.refresh_surface()
-    
-    @property
-    def border_closed(self) -> bool:
-        """Whether the border is closed (read-only).
 
-        This property returns True if the border is closed (i.e., 
-        `border_open_length` is 0), and False otherwise. When
-        `border_bottom_line_only` is True, this always returns False
-        since a single line cannot be closed.
+    def calculate_border_path(self) -> List[float]:
+        """Calculate the complete border path points including corners
+        and edges.
+
+        This method generates a list of points that define the border
+        path of the rounded rectangle.
+
+        Returns
+        -------
+        List[float]
+            A flat list of x, y coordinates representing the border 
+            path.
         """
+        # If only bottom line is requested, return just the bottom line points
         if self.border_bottom_line_only:
-            return False
+            return [self.x, self.y, self.right, self.y]
         
-        return self.border_open_length < dp(1)
+        radius = self._clamp_radius()
+        path: List[float] = [
+            self.x + radius[0], self.top,
+            *self._generate_corner_arc_points('top-left', radius[0]),
+            self.x, self.y + radius[3],
+            *self._generate_corner_arc_points('bottom-left', radius[3]),
+            self.right - radius[2], self.y,
+            *self._generate_corner_arc_points('bottom-right', radius[2]),
+            self.right, self.top - radius[1],
+            *self._generate_corner_arc_points('top-right', radius[1]),]
+
+        if self.border_open_length > 0:
+            x_start = path[0]
+            x_end = min(x_start + self.border_open_length, path[-2])
+            path.extend([x_end, path[-1]])
+
+        return path
     
     def get_resolved_surface_colors(
             self) -> Tuple[List[float], List[float]]:
@@ -493,8 +504,7 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
         
         self._border_color_instruction.rgba = border_color
         self._border_instruction.width = dp(self.border_width)
-        self._border_instruction.points = self.calculate_border_path(
-            self.border_open_length)
+        self._border_instruction.points = self.calculate_border_path()
         self._border_instruction.close = self.border_closed
 
         self.dispatch('on_surface_updated')
