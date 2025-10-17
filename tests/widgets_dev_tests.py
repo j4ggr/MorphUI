@@ -92,11 +92,7 @@ class MyApp(MorphApp):
             MorphIconButton(
                 icon='language-python',
                 elevation=2,),
-            MorphTextField(
-                label_text="Username",
-                supporting_text="Enter your username",
-                leading_icon='account',
-                trailing_icon='close',),
+            MorphTextField(),
             theme_style='surface',
             orientation='vertical',
             padding=50,
