@@ -53,31 +53,28 @@ class BaseLayerBehavior(
     :attr:`radius` is a :class:`~kivy.properties.VariableListProperty`
     and defaults to `[0, 0, 0, 0]`."""
     
-    @property
-    def _rectangle_params(self) -> List[float]:
-        """Get the parameters for creating a rounded rectangle
-        (read-only).
-
-        The parameters are returned as a list suitable for use in
-        :class:`~kivy.graphics.instructions.SmoothLine` instruction. If 
-        the widget is a `RelativeLayout`, the position is set to (0, 0)
-        to ensure correct rendering within the layout's coordinate
-        system.
-        
-        Returns
-        -------
-        list of float
-            List containing [x, y, width, height, *radius] for the 
-            rounded rectangle.
-        """
-        is_relative = isinstance(self, RelativeLayout)
-        params = [
-            0 if is_relative else self.x,
-            0 if is_relative else self.y,
+    rounded_rectangle_params: List[float] = AliasProperty(
+        lambda self: [
+            0 if isinstance(self, RelativeLayout) else self.x,
+            0 if isinstance(self, RelativeLayout) else self.y,
             self.width,
             self.height,
-            *self.radius,]
-        return params
+            *self.radius], # type: ignore
+        bind=['size', 'pos', 'radius'],
+        cache=True)
+    """Get the parameters for creating a rounded rectangle (read-only).
+
+    The parameters are returned as a list suitable for use in
+    :class:`~kivy.graphics.instructions.SmoothLine` instruction. If the
+    widget is a `RelativeLayout`, the position is set to (0, 0) to
+    ensure correct rendering within the layout's coordinate system.
+    
+    Returns
+    -------
+    list of float
+        List containing [x, y, width, height, *radius] for the rounded
+        rectangle.
+    """
     
     def _generate_corner_arc_points(
             self,
