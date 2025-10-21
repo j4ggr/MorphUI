@@ -142,46 +142,61 @@ class _Name_:
     """Separator used in corner naming conventions."""
     
     # Canvas instruction groups
-    SHADOW_LAYER: Literal['shadow'] = 'shadow'
+    SHADOW: Literal['shadow'] = 'shadow'
     """Canvas instruction group for shadow rendering."""
 
-    SURFACE_LAYER: Literal['surface'] = 'surface'
-    """Canvas instruction group for surface rendering (backgrounds, borders)."""
+    SURFACE: Literal['surface'] = 'surface'
+    """Canvas instruction group for surface backgrounds."""
+
+    SURFACE_BORDER: Literal['surface_border'] = 'surface_border'
+    """Canvas instruction group for surface borders."""
     
-    INTERACTION_LAYER: Literal['interaction'] = 'interaction'
+    INTERACTION: Literal['interaction'] = 'interaction'
     """Canvas instruction group for interaction state overlays."""
-    
-    CONTENT_LAYER: Literal['content'] = 'content'
+
+    CONTENT: Literal['content'] = 'content'
     """Canvas instruction group for content rendering (text, icons)."""
-    
-    OVERLAY_LAYER: Literal['overlay'] = 'overlay'
+
+    OVERLAY: Literal['overlay'] = 'overlay'
     """Canvas instruction group for overlay effects and decorations."""
-    
-    RIPPLE_LAYER: Literal['ripple'] = 'ripple'
+
+    OVERLAY_EDGES: Literal['overlay_edges'] = 'overlay_edges'
+    """Canvas instruction group for overlay edge effects and 
+    decorations."""
+
+    RIPPLE: Literal['ripple'] = 'ripple'
     """Canvas instruction group for ripple animations and effects."""
 
-    # Identifiers for TextField component parts
-    TEXTFIELD_INPUT: Literal['textfield_input'] = 'textfield_input'
+    TEXTINPUT_CURSOR: Literal['textinput_cursor'] = 'textinput_cursor'
+    """Canvas instruction group for the text input cursor in a text
+    field component."""
+
+    TEXTINPUT_TEXT: Literal['textinput_text'] = 'textinput_text'
+    """Canvas instruction group for the text content in a text field
+    component."""
+
+    # Identifiers for component parts
+    INPUT: Literal['input'] = 'input'
     """Standard name for the text input area in a text field component,
     used for identification."""
     
-    TEXTFIELD_LABEL: Literal['textfield_label'] = 'textfield_label'
-    """Standard name for the label in a text field component, used for
+    LABEL: Literal['label'] = 'label'
+    """Standard name for the label in a combined component, used for
     identification."""
 
-    TEXTFIELD_SUPPORTING_LABEL: Literal[
-        'textfield_supporting_label'] = 'textfield_supporting_label'
-    """Standard name for the supporting text label in a text field 
+    SUPPORTING_LABEL: Literal[
+        'supporting_label'] = 'supporting_label'
+    """Standard name for the supporting text label in a combined
     component, used for identification."""
 
-    TEXTFIELD_LEADING_ICON_LABEL: Literal[
-        'textfield_leading_icon_label'] = 'textfield_leading_icon_label'
-    """Standard name for the leading icon in a text field component, 
+    LEADING_WIDGET: Literal[
+        'leading_widget'] = 'leading_widget'
+    """Standard name for the leading widget in a combined component, 
     used for identification."""
 
-    TEXTFIELD_TRAILING_ICON_BUTTON: Literal[
-        'textfield_trailing_icon_button'] = 'textfield_trailing_icon_button'
-    """Standard name for the trailing icon button in a text field component, 
+    TRAILING_WIDGET: Literal[
+        'trailing_widget'] = 'trailing_widget'
+    """Standard name for the trailing widget in a combined component, 
     used for identification."""
 
 NAME = _Name_()
