@@ -12,7 +12,6 @@ from typing import Generator
 from kivy.metrics import dp
 from kivy.graphics import Line
 from kivy.graphics import Color
-from kivy.graphics import BoxShadow
 from kivy.graphics import Rectangle
 from kivy.graphics import SmoothLine
 from kivy.graphics import RoundedRectangle
@@ -383,28 +382,25 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
         self.register_event_type('on_surface_updated')
         super().__init__(**kwargs)
 
-        for child in self.canvas.before.children:
-            if child.group is None and not isinstance(child, BoxShadow):
-                self.canvas.before.remove(child)
-
-        group = NAME.SURFACE_LAYER
         with self.canvas.before:
+
             self._surface_color_instruction = Color(
                 rgba=self.surface_color,
-                group=group)
+                group=NAME.SURFACE)
             self._surface_instruction = RoundedRectangle(
                 size=self.size,
                 pos=self.pos,
                 radius=self.radius,
-                group=group)
+                group=NAME.SURFACE)
+            
             self._border_color_instruction = Color(
                 rgba=self.border_color,
-                group=group)
+                group=NAME.SURFACE_BORDER)
             self._border_instruction = SmoothLine(
                 width=dp(self.border_width),
                 points=self.border_path,
                 close=self.border_closed,
-                group=group)
+                group=NAME.SURFACE_BORDER)
             
         self.bind(
             border_color=self._update_surface_layer,
@@ -469,19 +465,9 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
             A tuple containing the resolved surface color and border
             color as lists of RGBA values.
         """
-        match self.current_surface_state:
-            case 'disabled':
-                surface_color = self.disabled_surface_color
-                border_color = self.disabled_border_color
-            case 'selected':
-                surface_color = self.selected_surface_color
-                border_color = self.selected_border_color
-            case 'active':
-                surface_color = self.active_surface_color
-                border_color = self.active_border_color
-            case _:
-                surface_color = self.surface_color
-                border_color = self.border_color
+        state = self.current_surface_state
+        surface_color = getattr(self, f'{state}_surface_color', None)
+        border_color = getattr(self, f'{state}_border_color', None)
 
         if surface_color is None:
             surface_color = self.surface_color
@@ -628,7 +614,7 @@ class MorphInteractionLayerBehavior(BaseLayerBehavior):
         self.register_event_type('on_interaction_updated')
         super().__init__(**kwargs)
 
-        group = NAME.INTERACTION_LAYER
+        group = NAME.INTERACTION
         with self.canvas.before:
             self._interaction_color_instruction = Color(
                 rgba=self.interaction_color,
@@ -907,6 +893,8 @@ class MorphContentLayerBehavior(BaseLayerBehavior):
             self.color = color
         if hasattr(self, 'foreground_color'):
             self.foreground_color = color
+        if hasattr(self, '_text_color_instruction'):
+            self._text_color_instruction.rgba = color # see: MorphTextInput
         self.dispatch('on_content_updated')
     
     def refresh_content(self) -> None:
@@ -1075,25 +1063,24 @@ class MorphOverlayLayerBehavior(BaseLayerBehavior):
         self._overlay_edges_color_instructions = {}
         self._overlay_edges_instruction = {}
 
-        group = NAME.OVERLAY_LAYER
         with self.canvas.after:
             self._overlay_color_instruction = Color(
                 rgba=self.overlay_color,
-                group=group)
+                group=NAME.OVERLAY)
             self._overlay_instruction = RoundedRectangle(
                 pos=self.pos,
                 size=self.size,
                 radius=self.radius,
-                group=group)
+                group=NAME.OVERLAY)
             for name, points in self._overlay_edges_params.items():
                 self._overlay_edges_color_instructions[name] = Color(
                     rgba=self.theme_manager.transparent_color,
-                    group=group)
+                    group=NAME.OVERLAY_EDGES)
                 self._overlay_edges_instruction[name] = Line(
                     points=points,
                     width=dp(self.overlay_edge_width),
                     cap='none',
-                    group=group)
+                    group=NAME.OVERLAY_EDGES)
 
         self.bind(
             pos=self._update_overlay_layer,
