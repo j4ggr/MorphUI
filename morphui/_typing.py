@@ -93,6 +93,7 @@ highest precedence and 'normal' the lowest.
 ContentState: TypeAlias = Literal[
     'disabled',
     'error',
+    'focus',
     'hovered',
     'active',
     'selected',
