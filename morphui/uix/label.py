@@ -3,23 +3,22 @@ from typing import Dict
 
 from kivy.metrics import dp
 from kivy.uix.label import Label
+from kivy.properties import AliasProperty
 
 from ..utils import clean_config
 
+from .behaviors import MorphIconBehavior
 from .behaviors import MorphThemeBehavior
 from .behaviors import MorphTextLayerBehavior
-from .behaviors import MorphContentLayerBehavior
 from .behaviors import MorphAutoSizingBehavior
 from .behaviors import MorphRoundSidesBehavior
+from .behaviors import MorphContentLayerBehavior
 from .behaviors import MorphIdentificationBehavior
-from .behaviors import MorphIconBehavior
 
 
 __all__ = [
     'MorphLabel',
-    'MorphIconLabel',
-    'MorphSimpleLabel',
-    'MorphSimpleIconLabel',]
+    'MorphIconLabel',]
 
 
 class MorphLabel(
@@ -66,6 +65,32 @@ class MorphLabel(
       size based on content.
     - Passing `font_size`, `line_height` or other typography-related
       properties in kwargs will override the typography settings.
+    """
+
+    minimum_height: float = AliasProperty(
+        lambda self: self.texture_size[1] + self.padding[1] + self.padding[3],
+        bind=[
+            'theme_style', 'text', 'font_size', 'font_name', 'bold', 'italic',
+            'underline', 'strikethrough',])
+    """The minimum height required to display the label's content.
+
+    This property calculates the minimum height based on the label's
+    texture size and padding.
+
+    :attr:`minimum_height` is a :class:`~kivy.properties.AliasProperty`
+    """
+
+    minimum_width: float = AliasProperty(
+        lambda self: self.texture_size[0] + self.padding[0] + self.padding[2],
+        bind=[
+            'theme_style', 'text', 'font_size', 'font_name', 'bold', 'italic',
+            'underline', 'strikethrough',])
+    """The minimum width required to display the label's content.
+
+    This property calculates the minimum width based on the label's
+    texture size and padding.
+
+    :attr:`minimum_width` is a :class:`~kivy.properties.AliasProperty`
     """
 
     default_config: Dict[str, Any] = dict(
@@ -206,6 +231,32 @@ class MorphSimpleLabel(
     - Inherits typography support if typography behavior is available
     - Auto-sizing properties can be used for content-based sizing
     - Lighter weight than MorphLabel for simple text display needs
+    """
+
+    minimum_height: float = AliasProperty(
+        lambda self: self.texture_size[1] + self.padding[1] + self.padding[3],
+        bind=[
+            'theme_style', 'text', 'font_size', 'font_name', 'bold', 'italic',
+            'underline', 'strikethrough',])
+    """The minimum height required to display the label's content.
+
+    This property calculates the minimum height based on the label's
+    texture size and padding.
+
+    :attr:`minimum_height` is a :class:`~kivy.properties.AliasProperty`
+    """
+
+    minimum_width: float = AliasProperty(
+        lambda self: self.texture_size[0] + self.padding[0] + self.padding[2],
+        bind=[
+            'theme_style', 'text', 'font_size', 'font_name', 'bold', 'italic',
+            'underline', 'strikethrough',])
+    """The minimum width required to display the label's content.
+
+    This property calculates the minimum width based on the label's
+    texture size and padding.
+
+    :attr:`minimum_width` is a :class:`~kivy.properties.AliasProperty`
     """
 
     default_config: Dict[str, Any] = dict(
