@@ -260,11 +260,16 @@ class Typography(EventDispatcher):
     """Tuple of currently registered font family names."""
 
     def __init__(self, **kwargs) -> None:
-        super().__init__(**kwargs)
-        self._registered_fonts = ()
         self.register_event_type('on_typography_changed')
-        self.bind(font_name=self.on_typography_changed)
-        self.bind(content_styles=self.on_typography_changed)
+        super().__init__(**kwargs)
+
+        self._registered_fonts = ()
+        for font_dict in self.fonts_to_autoregister:
+            self.register_font(**font_dict)
+            
+        self.bind(
+            font_name=self.on_typography_changed,
+            content_styles=self.on_typography_changed)
 
     @property
     def available_style_properties(self) -> Tuple[str, ...]:
