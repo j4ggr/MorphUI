@@ -19,27 +19,21 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).parents[1].resolve()))
 
 from morphui.app import MorphApp
+from morphui.uix.label import MorphSimpleIconLabel
 from morphui.uix.boxlayout import MorphBoxLayout
-from morphui.uix.divider import MorphDivider
-from morphui.uix.label import MorphLabel
 
 class MyApp(MorphApp):
-    def build(self) -> MorphBoxLayout:
-        self.theme_manager.seed_color = 'Purple'
+    def build(self):
         return MorphBoxLayout(
-            MorphLabel(
-                text="Above the Divider",
-                theme_style='primary'),
-            MorphDivider(
-                orientation='horizontal',
-                thickness=1,),
-            MorphLabel(
-                text="Below the Divider",
-                theme_style='secondary',
-                auto_size=True,),
+            MorphSimpleIconLabel(
+                icon='home',
+                typography_size='large',),
+            MorphSimpleIconLabel(
+                icon='language-python',
+                typography_size='large',),
             orientation='vertical',
-            spacing=15,
-            padding=50,)
+            padding=50,
+            spacing=15,)
     
 if __name__ == '__main__':
     MyApp().run()

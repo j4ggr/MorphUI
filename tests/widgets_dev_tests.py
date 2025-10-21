@@ -24,13 +24,12 @@ from kivy.uix.label import Label
 
 from morphui.uix.label import MorphLabel
 from morphui.uix.label import MorphIconLabel
-from morphui.uix.label import MorphSimpleLabel
 from morphui.uix.button import MorphButton
 from morphui.uix.button import MorphIconButton
 from morphui.uix.boxlayout import MorphBoxLayout
 from morphui.uix.behaviors import MorphHoverBehavior
 from morphui.uix.behaviors import MorphInteractionLayerBehavior
-from morphui.uix.textfield import MorphTextField
+from morphui.uix.textfield import MorphTextInput
 
 
 class HoverLabel(
@@ -66,6 +65,16 @@ class MyApp(MorphApp):
             text="Disabled",
             theme_style='secondary',
             disabled=True,)
+        text_input = MorphTextInput(
+            hint_text="Morph\nTextInput",
+            radius=[2, 2, 2, 2],
+            auto_height=True,
+            theme_color_bindings={
+                'surface_color': 'surface_container_color',
+                'content_color': 'content_surface_color',
+                'border_color': 'outline_color',
+                'focus_border_color': 'primary_color',
+                'hint_text_color': 'primary_color'},)
         layout = MorphBoxLayout(
             HoverLabel(
                 text="Hover Me",
@@ -82,8 +91,6 @@ class MyApp(MorphApp):
                 text="Morph default Label",),
             MorphIconLabel(
                 icon='language-python',),
-            MorphSimpleLabel(
-                text="Morph Simple Label",),
             MorphButton(
                 text="Morph Button",
                 theme_style='primary',
@@ -92,7 +99,7 @@ class MyApp(MorphApp):
             MorphIconButton(
                 icon='language-python',
                 elevation=2,),
-            MorphTextField(),
+            text_input,
             theme_style='surface',
             orientation='vertical',
             padding=50,
