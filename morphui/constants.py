@@ -1,3 +1,4 @@
+import re
 import tomllib
 
 from typing import Dict
@@ -12,7 +13,8 @@ __all__ = [
     'PATH',
     'ICON',
     'NAME',
-    'FONTS',]
+    'FONTS',
+    'REGEX',]
 
 
 @dataclass(frozen=True)
@@ -588,3 +590,21 @@ label = Label(font_name='DMSans', text='Hello World')
 ```
 """
 
+@dataclass(frozen=True)
+class _RegexPattern_:
+    """Precompiled regular expressions for common pattern matching."""
+    
+    HEX_COLOR: re.Pattern = re.compile(
+        r'^#(?:[0-9a-fA-F]{3}){1,2}$')
+    """Matches valid hex color codes (e.g., #FFF, #FFFFFF)."""
+
+    EMAIL: re.Pattern = re.compile(
+        r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
+    """Matches valid email addresses."""
+
+    PHONE: re.Pattern = re.compile(
+        r'^\+?1?\d{9,15}$')
+    """Matches valid phone numbers in international format."""
+
+REGEX = _RegexPattern_()
+"""Container for precompiled regular expressions."""
