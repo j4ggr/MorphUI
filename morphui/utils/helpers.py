@@ -500,8 +500,8 @@ class FrozenGeometry:
             print("Mouse is over widget")
         ```
         """
-        return (self.x <= x <= self.right and 
-                self.y <= y <= self.top)
+        return (self.x <= x <= self.x + self.width and
+                self.y <= y <= self.y + self.height)
 
     def distance_to_point(self, x: float, y: float) -> float:
         """Calculate the minimum distance from a point to this geometry.
@@ -533,9 +533,9 @@ class FrozenGeometry:
             return 0.0
             
         # Calculate distance to nearest edge
-        dx = max(0, max(self.x - x, x - self.right))
-        dy = max(0, max(self.y - y, y - self.top))
-        
+        dx = max(0, max(self.x - x, x - self.x - self.width))
+        dy = max(0, max(self.y - y, y - self.y - self.height))
+
         return (dx * dx + dy * dy) ** 0.5
 
     def __str__(self) -> str:

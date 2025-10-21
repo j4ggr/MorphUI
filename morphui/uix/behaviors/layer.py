@@ -110,19 +110,19 @@ class BaseLayerBehavior(
             case 'top-left':
                 alpha = 0.5 * pi
                 x_center = self.x + radius
-                y_center = self.top - radius
+                y_center = self.y + self.height - radius
             case 'bottom-left':
                 alpha = pi
                 x_center = self.x + radius
                 y_center = self.y + radius
             case 'bottom-right':
                 alpha = 1.5 * pi
-                x_center = self.right - radius
+                x_center = self.x + self.width - radius
                 y_center = self.y + radius
             case 'top-right':
                 alpha = 0
-                x_center = self.right - radius
-                y_center = self.top - radius
+                x_center = self.x + self.width - radius
+                y_center = self.y + self.height - radius
             case _:
                 raise ValueError("Invalid corner specified.")
             
@@ -333,7 +333,7 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
     border_path = AliasProperty(
         lambda self: self.calculate_border_path(),
         bind=[
-            'x', 'y', 'size', 'pos', 'radius', 'border_bottom_line_only',
+            'size', 'pos', 'radius', 'border_bottom_line_only',
             'border_open_length',],
         cache=True)
     """Get the border path points (read-only).
@@ -426,17 +426,17 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
         """
         # If only bottom line is requested, return just the bottom line points
         if self.border_bottom_line_only:
-            return [self.x, self.y, self.right, self.y]
+            return [self.x, self.y, self.x + self.width, self.y]
         
         radius = self._clamp_radius()
         path: List[float] = [
-            self.x + radius[0], self.top,
+            self.x + radius[0], self.y + self.height,
             *self._generate_corner_arc_points('top-left', radius[0]),
             self.x, self.y + radius[3],
             *self._generate_corner_arc_points('bottom-left', radius[3]),
-            self.right - radius[2], self.y,
+            self.x + self.width - radius[2], self.y,
             *self._generate_corner_arc_points('bottom-right', radius[2]),
-            self.right, self.top - radius[1],
+            self.x + self.width, self.y + self.height - radius[1],
             *self._generate_corner_arc_points('top-right', radius[1]),]
 
         if self.border_open_length > 0:
