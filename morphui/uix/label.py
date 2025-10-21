@@ -326,7 +326,6 @@ MyApp().run()
 
     default_config: Dict[str, Any] = dict(
         theme_color_bindings=dict(
-            surface_color='transparent_color',
             content_color='content_surface_color',),
         font_name='MaterialIcons',
         typography_role='Label',

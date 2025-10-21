@@ -2,19 +2,19 @@ from typing import Any
 from typing import Dict
 from typing import List
 
+from kivy.event import EventDispatcher
 from kivy.metrics import dp
-from kivy.metrics import sp
 from kivy.graphics import Line
 from kivy.graphics import Color
 from kivy.graphics import BoxShadow
 from kivy.properties import AliasProperty
 from kivy.properties import StringProperty
 from kivy.properties import ObjectProperty
+from kivy.properties import OptionProperty
 from kivy.properties import BooleanProperty
 from kivy.properties import NumericProperty
 from kivy.properties import VariableListProperty
 from kivy.uix.textinput import TextInput
-
 
 from ..utils import clamp
 from ..utils import clean_config
@@ -34,6 +34,7 @@ from .label import MorphSimpleIconLabel
 from .button import MorphIconButton
 
 from ..constants import NAME
+from ..constants import REGEX
 
 
 __all__ = [
@@ -59,23 +60,40 @@ class TextFieldLabel(MorphSimpleLabel):
 
 
 class TextFieldSupportingLabel(MorphSimpleLabel):
+
+    disabled: bool = BooleanProperty(False)
+
+    focus: bool = BooleanProperty(False)
+    
+    error: bool = BooleanProperty(False)
     
     default_config: Dict[str, Any] = dict(
         theme_color_bindings=dict(
-            content_color='content_surface_color',),
+            content_color='transparent_color',
+            focus_content_color='content_surface_color',
+            error_content_color='error_color',),
         typography_role='Label',
         typography_size='small',
         typography_weight='Regular',
         halign='left',
         valign='middle',
-        auto_width=True,)
+        auto_width=True,
+        shorten=True,)
 
 
 class TextFieldLeadingIconLabel(MorphSimpleIconLabel):
+
+    disabled: bool = BooleanProperty(False)
+
+    focus: bool = BooleanProperty(False)
+    
+    error: bool = BooleanProperty(False)
     
     default_config: Dict[str, Any] = dict(
         theme_color_bindings=dict(
-            content_color='content_surface_color',),
+            content_color='content_surface_color',
+            focus_content_color='primary_color',
+            error_content_color='error_color',),
         font_name=MorphSimpleIconLabel.default_config['font_name'],
         typography_role=MorphSimpleIconLabel.default_config['typography_role'],
         typography_size=MorphSimpleIconLabel.default_config['typography_size'],
@@ -87,7 +105,13 @@ class TextFieldLeadingIconLabel(MorphSimpleIconLabel):
 
 
 class TextFieldTrailingIconButton(MorphIconButton):
-    
+
+    disabled: bool = BooleanProperty(False)
+
+    focus: bool = BooleanProperty(False)
+
+    error: bool = BooleanProperty(False)
+
     default_config: Dict[str, Any] = dict(
         theme_color_bindings=dict(
             content_color='primary_color',
@@ -103,6 +127,115 @@ class TextFieldTrailingIconButton(MorphIconButton):
         size_hint=(None, None),
         size=(dp(24), dp(24)),
         padding=dp(0),)
+
+
+class TextValidator(EventDispatcher):
+
+    error: bool = BooleanProperty(False)
+    """Indicates whether the text widget is in an error state.
+
+    This property reflects the error state of the internal text. 
+    When True, the text widget is marked as having an error,
+    When False, it is not in an error state.
+
+    :attr:`error` is a :class:`~kivy.properties.BooleanProperty`
+    and defaults to False."""
+
+    required: bool = BooleanProperty(False)
+    """Indicates whether the text is required.
+
+    When True, the :attr:`text` must contain valid text to be 
+    considered valid. When False, the text widget can be left empty 
+    without error.
+
+    :attr:`required` is a :class:`~kivy.properties.BooleanProperty`
+    and defaults to False."""
+
+    validator: str | None = OptionProperty(
+        None, options=['email', 'phone'])
+    """The type of validation to apply to the text.
+
+    This property determines the kind of validation that will be 
+    performed on the text content. Supported options are:
+    - 'email': Validates that the text is a properly formatted email 
+      address.
+    - 'phone': Validates that the text is a properly formatted phone 
+      number.
+
+    :attr:`validator` is a :class:`~kivy.properties.OptionProperty`
+    and defaults to None.
+    """
+
+    def is_valid_email(self, text: str) -> bool:
+        """Check if the given text is a valid email address.
+
+        Parameters
+        ----------
+        text : str
+            The text input to validate.
+
+        Returns
+        -------
+        bool
+            True if the input is a valid email address, False otherwise.
+        """
+        return REGEX.EMAIL.match(text) is not None
+
+    def is_valid_phone(self, text: str) -> bool:
+        """Check if the given text is a valid phone number.
+
+        Parameters
+        ----------
+        text : str
+            The text input to validate.
+
+        Returns
+        -------
+        bool
+            True if the input is a valid phone number, False otherwise.
+        """
+        text = (text
+            .replace(" ", "")
+            .replace("-", "")
+            .replace("(", "")
+            .replace(")", ""))
+        return REGEX.PHONE.match(text) is not None
+    
+    def validate(self, text: str) -> bool:
+        """Validate the given text based on the current settings.
+
+        This method checks the text against the required and validator
+        properties to determine if it is valid.
+
+        Parameters
+        ----------
+        text : str
+            The text input to validate.
+        
+        Returns
+        -------
+        bool
+            True if the text is valid according to the current settings,
+            False otherwise.
+        """
+        if self.validator is None:
+            self.error=False
+            return True
+        
+        if self.required and not text:
+            self.error = True
+            return False
+
+        match self.validator:
+            case 'email':
+                is_valid = self.is_valid_email(text)
+            case 'phone':
+                is_valid = self.is_valid_phone(text)
+            case _:
+                is_valid = True
+
+        self.error = not is_valid
+        return is_valid
 
 
 class MorphTextInput(
@@ -221,6 +354,7 @@ class MorphTextInput(
 
 class MorphTextField(
         MorphFloatLayout,
+        TextValidator,
         MorphAutoSizingBehavior,
         MorphTypographyBehavior,
         MorphContentLayerBehavior,):
@@ -230,17 +364,32 @@ class MorphTextField(
 
     This property holds the current text entered in the text field. It
     can be accessed and modified programmatically to get or set the
-    text value.
+    text value. It is bound bidirectionally to the text property of the
+    internal :class:`MorphTextInput`.
 
-    :attr:`text` is a :class:`~kivy.properties.StringProperty` and defaults to ''."""
+    :attr:`text` is a :class:`~kivy.properties.StringProperty` and 
+    defaults to ''."""
     
+    disabled: bool = BooleanProperty(False)
+    """Indicates whether the text field is disabled.
+    
+    When True, the text field is disabled and does not accept input.
+    When False, it is enabled and can receive user input. It is bound
+    bidirectionally to the disabled property of the internal
+    :class:`MorphTextInput`.
+
+    :attr:`disabled` is a :class:`~kivy.properties.BooleanProperty`
+    and defaults to False."""
+
     focus: bool = BooleanProperty(False)
     """Indicates whether the text field is focused (active for input).
     
     This property reflects the focus state of the internal text input
     widget. When True, the text field is active and ready to receive
-    keyboard input. When False, it is inactive.
-    
+    keyboard input. When False, it is inactive. It is bound
+    bidirectionally to the focus state of the internal
+    :class:`MorphTextInput`.
+
     :attr:`focus` is a :class:`~kivy.properties.BooleanProperty`
     and defaults to False."""
 
@@ -248,7 +397,9 @@ class MorphTextField(
     """Indicates whether the text field supports multiple lines of input.
     
     When True, the text field allows multiple lines of text input.
-    When False, it restricts input to a single line.
+    When False, it restricts input to a single line. It is bound
+    bidirectionally to the multiline property of the internal
+    :class:`MorphTextInput`.
 
     :attr:`multiline` is a :class:`~kivy.properties.BooleanProperty`
     and defaults to False."""
@@ -411,7 +562,7 @@ class MorphTextField(
             surface_color='surface_color',
             border_color='outline_color',
             error_border_color='error_color',
-            focused_border_color='primary_color',
+            focus_border_color='primary_color',
             disabled_border_color='outline_variant_color',
             content_color='content_surface_color',),
         auto_height=True,)
@@ -430,6 +581,8 @@ class MorphTextField(
 
     def __init__(self, **kwargs) -> None:
         self._text_input = MorphTextInput(
+            theme_color_bindings=dict(
+                surface_color='transparent_color',),
             identity=NAME.INPUT,
             size_hint=(None, None),
             auto_size=False)
@@ -447,16 +600,21 @@ class MorphTextField(
         super().__init__(self._text_input, **config)
 
         self._text_input.bind(
+            _lines=self._update_layout,
             text=self.setter('text'),
             focus=self.setter('focus'),
-            _lines=self._update_appearance,)
+            disabled=self.setter('disabled'),
+            multiline=self.setter('multiline'),)
         
         self.bind(
-            pos=self._update_appearance,
-            size=self._update_appearance,
-            declarative_children=self._update_appearance,
-            multiline=self._text_input.setter('multiline'),
-            text=self._text_input.setter('text'),)
+            pos=self._update_layout,
+            size=self._update_layout,
+            declarative_children=self._update_layout,
+            content_color=self._text_input.setter('content_color'),
+            text=self._text_input.setter('text'),
+            focus=self._text_input.setter('focus'),
+            disabled=self._text_input.setter('disabled'),
+            multiline=self._text_input.setter('multiline'),)
         self.fbind(
             'label_text', self._update_child_widget,
             identity=NAME.LABEL)
@@ -515,14 +673,13 @@ class MorphTextField(
             self.add_widget(widget)
         elif not text and identity in self.identities:
             self.remove_widget(widget)
-        self._update_appearance()
+        self._update_layout()
 
-    def _update_appearance(self, *args) -> None:
-        """Update the layout and appearance of the text field and its
-        child widgets.
+    def _update_layout(self, *args) -> None:
+        """Update the layout of the text field and its child widgets.
 
         This method recalculates the positions and sizes of the child
-        widgets based on the current layout and appearance settings.
+        widgets based on the current layout settings.
         """
         self.padding = [
             dp(12) if NAME.LEADING_WIDGET not in self.identities else dp(16),
@@ -580,9 +737,54 @@ class MorphTextField(
         self._update_child_widget(
             self, self.trailing_icon, NAME.TRAILING_WIDGET)
         
-        self._update_appearance()
+        self._update_layout()
     
     def _update_size(self, *args) -> None:
         super()._update_size(*args)
         self.height = clamp(
             self.height, self.minimum_height, self.maximum_height)
+    
+    def apply_content(self, color: List[float]) -> None:
+        """Apply the content color to the internal text input widget.
+
+        This method updates the content color of the internal
+        :class:`MorphTextInput` to match the content color of the
+        :class:`MorphTextField`.
+        """
+        self._text_input.apply_content(color)
+
+        if NAME.LABEL in self.identities:
+            self.label.apply_content(color)
+
+    def on_current_content_state(self, instance: Any, state: str) -> None:
+        """Handle changes to the current content state of the text field.
+
+        This method updates the appearance of the text field and its
+        child widgets based on the current content state (e.g., normal,
+        focused, error).
+
+        Parameters
+        ----------
+        state : str
+            The new content state of the text field.
+        """
+        if self.focus:
+            self.border_width = dp(2)
+        else:
+            self.border_width = dp(1)
+
+        for child in self.declarative_children:
+            if hasattr(child, 'error'):
+                child.error = self.error
+            if hasattr(child, 'focus'):
+                child.focus = self.focus
+            if hasattr(child, 'disabled'):
+                child.disabled = self.disabled
+
+        print(
+            state,
+            self.leading_widget.current_content_state,
+            self.leading_widget.available_states,
+            self.leading_widget.focus,)
+            
+
