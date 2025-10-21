@@ -650,6 +650,10 @@ class MorphTypographyBehavior(BaseThemeBehavior):
     def __init__(self, **kwargs) -> None:
         self.register_event_type('on_typography_updated')
         super().__init__(**kwargs)
+        assert self.typography._registered_fonts, (
+            "No fonts registered in Typography system. "
+            "Ensure you are using MorphApp and it is initialized before using "
+            "MorphTypographyBehavior.")
 
         self.fbind('typography_role', self._update_typography)
         self.fbind('typography_size', self._update_typography)
@@ -736,7 +740,9 @@ class MorphTypographyBehavior(BaseThemeBehavior):
         pass
 
 
-class MorphThemeBehavior(MorphColorThemeBehavior, MorphTypographyBehavior):
+class MorphThemeBehavior(
+        MorphColorThemeBehavior,
+        MorphTypographyBehavior):
     """Combined behavior providing both color theming and typography integration.
     
     This behavior combines :class:`MorphColorThemeBehavior` and 

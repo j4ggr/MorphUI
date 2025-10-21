@@ -112,7 +112,7 @@ class MorphElevationBehavior(EventDispatcher):
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         
-        group = NAME.SHADOW_LAYER
+        group = NAME.SHADOW
         with self.canvas.before:
             self._shadow_color_instruction = Color(
                 rgba=self.shadow_color,

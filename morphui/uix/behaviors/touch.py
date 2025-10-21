@@ -565,7 +565,7 @@ class MorphRippleBehavior(EventDispatcher):
         radius = getattr(self, 'radius', [0])
         if isinstance(radius, (int, float)):
             radius = [radius,]
-        group = NAME.RIPPLE_LAYER
+        group = NAME.RIPPLE
         if self.ripple_layer == 'overlay':
             canvas = self.canvas.after
         else:
@@ -609,12 +609,11 @@ class MorphRippleBehavior(EventDispatcher):
         self._ripple_is_finishing = False
         self._ripple_is_fading = False
 
-        group = NAME.RIPPLE_LAYER
         if self.ripple_layer == 'overlay':
             canvas = self.canvas.after
         else:
             canvas = self.canvas.before
-        canvas.remove_group(group)
+        canvas.remove_group(NAME.RIPPLE)
 
     def _update_ripple_instruction(self, *args) -> None:
         """Update the size and position of the ripple shape during
