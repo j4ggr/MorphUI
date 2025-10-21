@@ -4,23 +4,23 @@ from typing import List
 
 from kivy.metrics import dp
 from kivy.metrics import sp
+from kivy.graphics import Line
+from kivy.graphics import Color
+from kivy.graphics import BoxShadow
+from kivy.properties import AliasProperty
 from kivy.properties import StringProperty
 from kivy.properties import ObjectProperty
 from kivy.properties import NumericProperty
-from kivy.properties import BooleanProperty
-from kivy.properties import VariableListProperty
 from kivy.uix.textinput import TextInput
 from kivy.uix.widget import Widget
 from kivy.uix.label import Label
 from kivy.uix.button import Button
 
-from ..utils import clean_config
+from ..utils import clamp
 
 from .behaviors import MorphThemeBehavior
 from .behaviors import MorphTextLayerBehavior
-from .behaviors import MorphColorThemeBehavior
 from .behaviors import MorphAutoSizingBehavior
-from .behaviors import MorphDeclarativeBehavior
 from .behaviors import MorphIdentificationBehavior
 
 from .label import MorphSimpleLabel
@@ -33,11 +33,48 @@ from ..constants import NAME
 
 __all__ = [
     'MorphTextField',]
-class MorphTextInput(TextInput):
 
-    _cursor_instruction: Color
 
-    _cursor_color_instruction: Line
+class MorphTextInput(
+        MorphIdentificationBehavior,
+        MorphThemeBehavior,
+        MorphTextLayerBehavior,
+        MorphAutoSizingBehavior,
+        TextInput):
+
+    minimum_width: int = NumericProperty(dp(80))
+    """The minimum width of the TextInput based on content.
+
+    :attr:`minimum_width` is a :class:`~kivy.properties.NumericProperty`
+    and defaults to dp(80).
+    """
+
+    def _get_min_height(self) -> Any:
+        """Calculate the minimum height required for the TextInput.
+        
+        This method computes the minimum height needed to display all
+        lines of text without clipping, taking into account line height,
+        line spacing, and padding. If the TextInput is not multiline, it
+        simply returns the line height.
+        
+        Overrides the default behavior to provide accurate sizing
+        for multiline TextInputs."""
+        default = self.line_height
+        if not self.multiline:
+            return default
+        
+        minimum_height = (
+            len(self._lines) * (self.line_height + self.line_spacing)
+            + self.padding[1]
+            + self.padding[3])
+        return max(minimum_height, default)
+
+    minimum_height: int = AliasProperty(
+        _get_min_height,
+        bind=[
+            '_lines', 'line_height', 'line_spacing', 'padding', 'multiline',
+            'password'],
+        cache=True)
 
     cursor_path: List[float] = AliasProperty(
         lambda self: [
@@ -46,84 +83,130 @@ class MorphTextInput(TextInput):
             self.cursor_pos[1] - self.line_height],
         bind=['cursor_pos', 'line_height'],
         cache=True)
-    
-    # _cursor_blink: BooleanProperty = BooleanProperty(False)
+    """The path points for the cursor line (read-only).
 
-    def __init__(self, **kwargs):
+    This property defines the points for drawing the cursor line based
+    on the current cursor position and line height.
+
+    :attr:`cursor_path` is a :class:`~kivy.properties.AliasProperty`.
+    """
+    
+    _text_color_instruction: Color
+    """Kivy Color instruction for the text color."""
+
+    _cursor_instruction: Color
+    """Kivy Line instruction for the cursor."""
+
+    _cursor_color_instruction: Line
+    """Kivy Color instruction for the cursor color."""
+
+    def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
-        self.canvas.before.clear()
+
+        for child in self.canvas.before.children:
+            if child.group is None and not isinstance(child, BoxShadow):
+                self.canvas.before.remove(child)
+
         with self.canvas.before:
-            self._cursor_instruction = Color(
+            self._cursor_color_instruction = Color(
                 rgba=self.cursor_color,
-                group=NAME_TEXTINPUT_CURSOR)
-            self._cursor_color_instruction = SmoothLine(
+                group=NAME.TEXTINPUT_CURSOR)
+            self._cursor_instruction = Line(
                 width=self.cursor_width,
-                points=self.cursor_path)
+                points=self.cursor_path,
+                group=NAME.TEXTINPUT_CURSOR)
+        
+        # Since we are playing around with the canvas instruction the text 
+        # loses its color, so we have to provide another one.
+        # This is a workaround until we have a better solution.
+        with self.canvas.before:
+            self._text_color_instruction = Color(
+                rgba=self.content_color,
+                group=NAME.TEXTINPUT_TEXT)
+
         self.bind(
             _cursor_blink=self.update_cursor,
             cursor_path=self.update_cursor,
             cursor_color=self.update_cursor,
-            cursor_width=self.update_cursor)
+            cursor_width=self.update_cursor,
+            focus=self.update_cursor,
+            content_color=self.setter('cursor_color'),)
 
-    def update_cursor(self, *args):
-        color = self.cursor_color if self._cursor_blink else [0, 0, 0, 0]
-        self._cursor_instruction.rgba = color
-        self._cursor_color_instruction.points = self.cursor_path
+    def update_cursor(self, *args) -> None:
+        """Update the cursor appearance based on focus and blink state.
         
+        This method updates the cursor's color and position based on
+        whether the TextInput is focused and if the cursor blink is
+        active.
+
+        It overrides the default behavior to ensure the cursor is
+        displayed correctly with MorphUI theming.
+        """
+        if self.focus and self._cursor_blink:
+            self._cursor_color_instruction.rgba = self.cursor_color
+        else:
+            self._cursor_color_instruction.rgba = [0, 0, 0, 0]
+        self._cursor_instruction.points = self.cursor_path
+
 
 class TextFieldLabel(MorphSimpleLabel):
     
     default_config: Dict[str, Any] = dict(
-        halign='left',
-        valign='middle',
         theme_color_bindings=dict(
             content_color='content_surface_color',),
         typography_role='Label',
         typography_size='medium',
         typography_weight='Regular',
+        halign='left',
+        valign='middle',
         auto_width=True,)
 
 
 class TextFieldSupportingLabel(MorphSimpleLabel):
     
     default_config: Dict[str, Any] = dict(
-        halign='left',
-        valign='middle',
         theme_color_bindings=dict(
             content_color='content_surface_color',),
         typography_role='Label',
         typography_size='small',
         typography_weight='Regular',
+        halign='left',
+        valign='middle',
         auto_width=True,)
 
 
 class TextFieldLeadingIconLabel(MorphSimpleIconLabel):
     
     default_config: Dict[str, Any] = dict(
-        halign='center',
-        valign='middle',
         theme_color_bindings=dict(
             content_color='content_surface_color',),
-        font_size=sp(20),
+        font_name=MorphSimpleIconLabel.default_config['font_name'],
+        typography_role=MorphSimpleIconLabel.default_config['typography_role'],
+        typography_size=MorphSimpleIconLabel.default_config['typography_size'],
+        halign='center',
+        valign='middle',
         size_hint=(None, None),
-        size=(dp(24), dp(24)),)
+        size=(dp(24), dp(24)),
+        padding=dp(0),)
 
 
 class TextFieldTrailingIconButton(MorphIconButton):
     
     default_config: Dict[str, Any] = dict(
-        halign='center',
-        valign='middle',
         theme_color_bindings=dict(
             content_color='primary_color',
-            surface_color='primary_color',
+            surface_color='transparent_color',
             hovered_content_color='content_surface_variant_color',),
-        font_size=sp(20),
-        padding=5,
+        font_name=MorphIconButton.default_config['font_name'],
+        typography_role=MorphIconButton.default_config['typography_role'],
+        typography_size=MorphIconButton.default_config['typography_size'],
+        halign='center',
+        valign='middle',
         round_sides=True,
         ripple_enabled=False,
         size_hint=(None, None),
-        size=(dp(24), dp(24)),)
+        size=(dp(24), dp(24)),
+        padding=dp(0),)
 
 
 class MorphTextField(
@@ -203,8 +286,6 @@ class MorphTextField(
         self.leading_icon_label = Label(text='icon')
         self.trailing_icon_button = Button(text='icon_button')
         super().__init__(**kwargs)
-        for child in self.canvas.before.children:
-            print(f'Canvas before child: {child}, group={child.group}')
         self.add_widget(self.label)
         self.add_widget(self.supporting_label)
         self.add_widget(self.leading_icon_label)
