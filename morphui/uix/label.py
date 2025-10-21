@@ -69,14 +69,14 @@ class MorphLabel(
     """
 
     default_config: Dict[str, Any] = dict(
-        halign='left',
-        valign='middle',
         theme_color_bindings=dict(
             content_color='content_surface_color',
             surface_color='surface_color',),
         typography_role='Label',
         typography_size='medium',
         typography_weight='Regular',
+        halign='left',
+        valign='middle',
         padding=dp(8),)
     """Default configuration values for MorphLabel instances.
     
@@ -146,14 +146,14 @@ class MorphIconLabel(MorphIconBehavior, MorphLabel):
     """
 
     default_config: Dict[str, Any] = dict(
-        font_name='MaterialIcons',
-        halign='center',
-        valign='middle',
         theme_color_bindings=dict(
             content_color='content_surface_variant_color',
             surface_color='transparent_color',),
+        font_name='MaterialIcons',
         typography_role='Label',
         typography_size='large',
+        halign='center',
+        valign='middle',
         auto_size=True,
         padding=dp(8),)
     """Default configuration values for MorphIconLabel instances.
@@ -209,13 +209,13 @@ class MorphSimpleLabel(
     """
 
     default_config: Dict[str, Any] = dict(
-        halign='left',
-        valign='middle',
         theme_color_bindings=dict(
             content_color='content_surface_color',),
         typography_role='Label',
         typography_size='medium',
-        typography_weight='Regular',)
+        typography_weight='Regular',
+        halign='left',
+        valign='middle',)
     """Default configuration values for MorphSimpleLabel instances.
     
     Provides minimal label appearance settings:
@@ -246,23 +246,23 @@ class MorphSimpleIconLabel(MorphIconBehavior, MorphSimpleLabel):
     Examples
     --------
     ```python
-    from morphui.app import MorphApp
-    from morphui.uix.label import MorphSimpleIconLabel
-    from morphui.uix.boxlayout import MorphBoxLayout
+from morphui.app import MorphApp
+from morphui.uix.label import MorphSimpleIconLabel
+from morphui.uix.boxlayout import MorphBoxLayout
 
-    class MyApp(MorphApp):
-        def build(self):
-            return MorphBoxLayout(
-                MorphSimpleIconLabel(
-                    icon='home',
-                    typography_size='large',),
-                MorphSimpleIconLabel(
-                    icon='user',
-                    typography_size='large',),
-                orientation='vertical',
-                padding=50,
-                spacing=15,)
-    MyApp().run()
+class MyApp(MorphApp):
+    def build(self):
+        return MorphBoxLayout(
+            MorphSimpleIconLabel(
+                icon='home',
+                typography_size='large',),
+            MorphSimpleIconLabel(
+                icon='user',
+                typography_size='large',),
+            orientation='vertical',
+            padding=50,
+            spacing=15,)
+MyApp().run()
     ```
 
     Notes
@@ -274,14 +274,16 @@ class MorphSimpleIconLabel(MorphIconBehavior, MorphSimpleLabel):
     """
 
     default_config: Dict[str, Any] = dict(
-        font_name='MaterialIcons',
-        halign='center',
-        valign='middle',
         theme_color_bindings=dict(
-            content_color='content_surface_variant_color',),
+            surface_color='transparent_color',
+            content_color='content_surface_color',),
+        font_name='MaterialIcons',
         typography_role='Label',
         typography_size='large',
-        auto_size=True,)
+        halign='center',
+        valign='middle',
+        auto_size=True,
+        padding=dp(4),)
     """Default configuration values for MorphSimpleIconLabel instances.
     
     Provides minimal icon-specific display settings:
