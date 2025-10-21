@@ -798,6 +798,16 @@ class MorphContentLayerBehavior(BaseLayerBehavior):
     :class:`~kivy.properties.ColorProperty` and defaults to None.
     """
 
+    focus_content_color: List[float] | None = ColorProperty(None)
+    """Content color to use when the widget is focused.
+
+    This property allows you to specify a different content color for
+    the widget when it is in the focused state. If not set, the default
+    content color will be used.
+
+    :attr:`focus_content_color` is a
+    :class:`~kivy.properties.ColorProperty` and defaults to None."""
+
     hovered_content_color: List[float] | None = ColorProperty(None)
     """Content color to use when the widget is hovered.
 
@@ -841,6 +851,13 @@ class MorphContentLayerBehavior(BaseLayerBehavior):
                 self.content_color = self.foreground_color
             else:
                 self.content_color = self.theme_manager.text_color
+        
+        if hasattr(self, 'disabled_color'):
+            self.disabled_color = (
+                self.disabled_content_color or self.disabled_color)
+        if hasattr(self, 'disabled_foreground_color'):
+            self.disabled_foreground_color = (
+                self.disabled_content_color or self.disabled_foreground_color)
 
         self.bind(
             content_color=self._update_content_layer,
@@ -848,6 +865,31 @@ class MorphContentLayerBehavior(BaseLayerBehavior):
             current_content_state=self._update_content_layer,)
         
         self.refresh_content()
+
+    def get_resolved_content_color(self) -> List[float] | None:
+        """Determine the appropriate content color based on the current
+        state.
+
+        This method checks the widget's current content state and
+        returns the corresponding content color. If a specific color
+        for the state is not set, it falls back to the default
+        `content_color`.
+
+        Override this method in subclasses to customize color
+        resolution logic.
+
+        Returns
+        -------
+        List[float] | None
+            The resolved content color as a list of RGBA values.
+        """
+        state = self.current_content_state
+        content_color = getattr(self, f'{state}_content_color', None)
+
+        if content_color is None:
+            content_color = self.content_color
+
+        return content_color
     
     def _update_content_layer(self, *args) -> None:
         """Update the content layer based on the current properties.
@@ -856,23 +898,11 @@ class MorphContentLayerBehavior(BaseLayerBehavior):
         such as `content_color` or `disabled`. It applies the
         appropriate content color based on the current state.
         """
-        if hasattr(self, 'disabled_color'):
-            self.disabled_color = (
-                self.disabled_content_color or self.disabled_color)
-        if hasattr(self, 'disabled_foreground_color'):
-            self.disabled_foreground_color = (
-                self.disabled_content_color or self.disabled_foreground_color)
-        
         if self.current_content_state == 'disabled':
             self.dispatch('on_content_updated')
             return None
 
-        color = None
-        if self.current_content_state == 'hovered':
-            color = self.hovered_content_color or self.content_color
-        elif self.current_content_state == 'normal':
-            color = self.content_color or self.theme_manager.text_color
-
+        color = self.get_resolved_content_color()
         if color is not None:
             self.apply_content(color)
     
