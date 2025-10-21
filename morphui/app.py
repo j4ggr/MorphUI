@@ -19,13 +19,6 @@ class MorphApp(App):
     _typography: Typography = Typography()
     """Typography instance for managing fonts and text styles."""
 
-    def __new__(cls, **kwargs) -> Self:
-        """Override __new__ to register fonts before instance creation."""
-        instance = super().__new__(cls)
-        for font_dict in instance._typography.fonts_to_autoregister:
-            instance._typography.register_font(**font_dict)
-        return instance
-
     @property
     def theme_manager(self) -> ThemeManager:
         """Access the theme manager for theming and style management.
