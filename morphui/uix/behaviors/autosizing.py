@@ -88,11 +88,11 @@ class MorphAutoSizingBehavior(EventDispatcher):
             self.auto_width = True
             self.auto_height = True
 
-        if self.has_texture_size:
-            self.fbind('texture_size', self._update_size)
-        else:
+        if hasattr(self, 'minimum_width') and hasattr(self, 'minimum_height'):
             self.fbind('minimum_width', self._update_size)
             self.fbind('minimum_height', self._update_size)
+        elif self.has_texture_size:
+            self.fbind('texture_size', self._update_size)
         for prop in ('auto_size', 'auto_width', 'auto_height'):
             self.fbind(prop, self._update_auto_sizing, prop=prop)
 
@@ -123,21 +123,20 @@ class MorphAutoSizingBehavior(EventDispatcher):
         change, ensuring that the widget's size remains consistent with
         its content.
         """
+        width, height = self._original_size
         if self.auto_width:
             if self.has_texture_size:
-                self.width = self.texture_size[0]
-            else:
-                self.width = self.minimum_width
-        else:
-            self.width = self._original_size[0]
+                width = self.texture_size[0]
+            width = getattr(self, 'minimum_width', width)
+        if self._original_size_hint[0] is None:
+            self.width = width
 
         if self.auto_height:
             if self.has_texture_size:
-                self.height = self.texture_size[1]
-            else:
-                self.height = self.minimum_height
-        else:
-            self.height = self._original_size[1]
+                height = self.texture_size[1]
+            self.height = getattr(self, 'minimum_height', height)
+        if self._original_size_hint[1] is None:
+            self.height = height
 
     def _update_auto_sizing(
             self, instance: Any, value: bool, prop: str) -> None:
