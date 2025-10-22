@@ -20,11 +20,13 @@ from ..utils import clamp
 from ..utils import clean_config
 
 from .behaviors import MorphThemeBehavior
+from .behaviors import MorphHoverBehavior
 from .behaviors import MorphTextLayerBehavior
 from .behaviors import MorphAutoSizingBehavior
 from .behaviors import MorphTypographyBehavior
 from .behaviors import MorphContentLayerBehavior
 from .behaviors import MorphIdentificationBehavior
+from .behaviors import MorphInteractionLayerBehavior
 
 from .floatlayout import MorphFloatLayout
 
@@ -422,11 +424,13 @@ class MorphTextInput(
 
 
 class MorphTextField(
-        MorphFloatLayout,
         TextValidator,
+        MorphHoverBehavior,
         MorphAutoSizingBehavior,
         MorphTypographyBehavior,
-        MorphContentLayerBehavior,):
+        MorphContentLayerBehavior,
+        MorphInteractionLayerBehavior,
+        MorphFloatLayout,):
     
     text: str = StringProperty('')
     """The text content of the text field.
@@ -666,7 +670,8 @@ class MorphTextField(
             if attr not in config:
                 config[attr] = cls()
 
-        super().__init__(self._text_input, **config)
+        super().__init__(**config)
+        self.add_widget(self._text_input)
 
         self._text_input.bind(
             _lines=self._update_layout,
@@ -849,11 +854,3 @@ class MorphTextField(
                 child.focus = self.focus
             if hasattr(child, 'disabled'):
                 child.disabled = self.disabled
-
-        print(
-            state,
-            self.leading_widget.current_content_state,
-            self.leading_widget.available_states,
-            self.leading_widget.focus,)
-            
-
