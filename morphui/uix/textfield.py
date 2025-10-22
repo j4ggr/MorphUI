@@ -51,10 +51,15 @@ __all__ = [
 
 
 class TextFieldLabel(MorphSimpleLabel):
+
+    disabled: bool = BooleanProperty(False)
+
+    focus: bool = BooleanProperty(False)
+    
+    error: bool = BooleanProperty(False)
     
     default_config: Dict[str, Any] = dict(
         theme_color_bindings=dict(
-            content_color='primary_color',
             focus_content_color='primary_color',
             error_content_color='error_color',),
         typography_role='Label',
@@ -77,7 +82,7 @@ class TextFieldSupportingLabel(MorphSimpleLabel):
     default_config: Dict[str, Any] = dict(
         theme_color_bindings=dict(
             content_color='transparent_color',
-            focus_content_color='content_surface_color',
+            focus_content_color='primary_color',
             error_content_color='error_color',),
         typography_role='Label',
         typography_size='small',
@@ -448,7 +453,6 @@ class MorphTextInput(
 class MorphTextField(
         TextValidator,
         MorphHoverBehavior,
-        MorphAutoSizingBehavior,
         MorphTypographyBehavior,
         MorphContentLayerBehavior,
         MorphInteractionLayerBehavior,
@@ -613,12 +617,30 @@ class MorphTextField(
     :attr:`_horizontal_padding` is a 
     :class:`~kivy.properties.NumericProperty` and defaults to dp(12)."""
 
+    _text_input_min_width: float = NumericProperty(dp(0))
+    """The current minimum width of the internal text input widget.
+
+    This property is used for layout calculations and reflects the
+    current minimum width of the internal text input widget.
+
+    :attr:`_text_input_min_width` is a
+    :class:`~kivy.properties.NumericProperty`."""
+
+    _text_input_height: float = NumericProperty(dp(0))
+    """The current height of the internal text input widget.
+
+    This property is used for layout calculations and reflects the
+    current height of the internal text input widget.
+
+    :attr:`_text_input_height` is a
+    :class:`~kivy.properties.NumericProperty`."""
+
     minimum_width: float = AliasProperty(
         lambda self: (
-            self._text_input_bounds[0]
-            + self._text_input.minimum_width
+            self._text_input_min_width
+            + self._text_input_bounds[0]
             + self._text_input_bounds[2]),
-        bind=['size', '_text_input_bounds'],
+        bind=['size', '_text_input_bounds', '_text_input_min_width'],
         cache=True)
     """The minimum width of the text field (read-only).
 
@@ -630,10 +652,10 @@ class MorphTextField(
     
     minimum_height: float = AliasProperty(
         lambda self: (
-            self._text_input_bounds[1]
-            + self._text_input.minimum_height
+            self._text_input_height
+            + self._text_input_bounds[1]
             + self._text_input_bounds[3]),
-        bind=['size', '_text_input_bounds'],
+        bind=['size', '_text_input_bounds', '_text_input_height'],
         cache=True)
     """The minimum height of the text field (read-only).
 
@@ -652,7 +674,7 @@ class MorphTextField(
             focus_border_color='primary_color',
             disabled_border_color='outline_variant_color',
             content_color='content_surface_color',),
-        auto_height=True,)
+        size_hint_y=None,)
     """Default configuration values for MorphTextField.
 
     Provides standard text field appearance and behavior settings:
@@ -693,13 +715,16 @@ class MorphTextField(
             text=self.setter('text'),
             focus=self.setter('focus'),
             disabled=self.setter('disabled'),
-            multiline=self.setter('multiline'),)
+            multiline=self.setter('multiline'),
+            height=self.setter('_text_input_height'),
+            minimum_width=self.setter('_text_input_min_width'),)
         
         self.bind(
             pos=self._update_layout,
             width=self._update_layout,
             declarative_children=self._update_layout,
             _text_input_bounds=self._update_text_input_coordinates,
+            minimum_height=self.setter('height'),
             content_color=self._text_input.setter('content_color'),
             text=self._text_input.setter('text'),
             focus=self._text_input.setter('focus'),
@@ -790,7 +815,6 @@ class MorphTextField(
         
         self._text_input_bounds = bounds
         self._update_text_input_coordinates()
-        self.height = self._text_input.height + bounds[1] + bounds[3]
 
         if NAME.LABEL in self.identities:
             self.label.pos = self._resolve_label_position()
@@ -799,21 +823,19 @@ class MorphTextField(
         """Update the coordinates of the internal text input widget 
         based on the current layout and appearance settings.
         """
+        self._text_input.x = self.x + self._text_input_bounds[0]
+        self._text_input.y = self.y + self._text_input_bounds[1]
         width = (
             self.width
             - self._text_input_bounds[0]
             - self._text_input_bounds[2])
         self._text_input.width = max(self._text_input.minimum_width, width)
-            
         maximum_height = (
             self.maximum_height
             - self._text_input_bounds[1]
             - self._text_input_bounds[3])
-        self._text_input.maximum_height = maximum_height # Set maximum height for triggering auto-sizing
+        self._text_input.maximum_height = maximum_height
         
-        self._text_input.x = self.x + self._text_input_bounds[0]
-        self._text_input.y = self.y + self._text_input_bounds[1]
-
     def refresh_textfield_content(self, *args) -> None:
         """Refresh the content of the text field and its child widgets.
 
@@ -830,24 +852,7 @@ class MorphTextField(
             self, self.trailing_icon, NAME.TRAILING_WIDGET)
         
         self._update_layout()
-    
-    def _update_size(self, *args) -> None:
-        super()._update_size(*args)
-        self.height = clamp(
-            self.height, self.minimum_height, self.maximum_height)
-        self.width = max(self.width, self.minimum_width)
-    
-    def apply_content(self, color: List[float]) -> None:
-        """Apply the content color to the internal text input widget.
-
-        This method updates the content color of the internal
-        :class:`MorphTextInput` to match the content color of the
-        :class:`MorphTextField`.
-        """
-        self._text_input.apply_content(color)
-
-        if NAME.LABEL in self.identities:
-            self.label.apply_content(color)
+        self.on_current_content_state(self, self.current_content_state)
 
     def on_current_content_state(self, instance: Any, state: str) -> None:
         """Handle changes to the current content state of the text field.
@@ -867,12 +872,13 @@ class MorphTextField(
             self.border_width = dp(1)
 
         for child in self.declarative_children:
-            if hasattr(child, 'error'):
-                child.error = self.error
-            if hasattr(child, 'focus'):
-                child.focus = self.focus
-            if hasattr(child, 'disabled'):
-                child.disabled = self.disabled
+            for state in self.possible_states:
+                if not hasattr(child, state):
+                    continue
+
+                value = getattr(self, state, None)
+                if value is not None:
+                    setattr(child, state, value)
 
     def _resolve_label_position(self) -> Tuple[float, float]:
         """Get the position of the main label widget.
