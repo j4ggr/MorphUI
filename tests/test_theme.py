@@ -287,6 +287,8 @@ class TestTypography:
         assert isinstance(typography.fonts_to_autoregister, tuple)
         assert len(typography.fonts_to_autoregister) > 0
         assert isinstance(typography._registered_fonts, tuple)
+        # Check that fonts were auto-registered during initialization
+        assert len(typography._registered_fonts) > 0
 
     def test_init_custom_properties(self):
         """Test Typography initialization with custom values."""
@@ -300,6 +302,9 @@ class TestTypography:
         typography = Typography()
         initial_count = len(typography._registered_fonts)
         
+        # Reset mock to clear calls from auto-registration during __init__
+        mock_label_base.register.reset_mock()
+        
         typography.register_font(
             name='TestFont',
             fn_regular='test-regular.ttf',
@@ -308,7 +313,7 @@ class TestTypography:
             fn_bolditalic='test-bolditalic.ttf'
         )
         
-        # Check LabelBase.register was called
+        # Check LabelBase.register was called for our font
         mock_label_base.register.assert_called_once_with(
             name='TestFont',
             fn_regular='test-regular.ttf',
@@ -325,7 +330,11 @@ class TestTypography:
     def test_register_font_duplicate(self, mock_label_base):
         """Test registering a font that's already registered."""
         typography = Typography()
-        typography._registered_fonts = ('TestFont',)
+        # Add TestFont to registered fonts after auto-registration
+        typography._registered_fonts = typography._registered_fonts + ('TestFont',)
+        
+        # Reset mock to clear calls from auto-registration during __init__
+        mock_label_base.register.reset_mock()
         
         typography.register_font(
             name='TestFont',
@@ -466,6 +475,7 @@ class TestTypography:
         # Test minimal registration (regular only)
         with patch('morphui.theme.typography.LabelBase') as mock_label_base:
             typography.register_font('MinimalFont', 'regular.ttf')
+            # Should be called once for our font (ignore auto-registration calls)
             mock_label_base.register.assert_called_with(
                 name='MinimalFont',
                 fn_regular='regular.ttf',
@@ -483,6 +493,7 @@ class TestTypography:
                 'bold.ttf',
                 'bolditalic.ttf'
             )
+            # Should be called once for our font (ignore auto-registration calls)
             mock_label_base.register.assert_called_with(
                 name='FullFont',
                 fn_regular='regular.ttf',
@@ -583,12 +594,6 @@ class TestTypography:
             assert result == 'InterRegular'
             assert len(w) == 1
             assert 'Falling back to InterRegular' in str(w[0].message)
-
-    def test_resolve_font_name_none_assertion(self):
-        """Test _resolve_font_name with None font_name when instance font_name is None."""
-        # Skip this test as the current implementation doesn't raise for None font_name
-        # The method now handles None gracefully by using the instance font_name
-        pytest.skip("Current implementation handles None font_name gracefully")
 
     def test_get_icon_character_valid_icon(self):
         """Test get_icon_character with valid icon name."""
@@ -705,6 +710,9 @@ class TestTypography:
         """Test that _registered_fonts properly tracks registered fonts."""
         typography = Typography()
         initial_count = len(typography._registered_fonts)
+        
+        # Check that auto-registered fonts are already present
+        assert initial_count > 0  # Should have auto-registered fonts
         
         with patch('morphui.theme.typography.LabelBase'):
             typography.register_font('TestFont1', 'test1.ttf')

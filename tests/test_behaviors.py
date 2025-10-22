@@ -459,15 +459,6 @@ class TestMorphAutoSizingBehavior:
         assert widget.width == original_width
         assert widget.height == original_height
 
-    def test_update_auto_sizing_auto_size_sets_both(self):
-        """Test _update_auto_sizing with auto_size sets both dimensions."""
-        widget = self.MockWidget()
-        
-        widget._update_auto_sizing(widget, True, 'auto_size')
-        
-        assert widget.auto_width is True
-        assert widget.auto_height is True
-
     def test_update_auto_sizing_individual_properties(self):
         """Test _update_auto_sizing with individual properties."""
         widget = self.MockWidget()

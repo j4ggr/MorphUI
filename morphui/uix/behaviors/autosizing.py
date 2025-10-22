@@ -2,6 +2,7 @@ from typing import Any
 from typing import Tuple
 
 from kivy.event import EventDispatcher
+from kivy.properties import AliasProperty
 from kivy.properties import BooleanProperty
 
 
@@ -18,7 +19,7 @@ class MorphAutoSizingBehavior(EventDispatcher):
     minimum required size.
     """
 
-    auto_width = BooleanProperty(False)
+    auto_width: bool = BooleanProperty(False)
     """Automatically adjust widget width to minimum required size.
     
     When True, the widget's width will be automatically calculated and 
@@ -31,7 +32,7 @@ class MorphAutoSizingBehavior(EventDispatcher):
     and defaults to False.
     """
 
-    auto_height = BooleanProperty(False)
+    auto_height: bool = BooleanProperty(False)
     """Automatically adjust widget height to minimum required size.
     
     When True, the widget's height will be automatically calculated and 
@@ -45,21 +46,27 @@ class MorphAutoSizingBehavior(EventDispatcher):
     and defaults to False.
     """
 
-    auto_size = BooleanProperty(False)
+    auto_size: bool = AliasProperty(
+        lambda self: self.auto_width and self.auto_height,
+        lambda self, value: (
+            setattr(self, 'auto_width', value),
+            setattr(self, 'auto_height', value)),
+        bind=('auto_width', 'auto_height'))
     """Automatically adjust both width and height to minimum required 
     size.
     
     When True, both the widget's width and height will be automatically 
     calculated and set to the minimum size required to accommodate all 
-    its content and children. This property acts as a convenience 
-    shortcut for setting both :attr:`auto_width` and :attr:`auto_height` 
-    to True.
-    
-    Note: When :attr:`auto_size` is True, it takes precedence over 
-    individual :attr:`auto_width` and :attr:`auto_height` settings.
-    
-    :attr:`auto_size` is a :class:`~kivy.properties.BooleanProperty` 
-    and defaults to False.
+    its content and children. This is useful for creating widgets that 
+    fully adapt their size based on their packed content.
+
+    Note that setting :attr:`auto_size` to True will set both 
+    :attr:`auto_width` and :attr:`auto_height` to True. Conversely,
+    setting :attr:`auto_size` to False will set both :attr:`auto_width` and 
+    :attr:`auto_height` to False.
+
+    :attr:`auto_size` is a :class:`~kivy.properties.AliasProperty` and 
+    defaults to False.
     """
 
     _original_size_hint : Tuple[float | None, float | None] = (1.0, 1.0)
@@ -84,16 +91,13 @@ class MorphAutoSizingBehavior(EventDispatcher):
 
         self._original_size = (self.size[0], self.size[1])
         self._original_size_hint = (self.size_hint[0], self.size_hint[1])
-        if kwargs.get('auto_size'):
-            self.auto_width = True
-            self.auto_height = True
 
         if hasattr(self, 'minimum_width') and hasattr(self, 'minimum_height'):
             self.fbind('minimum_width', self._update_size)
             self.fbind('minimum_height', self._update_size)
         elif self.has_texture_size:
             self.fbind('texture_size', self._update_size)
-        for prop in ('auto_size', 'auto_width', 'auto_height'):
+        for prop in ('auto_width', 'auto_height'):
             self.fbind(prop, self._update_auto_sizing, prop=prop)
 
         self.refresh_auto_sizing()
@@ -134,7 +138,7 @@ class MorphAutoSizingBehavior(EventDispatcher):
         if self.auto_height:
             if self.has_texture_size:
                 height = self.texture_size[1]
-            self.height = getattr(self, 'minimum_height', height)
+            height = getattr(self, 'minimum_height', height)
         if self.size_hint[1] is None:
             self.height = height
 
@@ -158,11 +162,6 @@ class MorphAutoSizingBehavior(EventDispatcher):
             The name of the property that changed. One of 'auto_size',
             'auto_width', 'auto_height'.
         """
-        if prop == 'auto_size':
-            self.auto_height = value
-            self.auto_width = value
-            return
-
         self.apply_auto_sizing(self.auto_width, self.auto_height)
 
     def apply_auto_sizing(self, auto_width: bool, auto_height: bool) -> None:
