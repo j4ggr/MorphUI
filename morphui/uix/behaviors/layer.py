@@ -89,7 +89,20 @@ class BaseLayerBehavior(
         List containing [x, y, width, height, *radius] for the rounded
         rectangle.
     """
-    
+
+    contour: List[float] = AliasProperty(
+        lambda self: self._generate_contour(),
+        bind=['size', 'pos', 'clamped_radius'],
+        cache=True)
+    """Get the contour points for the rounded rectangle (read-only).
+
+    This property returns a flat list of x, y coordinates representing
+    the contour of the rounded rectangle. It is automatically updated
+    when the widget's size, position, or clamped radius changes.
+
+    :attr:`contour` is a :class:`~kivy.properties.AliasProperty`
+    """
+
     def _generate_corner_arc_points(
             self,
             corner: Literal['top-left', 'top-right', 'bottom-left', 'bottom-right'],
@@ -144,7 +157,8 @@ class BaseLayerBehavior(
         if radius <= 1:
             return [x_center, y_center]
 
-        n_segments = int(radius) + 1
+        n_max = 45 # Limit maximum segments for performance (1 for each degree)
+        n_segments = min(int(radius) + 1, n_max)
         def _points(n: int) -> Generator[float, None, None]:
             for i in range(n + 1):  # Include end point for continuity
                 # Use normalized angle progression for consistent curvature
@@ -205,6 +219,32 @@ class BaseLayerBehavior(
             min(v_radius[1], h_radius[1]),
             min(v_radius[2], h_radius[2]),
             min(v_radius[3], h_radius[3]),]
+    
+    def _generate_contour(self) -> List[float]:
+        """Generate the complete contour points including corners and 
+        edges.
+
+        This method generates a list of points that define the contour
+        of the rounded rectangle.
+
+        Returns
+        -------
+        List[float]
+            A flat list of x, y coordinates representing the contour
+            path.
+        """
+        radius = self.clamped_radius
+        points = [
+            self.x + radius[0], self.y + self.height,
+            *self._generate_corner_arc_points('top-left', radius[0]),
+            self.x, self.y + radius[3],
+            *self._generate_corner_arc_points('bottom-left', radius[3]),
+            self.x + self.width - radius[2], self.y,
+            *self._generate_corner_arc_points('bottom-right', radius[2]),
+            self.x + self.width, self.y + self.height - radius[1],
+            *self._generate_corner_arc_points('top-right', radius[1]),]
+
+        return points
 
 
 class MorphSurfaceLayerBehavior(BaseLayerBehavior):
@@ -348,10 +388,8 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
     """
     
     border_path = AliasProperty(
-        lambda self: self.calculate_border_path(),
-        bind=[
-            'size', 'pos', 'clamped_radius', 'border_bottom_line_only',
-            'border_open_length',],
+        lambda self: self._generate_border_path(),
+        bind=['contour', 'border_bottom_line_only', 'border_open_length',],
         cache=True)
     """Get the border path points (read-only).
 
@@ -428,7 +466,7 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
             current_surface_state=self._update_surface_layer,)
         self.refresh_surface()
 
-    def calculate_border_path(self) -> List[float]:
+    def _generate_border_path(self) -> List[float]:
         """Calculate the complete border path points including corners
         and edges.
 
@@ -445,16 +483,7 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
         if self.border_bottom_line_only:
             return [self.x, self.y, self.x + self.width, self.y]
         
-        radius = self._clamp_radius()
-        path: List[float] = [
-            self.x + radius[0], self.y + self.height,
-            *self._generate_corner_arc_points('top-left', radius[0]),
-            self.x, self.y + radius[3],
-            *self._generate_corner_arc_points('bottom-left', radius[3]),
-            self.x + self.width - radius[2], self.y,
-            *self._generate_corner_arc_points('bottom-right', radius[2]),
-            self.x + self.width, self.y + self.height - radius[1],
-            *self._generate_corner_arc_points('top-right', radius[1]),]
+        path: List[float] = self.contour
 
         if self.border_open_length > 0:
             x_start = path[0]
@@ -504,7 +533,7 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
         
         self._border_color_instruction.rgba = border_color
         self._border_instruction.width = dp(self.border_width)
-        self._border_instruction.points = self.calculate_border_path()
+        self._border_instruction.points = self._generate_border_path()
         self._border_instruction.close = self.border_closed
 
         self.dispatch('on_surface_updated')
