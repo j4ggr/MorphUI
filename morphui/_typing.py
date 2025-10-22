@@ -74,8 +74,8 @@ highest precedence and 'normal' the lowest."""
 InteractionState: TypeAlias = Literal[
     'disabled',
     'pressed',
-    'hovered',
     'focus',
+    'hovered',
     'normal',]
 """TypeAlias for interaction-related states.
 
