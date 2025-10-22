@@ -51,15 +51,30 @@ class BaseLayerBehavior(
     
     :attr:`radius` is a :class:`~kivy.properties.VariableListProperty`
     and defaults to `[0, 0, 0, 0]`."""
-    
+
+    clamped_radius: List[float] = AliasProperty(
+        lambda self: self._clamp_radius(),
+        bind=['size', 'radius'],
+        cache=True)
+    """Get the clamped radius values (read-only).
+
+    This property returns the radius values adjusted to ensure that
+    they do not exceed the widget's dimensions. It is automatically
+    updated when the widget's size or radius changes. This property is
+    applied internally when rendering rounded rectangles to ensure 
+    correct display.
+
+    :attr:`clamped_radius` is a :class:`~kivy.properties.AliasProperty`
+    """
+
     rounded_rectangle_params: List[float] = AliasProperty(
         lambda self: [
             0 if isinstance(self, RelativeLayout) else self.x,
             0 if isinstance(self, RelativeLayout) else self.y,
             self.width,
             self.height,
-            *self.radius], # type: ignore
-        bind=['size', 'pos', 'radius'],
+            *self.clamped_radius], # type: ignore
+        bind=['size', 'pos', 'clamped_radius'],
         cache=True)
     """Get the parameters for creating a rounded rectangle (read-only).
 
@@ -131,15 +146,17 @@ class BaseLayerBehavior(
 
         n_segments = int(radius) + 1
         def _points(n: int) -> Generator[float, None, None]:
-            for i in range(n):
-                angle = 0.5 * pi * i / n + alpha
+            for i in range(n + 1):  # Include end point for continuity
+                # Use normalized angle progression for consistent curvature
+                t = i / n  # Normalized parameter from 0 to 1
+                angle = 0.5 * pi * t + alpha
                 x = x_center + radius * cos(angle)
                 y = y_center + radius * sin(angle)
                 yield x
                 yield y
         return list(_points(n_segments))
     
-    def _clamp_radius(self) -> List[float]:
+    def _clamp_radius(self, *args) -> List[float]:
         """Ensure the radius values do not exceed the widget's size.
 
         This method adjusts the radius values to ensure that the sum of 
@@ -333,7 +350,7 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
     border_path = AliasProperty(
         lambda self: self.calculate_border_path(),
         bind=[
-            'size', 'pos', 'radius', 'border_bottom_line_only',
+            'size', 'pos', 'clamped_radius', 'border_bottom_line_only',
             'border_open_length',],
         cache=True)
     """Get the border path points (read-only).
@@ -367,8 +384,8 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
     _border_color_instruction: Color
     """Kivy Color instruction for the border color."""
 
-    _border_instruction: SmoothLine
-    """Kivy SmoothLine instruction for the border."""
+    _border_instruction: RoundedRectangle
+    """Kivy RoundedRectangle instruction for the border."""
 
     def __init__(self, **kwargs) -> None:
         """Initialize the surface behavior with canvas graphics 
@@ -390,7 +407,7 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
             self._surface_instruction = RoundedRectangle(
                 size=self.size,
                 pos=self.pos,
-                radius=self.radius,
+                radius=self.clamped_radius,
                 group=NAME.SURFACE)
             
             self._border_color_instruction = Color(
@@ -483,7 +500,7 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
         self._surface_color_instruction.rgba = surface_color
         self._surface_instruction.pos = self.pos
         self._surface_instruction.size = self.size
-        self._surface_instruction.radius = self.radius
+        self._surface_instruction.radius = self.clamped_radius
         
         self._border_color_instruction.rgba = border_color
         self._border_instruction.width = dp(self.border_width)
@@ -622,7 +639,7 @@ class MorphInteractionLayerBehavior(BaseLayerBehavior):
             self._interaction_instruction = RoundedRectangle(
                 pos=self.pos,
                 size=self.size,
-                radius=self.radius,
+                radius=self.clamped_radius,
                 group=group)
         
         self.bind(
@@ -651,7 +668,7 @@ class MorphInteractionLayerBehavior(BaseLayerBehavior):
         """Update the state layer position and size."""
         self._interaction_instruction.pos = self.pos
         self._interaction_instruction.size = self.size
-        self._interaction_instruction.radius = self.radius
+        self._interaction_instruction.radius = self.clamped_radius
         self._interaction_color_instruction.rgba = self.interaction_color
         self.dispatch('on_interaction_updated')
 
@@ -1100,7 +1117,7 @@ class MorphOverlayLayerBehavior(BaseLayerBehavior):
             self._overlay_instruction = RoundedRectangle(
                 pos=self.pos,
                 size=self.size,
-                radius=self.radius,
+                radius=self.clamped_radius,
                 group=NAME.OVERLAY)
             for name, points in self._overlay_edges_params.items():
                 self._overlay_edges_color_instructions[name] = Color(
@@ -1166,7 +1183,7 @@ class MorphOverlayLayerBehavior(BaseLayerBehavior):
 
         self._overlay_instruction.pos = self.pos
         self._overlay_instruction.size = self.size
-        self._overlay_instruction.radius = self.radius
+        self._overlay_instruction.radius = self.clamped_radius
         self._overlay_color_instruction.rgba = color
 
         for name, line in self._overlay_edges_instruction.items():
