@@ -606,5 +606,107 @@ class _RegexPattern_:
         r'^\+?1?\d{9,15}$')
     """Matches valid phone numbers in international format."""
 
+    DATE_EU: re.Pattern = re.compile(
+        r'^(0[1-9]|[12][0-9]|3[01])(\/|-|\.)(0[1-9]|1[1,2])\2(19\d{2}|20\d{2})$')
+    """Matches dates in European/international format (DD/MM/YYYY).
+    
+    Accepts day-first format with flexible separators: forward slash (/), 
+    hyphen (-), or period (.). Ensures consistent separator usage throughout
+    the date string.
+    
+    Pattern Components
+    ------------------
+    - Day: 01-31 (zero-padded, validates range)
+    - Separator: / or - or . (must be consistent)
+    - Month: 01-12 (zero-padded, validates range)  
+    - Year: 1900-2099 (4-digit format only)
+    
+    Examples
+    --------
+    Valid: "25/12/2023", "03-07-1995", "31.01.2000"
+    Invalid: "32/01/2023", "25/13/2023", "5/3/23"
+    
+    Notes
+    -----
+    This pattern does NOT validate actual calendar dates (e.g., Feb 30th
+    will match the pattern but is not a real date). Use with datetime
+    parsing for full validation.
+    """
+
+    DATE_ISO: re.Pattern = re.compile(
+        r'^(19\d{2}|20\d{2})(\/|-|\.)(0[1-9]|1[1,2])\2(0[1-9]|[12][0-9]|3[01])$')
+    """Matches dates in ISO-style format (YYYY/MM/DD).
+    
+    Accepts year-first format with flexible separators: forward slash (/),
+    hyphen (-), or period (.). Ensures consistent separator usage throughout
+    the date string. Similar to ISO 8601 but allows alternative separators.
+    
+    Pattern Components
+    ------------------
+    - Year: 1900-2099 (4-digit format only)
+    - Separator: / or - or . (must be consistent)
+    - Month: 01-12 (zero-padded, validates range)
+    - Day: 01-31 (zero-padded, validates range)
+    
+    Examples
+    --------
+    Valid: "2023/12/25", "1995-07-03", "2000.01.31"
+    Invalid: "23/12/25", "2023/13/01", "2023-12-32"
+    
+    Notes
+    -----
+    This pattern does NOT validate actual calendar dates (e.g., Feb 30th
+    will match the pattern but is not a real date). Use with datetime
+    parsing for full validation.
+    """
+
+    DATE_US: re.Pattern = re.compile(
+        r'^(0[1-9]|1[1,2])(\/|-|\.)(0[1-9]|[12][0-9]|3[01])\2(19\d{2}|20\d{2})$')
+    """Matches dates in US-style format (MM/DD/YYYY).
+
+    Accepts month-first format with flexible separators: forward slash (/),
+    hyphen (-), or period (.). Ensures consistent separator usage throughout
+    the date string.
+
+    Pattern Components
+    ------------------
+    - Month: 01-12 (zero-padded, validates range)
+    - Separator: / or - or . (must be consistent)
+    - Day: 01-31 (zero-padded, validates range)
+    - Year: 1900-2099 (4-digit format only)
+
+    Examples
+    --------
+    Valid: "12/25/2023", "07-03-1995", "01.31.2000"
+    Invalid: "13/25/2023", "07/32/1995", "01.31.23"
+
+    Notes
+    -----
+    This pattern does NOT validate actual calendar dates (e.g., Feb 30th
+    will match the pattern but is not a real date). Use with datetime
+    parsing for full validation.
+    """
+
+    TIME: re.Pattern = re.compile(
+        r'^(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d)?(?:\s?[APap][Mm])?$')
+    """Matches valid time formats.
+
+    Accepts both 24-hour format (HH:MM or HH:MM:SS) and 12-hour format
+    with optional AM/PM suffix. Validates hour, minute, and optional
+    seconds components.
+
+    Pattern Components
+    ------------------
+    - Hour: 00-23 (24-hour format) or 01-12 (12-hour format, zero-padded)
+    - Minute: 00-59 (zero-padded)
+    - Second: 00-59 (zero-padded, optional)
+    - AM/PM: Optional, case-insensitive, with optional leading space
+
+    Examples
+    --------
+    Valid: "14:30", "09:15:45 AM", "23:59"
+    Invalid: "24:00", "12:60", "12:30 PM AM"
+    """
+
 REGEX = _RegexPattern_()
 """Container for precompiled regular expressions."""

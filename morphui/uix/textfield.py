@@ -42,6 +42,7 @@ __all__ = [
     'TextFieldSupportingLabel',
     'TextFieldLeadingIconLabel',
     'TextFieldTrailingIconButton',
+    'TextValidator',
     'MorphTextInput',
     'MorphTextField',]
 
@@ -152,7 +153,9 @@ class TextValidator(EventDispatcher):
     and defaults to False."""
 
     validator: str | None = OptionProperty(
-        None, options=['email', 'phone'])
+        None,
+        allownone=True,
+        options=['email', 'phone', 'date', 'time', 'datetime'])
     """The type of validation to apply to the text.
 
     This property determines the kind of validation that will be 
@@ -161,7 +164,10 @@ class TextValidator(EventDispatcher):
       address.
     - 'phone': Validates that the text is a properly formatted phone 
       number.
-
+    - 'date': Validates that the text is a properly formatted date.
+    - 'time': Validates that the text is a properly formatted time.
+    - 'datetime': Validates that the text is a properly formatted datetime.
+    When set to None, no validation is performed.
     :attr:`validator` is a :class:`~kivy.properties.OptionProperty`
     and defaults to None.
     """
@@ -201,6 +207,69 @@ class TextValidator(EventDispatcher):
             .replace(")", ""))
         return REGEX.PHONE.match(text) is not None
     
+    def is_valid_date(self, text: str) -> bool:
+        """Check if the given text is a valid date.
+
+        This method checks the text against various date formats to
+        determine its validity.
+
+        Parameters
+        ----------
+        text : str
+            The text input to validate.
+
+        Returns
+        -------
+        bool
+            True if the input is a valid date, False otherwise.
+        """
+        return any((
+            REGEX.DATE_EU.match(text) is not None,
+            REGEX.DATE_ISO.match(text) is not None,
+            REGEX.DATE_US.match(text) is not None))
+    
+    def is_valid_time(self, text: str) -> bool:
+        """Check if the given text is a valid time.
+
+        Parameters
+        ----------
+        text : str
+            The text input to validate.
+
+        Returns
+        -------
+        bool
+            True if the input is a valid time, False otherwise.
+        """
+        return REGEX.TIME.match(text) is not None
+    
+    def is_valid_datetime(self, text: str) -> bool:
+        """Check if the given text is a valid datetime.
+
+        Splits the text into date and time components and validates
+        each part separately. Permits both 'T' and space as separators.
+        Where the date must be the first part and the time the second 
+        part. Then checks if both parts are valid. The expected format is
+        'YYYY-MM-DDTHH:MM:SS' or 'YYYY-MM-DD HH:MM:SS'.
+
+        Parameters
+        ----------
+        text : str
+            The text input to validate.
+
+        Returns
+        -------
+        bool
+            True if the input is a valid datetime, False otherwise.
+        """
+        if 'T' in text:
+            date_part, time_part = text.split('T', 1)
+        elif ' ' in text:
+            date_part, time_part = text.split(' ', 1)
+        else:
+            return False
+        return self.is_valid_date(date_part) and self.is_valid_time(time_part)
+
     def validate(self, text: str) -> bool:
         """Validate the given text based on the current settings.
 
