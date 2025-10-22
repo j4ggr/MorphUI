@@ -12,17 +12,20 @@ from typing import Generator
 from kivy.metrics import dp
 from kivy.graphics import Line
 from kivy.graphics import Color
-from kivy.graphics import Rectangle
+from kivy.graphics import Mesh
 from kivy.graphics import SmoothLine
-from kivy.graphics import RoundedRectangle
+from kivy.graphics import SmoothRoundedRectangle
 from kivy.properties import ListProperty
 from kivy.properties import ColorProperty
 from kivy.properties import NumericProperty
 from kivy.properties import BooleanProperty
 from kivy.properties import AliasProperty
 from kivy.properties import VariableListProperty
+from kivy.properties import BoundedNumericProperty
 from kivy.uix.relativelayout import RelativeLayout
+from kivy.graphics.tesselator import Tesselator
 
+from ..._typing import InteractionState
 from ...constants import NAME
 
 from .appreference import MorphAppReferenceBehavior
@@ -102,6 +105,11 @@ class BaseLayerBehavior(
 
     :attr:`contour` is a :class:`~kivy.properties.AliasProperty`
     """
+
+    mesh: Tuple[List[float], List[float]] = AliasProperty(
+        lambda self: self._generate_mesh(),
+        bind=['contour'],
+        cache=True)
 
     def _generate_corner_arc_points(
             self,
@@ -245,6 +253,30 @@ class BaseLayerBehavior(
             *self._generate_corner_arc_points('top-right', radius[1]),]
 
         return points
+
+    def _generate_mesh(self) -> Tuple[List[float], List[int]]:
+        """Generate the vertices and indices for the rounded rectangle
+        using tessellation.
+
+        This method uses Kivy's Tesselator to create a set of vertices
+        and indices that define the filled area of the rounded rectangle.
+
+        Returns
+        -------
+        Tuple[List[float], List[int]]
+            A tuple containing:
+            - A flat list of x, y coordinates representing the vertices
+              of the rounded rectangle.
+            - A list of indices defining the triangles for rendering.
+        """
+        vertices: List[float] = []
+        indices: List[int] = []
+        tesselator = Tesselator()
+        tesselator.add_contour(self.contour)
+        tesselator.tesselate()
+        if tesselator.meshes:
+            vertices, indices = tesselator.meshes[0]
+        return vertices, indices
 
 
 class MorphSurfaceLayerBehavior(BaseLayerBehavior):
@@ -416,14 +448,14 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
     _surface_color_instruction: Color
     """Kivy Color instruction for the surface color."""
 
-    _surface_instruction: RoundedRectangle
-    """Kivy RoundedRectangle instruction for the surface shape."""
+    _surface_instruction: Mesh
+    """Kivy Mesh instruction for the surface shape."""
 
     _border_color_instruction: Color
     """Kivy Color instruction for the border color."""
 
-    _border_instruction: RoundedRectangle
-    """Kivy RoundedRectangle instruction for the border."""
+    _border_instruction: SmoothLine
+    """Kivy SmoothLine instruction for the border."""
 
     def __init__(self, **kwargs) -> None:
         """Initialize the surface behavior with canvas graphics 
@@ -442,10 +474,10 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
             self._surface_color_instruction = Color(
                 rgba=self.surface_color,
                 group=NAME.SURFACE)
-            self._surface_instruction = RoundedRectangle(
-                size=self.size,
-                pos=self.pos,
-                radius=self.clamped_radius,
+            self._surface_instruction = Mesh(
+                vertices=self.mesh[0],
+                indices=self.mesh[1],
+                mode='triangle_fan',
                 group=NAME.SURFACE)
             
             self._border_color_instruction = Color(
@@ -458,9 +490,9 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
                 group=NAME.SURFACE_BORDER)
             
         self.bind(
+            contour=self._update_surface_layer,
             border_color=self._update_surface_layer,
             border_width=self._update_surface_layer,
-            border_path=self._update_surface_layer,
             border_closed=self._update_surface_layer,
             surface_color=self._update_surface_layer,
             current_surface_state=self._update_surface_layer,)
@@ -527,9 +559,8 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
         surface_color, border_color = self.get_resolved_surface_colors()
 
         self._surface_color_instruction.rgba = surface_color
-        self._surface_instruction.pos = self.pos
-        self._surface_instruction.size = self.size
-        self._surface_instruction.radius = self.clamped_radius
+        self._surface_instruction.vertices = self.mesh[0]
+        self._surface_instruction.indices = self.mesh[1]
         
         self._border_color_instruction.rgba = border_color
         self._border_instruction.width = dp(self.border_width)
@@ -640,21 +671,24 @@ class MorphInteractionLayerBehavior(BaseLayerBehavior):
     :attr:`interaction_enabled` is a 
     :class:`~kivy.properties.BooleanProperty` and defaults to `True`."""
 
-    interaction_color: ColorProperty = ColorProperty([0, 0, 0, 0])
-    """Color of the state layer.
-
-    The color should be provided as a list of RGBA values between 0 and
-    1. Example: `[0, 0, 0, 0.1]` for a semi-transparent black layer.
-
-    :attr:`interaction_color` is a 
-    :class:`~kivy.properties.ColorProperty` and defaults to 
-    `[0, 0, 0, 0]`."""
+    interaction_gray_value: float = BoundedNumericProperty(0.0, min=0, max=1)
+    """Base color value for the interaction layer.
+    
+    This value determines the base color (black or white) used for the
+    interaction layer. In dark theme, this value is inverted to ensure
+    visibility against the surface. The opacity of the layer is
+    determined by the specific state (hovered, pressed, focus, etc.).
+    
+    :attr:`interaction_gray_value` is a 
+    :class:`~kivy.properties.BoundedNumericProperty` and defaults to
+    `0.0` (black).
+    """
 
     _interaction_color_instruction: Color
     """Kivy Color instruction for the state layer color."""
 
-    _interaction_instruction: Rectangle
-    """Kivy Rectangle instruction for the state layer shape."""
+    _interaction_instruction: SmoothRoundedRectangle
+    """Kivy SmoothRoundedRectangle instruction for the state layer shape."""
 
     def __init__(self, **kwargs) -> None:
         self.register_event_type('on_interaction_updated')
@@ -663,9 +697,9 @@ class MorphInteractionLayerBehavior(BaseLayerBehavior):
         group = NAME.INTERACTION
         with self.canvas.before:
             self._interaction_color_instruction = Color(
-                rgba=self.interaction_color,
+                rgba=self.theme_manager.transparent_color,
                 group=group)
-            self._interaction_instruction = RoundedRectangle(
+            self._interaction_instruction = SmoothRoundedRectangle(
                 pos=self.pos,
                 size=self.size,
                 radius=self.clamped_radius,
@@ -675,30 +709,36 @@ class MorphInteractionLayerBehavior(BaseLayerBehavior):
             pos=self._update_interaction_layer,
             size=self._update_interaction_layer,
             radius=self._update_interaction_layer,
-            interaction_color=self._update_interaction_layer,
             current_interaction_state=self._on_interaction_state_change,)
 
         self.refresh_interaction()
 
-    @property
-    def _interaction_color(self) -> List[float]:
-        """Get the base interaction layer color (read-only).
+    def get_resolved_interaction_color(self) -> List[float]:
+        """Get the interaction layer color.
         
         The base color is white in dark theme and black in light theme.
         This ensures that the interaction layer is visible against the
         surface. The returned list contains RGB values only.
         """
-        color = [0.0, 0.0, 0.0]
-        if self.theme_manager.is_dark_mode:
-            color = [1 - c for c in color]
-        return color
+        opacity = getattr(
+            self, f'{self.current_interaction_state}_state_opacity', None)
     
+        if opacity is None:
+            return self.theme_manager.transparent_color
+        
+        value = self.interaction_gray_value
+        if self.theme_manager.is_dark_mode:
+            value = 1 - value
+        return [value, value, value, opacity]
+
     def _update_interaction_layer(self, *args) -> None:
         """Update the state layer position and size."""
+        interaction_color = self.get_resolved_interaction_color()
+        self._interaction_color_instruction.rgba = interaction_color
+
         self._interaction_instruction.pos = self.pos
         self._interaction_instruction.size = self.size
         self._interaction_instruction.radius = self.clamped_radius
-        self._interaction_color_instruction.rgba = self.interaction_color
         self.dispatch('on_interaction_updated')
 
     def _on_interaction_state_change(self, instance: Any, value: bool) -> None:
@@ -712,14 +752,9 @@ class MorphInteractionLayerBehavior(BaseLayerBehavior):
         if not self.interaction_enabled:
             return None
 
-        if value:
-            state = self.current_interaction_state
-            self.apply_interaction(
-                state, getattr(self, f'{state}_state_opacity', 0))
-        else:
-            self.interaction_color = self.theme_manager.transparent_color
-    
-    def apply_interaction(self, state: str, opacity: float) -> None:
+        self.apply_interaction(self.current_interaction_state)
+
+    def apply_interaction(self, state: InteractionState) -> None:
         """Apply the interaction layer color for the specified state
         with the given opacity.
 
@@ -763,8 +798,8 @@ class MorphInteractionLayerBehavior(BaseLayerBehavior):
         assert state in self.available_states, (
             f'State {state!r} is not supported. Supported states are: '
             f'{self.available_states}')
-
-        self.interaction_color = [*self._interaction_color[:3], opacity]
+        self.current_interaction_state = state
+        self._update_interaction_layer()
     
     def refresh_interaction(self) -> None:
         """Reapply the current state layer based on the widget's state.
@@ -1119,8 +1154,8 @@ class MorphOverlayLayerBehavior(BaseLayerBehavior):
     _overlay_color_instruction: Color
     """Kivy Color instruction for the overlay color."""
 
-    _overlay_instruction: Rectangle
-    """Kivy Rectangle instruction for the overlay shape."""
+    _overlay_instruction: SmoothRoundedRectangle
+    """Kivy SmoothRoundedRectangle instruction for the overlay shape."""
 
     _overlay_edges_color_instructions: Dict[str, Line]
     """Kivy Color instructions for the overlay edges.
@@ -1143,7 +1178,7 @@ class MorphOverlayLayerBehavior(BaseLayerBehavior):
             self._overlay_color_instruction = Color(
                 rgba=self.overlay_color,
                 group=NAME.OVERLAY)
-            self._overlay_instruction = RoundedRectangle(
+            self._overlay_instruction = SmoothRoundedRectangle(
                 pos=self.pos,
                 size=self.size,
                 radius=self.clamped_radius,
