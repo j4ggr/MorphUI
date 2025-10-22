@@ -1854,11 +1854,11 @@ class TestMorphInteractionLayerBehavior:
         assert widget.focus_state_opacity == 0.10
         assert widget.disabled_state_opacity == 0.16
         assert widget.interaction_enabled is True
-        assert widget.interaction_color == [0, 0, 0, 0]
+        assert widget.interaction_gray_value == 0
 
     @patch('morphui.app.MorphApp._theme_manager')
-    def test_interaction_color_property(self, mock_app_theme_manager):
-        """Test the interaction_color property."""
+    def test_interaction_gray_value_property(self, mock_app_theme_manager):
+        """Test the interaction_gray_value property."""
         mock_app_theme_manager.configure_mock(**{
             'transparent_color': [0, 0, 0, 0],
             'is_dark_mode': False
@@ -1866,9 +1866,16 @@ class TestMorphInteractionLayerBehavior:
         
         widget = self.TestWidget()
         
-        test_color = [1, 0, 0, 0.5]
-        widget.interaction_color = test_color
-        assert widget.interaction_color == test_color
+        # Test setting gray value
+        widget.interaction_gray_value = 0.5
+        assert widget.interaction_gray_value == 0.5
+        
+        # Test bounds
+        widget.interaction_gray_value = 1.0
+        assert widget.interaction_gray_value == 1.0
+        
+        widget.interaction_gray_value = 0.0
+        assert widget.interaction_gray_value == 0.0
 
     @patch('morphui.app.MorphApp._theme_manager')
     def test_interaction_enabled_property(self, mock_app_theme_manager):
@@ -1887,23 +1894,27 @@ class TestMorphInteractionLayerBehavior:
         assert widget.interaction_enabled is True
 
     @patch('morphui.app.MorphApp._theme_manager')
-    def test_interaction_color_getter(self, mock_app_theme_manager):
-        """Test the _interaction_color property for theme-aware colors."""
+    def test_resolved_interaction_color(self, mock_app_theme_manager):
+        """Test the get_resolved_interaction_color method for theme-aware colors."""
         mock_app_theme_manager.configure_mock(**{
             'transparent_color': [0, 0, 0, 0],
             'is_dark_mode': False
         })
         
         widget = self.TestWidget()
+        widget.interaction_gray_value = 0.0
         
-        # Test light mode (should return black)
-        base_color = widget._interaction_color
-        assert base_color == [0.0, 0.0, 0.0]
+        # Simulate hovered state to get opacity
+        widget.current_interaction_state = 'hovered'
         
-        # Test dark mode (should return white)
+        # Test light mode (should return black with hovered opacity)
+        resolved_color = widget.get_resolved_interaction_color()
+        assert resolved_color == [0.0, 0.0, 0.0, 0.08]
+        
+        # Test dark mode (should return white with hovered opacity)
         mock_app_theme_manager.is_dark_mode = True
-        base_color = widget._interaction_color
-        assert base_color == [1.0, 1.0, 1.0]
+        resolved_color = widget.get_resolved_interaction_color()
+        assert resolved_color == [1.0, 1.0, 1.0, 0.08]
 
     @patch('morphui.app.MorphApp._theme_manager')
     def test_apply_interaction(self, mock_app_theme_manager):
@@ -1916,10 +1927,31 @@ class TestMorphInteractionLayerBehavior:
         widget = self.TestWidget()
         
         # Test applying hover interaction
-        widget.apply_interaction('hovered', 0.08)
+        widget.apply_interaction('hovered')
         
-        expected_color = [0.0, 0.0, 0.0, 0.08]
-        assert widget.interaction_color == expected_color
+        # Check that the current state was set
+        assert widget.current_interaction_state == 'hovered'
+
+    @patch('morphui.app.MorphApp._theme_manager')
+    def test_gray_value_theme_inversion(self, mock_app_theme_manager):
+        """Test that gray value is inverted in dark theme."""
+        mock_app_theme_manager.configure_mock(**{
+            'transparent_color': [0, 0, 0, 0],
+            'is_dark_mode': False
+        })
+        
+        widget = self.TestWidget()
+        widget.interaction_gray_value = 0.2  # Set to gray value
+        widget.current_interaction_state = 'hovered'
+        
+        # Test light mode - should use gray value as-is
+        resolved_color = widget.get_resolved_interaction_color()
+        assert resolved_color == [0.2, 0.2, 0.2, 0.08]
+        
+        # Test dark mode - should invert gray value (1 - 0.2 = 0.8)
+        mock_app_theme_manager.is_dark_mode = True
+        resolved_color = widget.get_resolved_interaction_color()
+        assert resolved_color == [0.8, 0.8, 0.8, 0.08]
 
     @patch('morphui.app.MorphApp._theme_manager')
     def test_refresh_interaction(self, mock_app_theme_manager):
