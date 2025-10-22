@@ -128,14 +128,14 @@ class MorphAutoSizingBehavior(EventDispatcher):
             if self.has_texture_size:
                 width = self.texture_size[0]
             width = getattr(self, 'minimum_width', width)
-        if self._original_size_hint[0] is None:
+        if self.size_hint[0] is None:
             self.width = width
 
         if self.auto_height:
             if self.has_texture_size:
                 height = self.texture_size[1]
             self.height = getattr(self, 'minimum_height', height)
-        if self._original_size_hint[1] is None:
+        if self.size_hint[1] is None:
             self.height = height
 
     def _update_auto_sizing(
