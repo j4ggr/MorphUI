@@ -334,8 +334,10 @@ class TestMorphAutoSizingBehavior:
         assert widget.auto_size is False
         assert widget._original_size_hint == (1.0, 1.0)
         assert widget._original_size == (100.0, 100.0)  # Default Widget size
-        # _has_texture_size is initialized during __init__ due to has_texture_size access
-        assert widget._has_texture_size is False
+        # _has_texture_size is not initialized during __init__ due to minimum_width/height are present.
+        # It will be determined later when the widget is measured
+        assert widget._has_texture_size is None
+        assert widget.has_texture_size is False
 
     def test_initialization_with_auto_size(self):
         """Test initialization with auto_size=True sets both width and height."""
