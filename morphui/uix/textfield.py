@@ -28,6 +28,7 @@ from .behaviors import MorphHoverBehavior
 from .behaviors import MorphTextLayerBehavior
 from .behaviors import MorphAutoSizingBehavior
 from .behaviors import MorphTypographyBehavior
+from .behaviors import MorphRoundSidesBehavior
 from .behaviors import MorphContentLayerBehavior
 from .behaviors import MorphIdentificationBehavior
 from .behaviors import MorphInteractionLayerBehavior
@@ -466,6 +467,7 @@ class MorphTextInput(
 class MorphTextField(
         TextValidator,
         MorphHoverBehavior,
+        MorphRoundSidesBehavior,
         MorphTypographyBehavior,
         MorphContentLayerBehavior,
         MorphInteractionLayerBehavior,
@@ -514,6 +516,17 @@ class MorphTextField(
     :class:`MorphTextInput`.
 
     :attr:`multiline` is a :class:`~kivy.properties.BooleanProperty`
+    and defaults to False."""
+
+    password: bool = BooleanProperty(False)
+    """Indicates whether the text field is a password input.
+
+    When True, the text field obscures the input text for password
+    protection. When False, it displays the input text normally. It is
+    bound bidirectionally to the password property of the internal
+    :class:`MorphTextInput`.
+
+    :attr:`password` is a :class:`~kivy.properties.BooleanProperty`
     and defaults to False."""
 
     label_text: str = StringProperty('')
@@ -769,6 +782,8 @@ class MorphTextField(
 
     def __init__(self, **kwargs) -> None:
         self._text_input = MorphTextInput(
+            theme_color_bindings=dict(
+                surface_color='transparent_color',),
             identity=NAME.INPUT,
             size_hint=(None, None),
             padding=dp(0),
@@ -795,6 +810,7 @@ class MorphTextField(
             'focus',
             'disabled',
             'multiline',
+            'password',
             'content_color',)
         for prop in bidirectional_binding:
             self.fbind(prop, self._text_input.setter(prop))
@@ -809,6 +825,7 @@ class MorphTextField(
         self.bind(
             pos=self._update_layout,
             width=self._update_layout,
+            size=self._update_layout,
             declarative_children=self._update_layout,
             _text_input_margin=self._update_text_input_coordinates,
             focus=self._animate_on_focus,
@@ -885,12 +902,12 @@ class MorphTextField(
         """
         if NAME.LEADING_WIDGET in self.identities:
             self.leading_widget.x = self.x + self._horizontal_padding
-            self.leading_widget.center_y = self.center_y
+            self.leading_widget.center_y = self.y + self.height / 2
 
         if NAME.TRAILING_WIDGET in self.identities:
             self.trailing_widget.right = (
                 self.x + self.width - self._horizontal_padding)
-            self.trailing_widget.center_y = self.center_y
+            self.trailing_widget.center_y = self.y + self.height / 2
 
         if NAME.SUPPORTING_WIDGET in self.identities:
             self.supporting_widget.x = self.x + self._horizontal_padding
@@ -972,7 +989,10 @@ class MorphTextField(
             The (x, y) position of the main label widget.
         """
         x = self._text_input.x
-        y = self._text_input.center_y - self.label_widget.height / 2
+        y = (
+            self._text_input.y
+            + self._text_input.height / 2
+            - self.label_widget.height / 2)
         if any((
                 self.label_focus_behavior == 'hide',
                 not self.focus and not self.text)):
@@ -989,7 +1009,7 @@ class MorphTextField(
             x = max(
                 self.x + self._horizontal_padding,
                 self.x + self.clamped_radius[0])
-            y = self.y + self.height - self.label_widget.height / 2
+            y = self.y + self.height - dp(8)
         return (x, y)
     
     def _resolve_label_font_size(self) -> float:
@@ -1033,8 +1053,7 @@ class MorphTextField(
                 + self.trailing_widget.width 
                 + self._horizontal_padding)
         if self.label_focus_behavior == 'move_above' and (self.focus or self.text):
-            spacing = dp(4)
-            margin[1] = spacing
+            margin[1] = dp(4)
             margin[3] = dp(24)
         return margin
 
@@ -1053,7 +1072,7 @@ class MorphTextField(
         font_size = self._resolve_label_font_size()
         target_pos = self._resolve_label_position()
 
-        self.border_width = dp(2) if self.focus else dp(1)
+        self.border_width = dp(1.5) if self.focus else dp(1)
 
         if self.label_focus_behavior == 'hide':
             color_bindings = self._label_initial_color_bindings.copy()
@@ -1081,10 +1100,12 @@ class MorphTextField(
         ).start(self.label_widget)
         
         if self.label_focus_behavior == 'float_to_border':
-            if self.focus:
+            if self.focus or self.text:
+                self.border_open_x = target_pos[0]
                 border_open_length = (
                     self.label_widget.width * self._label_size_factor)
             else:
+                self.border_open_x = None
                 border_open_length = 0
             Animation(
                 border_open_length=border_open_length,

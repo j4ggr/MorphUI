@@ -389,16 +389,27 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
     :class:`~kivy.properties.ColorProperty` and defaults to
     `None`."""
 
-    border_width: float = NumericProperty(1, min=0.01)
+    border_width: float = BoundedNumericProperty(1, min=0.01, errorvalue=1)
     """Width of the border.
 
     The width is specified in pixels.
     
-    :attr:`border_width` is a :class:`~kivy.properties.NumericProperty`
-    and defaults to `1` (1 pixel wide).
+    :attr:`border_width` is a 
+    :class:`~kivy.properties.BoundedNumericProperty` and defaults to 
+    `1` (1 pixel wide).
     """
 
-    border_open_length: float = NumericProperty(0, min=0)
+    border_open_x: float | None = NumericProperty(None, allownone=True)
+    """X position of the open section of the border.
+
+    This property allows you to create an open border effect by
+    specifying the X position in pixels for the open section.
+
+    :attr:`border_open_x` is a :class:`~kivy.properties.NumericProperty`
+    and defaults to `None`.
+    """
+
+    border_open_length: float = BoundedNumericProperty(0, min=0, errorvalue=0)
     """Length of the open section of the border at the top edge.
 
     This property allows you to create an open border effect by
@@ -406,7 +417,7 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
     means a closed border.
 
     :attr:`border_open_length` is a
-    :class:`~kivy.properties.NumericProperty` and defaults to `0`.
+    :class:`~kivy.properties.BoundedNumericProperty` and defaults to `0`.
     """
 
     border_bottom_line_only: bool = BooleanProperty(False)
@@ -516,6 +527,9 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
             return [self.x, self.y, self.x + self.width, self.y]
         
         path: List[float] = self._generate_contour()
+
+        if self.border_open_x is not None:
+            path = [self.border_open_x, path[1], *path]
 
         if self.border_open_length > 0:
             path.extend([
