@@ -5,9 +5,11 @@ from typing import Tuple
 
 from kivy.event import EventDispatcher
 from kivy.metrics import dp
+from kivy.metrics import sp
 from kivy.graphics import Line
 from kivy.graphics import Color
 from kivy.graphics import BoxShadow
+from kivy.animation import Animation
 from kivy.properties import AliasProperty
 from kivy.properties import StringProperty
 from kivy.properties import ObjectProperty
@@ -732,6 +734,7 @@ class MorphTextField(
             width=self._update_layout,
             declarative_children=self._update_layout,
             _text_input_bounds=self._update_text_input_coordinates,
+            focus=self._animate_on_focus,
             minimum_height=self.setter('height'),)
         self.fbind(
             'label_text',
@@ -823,7 +826,6 @@ class MorphTextField(
         self._text_input_bounds = bounds
         self._update_text_input_coordinates()
         self.width = max(self.width, self.minimum_width)
-        print(self.width, self.minimum_width)
 
         if NAME.LABEL_WIDGET in self.identities:
             self.label_widget.pos = self._resolve_label_position()
@@ -878,11 +880,6 @@ class MorphTextField(
         state : str
             The new content state of the text field.
         """
-        if self.focus:
-            self.border_width = dp(2)
-        else:
-            self.border_width = dp(1)
-
         for child in self.declarative_children:
             for state in self.possible_states:
                 if not hasattr(child, state):
@@ -901,9 +898,58 @@ class MorphTextField(
             The (x, y) position of the main label widget.
         """
         if self.focus or self.text:
-            x = self.x + self._horizontal_padding
+            x = max(
+                self.x + self._horizontal_padding,
+                self.x + self.clamped_radius[0])
             y = self.y + self.height - self.label_widget.height / 2
         else:
             x = self._text_input.x
             y = self._text_input.center_y - self.label_widget.height / 2
         return (x, y)
+
+    def _animate_on_focus(self, *args) -> None:
+        """Handle focus changes for the text field.
+
+        This method animates the main label widget to a new position
+        and font size when the text field gains or loses focus.
+        """
+        if NAME.LABEL_WIDGET not in self.identities:
+            return
+        
+        Animation.stop_all(self.label_widget, 'pos', 'font_size')
+        Animation.stop_all(self, 'border_open_length')
+
+        target_pos = self._resolve_label_position()
+        role = self.label_widget.typography_role
+        font_size_small = self.typography.get_font_size(role, 'small')
+        font_size_medium = self.typography.get_font_size(role, 'medium')
+        if self.focus:
+            font_size = font_size_small
+            border_width = dp(2)
+            border_open_length = (
+                self.label_widget.width * (font_size_small / font_size_medium))
+        else:
+            font_size = font_size_medium
+            border_width = dp(1)
+            border_open_length = 0
+        
+        if isinstance(font_size, str):
+            font_size = sp(int(font_size.replace('sp', '')))
+
+        self.border_width = border_width
+            
+        Animation(
+            x=target_pos[0],
+            y=target_pos[1],
+            font_size=font_size,
+            d=0.2,
+            t='out_quad'
+        ).start(self.label_widget)
+        
+        Animation(
+            border_open_length=border_open_length,
+            d=0.2,
+            t='out_quad'
+        ).start(self)
+        
+    
