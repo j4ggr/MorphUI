@@ -60,6 +60,7 @@ class TextFieldLabel(MorphSimpleLabel):
     
     default_config: Dict[str, Any] = dict(
         theme_color_bindings=dict(
+            content_color='content_surface_color',
             focus_content_color='primary_color',
             error_content_color='error_color',),
         typography_role='Label',
@@ -710,12 +711,19 @@ class MorphTextField(
         super().__init__(**config)
         self.add_widget(self._text_input)
 
+        bidirectional_binding = (
+            'text',
+            'focus',
+            'disabled',
+            'multiline',
+            'content_color',)
+        for prop in bidirectional_binding:
+            self.fbind(prop, self._text_input.setter(prop))
+            self._text_input.fbind(prop, self.setter(prop))
+            setattr(self._text_input, prop, getattr(self, prop))
+
         self._text_input.bind(
             _lines=self._update_layout,
-            text=self.setter('text'),
-            focus=self.setter('focus'),
-            disabled=self.setter('disabled'),
-            multiline=self.setter('multiline'),
             height=self.setter('_text_input_height'),
             minimum_width=self.setter('_text_input_min_width'),)
         
@@ -724,23 +732,22 @@ class MorphTextField(
             width=self._update_layout,
             declarative_children=self._update_layout,
             _text_input_bounds=self._update_text_input_coordinates,
-            minimum_height=self.setter('height'),
-            content_color=self._text_input.setter('content_color'),
-            text=self._text_input.setter('text'),
-            focus=self._text_input.setter('focus'),
-            disabled=self._text_input.setter('disabled'),
-            multiline=self._text_input.setter('multiline'),)
+            minimum_height=self.setter('height'),)
         self.fbind(
-            'label_text', self._update_child_widget,
+            'label_text',
+            self._update_child_widget,
             identity=NAME.LABEL_WIDGET)
         self.fbind(
-            'supporting_text', self._update_child_widget,
+            'supporting_text',
+            self._update_child_widget,
             identity=NAME.SUPPORTING_WIDGET)
         self.fbind(
-            'leading_icon', self._update_child_widget,
+            'leading_icon',
+            self._update_child_widget,
             identity=NAME.LEADING_WIDGET)
         self.fbind(
-            'trailing_icon', self._update_child_widget,
+            'trailing_icon',
+            self._update_child_widget,
             identity=NAME.TRAILING_WIDGET)
 
         self.refresh_textfield_content()
@@ -815,6 +822,8 @@ class MorphTextField(
 
         self._text_input_bounds = bounds
         self._update_text_input_coordinates()
+        self.width = max(self.width, self.minimum_width)
+        print(self.width, self.minimum_width)
 
         if NAME.LABEL_WIDGET in self.identities:
             self.label_widget.pos = self._resolve_label_position()
@@ -842,6 +851,9 @@ class MorphTextField(
         This method updates the text and icons of the child widgets
         by calling the _update_child_widget method for each widget.
         """
+        self._text_input_height = self._text_input.height
+        self._text_input_min_width = self._text_input.minimum_width
+
         self._update_child_widget(
             self, self.label_text, NAME.LABEL_WIDGET)
         self._update_child_widget(
