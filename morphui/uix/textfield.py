@@ -3,6 +3,7 @@ from typing import Dict
 from typing import List
 from typing import Tuple
 
+from kivy.clock import Clock
 from kivy.event import EventDispatcher
 from kivy.metrics import dp
 from kivy.metrics import sp
@@ -763,6 +764,9 @@ class MorphTextField(
     """Stores the initial font size of the label widget for
     restoration after focus changes."""
 
+    _label_size_factor: float = 1.0
+    """Stores the size factor of the label widget for scaling purposes."""
+
     def __init__(self, **kwargs) -> None:
         self._text_input = MorphTextInput(
             identity=NAME.INPUT,
@@ -978,8 +982,8 @@ class MorphTextField(
             x = self._text_input.x
             y = (
                 self.y
-                + self.height
-                - self._resolve_text_input_margin()[3]
+                + self._resolve_text_input_margin()[1]
+                + self._text_input_height
                 + dp(4))
         elif self.label_focus_behavior == 'float_to_border':
             x = max(
@@ -1002,8 +1006,10 @@ class MorphTextField(
                 size='small')
         else:
             font_size = self._label_initial_font_size
+
         if isinstance(font_size, str):
             font_size = sp(int(font_size.replace('sp', '')))
+        self._label_size_factor = font_size / self._label_initial_font_size
         return font_size
     
     def _resolve_text_input_margin(self) -> List[float]:
@@ -1027,9 +1033,9 @@ class MorphTextField(
                 + self.trailing_widget.width 
                 + self._horizontal_padding)
         if self.label_focus_behavior == 'move_above' and (self.focus or self.text):
-            delta = margin[1] - dp(4)
-            margin[3] += delta
-            margin[1] -= delta
+            spacing = dp(4)
+            margin[1] = spacing
+            margin[3] = dp(24)
         return margin
 
     def _animate_on_focus(self, *args) -> None:
@@ -1041,50 +1047,29 @@ class MorphTextField(
         if NAME.LABEL_WIDGET not in self.identities:
             return
 
-        Animation.stop_all(
-            self.label_widget, 'pos', 'font_size', 'content_color')
-        Animation.stop_all(
-            self, 'border_open_length', '_text_input_margin')
+        Animation.stop_all(self.label_widget, 'pos', 'font_size', 'color')
+        Animation.stop_all(self, 'border_open_length', '_text_input_margin')
 
-        target_pos = self._resolve_label_position()
         font_size = self._resolve_label_font_size()
-        if self.focus:
-            self.border_width = dp(2)
-        else:
-            self.border_width = dp(1)
-            border_open_length = 0
-            hide_color = getattr(
-                self.theme_manager,
-                self._label_initial_color_bindings.get('content_color', ''),
-                self._text_input.content_color)
+        target_pos = self._resolve_label_position()
+
+        self.border_width = dp(2) if self.focus else dp(1)
 
         if self.label_focus_behavior == 'hide':
-            def update_color_bindings(*a) -> None:
-                color_bindings = self._label_initial_color_bindings.copy()
-                if self.focus:
-                    _colors = (k for k in color_bindings if 'content' in k)
-                    color_bindings.update(
-                        {c: 'transparent_color' for c in _colors})
-                self.label_widget.theme_color_bindings = color_bindings
-                self.label_widget.refresh_theme_colors()
-            
+            color_bindings = self._label_initial_color_bindings.copy()
             if self.focus:
-                hide_color = self.theme_manager.transparent_color
-            else:
-                hide_color = getattr(
-                    self.theme_manager,
-                    self._label_initial_color_bindings.get(
-                        'content_color', ''),
-                    self._text_input.content_color)
-            animation = Animation(
+                _colors = (k for k in color_bindings if 'content' in k)
+                color_bindings.update(
+                    {c: 'transparent_color' for c in _colors})
+            self.label_widget.theme_color_bindings = color_bindings
+            Animation(
                 x=target_pos[0],
                 y=target_pos[1],
                 font_size=font_size,
-                content_color=hide_color,
+                color=self.label_widget.get_resolved_content_color(),
                 d=self.focus_animation_duration,
-                t=self.focus_animation_transition,)
-            animation.bind(on_complete=update_color_bindings)
-            animation.start(self.label_widget)
+                t=self.focus_animation_transition,
+            ).start(self.label_widget)
             return
 
         Animation(
@@ -1098,8 +1083,7 @@ class MorphTextField(
         if self.label_focus_behavior == 'float_to_border':
             if self.focus:
                 border_open_length = (
-                    self.label_widget.width
-                    * (font_size / self._label_initial_font_size))
+                    self.label_widget.width * self._label_size_factor)
             else:
                 border_open_length = 0
             Animation(

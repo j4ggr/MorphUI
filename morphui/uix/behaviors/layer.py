@@ -966,7 +966,7 @@ class MorphContentLayerBehavior(BaseLayerBehavior):
         """
         state = self.current_content_state
         content_color = getattr(self, f'{state}_content_color', None)
-
+        
         if content_color is None:
             content_color = self.content_color
 
