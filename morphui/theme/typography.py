@@ -9,6 +9,7 @@ from typing import Literal
 from pathlib import Path
 
 from kivy.event import EventDispatcher
+from kivy.metrics import sp
 from kivy.core.text import LabelBase
 from kivy.properties import DictProperty
 from kivy.properties import StringProperty
@@ -475,6 +476,45 @@ class Typography(EventDispatcher):
         content_style = self.content_styles[role][size].copy()
         content_style['name'] = resolved_name
         return content_style
+    
+    def get_font_size(
+            self,
+            role: Literal['Display', 'Headline', 'Title', 'Body', 'Label'],
+            size: Literal['large', 'medium', 'small']
+            ) -> float:
+        """Get the font size for the specified typography role and size.
+        
+        Parameters
+        ----------
+        role : {'Display', 'Headline', 'Title', 'Body', 'Label'}
+            Typography role defining the text's hierarchical importance.
+        size : {'large', 'medium', 'small'}
+            Size variant within the typography role.
+        
+        Returns
+        -------
+        float
+            Font size in Kivy 'sp' units.
+        
+        Examples
+        --------
+        ```python
+        typography = Typography()
+        
+        # Get font size for Body medium
+        font_size = typography.get_font_size('Body', 'medium')
+        # Returns: '14sp'
+        ```
+        """
+        assert role in FONTS.TYPOGRAPHY_ROLES,(
+            f'Invalid role {role!r}, must be one of {FONTS.TYPOGRAPHY_ROLES}')
+        assert size in FONTS.SIZE_VARIANTS, (
+            f'Invalid size {size!r}, must be one of {FONTS.SIZE_VARIANTS}')
+        
+        font_size = self.content_styles[role][size]['font_size']
+        if isinstance(font_size, str):
+            font_size = int(font_size.rstrip('sp'))
+        return sp(font_size)
 
     def _resolve_font_name(
             self,
