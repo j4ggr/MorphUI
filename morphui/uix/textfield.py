@@ -993,12 +993,13 @@ class MorphTextField(
             self._text_input.y
             + self._text_input.height / 2
             - self.label_widget.height / 2)
-        if any((
-                self.label_focus_behavior == 'hide',
-                not self.focus and not self.text)):
+        if not self.focus and not self.text:
             return (x, y)
         
-        if self.label_focus_behavior == 'move_above':
+        if self.label_focus_behavior == 'hide':
+            x = self._text_input.x
+            y = self._text_input.y
+        elif self.label_focus_behavior == 'move_above':
             x = self._text_input.x
             y = (
                 self.y
@@ -1076,7 +1077,7 @@ class MorphTextField(
 
         if self.label_focus_behavior == 'hide':
             color_bindings = self._label_initial_color_bindings.copy()
-            if self.focus:
+            if self.focus or self.text:
                 _colors = (k for k in color_bindings if 'content' in k)
                 color_bindings.update(
                     {c: 'transparent_color' for c in _colors})
