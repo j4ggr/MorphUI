@@ -69,7 +69,7 @@ class MorphAutoSizingBehavior(EventDispatcher):
     defaults to False.
     """
 
-    _original_size_hint : Tuple[float | None, float | None] = (1.0, 1.0)
+    _original_size_hint: Tuple[float | None, float | None] = (1.0, 1.0)
     """Internal storage for the original size_hint before auto sizing.
     This is used to restore the size_hint when auto sizing is disabled.
     """
@@ -91,6 +91,8 @@ class MorphAutoSizingBehavior(EventDispatcher):
 
         self._original_size = (self.size[0], self.size[1])
         self._original_size_hint = (self.size_hint[0], self.size_hint[1])
+        if hasattr(self, 'texture_size') and hasattr(self, 'text_size'):
+            self.bind(texture_size=self._update_text_size)
 
         if hasattr(self, 'minimum_width') and hasattr(self, 'minimum_height'):
             self.fbind('minimum_width', self._update_size)
@@ -132,15 +134,27 @@ class MorphAutoSizingBehavior(EventDispatcher):
             if self.has_texture_size:
                 width = self.texture_size[0]
             width = getattr(self, 'minimum_width', width)
-        if self.size_hint[0] is None:
-            self.width = width
 
         if self.auto_height:
             if self.has_texture_size:
                 height = self.texture_size[1]
             height = getattr(self, 'minimum_height', height)
+        
+        if self.size_hint[0] is None:
+            self.width = width
         if self.size_hint[1] is None:
             self.height = height
+    
+    def _update_text_size(
+            self, instance: Any, texture_size: Tuple[float, float]) -> None:
+        """Update text_size to match current width when auto_width is 
+        enabled. Only applies if the widget has a text_size attribute.
+        """
+        text_width = None
+        if self.auto_width:
+            text_width = texture_size[0]
+        self.text_size = (text_width, None)
+
 
     def _update_auto_sizing(
             self, instance: Any, value: bool, prop: str) -> None:
