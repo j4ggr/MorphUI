@@ -335,6 +335,15 @@ class MorphTextInput(
     and defaults to dp(80).
     """
 
+    row_height: float = AliasProperty(
+        lambda self: self.line_height + self.line_spacing,
+        bind=['line_height', 'line_spacing'],
+        cache=True)
+    """The height of a single row of text.
+
+    :attr:`row_height` is a :class:`~kivy.properties.AliasProperty`.
+    """
+
     def _get_min_height(self) -> Any:
         """Calculate the minimum height required for the TextInput.
         
@@ -345,15 +354,14 @@ class MorphTextInput(
         
         Overrides the default behavior to provide accurate sizing
         for multiline TextInputs."""
-        row_height = self.line_height + self.line_spacing
         if not self.multiline:
-            return row_height
+            return self.row_height
 
         minimum_height = (
-            len(self._lines) * row_height
+            len(self._lines) * self.row_height
             + self.padding[1]
             + self.padding[3])
-        return clamp(minimum_height, row_height, self.maximum_height)
+        return clamp(minimum_height, self.row_height, self.maximum_height)
 
     minimum_height: int = AliasProperty(
         _get_min_height,
@@ -600,16 +608,71 @@ class MorphTextField(
     :attr:`maximum_height` is a :class:`~kivy.properties.NumericProperty`
     and defaults to dp(100)."""
 
-    _text_input_bounds: List[float] = VariableListProperty(dp(0), length=4)
-    """The bounding box of the internal text input widget.
+    focus_animation_duration: float = NumericProperty(0.15)
+    """The duration of the focus animation in seconds.
 
-    This property defines the bounding box of the internal
+    This property defines how long the animation takes when the text
+    field gains or loses focus. It affects the speed of visual
+    transitions related to focus changes.
+
+    :attr:`focus_animation_duration` is a
+    :class:`~kivy.properties.NumericProperty` and defaults to 0.15."""
+
+    focus_animation_transition: str = StringProperty('out_sine')
+    """The transition type for the focus animation.
+
+    This property determines the easing function used for the focus
+    animation. It affects the style of the animation when the text
+    field gains or loses focus. For a list of supported transitions,
+    refer to the 
+    [Kivy documentation](https://kivy.org/doc/stable/api-kivy.animation.html)
+
+    :attr:`focus_animation_transition` is a 
+    :class:`~kivy.properties.StringProperty` and defaults to 'out_sine'.
+    """
+
+    label_focus_behavior: str = OptionProperty(
+        'float_to_border',
+        options=['hide', 'float_to_border', 'move_above'])
+    """Controls how the label widget behaves when the text field gains 
+    focus.
+
+    This property determines the animation and positioning behavior of 
+    the label widget during focus transitions:
+
+    - 'hide': The label disappears when the text field is focused
+    - 'float_to_border': The label moves up and floats over the border 
+    (current Material Design implementation)
+    - 'move_above': The label moves completely above the input area, 
+    pushing the input field down slightly
+
+    :attr:`label_focus_behavior` is a 
+    :class:`~kivy.properties.OptionProperty` and defaults to 
+    'float_to_border'."""
+
+    _text_input_margin: List[float] = VariableListProperty(dp(0), length=4)
+    """The margin around the internal text input widget.
+
+    This property defines the margin space around the internal
     :class:`MorphTextInput` widget within the text field. It is used
-    for layout calculations and positioning. The bounds are defined
+    for layout calculations and positioning. The margins are defined
     as [left, bottom, right, top].
 
-    :attr:`_text_input_bounds` is a
+    :attr:`_text_input_margin` is a
     :class:`~kivy.properties.VariableListProperty` of length 4."""
+
+    text_input_default_margin: List[float] = VariableListProperty(
+        [dp(8), dp(8), dp(8), dp(8)], length=4)
+    """The default margin values around the internal text input widget.
+
+    This property defines the base margin space that is applied around
+    the internal :class:`MorphTextInput` widget before any adjustments
+    for icons or other widgets. The margins are defined as 
+    [left, bottom, right, top].
+
+    :attr:`text_input_default_margin` is a
+    :class:`~kivy.properties.VariableListProperty` of length 4 and
+    defaults to [dp(8), dp(8), dp(8), dp(8)]."""
 
     _horizontal_padding: float = NumericProperty(dp(12))
     """The horizontal padding applied around the widgets.
@@ -642,9 +705,9 @@ class MorphTextField(
     minimum_width: float = AliasProperty(
         lambda self: (
             self._text_input_min_width
-            + self._text_input_bounds[0]
-            + self._text_input_bounds[2]),
-        bind=['size', '_text_input_bounds', '_text_input_min_width'],
+            + self._text_input_margin[0]
+            + self._text_input_margin[2]),
+        bind=['size', '_text_input_margin', '_text_input_min_width'],
         cache=True)
     """The minimum width of the text field (read-only).
 
@@ -657,9 +720,9 @@ class MorphTextField(
     minimum_height: float = AliasProperty(
         lambda self: (
             self._text_input_height
-            + self._text_input_bounds[1]
-            + self._text_input_bounds[3]),
-        bind=['size', '_text_input_bounds', '_text_input_height'],
+            + self._text_input_margin[1]
+            + self._text_input_margin[3]),
+        bind=['size', '_text_input_margin', '_text_input_height'],
         cache=True)
     """The minimum height of the text field (read-only).
 
@@ -692,10 +755,16 @@ class MorphTextField(
     This widget handles the actual text input functionality and is
     managed internally by the MorphTextField class."""
 
+    _label_initial_color_bindings: dict[str, str] = {}
+    """Stores the initial color bindings of the label widget for
+    restoration after focus changes."""
+
+    _label_initial_font_size: float = sp(1)
+    """Stores the initial font size of the label widget for
+    restoration after focus changes."""
+
     def __init__(self, **kwargs) -> None:
         self._text_input = MorphTextInput(
-            theme_color_bindings=dict(
-                surface_color='surface_color',),
             identity=NAME.INPUT,
             size_hint=(None, None),
             padding=dp(0),
@@ -713,6 +782,9 @@ class MorphTextField(
 
         super().__init__(**config)
         self.add_widget(self._text_input)
+        self._label_initial_color_bindings = (
+            self.label_widget.theme_color_bindings.copy())
+        self._label_initial_font_size = self.label_widget.font_size
 
         bidirectional_binding = (
             'text',
@@ -734,7 +806,7 @@ class MorphTextField(
             pos=self._update_layout,
             width=self._update_layout,
             declarative_children=self._update_layout,
-            _text_input_bounds=self._update_text_input_coordinates,
+            _text_input_margin=self._update_text_input_coordinates,
             focus=self._animate_on_focus,
             minimum_height=self.setter('height'),)
         self.fbind(
@@ -807,24 +879,21 @@ class MorphTextField(
         This method recalculates the positions and sizes of the child
         widgets based on the current layout settings.
         """
-        bounds = [dp(8), dp(8), dp(8), dp(8)]
-
         if NAME.LEADING_WIDGET in self.identities:
             self.leading_widget.x = self.x + self._horizontal_padding
             self.leading_widget.center_y = self.center_y
-            bounds[0] += self.leading_widget.width + self._horizontal_padding
 
         if NAME.TRAILING_WIDGET in self.identities:
-            self.trailing_widget.right = self.x + self.width - self._horizontal_padding
+            self.trailing_widget.right = (
+                self.x + self.width - self._horizontal_padding)
             self.trailing_widget.center_y = self.center_y
-            bounds[2] += self.trailing_widget.width + self._horizontal_padding
 
         if NAME.SUPPORTING_WIDGET in self.identities:
             self.supporting_widget.x = self.x + self._horizontal_padding
             self.supporting_widget.y = (
                 self.y - self.supporting_widget.height - dp(4))
 
-        self._text_input_bounds = bounds
+        self._text_input_margin = self._resolve_text_input_margin()
         self._update_text_input_coordinates()
         self.width = max(self.width, self.minimum_width)
 
@@ -835,17 +904,17 @@ class MorphTextField(
         """Update the coordinates of the internal text input widget 
         based on the current layout and appearance settings.
         """
-        self._text_input.x = self.x + self._text_input_bounds[0]
-        self._text_input.y = self.y + self._text_input_bounds[1]
+        self._text_input.x = self.x + self._text_input_margin[0]
+        self._text_input.y = self.y + self._text_input_margin[1]
         width = (
             self.width
-            - self._text_input_bounds[0]
-            - self._text_input_bounds[2])
+            - self._text_input_margin[0]
+            - self._text_input_margin[2])
         self._text_input.width = max(self._text_input.minimum_width, width)
         maximum_height = (
             self.maximum_height
-            - self._text_input_bounds[1]
-            - self._text_input_bounds[3])
+            - self._text_input_margin[1]
+            - self._text_input_margin[3])
         self._text_input.maximum_height = maximum_height
         
     def refresh_textfield_content(self, *args) -> None:
@@ -898,15 +967,70 @@ class MorphTextField(
         Tuple[float, float]
             The (x, y) position of the main label widget.
         """
-        if self.focus or self.text:
+        x = self._text_input.x
+        y = self._text_input.center_y - self.label_widget.height / 2
+        if any((
+                self.label_focus_behavior == 'hide',
+                not self.focus and not self.text)):
+            return (x, y)
+        
+        if self.label_focus_behavior == 'move_above':
+            x = self._text_input.x
+            y = (
+                self.y
+                + self.height
+                - self._resolve_text_input_margin()[3]
+                + dp(4))
+        elif self.label_focus_behavior == 'float_to_border':
             x = max(
                 self.x + self._horizontal_padding,
                 self.x + self.clamped_radius[0])
             y = self.y + self.height - self.label_widget.height / 2
-        else:
-            x = self._text_input.x
-            y = self._text_input.center_y - self.label_widget.height / 2
         return (x, y)
+    
+    def _resolve_label_font_size(self) -> float:
+        """Get the font size for the main label widget.
+
+        Returns
+        -------
+        float
+            The font size for the main label widget.
+        """
+        if self.focus or self.text:
+            font_size = self.typography.get_font_size(
+                role=self.label_widget.typography_role,
+                size='small')
+        else:
+            font_size = self._label_initial_font_size
+        if isinstance(font_size, str):
+            font_size = sp(int(font_size.replace('sp', '')))
+        return font_size
+    
+    def _resolve_text_input_margin(self) -> List[float]:
+        """Get the margin values for the internal text input widget.
+
+        Returns
+        -------
+        List[float]
+            The margin values [left, bottom, right, top] for the
+            internal text input widget.
+        """
+        margin = self.text_input_default_margin.copy()
+        if NAME.LEADING_WIDGET in self.identities:
+            margin[0] = (
+                margin[0]
+                + self.leading_widget.width
+                + self._horizontal_padding)
+        if NAME.TRAILING_WIDGET in self.identities:
+            margin[2] = (
+                margin[2]
+                + self.trailing_widget.width 
+                + self._horizontal_padding)
+        if self.label_focus_behavior == 'move_above' and (self.focus or self.text):
+            delta = margin[1] - dp(4)
+            margin[3] += delta
+            margin[1] -= delta
+        return margin
 
     def _animate_on_focus(self, *args) -> None:
         """Handle focus changes for the text field.
@@ -916,41 +1040,78 @@ class MorphTextField(
         """
         if NAME.LABEL_WIDGET not in self.identities:
             return
-        
-        Animation.stop_all(self.label_widget, 'pos', 'font_size')
-        Animation.stop_all(self, 'border_open_length')
+
+        Animation.stop_all(
+            self.label_widget, 'pos', 'font_size', 'content_color')
+        Animation.stop_all(
+            self, 'border_open_length', '_text_input_margin')
 
         target_pos = self._resolve_label_position()
-        role = self.label_widget.typography_role
-        font_size_small = self.typography.get_font_size(role, 'small')
-        font_size_medium = self.typography.get_font_size(role, 'medium')
+        font_size = self._resolve_label_font_size()
         if self.focus:
-            font_size = font_size_small
-            border_width = dp(2)
-            border_open_length = (
-                self.label_widget.width * (font_size_small / font_size_medium))
+            self.border_width = dp(2)
         else:
-            font_size = font_size_medium
-            border_width = dp(1)
+            self.border_width = dp(1)
             border_open_length = 0
-        
-        if isinstance(font_size, str):
-            font_size = sp(int(font_size.replace('sp', '')))
+            hide_color = getattr(
+                self.theme_manager,
+                self._label_initial_color_bindings.get('content_color', ''),
+                self._text_input.content_color)
 
-        self.border_width = border_width
+        if self.label_focus_behavior == 'hide':
+            def update_color_bindings(*a) -> None:
+                color_bindings = self._label_initial_color_bindings.copy()
+                if self.focus:
+                    _colors = (k for k in color_bindings if 'content' in k)
+                    color_bindings.update(
+                        {c: 'transparent_color' for c in _colors})
+                self.label_widget.theme_color_bindings = color_bindings
+                self.label_widget.refresh_theme_colors()
             
+            if self.focus:
+                hide_color = self.theme_manager.transparent_color
+            else:
+                hide_color = getattr(
+                    self.theme_manager,
+                    self._label_initial_color_bindings.get(
+                        'content_color', ''),
+                    self._text_input.content_color)
+            animation = Animation(
+                x=target_pos[0],
+                y=target_pos[1],
+                font_size=font_size,
+                content_color=hide_color,
+                d=self.focus_animation_duration,
+                t=self.focus_animation_transition,)
+            animation.bind(on_complete=update_color_bindings)
+            animation.start(self.label_widget)
+            return
+
         Animation(
             x=target_pos[0],
             y=target_pos[1],
             font_size=font_size,
-            d=0.2,
-            t='out_quad'
+            d=self.focus_animation_duration,
+            t=self.focus_animation_transition,
         ).start(self.label_widget)
         
-        Animation(
-            border_open_length=border_open_length,
-            d=0.2,
-            t='out_quad'
-        ).start(self)
+        if self.label_focus_behavior == 'float_to_border':
+            if self.focus:
+                border_open_length = (
+                    self.label_widget.width
+                    * (font_size / self._label_initial_font_size))
+            else:
+                border_open_length = 0
+            Animation(
+                border_open_length=border_open_length,
+                d=self.focus_animation_duration,
+                t=self.focus_animation_transition
+            ).start(self)
+        elif self.label_focus_behavior == 'move_above':
+            Animation(
+                _text_input_margin=self._resolve_text_input_margin(),
+                d=self.focus_animation_duration,
+                t=self.focus_animation_transition
+            ).start(self)
         
     
