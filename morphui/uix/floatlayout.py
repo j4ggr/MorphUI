@@ -1,5 +1,6 @@
 from kivy.uix.floatlayout import FloatLayout
 
+from .behaviors import MorphElevationBehavior
 from .behaviors import MorphColorThemeBehavior
 from .behaviors import MorphSurfaceLayerBehavior
 from .behaviors import MorphDeclarativeBehavior
@@ -13,6 +14,7 @@ class MorphFloatLayout(
         MorphDeclarativeBehavior,
         MorphColorThemeBehavior,
         MorphSurfaceLayerBehavior,
+        MorphElevationBehavior,
         FloatLayout):
     """A FloatLayout that supports declarative child widgets via
     :class:`~morphui.uix.behaviors.MorphDeclarativeBehavior`.

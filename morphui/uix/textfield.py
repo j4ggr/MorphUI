@@ -467,7 +467,6 @@ class MorphTextInput(
 class MorphTextField(
         TextValidator,
         MorphHoverBehavior,
-        MorphRoundSidesBehavior,
         MorphTypographyBehavior,
         MorphContentLayerBehavior,
         MorphInteractionLayerBehavior,
@@ -1159,4 +1158,35 @@ class MorphTextField(
         self.selection_color = (
             self.selection_color[:3] + [self.selection_color_opacity])
         
-    
+
+class MorphTextFieldRounded(
+        MorphRoundSidesBehavior,
+        MorphTextField,):
+    """A MorphTextField with rounded sides and elevation behavior.
+
+    This class combines the features of MorphTextField with rounded
+    sides and elevation behavior for enhanced visual appearance.
+    """
+
+    default_config: Dict[str, Any] = (
+        MorphTextField.default_config.copy() | dict(
+            label_focus_behavior='hide',
+            round_sides=True,
+            elevation=1,))
+
+
+class MorphTextFieldFilled(
+        MorphTextField,):
+    """A MorphTextField with filled style.
+
+    This class provides a filled appearance for the text field,
+    adhering to Material Design guidelines.
+    """
+
+    default_config: Dict[str, Any] = (
+        MorphTextField.default_config.copy() | dict(            
+            label_focus_behavior='move_above',
+            border_bottom_line_only=True,
+            text_input_default_margin=[8, 8, 18, 18],
+            multiline=False,
+            radius=[16, 16, 0, 0],))
