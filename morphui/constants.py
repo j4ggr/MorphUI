@@ -181,14 +181,14 @@ class _Name_:
     INPUT: Literal['input'] = 'input'
     """Standard name for the text input area in a text field component,
     used for identification."""
-    
-    LABEL: Literal['label'] = 'label'
-    """Standard name for the label in a combined component, used for
-    identification."""
 
-    SUPPORTING_LABEL: Literal[
-        'supporting_label'] = 'supporting_label'
-    """Standard name for the supporting text label in a combined
+    LABEL_WIDGET: Literal['label_widget'] = 'label_widget'
+    """Standard name for the label widget in a combined component, used
+    for identification."""
+
+    SUPPORTING_WIDGET: Literal[
+        'supporting_widget'] = 'supporting_widget'
+    """Standard name for the supporting widget in a combined
     component, used for identification."""
 
     LEADING_WIDGET: Literal[

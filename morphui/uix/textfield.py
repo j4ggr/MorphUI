@@ -546,23 +546,23 @@ class MorphTextField(
     :attr:`trailing_icon` is a :class:`~kivy.properties.StringProperty`
     and defaults to ''."""
 
-    label: TextFieldLabel = ObjectProperty()
+    label_widget: TextFieldLabel = ObjectProperty()
     """The main label widget displayed above the text input area.
 
     This widget represents the label associated with the text field.
     It is automatically created and managed by the MorphTextField class.
 
-    :attr:`label` is a :class:`~kivy.properties.ObjectProperty`
+    :attr:`label_widget` is a :class:`~kivy.properties.ObjectProperty`
     and defaults to a TextFieldLabel instance."""
 
-    supporting_label: TextFieldSupportingLabel = ObjectProperty()
+    supporting_widget: TextFieldSupportingLabel = ObjectProperty()
     """The supporting label widget displayed below the text input area.
 
     This widget represents the supporting text associated with the text
     field. It is automatically created and managed by the MorphTextField
     class.
 
-    :attr:`supporting_label` is a :class:`~kivy.properties.ObjectProperty`
+    :attr:`supporting_widget` is a :class:`~kivy.properties.ObjectProperty`
     and defaults to a TextFieldSupportingLabel instance."""
 
     leading_widget: TextFieldLeadingIconLabel = ObjectProperty()
@@ -698,8 +698,8 @@ class MorphTextField(
             auto_height=True)
 
         child_classes = dict(
-            label=TextFieldLabel,
-            supporting_label=TextFieldSupportingLabel,
+            label_widget=TextFieldLabel,
+            supporting_widget=TextFieldSupportingLabel,
             leading_widget=TextFieldLeadingIconLabel,
             trailing_widget=TextFieldTrailingIconButton,)
         config = clean_config(self.default_config, kwargs)
@@ -732,10 +732,10 @@ class MorphTextField(
             multiline=self._text_input.setter('multiline'),)
         self.fbind(
             'label_text', self._update_child_widget,
-            identity=NAME.LABEL)
+            identity=NAME.LABEL_WIDGET)
         self.fbind(
             'supporting_text', self._update_child_widget,
-            identity=NAME.SUPPORTING_LABEL)
+            identity=NAME.SUPPORTING_WIDGET)
         self.fbind(
             'leading_icon', self._update_child_widget,
             identity=NAME.LEADING_WIDGET)
@@ -766,10 +766,10 @@ class MorphTextField(
             The identity of the child widget being updated.
         """
         match identity:
-            case NAME.LABEL:
-                widget = self.label
-            case NAME.SUPPORTING_LABEL:
-                widget = self.supporting_label
+            case NAME.LABEL_WIDGET:
+                widget = self.label_widget
+            case NAME.SUPPORTING_WIDGET:
+                widget = self.supporting_widget
             case NAME.LEADING_WIDGET:
                 widget = self.leading_widget
             case NAME.TRAILING_WIDGET:
@@ -808,16 +808,16 @@ class MorphTextField(
             self.trailing_widget.center_y = self.center_y
             bounds[2] += self.trailing_widget.width + self._horizontal_padding
 
-        if NAME.SUPPORTING_LABEL in self.identities:
-            self.supporting_label.x = self.x + self._horizontal_padding
-            self.supporting_label.y = (
-                self.y - self.supporting_label.height - dp(4))
-        
+        if NAME.SUPPORTING_WIDGET in self.identities:
+            self.supporting_widget.x = self.x + self._horizontal_padding
+            self.supporting_widget.y = (
+                self.y - self.supporting_widget.height - dp(4))
+
         self._text_input_bounds = bounds
         self._update_text_input_coordinates()
 
-        if NAME.LABEL in self.identities:
-            self.label.pos = self._resolve_label_position()
+        if NAME.LABEL_WIDGET in self.identities:
+            self.label_widget.pos = self._resolve_label_position()
 
     def _update_text_input_coordinates(self, *args) -> None:
         """Update the coordinates of the internal text input widget 
@@ -843,9 +843,9 @@ class MorphTextField(
         by calling the _update_child_widget method for each widget.
         """
         self._update_child_widget(
-            self, self.label_text, NAME.LABEL)
+            self, self.label_text, NAME.LABEL_WIDGET)
         self._update_child_widget(
-            self, self.supporting_text, NAME.SUPPORTING_LABEL)
+            self, self.supporting_text, NAME.SUPPORTING_WIDGET)
         self._update_child_widget(
             self, self.leading_icon, NAME.LEADING_WIDGET)
         self._update_child_widget(
@@ -890,8 +890,8 @@ class MorphTextField(
         """
         if self.focus or self.text:
             x = self.x + self._horizontal_padding
-            y = self.y + self.height - self.label.height / 2
+            y = self.y + self.height - self.label_widget.height / 2
         else:
             x = self._text_input.x
-            y = self._text_input.center_y - self.label.height / 2
+            y = self._text_input.center_y - self.label_widget.height / 2
         return (x, y)
