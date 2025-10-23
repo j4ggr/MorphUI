@@ -345,14 +345,15 @@ class MorphTextInput(
         
         Overrides the default behavior to provide accurate sizing
         for multiline TextInputs."""
+        row_height = self.line_height + self.line_spacing
         if not self.multiline:
-            return self.line_height
-        
+            return row_height
+
         minimum_height = (
-            len(self._lines) * (self.line_height + self.line_spacing)
+            len(self._lines) * row_height
             + self.padding[1]
             + self.padding[3])
-        return clamp(minimum_height, self.line_height, self.maximum_height)
+        return clamp(minimum_height, row_height, self.maximum_height)
 
     minimum_height: int = AliasProperty(
         _get_min_height,
@@ -806,7 +807,7 @@ class MorphTextField(
         This method recalculates the positions and sizes of the child
         widgets based on the current layout settings.
         """
-        bounds = [dp(16), dp(16), dp(16), dp(16)]
+        bounds = [dp(8), dp(8), dp(8), dp(8)]
 
         if NAME.LEADING_WIDGET in self.identities:
             self.leading_widget.x = self.x + self._horizontal_padding
