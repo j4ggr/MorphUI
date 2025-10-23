@@ -421,7 +421,7 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
     
     border_path = AliasProperty(
         lambda self: self._generate_border_path(),
-        bind=['contour', 'border_bottom_line_only', 'border_open_length',],
+        bind=['contour', 'border_bottom_line_only', 'border_open_length', 'border_closed'],
         cache=True)
     """Get the border path points (read-only).
 
@@ -515,12 +515,12 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
         if self.border_bottom_line_only:
             return [self.x, self.y, self.x + self.width, self.y]
         
-        path: List[float] = self.contour
+        path: List[float] = self._generate_contour()
 
         if self.border_open_length > 0:
-            x_start = path[0]
-            x_end = min(x_start + self.border_open_length, path[-2])
-            path.extend([x_end, path[-1]])
+            path.extend([
+                min(path[0] + self.border_open_length, path[-2]),
+                path[-1]])
 
         return path
     
