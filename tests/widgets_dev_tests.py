@@ -85,10 +85,10 @@ class MyApp(MorphApp):
             self.disabled_button,
             self.icon_label,
             Label(
-                text="Regular Kivy Label",
+                text="Regular Kivy\n Label",
                 color='black'),
             MorphLabel(
-                text="Morph default Label",),
+                text="Morph default\n Label",),
             MorphIconLabel(
                 icon='language-python',),
             MorphButton(
