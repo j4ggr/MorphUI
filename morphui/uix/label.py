@@ -63,9 +63,7 @@ class MorphSimpleLabel(
 
     minimum_height: float = AliasProperty(
         lambda self: self.texture_size[1] + self.padding[1] + self.padding[3],
-        bind=[
-            'theme_style', 'text', 'font_size', 'font_name', 'bold', 'italic',
-            'underline', 'strikethrough', 'padding',])
+        bind=['texture_size', 'padding',])
     """The minimum height required to display the label's content.
 
     This property calculates the minimum height based on the label's
@@ -76,9 +74,7 @@ class MorphSimpleLabel(
 
     minimum_width: float = AliasProperty(
         lambda self: self.texture_size[0] + self.padding[0] + self.padding[2],
-        bind=[
-            'theme_style', 'text', 'font_size', 'font_name', 'bold', 'italic',
-            'underline', 'strikethrough', 'padding',])
+        bind=['texture_size', 'padding',])
     """The minimum width required to display the label's content.
 
     This property calculates the minimum width based on the label's
