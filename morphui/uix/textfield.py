@@ -161,6 +161,18 @@ class TextValidator(EventDispatcher):
     :attr:`error` is a :class:`~kivy.properties.BooleanProperty`
     and defaults to False."""
 
+    error_type: str = StringProperty('')
+    """The type of error associated with the current error state.
+
+    This property holds a string that describes the type of error
+    encountered in the text input. It can be used to provide
+    specific feedback to the user about the nature of the error.
+    The possible values are the same as those defined for the
+    :attr:`validator` property plus `required`.
+
+    :attr:`error_type` is a :class:`~kivy.properties.StringProperty`
+    and defaults to an empty string."""
+
     required: bool = BooleanProperty(False)
     """Indicates whether the text is required.
 
@@ -187,7 +199,12 @@ class TextValidator(EventDispatcher):
       number.
     - 'date': Validates that the text is a properly formatted date.
     - 'time': Validates that the text is a properly formatted time.
-    - 'datetime': Validates that the text is a properly formatted datetime.
+    - 'datetime': Validates that the text is a properly formatted 
+      datetime.
+    - 'numeric': Validates that the text is a valid numeric value.
+    - 'alphanumeric': Validates that the text contains only letters
+      and numbers.
+
     When set to None, no validation is performed.
     :attr:`validator` is a :class:`~kivy.properties.OptionProperty`
     and defaults to None.
@@ -341,6 +358,7 @@ class TextValidator(EventDispatcher):
         """
         if self.required and not text:
             self.error = True
+            self.error_type = 'required'
             return False
         
         if self.validator is None:
@@ -352,8 +370,9 @@ class TextValidator(EventDispatcher):
             is_valid = is_valid_method(text)
         else:
             is_valid = True
-
+        
         self.error = not is_valid
+        self.error_type = '' if is_valid else self.validator 
         return is_valid
 
 
