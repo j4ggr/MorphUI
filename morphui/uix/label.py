@@ -61,28 +61,6 @@ class MorphSimpleLabel(
     - Lighter weight than MorphLabel for simple text display needs
     """
 
-    minimum_height: float = AliasProperty(
-        lambda self: self.texture_size[1] + self.padding[1] + self.padding[3],
-        bind=['texture_size', 'padding',])
-    """The minimum height required to display the label's content.
-
-    This property calculates the minimum height based on the label's
-    texture size and padding.
-
-    :attr:`minimum_height` is a :class:`~kivy.properties.AliasProperty`
-    """
-
-    minimum_width: float = AliasProperty(
-        lambda self: self.texture_size[0] + self.padding[0] + self.padding[2],
-        bind=['texture_size', 'padding',])
-    """The minimum width required to display the label's content.
-
-    This property calculates the minimum width based on the label's
-    texture size and padding.
-
-    :attr:`minimum_width` is a :class:`~kivy.properties.AliasProperty`
-    """
-
     default_config: Dict[str, Any] = dict(
         theme_color_bindings=dict(
             content_color='content_surface_color',),
