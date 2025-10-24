@@ -91,8 +91,8 @@ class MorphAutoSizingBehavior(EventDispatcher):
 
         self._original_size = (self.size[0], self.size[1])
         self._original_size_hint = (self.size_hint[0], self.size_hint[1])
-        if hasattr(self, 'texture_size') and hasattr(self, 'text_size'):
-            self.bind(texture_size=self._update_text_size)
+        if self.has_texture_size and hasattr(self, 'text_size'):
+            self.bind(text=self._update_text_size)
 
         if hasattr(self, 'minimum_width') and hasattr(self, 'minimum_height'):
             self.fbind('minimum_width', self._update_size)
@@ -150,11 +150,18 @@ class MorphAutoSizingBehavior(EventDispatcher):
         """Update text_size to match current width when auto_width is 
         enabled. Only applies if the widget has a text_size attribute.
         """
-        text_width = None
-        if self.auto_width:
-            text_width = texture_size[0]
-        self.text_size = (text_width, None)
+        w_text, h_text = None, None
 
+        if self.auto_height:
+            h_text = self.texture_size[1]
+            self.text_size = (None, h_text) # update height first and let width adjust
+            self.texture_update() # ensure texture_size is updated
+
+        if self.auto_width:
+            w_text = self.texture_size[0]
+        
+        self.text_size = (w_text, h_text)
+        self.texture_update()
 
     def _update_auto_sizing(
             self, instance: Any, value: bool, prop: str) -> None:
