@@ -168,7 +168,7 @@ class TextValidator(EventDispatcher):
     encountered in the text input. It can be used to provide
     specific feedback to the user about the nature of the error.
     The possible values are the same as those defined for the
-    :attr:`validator` property plus `required`.
+    :attr:`validator` property plus `required` and `max_text_length`.
 
     :attr:`error_type` is a :class:`~kivy.properties.StringProperty`
     and defaults to an empty string."""
@@ -182,6 +182,16 @@ class TextValidator(EventDispatcher):
 
     :attr:`required` is a :class:`~kivy.properties.BooleanProperty`
     and defaults to False."""
+
+    max_text_length: int = NumericProperty(0)
+    """The maximum length of the text input.
+
+    This property sets a limit on the number of characters that can be
+    entered into the text widget. If the text exceeds this length,
+    it will be truncated or rejected based on the implementation.
+
+    :attr:`max_length` is a :class:`~kivy.properties.NumericProperty`
+    and defaults to 0, which means no limit."""
 
     validator: str | None = OptionProperty(
         None,
@@ -361,8 +371,14 @@ class TextValidator(EventDispatcher):
             self.error_type = 'required'
             return False
         
+        if self.max_text_length > 0 and len(text) > self.max_text_length:
+            self.error = True
+            self.error_type = 'max_text_length'
+            return False
+        
         if self.validator is None:
-            self.error=False
+            self.error = False
+            self.error_type = ''
             return True
         
         if hasattr(self, f'is_valid_{self.validator}'):
@@ -370,7 +386,6 @@ class TextValidator(EventDispatcher):
             is_valid = is_valid_method(text)
         else:
             is_valid = True
-        
         self.error = not is_valid
         self.error_type = '' if is_valid else self.validator 
         return is_valid
