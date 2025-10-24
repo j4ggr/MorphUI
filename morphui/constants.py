@@ -191,6 +191,11 @@ class _Name_:
     """Standard name for the supporting widget in a combined
     component, used for identification."""
 
+    TEXT_LENGTH_WIDGET: Literal[
+        'text_length_widget'] = 'text_length_widget'
+    """Standard name for the text length widget in a text field
+    component, used for identification."""
+
     LEADING_WIDGET: Literal[
         'leading_widget'] = 'leading_widget'
     """Standard name for the leading widget in a combined component, 

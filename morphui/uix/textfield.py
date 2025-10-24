@@ -90,15 +90,31 @@ class TextFieldSupportingLabel(MorphSimpleLabel):
     default_config: Dict[str, Any] = dict(
         theme_color_bindings=dict(
             content_color='transparent_color',
-            focus_content_color='primary_color',
             error_content_color='error_color',),
         typography_role='Label',
         typography_size='small',
         typography_weight='Regular',
         halign='left',
         valign='middle',
-        auto_width=True,
         shorten=True,)
+
+
+class TextFieldTextLengthLabel(MorphSimpleLabel):
+
+    disabled: bool = BooleanProperty(False)
+    
+    error: bool = BooleanProperty(False)
+    
+    default_config: Dict[str, Any] = dict(
+        theme_color_bindings=dict(
+            content_color='content_surface_color',
+            error_content_color='error_color',),
+        typography_role='Label',
+        typography_size='small',
+        typography_weight='Regular',
+        halign='right',
+        valign='middle',
+        auto_size=True,)
 
 
 class TextFieldLeadingIconLabel(MorphSimpleIconLabel):
@@ -674,6 +690,18 @@ class MorphTextField(
     :attr:`supporting_widget` is a :class:`~kivy.properties.ObjectProperty`
     and defaults to a TextFieldSupportingLabel instance."""
 
+    text_length_widget: TextFieldTextLengthLabel = ObjectProperty()
+    """The text length label widget displayed to the right of the
+    supporting text area.
+
+    This widget shows the current length of the text input, useful for
+    fields with maximum length constraints. It is automatically created
+    and managed by the :class:`MorphTextField` class.
+
+    :attr:`text_length_widget` is a 
+    :class:`~kivy.properties.ObjectProperty` and defaults to a
+    TextFieldTextLengthLabel instance."""
+
     leading_widget: TextFieldLeadingIconLabel = ObjectProperty()
     """The leading icon widget displayed to the left of the text input
     area.
@@ -836,7 +864,8 @@ class MorphTextField(
             error_border_color='error_color',
             focus_border_color='primary_color',
             disabled_border_color='outline_variant_color',
-            content_color='content_surface_color',),
+            content_color='content_surface_color',
+            selection_color='secondary_color',),
         size_hint_y=None,)
     """Default configuration values for MorphTextField.
 
@@ -874,6 +903,7 @@ class MorphTextField(
         child_classes = dict(
             label_widget=TextFieldLabel,
             supporting_widget=TextFieldSupportingLabel,
+            text_length_widget=TextFieldTextLengthLabel,
             leading_widget=TextFieldLeadingIconLabel,
             trailing_widget=TextFieldTrailingIconButton,)
         config = clean_config(self.default_config, kwargs)
@@ -908,7 +938,6 @@ class MorphTextField(
             minimum_width=self.setter('_text_input_min_width'),)
         
         self.bind(
-            text=lambda instance, text: self.validate(text),
             pos=self._update_layout,
             width=self._update_layout,
             size=self._update_layout,
@@ -932,6 +961,10 @@ class MorphTextField(
             'trailing_icon',
             self._update_child_widget,
             identity=NAME.TRAILING_WIDGET)
+        self.fbind(
+            'max_text_length',
+            self._update_text_length_widget,
+            identity=NAME.TEXT_LENGTH_WIDGET)
 
         self.refresh_textfield_content()
 
@@ -979,6 +1012,35 @@ class MorphTextField(
         elif not text and identity in self.identities:
             self.remove_widget(widget)
         self._update_layout()
+    
+    def _update_text_length_widget(
+            self, instance: Any, max_length: int, identity: str) -> None:
+        """Update the text length widget based on the maximum length.
+
+        This method sets the maximum length for the text length widget
+        and updates its visibility based on the current content state.
+
+        Parameters
+        ----------
+        instance : Any
+            The instance of the widget being updated.
+        max_length : int
+            The maximum length to set for the text length widget.
+        identity : str
+            The identity of the child widget being updated.
+        """
+        if identity != NAME.TEXT_LENGTH_WIDGET or not self.text_length_widget:
+            return
+
+        show_length = max_length > 0
+        if not show_length and identity in self.identities:
+            self.remove_widget(self.text_length_widget)
+        elif show_length and identity not in self.identities:
+            self.text_length_widget.identity = identity
+            self.add_widget(self.text_length_widget)
+
+        self.text_length_widget.text = f'{len(self.text)}/{max_length}'
+        self._update_layout()
 
     def _update_layout(self, *args) -> None:
         """Update the layout of the text field and its child widgets.
@@ -986,6 +1048,7 @@ class MorphTextField(
         This method recalculates the positions and sizes of the child
         widgets based on the current layout settings.
         """
+        spacing = dp(4)
         if NAME.LEADING_WIDGET in self.identities:
             self.leading_widget.x = self.x + self._horizontal_padding
             self.leading_widget.center_y = self.y + self.height / 2
@@ -998,7 +1061,23 @@ class MorphTextField(
         if NAME.SUPPORTING_WIDGET in self.identities:
             self.supporting_widget.x = self.x + self._horizontal_padding
             self.supporting_widget.y = (
-                self.y - self.supporting_widget.height - dp(4))
+                self.y - self.supporting_widget.height - spacing)
+            self.supporting_widget.width = (
+                self.width - 2 * self._horizontal_padding)
+        
+        if NAME.TEXT_LENGTH_WIDGET in self.identities:
+            self.text_length_widget.right = (
+                self.x + self.width - self._horizontal_padding)
+            if NAME.SUPPORTING_WIDGET in self.identities:
+                self.text_length_widget.y = self.supporting_widget.y
+                self.supporting_widget.width = (
+                    self.width
+                    - 2 * self._horizontal_padding
+                    - self.text_length_widget.width
+                    - spacing)
+            else:
+                self.text_length_widget.y = (
+                    self.y - self.text_length_widget.height - spacing)
 
         self._text_input_margin = self._resolve_text_input_margin()
         self._update_text_input_coordinates()
@@ -1225,7 +1304,24 @@ class MorphTextField(
         """
         self.selection_color = (
             self.selection_color[:3] + [self.selection_color_opacity])
-        
+
+    def on_text(self, instance: Any, text: str) -> None:
+        """Fired when the text content changes.
+
+        This method updates the text length widget to reflect the
+        current length of the text input.
+
+        Parameters
+        ----------
+        instance : Any
+            The instance of the text field.
+        text : str
+            The new text content of the text field.
+        """
+        self.validate(text)
+        self._update_text_length_widget(
+            self, self.max_text_length, NAME.TEXT_LENGTH_WIDGET)
+
 
 class MorphTextFieldOutlined(
         MorphTextField,):
