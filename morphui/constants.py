@@ -708,5 +708,11 @@ class _RegexPattern_:
     Invalid: "24:00", "12:60", "12:30 PM AM"
     """
 
+    NUMERIC: re.Pattern = re.compile(r'^\d+(\.\d+)?$')
+    """Matches valid numeric values (integers and decimals)."""
+
+    ALPHANUMERIC: re.Pattern = re.compile(r'^[a-zA-Z0-9]+$')
+    """Matches valid alphanumeric values (letters and numbers)."""
+
 REGEX = _RegexPattern_()
 """Container for precompiled regular expressions."""

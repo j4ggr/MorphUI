@@ -51,7 +51,10 @@ __all__ = [
     'TextFieldTrailingIconButton',
     'TextValidator',
     'MorphTextInput',
-    'MorphTextField',]
+    'MorphTextField',
+    'MorphTextFieldOutlined',
+    'MorphTextFieldRounded',
+    'MorphTextFieldFilled',]
 
 
 class TextFieldLabel(MorphSimpleLabel):
@@ -171,7 +174,9 @@ class TextValidator(EventDispatcher):
     validator: str | None = OptionProperty(
         None,
         allownone=True,
-        options=['email', 'phone', 'date', 'time', 'datetime'])
+        options=[
+            'email', 'phone', 'date', 'time', 'datetime', 'numeric', 
+            'alphanumeric'])
     """The type of validation to apply to the text.
 
     This property determines the kind of validation that will be 
@@ -286,6 +291,37 @@ class TextValidator(EventDispatcher):
             return False
         return self.is_valid_date(date_part) and self.is_valid_time(time_part)
 
+    def is_valid_numeric(self, text: str) -> bool:
+        """Check if the given text is a valid numeric value.
+
+        Parameters
+        ----------
+        text : str
+            The text input to validate.
+
+        Returns
+        -------
+        bool
+            True if the input is a valid numeric value, False otherwise.
+        """
+        return REGEX.NUMERIC.match(text) is not None
+    
+    def is_valid_alphanumeric(self, text: str) -> bool:
+        """Check if the given text is a valid alphanumeric value.
+
+        Parameters
+        ----------
+        text : str
+            The text input to validate.
+
+        Returns
+        -------
+        bool
+            True if the input is a valid alphanumeric value, False 
+            otherwise.
+        """
+        return REGEX.ALPHANUMERIC.match(text) is not None
+
     def validate(self, text: str) -> bool:
         """Validate the given text based on the current settings.
 
@@ -303,21 +339,19 @@ class TextValidator(EventDispatcher):
             True if the text is valid according to the current settings,
             False otherwise.
         """
+        if self.required and not text:
+            self.error = True
+            return False
+        
         if self.validator is None:
             self.error=False
             return True
         
-        if self.required and not text:
-            self.error = True
-            return False
-
-        match self.validator:
-            case 'email':
-                is_valid = self.is_valid_email(text)
-            case 'phone':
-                is_valid = self.is_valid_phone(text)
-            case _:
-                is_valid = True
+        if hasattr(self, f'is_valid_{self.validator}'):
+            is_valid_method = getattr(self, f'is_valid_{self.validator}')
+            is_valid = is_valid_method(text)
+        else:
+            is_valid = True
 
         self.error = not is_valid
         return is_valid
@@ -762,14 +796,12 @@ class MorphTextField(
     and is read-only."""
 
     default_config = dict(
-        radius=[2, 2, 2, 2],
         theme_color_bindings=dict(
             surface_color='surface_color',
             border_color='outline_color',
             error_border_color='error_color',
             focus_border_color='primary_color',
             disabled_border_color='outline_variant_color',
-            selection_color='secondary_color',
             content_color='content_surface_color',),
         size_hint_y=None,)
     """Default configuration values for MorphTextField.
@@ -842,6 +874,7 @@ class MorphTextField(
             minimum_width=self.setter('_text_input_min_width'),)
         
         self.bind(
+            text=lambda instance, text: self.validate(text),
             pos=self._update_layout,
             width=self._update_layout,
             size=self._update_layout,
@@ -977,6 +1010,7 @@ class MorphTextField(
         
         self._update_layout()
         self.on_current_content_state(self, self.current_content_state)
+        self.validate(self.text)
 
     def on_current_content_state(self, instance: Any, state: str) -> None:
         """Handle changes to the current content state of the text field.
@@ -1158,6 +1192,22 @@ class MorphTextField(
         self.selection_color = (
             self.selection_color[:3] + [self.selection_color_opacity])
         
+
+class MorphTextFieldOutlined(
+        MorphTextField,):
+    """A MorphTextField with outlined style.
+
+    This class provides an outlined appearance for the text field,
+    adhering to Material Design guidelines.
+    """
+
+    default_config: Dict[str, Any] = (
+        MorphTextField.default_config.copy() | dict(
+            label_focus_behavior='float_to_border',
+            border_bottom_line_only=False,
+            multiline=False,
+            radius=[2, 2, 2, 2],))
+
 
 class MorphTextFieldRounded(
         MorphRoundSidesBehavior,
