@@ -6,6 +6,7 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).parent.resolve()))
 
 from kivy.uix.widget import Widget
+from kivy.properties import BooleanProperty
 from kivy.uix.behaviors import FocusBehavior
 
 from morphui.utils.dotdict import DotDict
@@ -1554,17 +1555,19 @@ class TestMorphStateBehavior:
 
     class TestWidget(MorphStateBehavior, Widget):
         """Test widget that combines Widget with MorphStateBehavior."""
+
+        pressed = BooleanProperty(False)
+        selected = BooleanProperty(False)
+        focus = BooleanProperty(False)
+        hovered = BooleanProperty(False)
+        active = BooleanProperty(False)
+        resizing = BooleanProperty(False)
+        dragging = BooleanProperty(False)
         
         def __init__(self, **kwargs):
             # Add state properties that the behavior can track
             # Use simple attributes instead of trying to override Kivy properties
             super().__init__(**kwargs)
-            self.pressed = False
-            self.selected = False
-            self.focus = False
-            self.hovered = False
-            self.active = False
-            self.resizing = False
 
     def test_initialization(self):
         """Test basic initialization of MorphStateBehavior."""
@@ -1691,6 +1694,64 @@ class TestMorphStateBehavior:
         assert len(widget.interaction_state_precedence) > 0
         assert len(widget.content_state_precedence) > 0
         assert len(widget.overlay_state_precedence) > 0
+
+    def test_lower_precedence_active_when_higher_set_false(self):
+        """Test that lower precedence active state becomes current when higher precedence state is set to false."""
+        widget = self.TestWidget()
+        
+        # Test with ContentState: active (higher) and selected (lower)
+        widget.active = True
+        widget.selected = True
+        
+        # active has higher precedence than selected, so current_content_state should be 'active'
+        assert widget.current_content_state == 'active'
+        
+        # Set active to False - should fall back to selected
+        widget.active = False
+        assert widget.current_content_state == 'selected'
+        
+        # Test with SurfaceState: focus (higher) and active (lower) 
+        widget = self.TestWidget()  # Reset widget
+        widget.focus = True
+        widget.active = True
+        
+        # focus has higher precedence than active, so current_surface_state should be 'focus'
+        assert widget.current_surface_state == 'focus'
+        
+        # Set focus to False - should fall back to active
+        widget.focus = False
+        assert widget.current_surface_state == 'active'
+        
+        # Test with InteractionState: pressed (higher) and hovered (lower)
+        widget = self.TestWidget()  # Reset widget
+        widget.pressed = True
+        widget.hovered = True
+        
+        # pressed has higher precedence than hovered, so current_interaction_state should be 'pressed'
+        assert widget.current_interaction_state == 'pressed'
+        
+        # Set pressed to False - should fall back to hovered
+        widget.pressed = False
+        assert widget.current_interaction_state == 'hovered'
+        
+        # Test with OverlayState: resizing (higher) and dragging (lower)
+        widget = self.TestWidget()  # Reset widget
+        widget.resizing = True
+        widget.dragging = True
+        
+        # resizing has higher precedence than dragging, so current_overlay_state should be 'resizing'
+        assert widget.current_overlay_state == 'resizing'
+        
+        # Set resizing to False - should fall back to dragging
+        widget.resizing = False
+        assert widget.current_overlay_state == 'dragging'
+        
+        # Test edge case: all states false should return 'normal'
+        widget = self.TestWidget()  # Reset widget
+        assert widget.current_content_state == 'normal'
+        assert widget.current_surface_state == 'normal'
+        assert widget.current_interaction_state == 'normal'
+        assert widget.current_overlay_state == 'normal'
 
     def test_possible_states_property(self):
         """Test the possible_states property."""
