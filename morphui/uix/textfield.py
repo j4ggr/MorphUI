@@ -440,11 +440,9 @@ class MorphTextInput(
         
         Overrides the default behavior to provide accurate sizing
         for multiline TextInputs."""
-        if not self.multiline:
-            return self.row_height
-
+        lines = 1 if not self.multiline else len(self._lines)
         minimum_height = (
-            len(self._lines) * self.row_height
+            lines * self.row_height
             + self.padding[1]
             + self.padding[3])
         return clamp(minimum_height, self.row_height, self.maximum_height)
@@ -775,27 +773,27 @@ class MorphTextField(
     :class:`~kivy.properties.OptionProperty` and defaults to 
     'float_to_border'."""
 
-    _text_input_margin: List[float] = VariableListProperty(dp(0), length=4)
-    """The margin around the internal text input widget.
+    _text_input_padding: List[float] = VariableListProperty(dp(0), length=4)
+    """The padding around the internal text input widget.
 
-    This property defines the margin space around the internal
+    This property defines the padding space around the internal
     :class:`MorphTextInput` widget within the text field. It is used
-    for layout calculations and positioning. The margins are defined
+    for layout calculations and positioning. The padding is defined
     as [left, bottom, right, top].
 
-    :attr:`_text_input_margin` is a
+    :attr:`_text_input_padding` is a
     :class:`~kivy.properties.VariableListProperty` of length 4."""
 
-    text_input_default_margin: List[float] = VariableListProperty(
+    text_input_default_padding: List[float] = VariableListProperty(
         [dp(8), dp(8), dp(8), dp(8)], length=4)
-    """The default margin values around the internal text input widget.
+    """The default padding values around the internal text input widget.
 
-    This property defines the base margin space that is applied around
+    This property defines the base padding space that is applied around
     the internal :class:`MorphTextInput` widget before any adjustments
-    for icons or other widgets. The margins are defined as 
+    for icons or other widgets. The padding is defined as
     [left, bottom, right, top].
 
-    :attr:`text_input_default_margin` is a
+    :attr:`text_input_default_padding` is a
     :class:`~kivy.properties.VariableListProperty` of length 4 and
     defaults to [dp(8), dp(8), dp(8), dp(8)]."""
 
@@ -829,10 +827,8 @@ class MorphTextField(
 
     minimum_width: float = AliasProperty(
         lambda self: (
-            self._text_input_min_width
-            + self._text_input_margin[0]
-            + self._text_input_margin[2]),
-        bind=['size', '_text_input_margin', '_text_input_min_width'],
+            self._text_input_min_width),
+        bind=['size', '_text_input_padding', '_text_input_min_width'],
         cache=True)
     """The minimum width of the text field (read-only).
 
@@ -844,10 +840,8 @@ class MorphTextField(
     
     minimum_height: float = AliasProperty(
         lambda self: (
-            self._text_input_height
-            + self._text_input_margin[1]
-            + self._text_input_margin[3]),
-        bind=['size', '_text_input_margin', '_text_input_height'],
+            self._text_input_height),
+        bind=['size', '_text_input_padding', '_text_input_height'],
         cache=True)
     """The minimum height of the text field (read-only).
 
@@ -934,6 +928,7 @@ class MorphTextField(
 
         self._text_input.bind(
             _lines=self._update_layout,
+            padding=self._update_layout,
             height=self.setter('_text_input_height'),
             minimum_width=self.setter('_text_input_min_width'),)
         
@@ -942,9 +937,9 @@ class MorphTextField(
             width=self._update_layout,
             size=self._update_layout,
             declarative_children=self._update_layout,
-            _text_input_margin=self._update_text_input_coordinates,
             focus=self._animate_on_focus,
-            minimum_height=self.setter('height'),)
+            minimum_height=self.setter('height'),
+            maximum_height=self._text_input.setter('maximum_height'),)
         self.fbind(
             'label_text',
             self._update_child_widget,
@@ -1049,14 +1044,19 @@ class MorphTextField(
         widgets based on the current layout settings.
         """
         spacing = dp(4)
+        x_input, y_input = self.pos
+        w_input, h_input = self.size
         if NAME.LEADING_WIDGET in self.identities:
             self.leading_widget.x = self.x + self._horizontal_padding
             self.leading_widget.center_y = self.y + self.height / 2
+            x_input = self.leading_widget.x + self.leading_widget.width
+            w_input -= (x_input - self.x)
 
         if NAME.TRAILING_WIDGET in self.identities:
             self.trailing_widget.right = (
                 self.x + self.width - self._horizontal_padding)
             self.trailing_widget.center_y = self.y + self.height / 2
+            w_input -= (self.x + self.width - self.trailing_widget.x)
 
         if NAME.SUPPORTING_WIDGET in self.identities:
             self.supporting_widget.x = self.x + self._horizontal_padding
@@ -1079,29 +1079,16 @@ class MorphTextField(
                 self.text_length_widget.y = (
                     self.y - self.text_length_widget.height - spacing)
 
-        self._text_input_margin = self._resolve_text_input_margin()
-        self._update_text_input_coordinates()
+        self._text_input.pos = x_input, y_input
+        self._text_input.padding = self._resolve_text_input_padding()
+        self._text_input.width = max(self._text_input.minimum_width, w_input)
+        self._text_input.height = max(self._text_input.minimum_height, h_input)
+
         self.width = max(self.width, self.minimum_width)
+        self.height = max(self._text_input.height, self.minimum_height)
 
         if NAME.LABEL_WIDGET in self.identities:
             self.label_widget.pos = self._resolve_label_position()
-
-    def _update_text_input_coordinates(self, *args) -> None:
-        """Update the coordinates of the internal text input widget 
-        based on the current layout and appearance settings.
-        """
-        self._text_input.x = self.x + self._text_input_margin[0]
-        self._text_input.y = self.y + self._text_input_margin[1]
-        width = (
-            self.width
-            - self._text_input_margin[0]
-            - self._text_input_margin[2])
-        self._text_input.width = max(self._text_input.minimum_width, width)
-        maximum_height = (
-            self.maximum_height
-            - self._text_input_margin[1]
-            - self._text_input_margin[3])
-        self._text_input.maximum_height = maximum_height
         
     def refresh_textfield_content(self, *args) -> None:
         """Refresh the content of the text field and its child widgets.
@@ -1154,25 +1141,20 @@ class MorphTextField(
         Tuple[float, float]
             The (x, y) position of the main label widget.
         """
-        margin = self._resolve_text_input_margin()
-        x = self._text_input.x
-        y = (
-            self.y
-            + (margin[1] + self._text_input_height + margin[3]) / 2
-            - self._text_input_height / 2)
-
+        padding = self._resolve_text_input_padding()
+        x = self._text_input.x + padding[0]
+        y = self.y + self.height / 2 - self.label_widget.height / 2
         if not self.focus and not self.text:
             return (x, y)
         
         if self.label_focus_behavior == 'hide':
-            x = self._text_input.x
-            y = self._text_input.y
+            pass
         elif self.label_focus_behavior == 'move_above':
             x = self._text_input.x
             y = (
                 self.y
-                + margin[1]
-                + self._text_input_height
+                + self.height
+                - padding[1]
                 + dp(2))
         elif self.label_focus_behavior == 'float_to_border':
             x = max(
@@ -1201,30 +1183,20 @@ class MorphTextField(
         self._label_size_factor = font_size / self._label_initial_font_size
         return font_size
     
-    def _resolve_text_input_margin(self) -> List[float]:
-        """Get the margin values for the internal text input widget.
+    def _resolve_text_input_padding(self) -> List[float]:
+        """Get the padding values for the internal text input widget.
 
         Returns
         -------
         List[float]
-            The margin values [left, bottom, right, top] for the
+            The padding values [left, bottom, right, top] for the
             internal text input widget.
         """
-        margin = self.text_input_default_margin.copy()
-        if NAME.LEADING_WIDGET in self.identities:
-            margin[0] = (
-                margin[0]
-                + self.leading_widget.width
-                + self._horizontal_padding)
-        if NAME.TRAILING_WIDGET in self.identities:
-            margin[2] = (
-                margin[2]
-                + self.trailing_widget.width 
-                + self._horizontal_padding)
+        padding = self.text_input_default_padding.copy()
         if self.label_focus_behavior == 'move_above' and (self.focus or self.text):
-            margin[1] = dp(4)
-            margin[3] = dp(24)
-        return margin
+            padding[1] = dp(24)
+            padding[3] = dp(4)
+        return padding
 
     def _animate_on_focus(self, *args) -> None:
         """Handle focus changes for the text field.
@@ -1236,7 +1208,8 @@ class MorphTextField(
             return
 
         Animation.stop_all(self.label_widget, 'pos', 'font_size', 'color')
-        Animation.stop_all(self, 'border_open_length', '_text_input_margin')
+        Animation.stop_all(self._text_input, 'padding')
+        Animation.stop_all(self, 'border_open_length')
 
         font_size = self._resolve_label_font_size()
         target_pos = self._resolve_label_position()
@@ -1251,8 +1224,6 @@ class MorphTextField(
                     {c: 'transparent_color' for c in _colors})
             self.label_widget.theme_color_bindings = color_bindings
             Animation(
-                x=target_pos[0],
-                y=target_pos[1],
                 font_size=font_size,
                 color=self.label_widget.get_resolved_content_color(),
                 d=self.focus_animation_duration,
@@ -1283,10 +1254,10 @@ class MorphTextField(
             ).start(self)
         elif self.label_focus_behavior == 'move_above':
             Animation(
-                _text_input_margin=self._resolve_text_input_margin(),
+                padding=self._resolve_text_input_padding(),
                 d=self.focus_animation_duration,
                 t=self.focus_animation_transition
-            ).start(self)
+            ).start(self._text_input)
     
     def on_selection_color(self, instance: Any, color: List[float]) -> None:
         """Fired when the selection color changes.
@@ -1367,6 +1338,6 @@ class MorphTextFieldFilled(
         MorphTextField.default_config.copy() | dict(            
             label_focus_behavior='move_above',
             border_bottom_line_only=True,
-            text_input_default_margin=[8, 8, 18, 18],
+            text_input_default_padding=[8, 8, 18, 18],
             multiline=False,
             radius=[16, 16, 0, 0],))
