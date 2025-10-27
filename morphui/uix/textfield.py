@@ -610,21 +610,21 @@ class MorphTextField(
     :attr:`password` is a :class:`~kivy.properties.BooleanProperty`
     and defaults to False."""
 
-    selection_color: List[float] = ColorProperty(None, allownone=True)
+    selected_text_color: List[float] = ColorProperty(None, allownone=True)
     """The color of the text selection highlight.
 
     This property defines the RGBA color used to highlight selected
     text within the text field. It is bound bidirectionally to the
-    selection_color property of the internal :class:`MorphTextInput`.
+    selected_text_color property of the internal :class:`MorphTextInput`.
 
-    :attr:`selection_color` is a :class:`~kivy.properties.ColorProperty`
+    :attr:`selected_text_color` is a :class:`~kivy.properties.ColorProperty`
     and defaults to None."""
 
-    selection_color_opacity: float = NumericProperty(0.4)
+    selected_text_color_opacity: float = NumericProperty(0.4)
     """The opacity of the text selection highlight color.
 
-    :attr:`selection_color_opacity` is a :class:`~kivy.properties.NumericProperty`
-    and defaults to 0.4."""
+    :attr:`selected_text_color_opacity` is a
+    :class:`~kivy.properties.NumericProperty` and defaults to 0.4."""
 
     label_text: str = StringProperty('')
     """The main label text displayed above the text input area.
@@ -859,7 +859,7 @@ class MorphTextField(
             focus_border_color='primary_color',
             disabled_border_color='outline_variant_color',
             content_color='content_surface_color',
-            selection_color='secondary_color',),
+            selected_text_color='secondary_color',),
         size_hint_y=None,)
     """Default configuration values for MorphTextField.
 
@@ -910,8 +910,8 @@ class MorphTextField(
         self._label_initial_color_bindings = (
             self.label_widget.theme_color_bindings.copy())
         self._label_initial_font_size = self.label_widget.font_size
-        if self.selection_color is None:
-            self.selection_color = self._text_input.selection_color
+        if self.selected_text_color is None:
+            self.selected_text_color = self._text_input.selection_color
 
         bidirectional_binding = (
             'text',
@@ -919,7 +919,6 @@ class MorphTextField(
             'disabled',
             'multiline',
             'password',
-            'selection_color',
             'content_color',)
         for prop in bidirectional_binding:
             self.fbind(prop, self._text_input.setter(prop))
@@ -938,6 +937,8 @@ class MorphTextField(
             size=self._update_layout,
             declarative_children=self._update_layout,
             focus=self._animate_on_focus,
+            selected_text_color=self._update_selection_color,
+            selected_text_color_opacity=self._update_selection_color,
             minimum_height=self.setter('height'),
             maximum_height=self._text_input.setter('maximum_height'),)
         self.fbind(
@@ -1258,13 +1259,14 @@ class MorphTextField(
                 d=self.focus_animation_duration,
                 t=self.focus_animation_transition
             ).start(self._text_input)
-    
-    def on_selection_color(self, instance: Any, color: List[float]) -> None:
-        """Fired when the selection color changes.
 
-        This method ensures that the selection color always has the
-        correct opacity by combining the RGB values with the defined
-        :attr:`selection_color_opacity`.
+    def _update_selection_color(self, instance: Any, color: List[float]) -> None:
+        """Fired when the selected text color changes.
+
+        This method ensures that the :attr:`selection_color` of the
+        :attr:`_text_input` always has the correct opacity by combining
+        the RGB values with the defined
+        :attr:`selected_text_color_opacity`.
 
         Parameters
         ----------
@@ -1273,8 +1275,8 @@ class MorphTextField(
         color : List[float]
             The new RGBA color for text selection.
         """
-        self.selection_color = (
-            self.selection_color[:3] + [self.selection_color_opacity])
+        selection_color = color[:3] + [self.selected_text_color_opacity]
+        self._text_input.selection_color = selection_color
 
     def on_text(self, instance: Any, text: str) -> None:
         """Fired when the text content changes.
