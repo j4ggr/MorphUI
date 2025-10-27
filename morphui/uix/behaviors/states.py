@@ -292,18 +292,18 @@ class MorphStateBehavior(EventDispatcher):
         State
             The most relevant current state.
         """
-        if new_state == current_state and not value:
-            return 'normal'
-
         for resolved_state in precedence:
             if resolved_state not in self.available_states:
                 continue
 
-            if resolved_state == current_state:
+            if resolved_state == current_state and value:
                 return current_state
 
-            if resolved_state == new_state:
-                return new_state if value else 'normal'
+            if resolved_state == new_state and value:
+                return new_state
+            
+            if getattr(self, resolved_state, False):
+                return resolved_state # type: ignore
 
         return 'normal'
 

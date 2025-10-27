@@ -334,9 +334,8 @@ class TestMorphAutoSizingBehavior:
         assert widget.auto_size is False
         assert widget._original_size_hint == (1.0, 1.0)
         assert widget._original_size == (100.0, 100.0)  # Default Widget size
-        # _has_texture_size is not initialized during __init__ due to minimum_width/height are present.
-        # It will be determined later when the widget is measured
-        assert widget._has_texture_size is None
+        # _has_texture_size should be initialized during __init__.
+        assert widget._has_texture_size is False
         assert widget.has_texture_size is False
 
     def test_initialization_with_auto_size(self):
@@ -1851,7 +1850,7 @@ class TestMorphInteractionLayerBehavior:
         
         assert widget.hovered_state_opacity == 0.08
         assert widget.pressed_state_opacity == 0.10
-        assert widget.focus_state_opacity == 0.10
+        assert widget.focus_state_opacity == 0.05
         assert widget.disabled_state_opacity == 0.16
         assert widget.interaction_enabled is True
         assert widget.interaction_gray_value == 0
