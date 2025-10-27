@@ -30,6 +30,9 @@ from morphui.uix.boxlayout import MorphBoxLayout
 from morphui.uix.behaviors import MorphHoverBehavior
 from morphui.uix.behaviors import MorphInteractionLayerBehavior
 from morphui.uix.textfield import MorphTextInput
+from morphui.uix.textfield import MorphTextFieldFilled
+from morphui.uix.textfield import MorphTextFieldRounded
+from morphui.uix.textfield import MorphTextFieldOutlined
 
 
 class HoverLabel(
@@ -58,23 +61,7 @@ class AutoSizeIcon(MorphIconLabel):
 class MyApp(MorphApp):
     def build(self) -> MorphBoxLayout:
         self.theme_manager.seed_color = 'Purple'
-
-        self.icon_label = AutoSizeIcon(
-            icon='language-python')
-        self.disabled_button = DisabledButton(
-            text="Disabled",
-            theme_style='secondary',
-            disabled=True,)
-        text_input = MorphTextInput(
-            hint_text="Morph\nTextInput",
-            radius=[2, 2, 2, 2],
-            auto_height=True,
-            theme_color_bindings={
-                'surface_color': 'surface_container_color',
-                'content_color': 'content_surface_color',
-                'border_color': 'outline_color',
-                'focus_border_color': 'primary_color',
-                'hint_text_color': 'primary_color'},)
+        width = 350
         layout = MorphBoxLayout(
             HoverLabel(
                 text="Hover Me",
@@ -82,11 +69,14 @@ class MyApp(MorphApp):
                 border_color=(0, 0.8, 0.5, 0.5),
                 border_width=2,
                 border_open_length=100,),
-            self.disabled_button,
-            self.icon_label,
-            Label(
-                text="Regular Kivy\n Label",
-                color='black'),
+            DisabledButton(
+                identity='disabled_button',
+                text="Disabled",
+                theme_style='secondary',
+                disabled=True,),
+            AutoSizeIcon(
+                identity='icon_label',
+                icon='language-python'),
             MorphLabel(
                 text="Morph default\n Label",),
             MorphIconLabel(
@@ -99,17 +89,58 @@ class MyApp(MorphApp):
             MorphIconButton(
                 icon='language-python',
                 elevation=2,),
-            text_input,
+            MorphTextInput(
+                identity='text_input',
+                hint_text="Morph\nTextInput",
+                radius=[2, 2, 2, 2],
+                auto_height=True,
+                theme_color_bindings={
+                    'surface_color': 'surface_container_color',
+                    'content_color': 'content_surface_color',
+                    'border_color': 'outline_color',
+                    'focus_border_color': 'primary_color',
+                    'hint_text_color': 'primary_color'},),
+            MorphTextFieldRounded(
+                identity='rounded_textfield',
+                leading_icon='magnify',
+                label_text='Search in Rounded TextField',
+                pos_hint={'center_x': 0.5, 'top': 0.9},
+                size_hint_x=None,
+                width=width,),
+            MorphTextFieldOutlined(
+                identity='outlined_textfield',
+                leading_icon='account',
+                label_text='User in Outlined TextField',
+                pos_hint={'center_x': 0.5, 'top': 0.8},
+                size_hint_x=None,
+                multiline=True,
+                max_text_length=12,
+                width=width,
+                required=True,),
+            MorphTextFieldFilled(
+                identity='filled_textfield',
+                leading_icon='lock',
+                label_text='Password in Filled TextField',
+                password=True,
+                pos_hint={'center_x': 0.5, 'top': 0.7},
+                size_hint_x=None,
+                width=width,),
             theme_style='surface',
             orientation='vertical',
             padding=50,
             spacing=15,)
+        self.icon_label = layout.identities.icon_label
+        self.disabled_button = layout.identities.disabled_button
+        self.text_input = layout.identities.text_input
+        self.rounded_textfield = layout.identities.rounded_textfield
+        self.outlined_textfield = layout.identities.outlined_textfield
+        self.filled_textfield = layout.identities.filled_textfield
         return layout
 
     def on_start(self):
         dt = 2
-        Clock.schedule_interval(self.disabled_button.switch_state, dt)
-        Clock.schedule_interval(self.icon_label.switch_auto_size, dt)
+        # Clock.schedule_interval(self.disabled_button.switch_state, dt)
+        # Clock.schedule_interval(self.icon_label.switch_auto_size, dt)
         Clock.schedule_interval(self.theme_manager.toggle_theme_mode, dt * 2)
         return super().on_start()
 
