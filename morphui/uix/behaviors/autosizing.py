@@ -93,6 +93,7 @@ class MorphAutoSizingBehavior(EventDispatcher):
         self._original_size_hint = (self.size_hint[0], self.size_hint[1])
         if self.has_texture_size and hasattr(self, 'text_size'):
             self.bind(text=self._update_text_size)
+            self.bind(texture_size=self._update_text_size)
 
         if hasattr(self, 'minimum_width') and hasattr(self, 'minimum_height'):
             self.fbind('minimum_width', self._update_size)
@@ -228,6 +229,8 @@ class MorphAutoSizingBehavior(EventDispatcher):
         widget can return to its original size if needed.
         """
         self.apply_auto_sizing(self.auto_width, self.auto_height)
+        if self.has_texture_size and hasattr(self, 'text_size'):
+            self._update_text_size(self, self.texture_size)
 
     def on_auto_size_updated(self, *args) -> None:
         """Event fired after auto sizing has been applied or refreshed.
