@@ -565,21 +565,20 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
             surface_color = self.surface_color
         if border_color is None:
             border_color = self.border_color
-
         return surface_color, border_color
         
     def _update_surface_layer(self, *args) -> None:
         """Update the surface when any relevant property changes."""
         surface_color, border_color = self.get_resolved_surface_colors()
 
-        self._surface_color_instruction.rgba = surface_color
         self._surface_instruction.vertices = self.mesh[0]
         self._surface_instruction.indices = self.mesh[1]
+        self._surface_color_instruction.rgba = surface_color
         
-        self._border_color_instruction.rgba = border_color
         self._border_instruction.width = dp(self.border_width)
         self._border_instruction.points = self._generate_border_path()
         self._border_instruction.close = self.border_closed
+        self._border_color_instruction.rgba = border_color
 
         self.dispatch('on_surface_updated')
     
@@ -945,7 +944,7 @@ class MorphContentLayerBehavior(BaseLayerBehavior):
             elif hasattr(self, 'foreground_color'):
                 self.content_color = self.foreground_color
             else:
-                self.content_color = self.theme_manager.text_color
+                self.content_color = self.theme_manager.content_surface_color
         
         if hasattr(self, 'disabled_color'):
             self.disabled_color = (
