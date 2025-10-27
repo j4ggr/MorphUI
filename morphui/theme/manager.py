@@ -7,7 +7,6 @@ all widget colors when switching between light and dark themes.
 from typing import Any
 from typing import List
 from typing import Dict
-from typing import Type
 from typing import Tuple
 from typing import Literal
 from typing import overload
@@ -20,16 +19,11 @@ from kivy.properties import OptionProperty
 from kivy.properties import BooleanProperty
 from kivy.properties import BoundedNumericProperty
 
-from materialyoucolor.hct import Hct
-from materialyoucolor.utils.color_utils import argb_from_rgba
-from materialyoucolor.utils.platform_utils import SCHEMES
-from materialyoucolor.utils.platform_utils import get_dynamic_scheme
-from materialyoucolor.scheme.dynamic_scheme import DynamicScheme
-from materialyoucolor.dislike.dislike_analyzer import DislikeAnalyzer
+from material_color_utilities import Variant
+from material_color_utilities import DynamicScheme
+from material_color_utilities import theme_from_color
 
 from ..constants import THEME
-
-from .._typing import MaterialDynamicScheme
 
 from .palette import MorphDynamicColorPalette
 
@@ -174,15 +168,25 @@ class ThemeManager(MorphDynamicColorPalette):
         is 'Light', returns 'Dark', and vice versa.
         """
         return THEME.LIGHT if self.is_dark_mode else THEME.DARK
-
+    #TODO: Refactor to use Enum for better type safety
     @property
-    def material_schemes(self) -> Dict[str, Type[MaterialDynamicScheme]]:
+    def material_schemes(self) -> Dict[str, Variant]:
         """Get the available Material You color schemes (read-only).
         
-        Returns a dictionary of available color scheme classes from
-        Material You Color library.
+        Returns a dictionary of available color scheme variants from
+        Material Color Utilities library.
         """
-        return SCHEMES
+        return {
+            'MONOCHROME': Variant.MONOCHROME,
+            'NEUTRAL': Variant.NEUTRAL,
+            'TONALSPOT': Variant.TONALSPOT,
+            'VIBRANT': Variant.VIBRANT,
+            'EXPRESSIVE': Variant.EXPRESSIVE,
+            'FIDELITY': Variant.FIDELITY,
+            'CONTENT': Variant.CONTENT,
+            'RAINBOW': Variant.RAINBOW,
+            'FRUITSALAD': Variant.FRUITSALAD,
+        }
 
     def toggle_theme_mode(self, *args) -> None:
         """Toggle between light and dark theme modes.
@@ -384,7 +388,7 @@ class ThemeManager(MorphDynamicColorPalette):
             return list(rgba_values)
         return [int(component * 255) for component in rgba_values]
 
-    def generate_color_scheme(self) -> DynamicScheme | MaterialDynamicScheme:
+    def generate_color_scheme(self) -> DynamicScheme:
         """Create a Material You color scheme based on current theme 
         settings.
         
@@ -460,41 +464,40 @@ class ThemeManager(MorphDynamicColorPalette):
             scheme = self._generate_seed_scheme()
         return scheme
 
-    def _extract_wallpaper_scheme(
-            self,
-            ) -> DynamicScheme | MaterialDynamicScheme | None:
+    def _extract_wallpaper_scheme(self) -> DynamicScheme | None:
         """Extract color scheme from system wallpaper using Material You.
 
+        Note: Wallpaper extraction is not currently available in the
+        material-color-utilities library. This method returns None
+        to fall back to seed color generation.
+        
         Returns None if wallpaper-based color extraction is unavailable
         or fails, allowing graceful fallback to seed color generation.
         """
-        scheme = get_dynamic_scheme(
-            dark_mode=self.theme_mode == THEME.DARK,
-            contrast=self.color_scheme_contrast,
-            dynamic_color_quality=self.color_quality,
-            fallback_wallpaper_path=None, # TODO: add wallpaper support
-            fallback_scheme_name=self.color_scheme,
-            force_fallback_wallpaper=False,
-            message_logger=print, # TODO: Add global logging support
-            logger_head='ThemeManager',)
-        return scheme
-
-    def _generate_seed_scheme(self) -> DynamicScheme | MaterialDynamicScheme:
+        # TODO: Implement wallpaper extraction if/when available
+        # in material-color-utilities or find alternative approach
+        return None
+    
+    #TODO: Check if we can simplify this method further. Actually we generate the scheme each time the mode changes.
+    def _generate_seed_scheme(self) -> DynamicScheme:
         """Generate color scheme from the current seed color.
         
-        Uses the specified color_scheme algorithm and applies dislike
-        analysis to ensure pleasant color combinations.
+        Uses the specified color_scheme algorithm to generate
+        a theme with the Material Color Utilities library.
         """
-        argb = argb_from_rgba(self.get_seed_color_rgba(as_float=False))
-        hct = DislikeAnalyzer.fix_if_disliked(Hct.from_int(argb))
-        scheme = self.material_schemes[self.color_scheme](
-            source_color_hct=hct,
-            is_dark=self.is_dark_mode,
-            contrast_level=self.color_scheme_contrast,)
-        return scheme
+        hex_color = hex_colormap[self.seed_color.lower()]
+        variant = self.material_schemes[self.color_scheme]
+        
+        theme = theme_from_color(
+            source=hex_color,
+            contrast_level=self.color_scheme_contrast,
+            variant=variant)
+        
+        # Return the appropriate scheme based on theme mode
+        return theme.schemes.dark if self.is_dark_mode else theme.schemes.light
 
     def apply_color_scheme(
-            self, scheme: DynamicScheme | MaterialDynamicScheme) -> None:
+            self, scheme: DynamicScheme) -> None:
         """Apply the given color scheme to the theme manager.
 
         This method updates the theme manager's color properties based on
@@ -502,15 +505,19 @@ class ThemeManager(MorphDynamicColorPalette):
 
         Parameters
         ----------
-        scheme : DynamicScheme | MaterialDynamicScheme
+        scheme : DynamicScheme
             The color scheme to apply.
         """ 
         if not self.auto_theme and self.colors_initialized:
             return
 
-        for attr_name, color in self.material_color_map.items():
-            rgba = [c/255 for c in color.get_hct(scheme).to_rgba()]
-            setattr(self, attr_name, rgba)
+        # Apply colors using the new DynamicScheme structure
+        for attr_name, scheme_property in self.material_color_map.items():
+            if hasattr(scheme, scheme_property):
+                hex_color = getattr(scheme, scheme_property)
+                # Convert hex color to RGBA
+                rgba = list(get_color_from_hex(hex_color))
+                setattr(self, attr_name, rgba)
 
         if self.auto_theme:
             self.dispatch('on_colors_updated')

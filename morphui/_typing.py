@@ -1,15 +1,7 @@
 from typing import Literal
 from typing import TypeAlias
 
-from materialyoucolor.scheme.scheme_tonal_spot import SchemeTonalSpot
-from materialyoucolor.scheme.scheme_expressive import SchemeExpressive
-from materialyoucolor.scheme.scheme_fruit_salad import SchemeFruitSalad
-from materialyoucolor.scheme.scheme_monochrome import SchemeMonochrome
-from materialyoucolor.scheme.scheme_rainbow import SchemeRainbow
-from materialyoucolor.scheme.scheme_vibrant import SchemeVibrant
-from materialyoucolor.scheme.scheme_neutral import SchemeNeutral
-from materialyoucolor.scheme.scheme_fidelity import SchemeFidelity
-from materialyoucolor.scheme.scheme_content import SchemeContent
+from material_color_utilities import DynamicScheme
 
 
 __all__ = [
@@ -20,16 +12,8 @@ __all__ = [
     'ContentState',
     'OverlayState',]
 
-MaterialDynamicScheme: TypeAlias = (
-    SchemeTonalSpot
-    | SchemeExpressive
-    | SchemeFruitSalad
-    | SchemeMonochrome
-    | SchemeRainbow
-    | SchemeVibrant
-    | SchemeNeutral
-    | SchemeFidelity
-    | SchemeContent)
+#TODO: Remove MaterialDynamicScheme if not needed after refactor
+MaterialDynamicScheme: TypeAlias = DynamicScheme
 """TypeAlias for all supported Material You dynamic color schemes."""
 
 State: TypeAlias = Literal[

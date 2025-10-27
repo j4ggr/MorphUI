@@ -6,7 +6,6 @@ from typing import Tuple
 from typing import Literal
 from pathlib import Path
 from dataclasses import dataclass
-from materialyoucolor.utils.platform_utils import SCHEMES
 
 __all__ = [
     'THEME',
@@ -23,8 +22,11 @@ class _Theme_:
     """Light theme mode."""
     DARK: Literal['Dark'] = 'Dark'
     """Dark theme mode."""
-    SCHEMES: Tuple[str, ...] = tuple(SCHEMES.keys())
-    """Available color schemes from Material You Color."""
+    SCHEMES: Tuple[str, ...] = (
+        'MONOCHROME', 'NEUTRAL', 'TONALSPOT', 'VIBRANT', 
+        'EXPRESSIVE', 'FIDELITY', 'CONTENT', 'RAINBOW', 'FRUITSALAD'
+    )
+    """Available color schemes from Material Color Utilities."""
     
     @property
     def STYLES(self) -> Dict[str, Dict[str, str]]:

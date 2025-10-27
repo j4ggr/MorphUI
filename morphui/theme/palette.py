@@ -1,10 +1,5 @@
 from typing import List
 from typing import Dict
-from typing import Tuple
-from typing import Generator
-
-from materialyoucolor.dynamiccolor.dynamic_color import DynamicColor
-from materialyoucolor.dynamiccolor.material_dynamic_colors import MaterialDynamicColors
 
 from kivy.event import EventDispatcher
 from kivy.properties import ColorProperty
@@ -14,60 +9,69 @@ __all__ = [
     'MorphDynamicColorPalette',]
 
 
-def attribute_name_for_color(color: DynamicColor) -> str:
+def create_color_property_mapping() -> Dict[str, str]:
     """
-    Generate a valid attribute name for a DynamicColor instance.
-
-    Returns the color's name as a string, ensuring it ends with 
-    '_color'. If the input name already ends with '_color', it is 
-    returned unchanged; otherwise, '_color' is appended to the name.
+    Create a mapping between MorphUI color property names and
+    material-color-utilities DynamicScheme color property names.
     
-    Special handling for names starting with 'on_' to avoid conflicts
-    with Kivy's event handling system by prefixing them with 'content_'.
-
-    Parameters
-    ----------
-    color : DynamicColor
-        The DynamicColor instance whose name is used.
-
     Returns
     -------
-    str
-        The attribute name in the format '<name>_color'.
+    Dict[str, str]
+        Mapping from MorphUI property name to DynamicScheme property name.
     """
-    name = str(color.name)
-    
-    # Handle 'on_' prefix to avoid Kivy event handler conflicts
-    if name.startswith('on_'):
-        # Convert 'on_background' -> 'content_background_color'
-        # Convert 'on_primary' -> 'content_primary_color'
-        name = 'content_' + name[3:]  # Remove 'on_' and add 'content_'
-    name = name.replace('_on_', '_content_')
-
-    if not name.endswith('_color'):
-        name += '_color'
-    return name
-
-
-def material_dynamic_color_attributes(
-        ) -> Generator[Tuple[str, DynamicColor], None, None]:
-    """
-    Generator yielding attribute names and DynamicColor instances from 
-    MaterialDynamicColors.
-
-    Yields tuples containing the attribute name (as a string) and the 
-    corresponding DynamicColor instance for each attribute in 
-    MaterialDynamicColors that is an instance of DynamicColor.
-
-    Yields
-    ------
-    Generator[Tuple[str, DynamicColor], None, None]
-        Tuples of (attribute_name, DynamicColor instance).
-    """
-    for attr in dir(MaterialDynamicColors):
-        color = getattr(MaterialDynamicColors, attr)
-        if isinstance(color, DynamicColor):
-            yield (attribute_name_for_color(color), color)
+    # Define the mapping between old MaterialDynamicColors names and new DynamicScheme properties
+    return {
+        'primary_color': 'primary',
+        'content_primary_color': 'on_primary',
+        'primary_container_color': 'primary_container',
+        'content_primary_container_color': 'on_primary_container',
+        'inverse_primary_color': 'inverse_primary',
+        'secondary_color': 'secondary',
+        'content_secondary_color': 'on_secondary',
+        'secondary_container_color': 'secondary_container',
+        'content_secondary_container_color': 'on_secondary_container',
+        'tertiary_color': 'tertiary',
+        'content_tertiary_color': 'on_tertiary',
+        'tertiary_container_color': 'tertiary_container',
+        'content_tertiary_container_color': 'on_tertiary_container',
+        'error_color': 'error',
+        'content_error_color': 'on_error',
+        'error_container_color': 'error_container',
+        'content_error_container_color': 'on_error_container',
+        'background_color': 'background',
+        'content_background_color': 'on_surface',
+        'surface_color': 'surface',
+        'content_surface_color': 'on_surface',
+        'surface_variant_color': 'surface_variant',
+        'content_surface_variant_color': 'on_surface_variant',
+        'surface_dim_color': 'surface_dim',
+        'surface_bright_color': 'surface_bright',
+        'surface_container_lowest_color': 'surface_container_lowest',
+        'surface_container_low_color': 'surface_container_low',
+        'surface_container_color': 'surface_container',
+        'surface_container_high_color': 'surface_container_high',
+        'surface_container_highest_color': 'surface_container_highest',
+        'surface_tint_color': 'surface_tint',
+        'inverse_surface_color': 'inverse_surface',
+        'inverse_on_surface_color': 'inverse_on_surface',
+        'outline_color': 'outline',
+        'outline_variant_color': 'outline_variant',
+        'shadow_color': 'shadow',
+        'scrim_color': 'scrim',
+        # Fixed colors
+        'primary_fixed_color': 'primary_fixed',
+        'primary_fixed_dim_color': 'primary_fixed_dim',
+        'content_primary_fixed_color': 'on_primary_fixed',
+        'content_primary_fixed_variant_color': 'on_primary_fixed_variant',
+        'secondary_fixed_color': 'secondary_fixed',
+        'secondary_fixed_dim_color': 'secondary_fixed_dim',
+        'content_secondary_fixed_color': 'on_secondary_fixed',
+        'content_secondary_fixed_variant_color': 'on_secondary_fixed_variant',
+        'tertiary_fixed_color': 'tertiary_fixed',
+        'tertiary_fixed_dim_color': 'tertiary_fixed_dim',
+        'content_tertiary_fixed_color': 'on_tertiary_fixed',
+        'content_tertiary_fixed_variant_color': 'on_tertiary_fixed_variant',
+    }
 
 
 class MorphDynamicColorPalette(EventDispatcher):
@@ -107,25 +111,28 @@ class MorphDynamicColorPalette(EventDispatcher):
           content_primary_container_color, inverse_primary_color
         - secondary_color, content_secondary_color,
           secondary_container_color, content_secondary_container_color
-        - tertiary_color, content_tertiary_color, tertiary_container_color,
-          content_tertiary_container_color
+        - tertiary_color, content_tertiary_color,
+          tertiary_container_color, content_tertiary_container_color
         - error_color, content_error_color, error_container_color,
           content_error_container_color
     Fixed palette colors for accessibility and contrast:
         - primary_fixed_color, primary_fixed_dim_color,
-          content_primary_fixed_color, content_primary_fixed_variant_color
+          content_primary_fixed_color,
+          content_primary_fixed_variant_color
         - secondary_fixed_color, secondary_fixed_dim_color,
-          content_secondary_fixed_color, content_secondary_fixed_variant_color
+          content_secondary_fixed_color,
+          content_secondary_fixed_variant_color
         - tertiary_fixed_color, tertiary_fixed_dim_color,
-          content_tertiary_fixed_color, content_tertiary_fixed_variant_color
+          content_tertiary_fixed_color,
+          content_tertiary_fixed_variant_color
     
     Notes
     -----
-    Material You colors starting with 'on_' (like 'on_background', 
+    Material colors starting with 'on_' (like 'on_background', 
     'on_primary') are renamed to 'content_' prefixed variants (like 
-    'content_background_color', 'content_primary_color') to avoid conflicts 
-    with Kivy's event handling system which treats attributes starting 
-    with 'on_' as event handlers.
+    'content_background_color', 'content_primary_color') to avoid 
+    conflicts  with Kivy's event handling system which treats attributes
+    starting with 'on_' as event handlers.
     
     Usage
     -----
@@ -134,23 +141,25 @@ class MorphDynamicColorPalette(EventDispatcher):
     across different UI components and states.
     """
 
-    _material_color_map: Dict[str, DynamicColor] = dict(
-        material_dynamic_color_attributes())
-    """Mapping of color property names to MaterialDynamicColors instances."""
+    _material_color_map: Dict[str, str] = create_color_property_mapping()
+    """Mapping of MorphUI color property names to DynamicScheme property 
+    names."""
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
 
     @property
-    def material_color_map(self) -> Dict[str, DynamicColor]:
-        """Get the mapping of color property names to Material Design colors (read-only).
+    def material_color_map(self) -> Dict[str, str]:
+        """Get the mapping of color property names to DynamicScheme properties (read-only).
         
         Returns a dictionary where:
-        - Keys are color property names (e.g., 'primary_color', 'background_color')
-        - Values are the corresponding MaterialDynamicColors DynamicColor instances
+        - Keys are MorphUI color property names (e.g., 'primary_color', 
+          'content_surface_color')
+        - Values are the corresponding DynamicScheme property names
+          (e.g., 'primary', 'on_surface')
         
-        This mapping is used internally to apply color schemes to all available
-        color properties.
+        This mapping is used internally to apply color schemes to all 
+        available color properties.
         """
         return self._material_color_map
     
@@ -244,62 +253,6 @@ class MorphDynamicColorPalette(EventDispatcher):
     This property holds the dynamic color value set by the theme.
 
     :attr:`background_color` is a
-    :class:`~kivy.properties.ColorProperty` that holds a dynamic color
-    value and defaults to None"""
-
-    error_color: List[float] | None = ColorProperty(None)
-    """Error color.
-    This property holds the dynamic color value set by the theme.
-
-    :attr:`error_color` is a
-    :class:`~kivy.properties.ColorProperty` that holds a dynamic color
-    value and defaults to None"""
-
-    error_container_color: List[float] | None = ColorProperty(None)
-    """Error container color.
-    This property holds the dynamic color value set by the theme.
-
-    :attr:`error_container_color` is a
-    :class:`~kivy.properties.ColorProperty` that holds a dynamic color
-    value and defaults to None"""
-
-    inverse_content_surface_color: List[float] | None = ColorProperty(None)
-    """Inverse content surface color.
-    This property holds the dynamic color value set by the theme.
-
-    :attr:`inverse_content_surface_color` is a
-    :class:`~kivy.properties.ColorProperty` that holds a dynamic color
-    value and defaults to None"""
-
-    inverse_primary_color: List[float] | None = ColorProperty(None)
-    """Inverse primary color.
-    This property holds the dynamic color value set by the theme.
-
-    :attr:`inverse_primary_color` is a
-    :class:`~kivy.properties.ColorProperty` that holds a dynamic color
-    value and defaults to None"""
-
-    inverse_surface_color: List[float] | None = ColorProperty(None)
-    """Inverse surface color.
-    This property holds the dynamic color value set by the theme.
-
-    :attr:`inverse_surface_color` is a
-    :class:`~kivy.properties.ColorProperty` that holds a dynamic color
-    value and defaults to None"""
-
-    neutral_palette_key_color: List[float] | None = ColorProperty(None)
-    """Neutral palette key color.
-    This property holds the dynamic color value set by the theme.
-
-    :attr:`neutral_palette_key_color` is a
-    :class:`~kivy.properties.ColorProperty` that holds a dynamic color
-    value and defaults to None"""
-
-    neutral_variant_palette_key_color: List[float] | None = ColorProperty(None)
-    """Neutral variant palette key color.
-    This property holds the dynamic color value set by the theme.
-
-    :attr:`neutral_variant_palette_key_color` is a
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
@@ -439,6 +392,46 @@ class MorphDynamicColorPalette(EventDispatcher):
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
+    error_color: List[float] | None = ColorProperty(None)
+    """Error color.
+    This property holds the dynamic color value set by the theme.
+
+    :attr:`error_color` is a
+    :class:`~kivy.properties.ColorProperty` that holds a dynamic color
+    value and defaults to None"""
+
+    error_container_color: List[float] | None = ColorProperty(None)
+    """Error container color.
+    This property holds the dynamic color value set by the theme.
+
+    :attr:`error_container_color` is a
+    :class:`~kivy.properties.ColorProperty` that holds a dynamic color
+    value and defaults to None"""
+
+    inverse_on_surface_color: List[float] | None = ColorProperty(None)
+    """Inverse on surface color.
+    This property holds the dynamic color value set by the theme.
+
+    :attr:`inverse_on_surface_color` is a
+    :class:`~kivy.properties.ColorProperty` that holds a dynamic color
+    value and defaults to None"""
+
+    inverse_primary_color: List[float] | None = ColorProperty(None)
+    """Inverse primary color.
+    This property holds the dynamic color value set by the theme.
+
+    :attr:`inverse_primary_color` is a
+    :class:`~kivy.properties.ColorProperty` that holds a dynamic color
+    value and defaults to None"""
+
+    inverse_surface_color: List[float] | None = ColorProperty(None)
+    """Inverse surface color.
+    This property holds the dynamic color value set by the theme.
+
+    :attr:`inverse_surface_color` is a
+    :class:`~kivy.properties.ColorProperty` that holds a dynamic color
+    value and defaults to None"""
+
     outline_color: List[float] | None = ColorProperty(None)
     """Outline color.
     This property holds the dynamic color value set by the theme.
@@ -487,14 +480,6 @@ class MorphDynamicColorPalette(EventDispatcher):
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    primary_palette_key_color: List[float] | None = ColorProperty(None)
-    """Primary palette key color.
-    This property holds the dynamic color value set by the theme.
-
-    :attr:`primary_palette_key_color` is a
-    :class:`~kivy.properties.ColorProperty` that holds a dynamic color
-    value and defaults to None"""
-
     scrim_color: List[float] | None = ColorProperty(None)
     """Scrim color.
     This property holds the dynamic color value set by the theme.
@@ -535,14 +520,6 @@ class MorphDynamicColorPalette(EventDispatcher):
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    secondary_palette_key_color: List[float] | None = ColorProperty(None)
-    """Secondary palette key color.
-    This property holds the dynamic color value set by the theme.
-
-    :attr:`secondary_palette_key_color` is a
-    :class:`~kivy.properties.ColorProperty` that holds a dynamic color
-    value and defaults to None"""
-
     shadow_color: List[float] | None = ColorProperty(None)
     """Shadow color.
     This property holds the dynamic color value set by the theme.
@@ -551,19 +528,19 @@ class MorphDynamicColorPalette(EventDispatcher):
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    surface_color: List[float] | None = ColorProperty(None)
-    """Surface color.
-    This property holds the dynamic color value set by the theme.
-
-    :attr:`surface_color` is a
-    :class:`~kivy.properties.ColorProperty` that holds a dynamic color
-    value and defaults to None"""
-
     surface_bright_color: List[float] | None = ColorProperty(None)
     """Surface bright color.
     This property holds the dynamic color value set by the theme.
 
     :attr:`surface_bright_color` is a
+    :class:`~kivy.properties.ColorProperty` that holds a dynamic color
+    value and defaults to None"""
+
+    surface_color: List[float] | None = ColorProperty(None)
+    """Surface color.
+    This property holds the dynamic color value set by the theme.
+
+    :attr:`surface_color` is a
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
@@ -663,17 +640,9 @@ class MorphDynamicColorPalette(EventDispatcher):
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    tertiary_palette_key_color: List[float] | None = ColorProperty(None)
-    """Tertiary palette key color.
-    This property holds the dynamic color value set by the theme.
-
-    :attr:`tertiary_palette_key_color` is a
-    :class:`~kivy.properties.ColorProperty` that holds a dynamic color
-    value and defaults to None"""
-
 
 if __name__ == '__main__':
-    for attr, _ in material_dynamic_color_attributes():
+    for attr in sorted(create_color_property_mapping().keys()):
         print(f'''
     {attr}: List[float] | None = ColorProperty(None)
     """{" ".join(attr.capitalize().split("_"))}.
