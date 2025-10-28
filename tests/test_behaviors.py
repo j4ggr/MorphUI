@@ -275,67 +275,102 @@ class TestBaseLayerBehavior:
             super().__init__(**kwargs)
 
     @patch('morphui.app.MorphApp._theme_manager')
-    def test_layer_type_detection(self, mock_app_theme_manager):
-        """Test that layer types are properly detected."""
+    def test_base_layer_geometric_functionality(self, mock_app_theme_manager):
+        """Test that BaseLayerBehavior provides core geometric functionality."""
         mock_app_theme_manager.configure_mock(**{
             'content_surface_color': [0, 0, 0, 1]
         })
         
-        # Test surface layer detection
+        # Test that base functionality is available on surface widget
         surface_widget = self.TestSurfaceWidget()
-        layer_types = surface_widget._get_layer_types()
-        assert 'surface' in layer_types
         
-        # Test content layer detection
-        content_widget = self.TestContentWidget()
-        layer_types = content_widget._get_layer_types()
-        assert 'content' in layer_types
+        # Test basic geometric properties exist
+        assert hasattr(surface_widget, 'radius')
+        assert hasattr(surface_widget, 'clamped_radius')
+        assert hasattr(surface_widget, 'contour')
+        assert hasattr(surface_widget, 'mesh')
+        assert hasattr(surface_widget, 'rounded_rectangle_params')
+        
+        # Test that geometric methods exist
+        assert hasattr(surface_widget, '_generate_corner_arc_points')
+        assert hasattr(surface_widget, '_clamp_radius')
+        assert hasattr(surface_widget, '_generate_contour')
+        assert hasattr(surface_widget, '_generate_mesh')
 
     @patch('morphui.app.MorphApp._theme_manager')
-    def test_layer_color_properties_mapping(self, mock_app_theme_manager):
-        """Test that layer color properties are correctly mapped."""
+    def test_radius_clamping(self, mock_app_theme_manager):
+        """Test radius clamping functionality."""
+        mock_app_theme_manager.configure_mock(**{
+            'content_surface_color': [0, 0, 0, 1]
+        })
+        
+        widget = self.TestSurfaceWidget()
+        widget.size = (100, 50)  # Set a specific size
+        
+        # Test that large radius values are clamped
+        widget.radius = [30, 30, 30, 30]  # Larger than half height
+        clamped = widget.clamped_radius
+        
+        # Should be clamped to fit within widget dimensions
+        assert all(r <= 25 for r in clamped)  # Half of height (50)
+
+    @patch('morphui.app.MorphApp._theme_manager')
+    def test_contour_generation(self, mock_app_theme_manager):
+        """Test contour generation functionality."""
+        mock_app_theme_manager.configure_mock(**{
+            'content_surface_color': [0, 0, 0, 1]
+        })
+        
+        widget = self.TestSurfaceWidget()
+        widget.size = (100, 100)
+        widget.pos = (0, 0)
+        widget.radius = [10, 10, 10, 10]
+        
+        # Test that contour is generated
+        contour = widget.contour
+        assert isinstance(contour, list)
+        assert len(contour) > 0
+        # Should have pairs of coordinates (x, y)
+        assert len(contour) % 2 == 0
+
+    @patch('morphui.app.MorphApp._theme_manager')
+    def test_mesh_generation(self, mock_app_theme_manager):
+        """Test mesh generation functionality."""
+        mock_app_theme_manager.configure_mock(**{
+            'content_surface_color': [0, 0, 0, 1]
+        })
+        
+        widget = self.TestSurfaceWidget()
+        widget.size = (100, 100)
+        widget.pos = (0, 0)
+        
+        # Test that mesh is generated
+        mesh = widget.mesh
+        assert isinstance(mesh, tuple)
+        assert len(mesh) == 2
+        vertices, indices = mesh
+        # Note: tesselator may return memory views or other array-like objects
+        assert hasattr(vertices, '__len__')  # Has length
+        assert hasattr(indices, '__len__')   # Has length
+
+    @patch('morphui.app.MorphApp._theme_manager') 
+    def test_surface_layer_explicit_bindings(self, mock_app_theme_manager):
+        """Test that surface layer has explicit bindings set up."""
         mock_app_theme_manager.configure_mock(**{
             'content_surface_color': [0, 0, 0, 1]
         })
         
         widget = self.TestSurfaceWidget()
         
-        # Test surface layer properties
-        surface_props = widget._get_layer_color_properties('surface', 'normal')
-        assert 'surface_color' in surface_props
-        assert 'border_color' in surface_props
-        
-        # Test disabled state properties
-        disabled_props = widget._get_layer_color_properties('surface', 'disabled')
-        assert 'disabled_surface_color' in disabled_props
-        assert 'disabled_border_color' in disabled_props
+        # Test that surface-specific methods exist (moved from BaseLayerBehavior)
+        assert hasattr(widget, '_on_surface_state_change')
+        assert hasattr(widget, '_on_surface_property_change')
+        assert hasattr(widget, 'get_resolved_surface_colors')
+        assert hasattr(widget, 'refresh_surface')
 
     @patch('morphui.app.MorphApp._theme_manager')
-    def test_generic_state_color_change_handling(self, mock_app_theme_manager):
-        """Test the generic state color change handler."""
-        mock_app_theme_manager.configure_mock(**{
-            'content_surface_color': [0, 0, 0, 1]
-        })
-        
-        widget = self.TestSurfaceWidget()
-        
-        # Mock the _update_layer method to track calls
-        with patch.object(widget, '_update_layer') as mock_update:
-            # Test color change for current state (should trigger update)
-            widget.current_surface_state = 'error'
-            mock_update.reset_mock()  # Reset after state change
-            widget._on_state_color_change(widget, [1, 0, 0, 1], 'surface', 'error')
-            assert mock_update.call_count >= 1  # Should be called at least once
-            assert any(call[0][0] == 'surface' for call in mock_update.call_args_list)
-            
-            # Test color change for non-current state (should not trigger update)
-            mock_update.reset_mock()
-            widget._on_state_color_change(widget, [0, 1, 0, 1], 'surface', 'focus')
-            mock_update.assert_not_called()
-
-    @patch('morphui.app.MorphApp._theme_manager')
-    def test_generic_color_resolution(self, mock_app_theme_manager):
-        """Test the generic color resolution method."""
+    def test_surface_color_resolution(self, mock_app_theme_manager):
+        """Test surface-specific color resolution."""
         mock_app_theme_manager.configure_mock(**{
             'content_surface_color': [0, 0, 0, 1]
         })
@@ -349,44 +384,15 @@ class TestBaseLayerBehavior:
         
         # Test normal state resolution
         widget.current_surface_state = 'normal'
-        colors = widget.get_resolved_layer_colors('surface')
-        assert colors['surface_color'] == [1, 1, 1, 1]
-        assert colors['border_color'] == [0, 0, 0, 1]
+        surface_color, border_color = widget.get_resolved_surface_colors()
+        assert surface_color == [1, 1, 1, 1]
+        assert border_color == [0, 0, 0, 1]
         
         # Test error state resolution
         widget.current_surface_state = 'error'
-        colors = widget.get_resolved_layer_colors('surface')
-        assert colors['surface_color'] == [1, 0, 0, 1]  # Should use error color
-        assert colors['border_color'] == [0, 0, 0, 1]   # Should fall back to base color
-
-    @patch('morphui.app.MorphApp._theme_manager')
-    def test_refresh_all_layers(self, mock_app_theme_manager):
-        """Test the refresh_all_layers method."""
-        mock_app_theme_manager.configure_mock(**{
-            'content_surface_color': [0, 0, 0, 1]
-        })
-        
-        widget = self.TestSurfaceWidget()
-        
-        # Mock the refresh_surface method to track calls
-        with patch.object(widget, 'refresh_surface') as mock_refresh:
-            widget.refresh_all_layers()
-            mock_refresh.assert_called_once()
-
-    @patch('morphui.app.MorphApp._theme_manager')
-    def test_automatic_binding_setup(self, mock_app_theme_manager):
-        """Test that automatic bindings are set up correctly."""
-        mock_app_theme_manager.configure_mock(**{
-            'content_surface_color': [0, 0, 0, 1]
-        })
-        
-        # This test verifies that the initialization sets up bindings correctly
-        # The actual binding functionality is tested through the behavior of the widgets
-        widget = self.TestSurfaceWidget()
-        
-        # Check that layer types were detected
-        assert len(widget._layer_types) > 0
-        assert 'surface' in widget._layer_types
+        surface_color, border_color = widget.get_resolved_surface_colors()
+        assert surface_color == [1, 0, 0, 1]  # Should use error color
+        assert border_color == [0, 0, 0, 1]   # Should fall back to base color
 
 
 class TestMorphSurfaceLayerBehavior:
@@ -1243,10 +1249,10 @@ class TestMorphThemeBehavior:
             primary_style = THEME.STYLES['primary']
             
             # Check that all primary style bindings were added
-            for widget_prop, theme_color in primary_style.items():
-                assert widget_prop in widget._theme_style_color_bindings
-                assert widget_prop in widget.effective_color_bindings
-                assert widget.effective_color_bindings[widget_prop] == theme_color
+            for property_name, theme_color in primary_style.items():
+                assert property_name in widget._theme_style_color_bindings
+                assert property_name in widget.effective_color_bindings
+                assert widget.effective_color_bindings[property_name] == theme_color
 
     @patch('morphui.app.MorphApp._theme_manager')
     def test_on_theme_style_with_invalid_style(self, mock_app_theme_manager):
@@ -1464,10 +1470,10 @@ class TestMorphColorThemeBehavior:
             primary_style = THEME.STYLES['primary']
             
             # Check that all primary style bindings were added
-            for widget_prop, theme_color in primary_style.items():
-                assert widget_prop in widget._theme_style_color_bindings
-                assert widget_prop in widget.effective_color_bindings
-                assert widget.effective_color_bindings[widget_prop] == theme_color
+            for property_name, theme_color in primary_style.items():
+                assert property_name in widget._theme_style_color_bindings
+                assert property_name in widget.effective_color_bindings
+                assert widget.effective_color_bindings[property_name] == theme_color
 
 
 class TestMorphTypographyBehavior:

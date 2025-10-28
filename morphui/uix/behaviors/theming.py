@@ -257,7 +257,7 @@ class MorphColorThemeBehavior(BaseThemeBehavior):
             **self._theme_style_color_bindings}
         return merged
 
-    def apply_theme_color(self, widget_property: str, theme_color: str) -> bool:
+    def apply_theme_color(self, property_name: str, theme_color: str) -> bool:
         """Apply a specific theme color to a widget property.
         
         This method provides manual control over theme color
@@ -271,7 +271,7 @@ class MorphColorThemeBehavior(BaseThemeBehavior):
         
         Parameters
         ----------
-        widget_property : str
+        property_name : str
             The name of the widget property to update. Must be a valid
             property on this widget instance (e.g., 'surface_color',
             'content_color', 'border_color').
@@ -307,8 +307,8 @@ class MorphColorThemeBehavior(BaseThemeBehavior):
         ```
         """
         color_value = getattr(self.theme_manager, theme_color, None)
-        if color_value is not None and hasattr(self, widget_property):
-            setattr(self, widget_property, color_value)
+        if color_value is not None and hasattr(self, property_name):
+            setattr(self, property_name, color_value)
             return True
         
         return False
@@ -317,10 +317,10 @@ class MorphColorThemeBehavior(BaseThemeBehavior):
         """Update widget colors based on current theme."""
         color_bindings = self.effective_color_bindings
         if not self.auto_theme or not color_bindings:
-            return
+            return None
 
-        for widget_prop, theme_color in color_bindings.items():
-            self.apply_theme_color(widget_prop, theme_color)
+        for property_name, theme_color in color_bindings.items():
+            self.apply_theme_color(property_name, theme_color)
         self.dispatch('on_colors_updated')
 
     def _update_theme_style(self, instance: Any, style_name: str) -> None:
