@@ -15,7 +15,8 @@ from .behaviors import MorphToggleButtonBehavior
 
 
 __all__ = [
-    'MorphCheckbox',]
+    'MorphCheckbox',
+    'MorphRadioButton',]
 
 
 class MorphCheckbox(
@@ -143,3 +144,23 @@ class MorphCheckbox(
         """Update the displayed icon based on the `active` state."""
         self.icon = (
             self.active_icon if self.active else self.normal_icon)
+
+#TODO: fix grouping 4 radio buttons together
+class MorphRadioButton(MorphCheckbox):
+    """A radio button widget that allows selection within a group.
+
+    This widget extends the MorphCheckbox to provide radio button
+    functionality, where only one button in a group can be active at
+    a time.
+
+    Inherits from
+    -------------
+    :class:`~morphui.uix.selection.MorphCheckbox`
+    """
+
+    default_config: Dict[str, Any] = (
+        MorphCheckbox.default_config.copy() | dict(
+        normal_icon='checkbox-blank-circle-outline',
+        active_icon='checkbox-marked-circle',
+        allow_no_selection=False,))
+    

@@ -26,6 +26,7 @@ from morphui.uix.label import MorphIconLabel
 from morphui.uix.button import MorphButton
 from morphui.uix.button import MorphIconButton
 from morphui.uix.selection import MorphCheckbox
+from morphui.uix.selection import MorphRadioButton
 from morphui.uix.boxlayout import MorphBoxLayout
 from morphui.uix.behaviors import MorphHoverBehavior
 from morphui.uix.behaviors import MorphInteractionLayerBehavior
@@ -125,8 +126,20 @@ class MyApp(MorphApp):
                 pos_hint={'center_x': 0.5, 'top': 0.7},
                 size_hint_x=None,
                 width=width,),
-            MorphCheckbox(
-                identity='checkbox',),
+            MorphBoxLayout(
+                MorphCheckbox(
+                    identity='checkbox',),
+                MorphRadioButton(
+                    identity='radiobutton1',
+                    group='test_group',),
+                MorphRadioButton(
+                    identity='radiobutton2',
+                    group='test_group',),
+                MorphRadioButton(
+                    identity='radiobutton3',
+                    group='test_group',),
+                orientation='horizontal',
+                spacing=20,),
             theme_style='surface',
             orientation='vertical',
             padding=50,
