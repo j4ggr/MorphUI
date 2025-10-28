@@ -44,7 +44,253 @@ __all__ = [
 class BaseLayerBehavior(
         MorphStateBehavior,
         MorphAppReferenceBehavior):
-    """Base class for layer behaviors to provide common functionality."""
+    """Base class for layer behaviors to provide common functionality.
+    
+    This class provides a generic framework for managing layer-specific
+    properties and state updates. It eliminates code duplication across
+    different layer behaviors by providing common patterns for:
+    
+    - State-specific color property management
+    - Conditional layer updates based on current state
+    - Generic color resolution and application
+    - Automatic event binding for state colors
+    
+    Subclasses define their specific layer type and properties, while
+    this base class handles the common logic patterns.
+    """
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self._layer_types = self._get_layer_types()
+        self._setup_layer_bindings()
+    
+    def _get_layer_types(self) -> List[str]:
+        """Get the layer types supported by this behavior.
+        
+        This method analyzes the class to determine which layer types
+        are supported by looking for layer-specific properties.
+        
+        Returns
+        -------
+        List[str]
+            List of layer type names (e.g., ['surface', 'content', 'interaction'])
+        """
+        layer_types = []
+        
+        if hasattr(self, 'surface_color'):
+            layer_types.append('surface')
+            
+        if hasattr(self, 'content_color'):
+            layer_types.append('content')
+            
+        if hasattr(self, 'interaction_enabled'):
+            layer_types.append('interaction')
+            
+        if hasattr(self, 'overlay_color'):
+            layer_types.append('overlay')
+            
+        return layer_types
+    
+    def _setup_layer_bindings(self) -> None:
+        """Set up automatic bindings for all layer types and their state
+        colors.
+        
+        This method iterates over the supported layer types and sets up
+        the necessary property bindings to handle state changes and
+        color updates in a generic manner.
+        """
+        for layer_type in self._layer_types:
+            self._setup_layer_type_bindings(layer_type)
+    
+    def _setup_layer_type_bindings(self, layer_type: str) -> None:
+        """Set up bindings for a specific layer type.
+
+        This method binds to the state change property and all
+        state-specific color properties for the given layer type.
+
+        For example, if the layer type is 'surface', this method will
+        bind to `current_surface_state` and all properties like
+        `disabled_surface_color`, `error_surface_color`, etc.
+
+        Parameters
+        ----------
+        layer_type : str
+            The layer type to set up bindings for ('surface', 'content',
+            'interaction', 'overlay', etc.)
+        """
+        state_property = f'current_{layer_type}_state'
+        if not hasattr(self, state_property):
+            return
+        
+        self.bind(**{state_property: self._on_generic_state_change})
+    
+        for state in self.available_states:
+            color_properties = self._get_layer_color_properties(
+                layer_type, state)
+            for prop_name in color_properties:
+                if hasattr(self, prop_name):
+                    self.fbind(
+                        prop_name,
+                        self._on_state_color_change, 
+                        layer_type=layer_type,
+                        state=state)
+    
+    def _get_layer_color_properties(
+            self, layer_type: str, state: str) -> List[str]:
+        """Get color property names for a specific layer type and state.
+        
+        Parameters
+        ----------
+        layer_type : str
+            The layer type ('surface', 'content', 'interaction', 
+            'overlay')
+        state : str
+            The state name ('normal', 'disabled', 'error', etc.)
+            
+        Returns
+        -------
+        List[str]
+            List of property names for this layer type and state
+        """
+        properties = []
+        prefix = '' if state == 'normal' else f'{state}_'
+        
+        match layer_type:
+            case 'surface':
+                properties.extend([
+                    f'{prefix}surface_color',
+                    f'{prefix}border_color'])
+            case 'content':
+                properties.append(
+                    f'{prefix}content_color')
+            case 'interaction':
+                # Interaction layer uses opacity properties
+                if state != 'normal':
+                    properties.append(
+                        f'{state}_state_opacity')
+            case 'overlay':
+                properties.extend([
+                    f'{prefix}overlay_color',
+                    f'{prefix}overlay_edge_color'])
+    
+        return properties
+    
+    def _on_state_color_change(
+            self,
+            instance: Any,
+            value: Any, 
+            layer_type: str,
+            state: str) -> None:
+        """Generic handler for state-specific color changes.
+        
+        This replaces all the individual _on_state_color_change methods
+        in each layer behavior with a single generic implementation.
+        
+        Parameters
+        ----------
+        instance : Any
+            The widget instance that triggered the change
+        value : Any
+            The new color value
+        layer_type : str
+            The layer type that changed ('surface', 'content', etc.)
+        state : str
+            The state that the color belongs to
+        """
+        current_state_prop = f'current_{layer_type}_state'
+        if hasattr(self, current_state_prop):
+            current_state = getattr(self, current_state_prop)
+            if state == current_state:
+                self._update_layer(layer_type)
+    
+    def _on_generic_state_change(self, instance: Any, state: str) -> None:
+        """Generic handler for when any layer state changes.
+        
+        This method determines which layer type's state changed and
+        calls the appropriate update method.
+        
+        Parameters
+        ----------
+        instance : Any
+            The widget instance
+        state : str
+            The new state value
+        """
+        layer_type = None
+        
+        for prop in ['current_surface_state', 'current_content_state', 
+                    'current_interaction_state', 'current_overlay_state']:
+            if hasattr(instance, prop) and getattr(instance, prop) == state:
+                layer_type = prop.replace('current_', '').replace('_state', '')
+                break
+                
+        if layer_type:
+            self._update_layer(layer_type)
+    
+    def _update_layer(self, layer_type: str) -> None:
+        """Generic layer update method.
+        
+        This calls the appropriate layer-specific update method.
+        
+        Parameters
+        ----------
+        layer_type : str
+            The layer type to update
+        """
+        update_method = f'_update_{layer_type}_layer'
+        if hasattr(self, update_method):
+            getattr(self, update_method)()
+    
+    def get_resolved_layer_colors(
+            self, layer_type: str) -> Dict[str, List[float]]:
+        """Generic method to resolve colors for any layer type.
+
+        This method retrieves the current state of the specified layer 
+        type and resolves the appropriate colors by checking for
+        state-specific color properties first, and falling back to base
+        color properties.
+        
+        Parameters
+        ----------
+        layer_type : str
+            The layer type to resolve colors for
+            
+        Returns
+        -------
+        Dict[str, List[float]]
+            Dictionary mapping color names to RGBA values
+        """
+        state_prop = f'current_{layer_type}_state'
+        if not hasattr(self, state_prop):
+            return {}
+            
+        current_state = getattr(self, state_prop)
+        resolved_colors = {}
+        
+        base_properties = self._get_layer_color_properties(layer_type, 'normal')
+        
+        for base_prop in base_properties:
+            if current_state != 'normal':
+                state_prop_name = f'{current_state}_{base_prop}'
+                if hasattr(self, state_prop_name):
+                    state_color = getattr(self, state_prop_name)
+                    if state_color is not None:
+                        resolved_colors[base_prop] = state_color
+                        continue
+            
+            if hasattr(self, base_prop):
+                base_color = getattr(self, base_prop)
+                if base_color is not None:
+                    resolved_colors[base_prop] = base_color
+        
+        return resolved_colors
+    
+    def refresh_all_layers(self) -> None:
+        """Refresh all layer types supported by this behavior."""
+        for layer_type in self._layer_types:
+            refresh_method = f'refresh_{layer_type}'
+            if hasattr(self, refresh_method):
+                getattr(self, refresh_method)()
 
     radius = VariableListProperty([0], length=4)
     """Canvas radius for each corner.
@@ -502,11 +748,9 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
             
         self.bind(
             contour=self._update_surface_layer,
-            border_color=self._update_surface_layer,
             border_width=self._update_surface_layer,
-            border_closed=self._update_surface_layer,
-            surface_color=self._update_surface_layer,
-            current_surface_state=self._update_surface_layer,)
+            border_closed=self._update_surface_layer,)
+        
         self.refresh_surface()
 
     def _generate_border_path(self) -> List[float]:
@@ -557,14 +801,17 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
             A tuple containing the resolved surface color and border
             color as lists of RGBA values.
         """
-        state = self.current_surface_state
-        surface_color = getattr(self, f'{state}_surface_color', None)
-        border_color = getattr(self, f'{state}_border_color', None)
-
+        # Use the generic color resolution method
+        colors = self.get_resolved_layer_colors('surface')
+        surface_color = colors.get('surface_color', self.surface_color)
+        border_color = colors.get('border_color', self.border_color)
+        
+        # Ensure we always return valid colors
         if surface_color is None:
             surface_color = self.surface_color
         if border_color is None:
             border_color = self.border_color
+            
         return surface_color, border_color
         
     def _update_surface_layer(self, *args) -> None:
@@ -953,10 +1200,9 @@ class MorphContentLayerBehavior(BaseLayerBehavior):
             self.disabled_foreground_color = (
                 self.disabled_content_color or self.disabled_foreground_color)
 
-        self.bind(
-            content_color=self._update_content_layer,
-            disabled_content_color=self._update_content_layer,
-            current_content_state=self._update_content_layer,)
+        # Note: Color property bindings are now handled generically by BaseLayerBehavior
+        # Only bind to current_content_state since that's not a color property
+        self.bind(current_content_state=self._update_content_layer,)
         
         self.refresh_content()
 
@@ -1210,10 +1456,9 @@ class MorphOverlayLayerBehavior(BaseLayerBehavior):
             pos=self._update_overlay_layer,
             size=self._update_overlay_layer,
             radius=self._update_overlay_layer,
-            overlay_color=self._update_overlay_layer,
-            overlay_edge_color=self._update_overlay_layer,
             overlay_edge_width=self._update_overlay_layer,
             visible_edges=self._update_overlay_layer,)
+            # Note: overlay_color and overlay_edge_color bindings are now handled generically by BaseLayerBehavior
 
         self.refresh_overlay()
         

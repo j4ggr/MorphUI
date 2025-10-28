@@ -306,11 +306,11 @@ class MorphColorThemeBehavior(BaseThemeBehavior):
             widget.apply_theme_color('surface_color', 'surface_bright_color')
         ```
         """
-        if hasattr(self.theme_manager, theme_color):
-            color_value = getattr(self.theme_manager, theme_color)
-            if color_value is not None and hasattr(self, widget_property):
-                setattr(self, widget_property, color_value)
-                return True
+        color_value = getattr(self.theme_manager, theme_color, None)
+        if color_value is not None and hasattr(self, widget_property):
+            setattr(self, widget_property, color_value)
+            return True
+        
         return False
 
     def _update_colors(self, *args) -> None:

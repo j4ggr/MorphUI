@@ -26,6 +26,7 @@ from morphui.uix.behaviors import MorphStateBehavior
 from morphui.uix.behaviors import MorphIdentificationBehavior
 from morphui.uix.behaviors import MorphContentLayerBehavior
 from morphui.uix.behaviors import MorphInteractionLayerBehavior
+from morphui.uix.behaviors.layer import BaseLayerBehavior
 
 
 class TestMorphDeclarativeBehavior:
@@ -256,6 +257,135 @@ class TestMorphHoverEnhancedBehavior:
         assert widget.edge_size == 2
 
 
+class TestBaseLayerBehavior:
+    """Test suite for BaseLayerBehavior class."""
+
+    class TestSurfaceWidget(MorphSurfaceLayerBehavior, Widget):
+        """Test widget with surface layer behavior."""
+        pass
+
+    class TestContentWidget(MorphContentLayerBehavior, Widget):
+        """Test widget with content layer behavior."""
+        
+        def __init__(self, **kwargs):
+            self.color = [0, 0, 0, 1]
+            super().__init__(**kwargs)
+
+    @patch('morphui.app.MorphApp._theme_manager')
+    def test_layer_type_detection(self, mock_app_theme_manager):
+        """Test that layer types are properly detected."""
+        mock_app_theme_manager.configure_mock(**{
+            'content_surface_color': [0, 0, 0, 1]
+        })
+        
+        # Test surface layer detection
+        surface_widget = self.TestSurfaceWidget()
+        layer_types = surface_widget._get_layer_types()
+        assert 'surface' in layer_types
+        
+        # Test content layer detection
+        content_widget = self.TestContentWidget()
+        layer_types = content_widget._get_layer_types()
+        assert 'content' in layer_types
+
+    @patch('morphui.app.MorphApp._theme_manager')
+    def test_layer_color_properties_mapping(self, mock_app_theme_manager):
+        """Test that layer color properties are correctly mapped."""
+        mock_app_theme_manager.configure_mock(**{
+            'content_surface_color': [0, 0, 0, 1]
+        })
+        
+        widget = self.TestSurfaceWidget()
+        
+        # Test surface layer properties
+        surface_props = widget._get_layer_color_properties('surface', 'normal')
+        assert 'surface_color' in surface_props
+        assert 'border_color' in surface_props
+        
+        # Test disabled state properties
+        disabled_props = widget._get_layer_color_properties('surface', 'disabled')
+        assert 'disabled_surface_color' in disabled_props
+        assert 'disabled_border_color' in disabled_props
+
+    @patch('morphui.app.MorphApp._theme_manager')
+    def test_generic_state_color_change_handling(self, mock_app_theme_manager):
+        """Test the generic state color change handler."""
+        mock_app_theme_manager.configure_mock(**{
+            'content_surface_color': [0, 0, 0, 1]
+        })
+        
+        widget = self.TestSurfaceWidget()
+        
+        # Mock the _update_layer method to track calls
+        with patch.object(widget, '_update_layer') as mock_update:
+            # Test color change for current state (should trigger update)
+            widget.current_surface_state = 'error'
+            mock_update.reset_mock()  # Reset after state change
+            widget._on_state_color_change(widget, [1, 0, 0, 1], 'surface', 'error')
+            assert mock_update.call_count >= 1  # Should be called at least once
+            assert any(call[0][0] == 'surface' for call in mock_update.call_args_list)
+            
+            # Test color change for non-current state (should not trigger update)
+            mock_update.reset_mock()
+            widget._on_state_color_change(widget, [0, 1, 0, 1], 'surface', 'focus')
+            mock_update.assert_not_called()
+
+    @patch('morphui.app.MorphApp._theme_manager')
+    def test_generic_color_resolution(self, mock_app_theme_manager):
+        """Test the generic color resolution method."""
+        mock_app_theme_manager.configure_mock(**{
+            'content_surface_color': [0, 0, 0, 1]
+        })
+        
+        widget = self.TestSurfaceWidget()
+        
+        # Set up test colors
+        widget.surface_color = [1, 1, 1, 1]
+        widget.error_surface_color = [1, 0, 0, 1]
+        widget.border_color = [0, 0, 0, 1]
+        
+        # Test normal state resolution
+        widget.current_surface_state = 'normal'
+        colors = widget.get_resolved_layer_colors('surface')
+        assert colors['surface_color'] == [1, 1, 1, 1]
+        assert colors['border_color'] == [0, 0, 0, 1]
+        
+        # Test error state resolution
+        widget.current_surface_state = 'error'
+        colors = widget.get_resolved_layer_colors('surface')
+        assert colors['surface_color'] == [1, 0, 0, 1]  # Should use error color
+        assert colors['border_color'] == [0, 0, 0, 1]   # Should fall back to base color
+
+    @patch('morphui.app.MorphApp._theme_manager')
+    def test_refresh_all_layers(self, mock_app_theme_manager):
+        """Test the refresh_all_layers method."""
+        mock_app_theme_manager.configure_mock(**{
+            'content_surface_color': [0, 0, 0, 1]
+        })
+        
+        widget = self.TestSurfaceWidget()
+        
+        # Mock the refresh_surface method to track calls
+        with patch.object(widget, 'refresh_surface') as mock_refresh:
+            widget.refresh_all_layers()
+            mock_refresh.assert_called_once()
+
+    @patch('morphui.app.MorphApp._theme_manager')
+    def test_automatic_binding_setup(self, mock_app_theme_manager):
+        """Test that automatic bindings are set up correctly."""
+        mock_app_theme_manager.configure_mock(**{
+            'content_surface_color': [0, 0, 0, 1]
+        })
+        
+        # This test verifies that the initialization sets up bindings correctly
+        # The actual binding functionality is tested through the behavior of the widgets
+        widget = self.TestSurfaceWidget()
+        
+        # Check that layer types were detected
+        assert len(widget._layer_types) > 0
+        assert 'surface' in widget._layer_types
+
+
 class TestMorphSurfaceLayerBehavior:
     """Test suite for MorphSurfaceLayerBehavior class."""
 
@@ -280,12 +410,12 @@ class TestMorphSurfaceLayerBehavior:
         assert widget.surface_color == test_color
 
     def test_surface_radius_property(self):
-        """Test the surface_radius property."""
+        """Test the radius property."""
         widget = self.TestWidget()
         
         test_radius = [10, 10, 5, 5]
-        widget.surface_radius = test_radius
-        assert widget.surface_radius == test_radius
+        widget.radius = test_radius
+        assert widget.radius == test_radius
 
     def test_border_properties(self):
         """Test border-related properties."""

@@ -20,7 +20,6 @@ sys.path.append(str(Path(__file__).parents[1].resolve()))
 
 from kivy.clock import Clock
 from morphui.app import MorphApp
-from kivy.uix.label import Label
 
 from morphui.uix.label import MorphLabel
 from morphui.uix.label import MorphIconLabel
@@ -137,11 +136,12 @@ class MyApp(MorphApp):
         self.filled_textfield = layout.identities.filled_textfield
         return layout
 
-    def on_start(self):
+    def on_start(self) -> None:
         dt = 2
-        # Clock.schedule_interval(self.disabled_button.switch_state, dt)
-        # Clock.schedule_interval(self.icon_label.switch_auto_size, dt)
+        Clock.schedule_interval(self.disabled_button.switch_state, dt)
+        Clock.schedule_interval(self.icon_label.switch_auto_size, dt)
         Clock.schedule_interval(self.theme_manager.toggle_theme_mode, dt * 2)
+        
         return super().on_start()
 
 if __name__ == '__main__':

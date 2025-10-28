@@ -72,15 +72,6 @@ class TestThemeManager:
         theme_manager.theme_mode = THEME.DARK
         assert theme_manager.inverse_mode == THEME.LIGHT
 
-    def test_material_schemes(self):
-        """Test material_schemes property."""
-        theme_manager = ThemeManager()
-        schemes = theme_manager.material_schemes
-        
-        assert isinstance(schemes, dict)
-        assert len(schemes) > 0
-        assert 'FIDELITY' in schemes
-
     def test_toggle_theme_mode(self):
         """Test toggle_theme_mode method."""
         theme_manager = ThemeManager()

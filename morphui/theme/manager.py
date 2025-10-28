@@ -431,14 +431,4 @@ class ThemeManager(MorphDynamicColorPalette):
         theme_manager.bind(on_colors_updated=update_widget_colors)
         ```
         """
-        
-        scheme_property = 'error'
-        attr_name = 'error_color'
-        print(self.theme_mode, 'applied error color', getattr(self, attr_name))
-        hex_color = getattr(self.light_scheme, scheme_property)
-        rgba = list(get_color_from_hex(hex_color))
-        print('light scheme', attr_name, rgba)
-        hex_color = getattr(self.dark_scheme, scheme_property)
-        rgba = list(get_color_from_hex(hex_color))
-        print('dark scheme', attr_name, rgba)
         pass
