@@ -918,8 +918,7 @@ class MorphTextField(
             'focus',
             'disabled',
             'multiline',
-            'password',
-            'content_color',)
+            'password',)
         for prop in bidirectional_binding:
             self.fbind(prop, self._text_input.setter(prop))
             self._text_input.fbind(prop, self.setter(prop))
@@ -939,6 +938,7 @@ class MorphTextField(
             focus=self._animate_on_focus,
             selected_text_color=self._update_selection_color,
             selected_text_color_opacity=self._update_selection_color,
+            content_color=self._text_input.setter('content_color'),
             minimum_height=self.setter('height'),
             maximum_height=self._text_input.setter('maximum_height'),)
         self.fbind(

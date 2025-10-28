@@ -59,10 +59,242 @@ class BaseLayerBehavior(
     this base class handles the common logic patterns.
     """
 
+    radius = VariableListProperty([0], length=4)
+    """Canvas radius for each corner.
+    
+    The order of the corners is: top-left, top-right, bottom-right, 
+    bottom-left.
+    
+    :attr:`radius` is a :class:`~kivy.properties.VariableListProperty`
+    and defaults to `[0, 0, 0, 0]`."""
+
+    clamped_radius: List[float] = AliasProperty(
+        lambda self: self._clamp_radius(),
+        bind=['size', 'radius'],
+        cache=True)
+    """Get the clamped radius values (read-only).
+
+    This property returns the radius values adjusted to ensure that
+    they do not exceed the widget's dimensions. It is automatically
+    updated when the widget's size or radius changes. This property is
+    applied internally when rendering rounded rectangles to ensure 
+    correct display.
+
+    :attr:`clamped_radius` is a :class:`~kivy.properties.AliasProperty`
+    """
+
+    rounded_rectangle_params: List[float] = AliasProperty(
+        lambda self: [
+            0 if isinstance(self, RelativeLayout) else self.x,
+            0 if isinstance(self, RelativeLayout) else self.y,
+            self.width,
+            self.height,
+            *self.clamped_radius], # type: ignore
+        bind=['size', 'pos', 'clamped_radius'],
+        cache=True)
+    """Get the parameters for creating a rounded rectangle (read-only).
+
+    The parameters are returned as a list suitable for use in
+    :class:`~kivy.graphics.instructions.SmoothLine` instruction. If the
+    widget is a `RelativeLayout`, the position is set to (0, 0) to
+    ensure correct rendering within the layout's coordinate system.
+    
+    Returns
+    -------
+    list of float
+        List containing [x, y, width, height, *radius] for the rounded
+        rectangle.
+    """
+
+    contour: List[float] = AliasProperty(
+        lambda self: self._generate_contour(),
+        bind=['size', 'pos', 'clamped_radius'],
+        cache=True)
+    """Get the contour points for the rounded rectangle (read-only).
+
+    This property returns a flat list of x, y coordinates representing
+    the contour of the rounded rectangle. It is automatically updated
+    when the widget's size, position, or clamped radius changes.
+
+    :attr:`contour` is a :class:`~kivy.properties.AliasProperty`
+    """
+
+    mesh: Tuple[List[float], List[float]] = AliasProperty(
+        lambda self: self._generate_mesh(),
+        bind=['contour'],
+        cache=True)
+
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self._layer_types = self._get_layer_types()
         self._setup_layer_bindings()
+
+    def _generate_corner_arc_points(
+            self,
+            corner: Literal['top-left', 'top-right', 'bottom-left', 'bottom-right'],
+            radius: float
+            ) -> List[float]:
+        """Generate points for a quarter circle arc at the specified 
+        corner.
+        
+        Will return a single point if the radius is less than 1. There
+        will be `int(radius) + 1` points if the radius is greater than
+        1. The generated points will start at the corner and proceed
+        counter-clockwise around the quarter circle.
+
+        Parameters
+        ----------
+        corner : Literal['top-left', 'top-right', 'bottom-left', 'bottom-right']
+            The corner for which to generate the quarter circle points.
+        radius : float
+            The radius of the quarter circle.
+
+        Returns
+        -------
+        List[float]
+            A flat list of x, y coordinates representing the quarter
+            circle points.
+
+        Raises
+        ------
+        ValueError
+            If an invalid corner is specified.
+        """
+        match corner:
+            case 'top-left':
+                alpha = 0.5 * pi
+                x_center = self.x + radius
+                y_center = self.y + self.height - radius
+            case 'bottom-left':
+                alpha = pi
+                x_center = self.x + radius
+                y_center = self.y + radius
+            case 'bottom-right':
+                alpha = 1.5 * pi
+                x_center = self.x + self.width - radius
+                y_center = self.y + radius
+            case 'top-right':
+                alpha = 0
+                x_center = self.x + self.width - radius
+                y_center = self.y + self.height - radius
+            case _:
+                raise ValueError("Invalid corner specified.")
+            
+        if radius <= 1:
+            return [x_center, y_center]
+
+        n_max = 45 # Limit maximum segments for performance (1 for each degree)
+        n_segments = min(int(radius) + 1, n_max)
+        def _points(n: int) -> Generator[float, None, None]:
+            for i in range(n + 1):  # Include end point for continuity
+                # Use normalized angle progression for consistent curvature
+                t = i / n  # Normalized parameter from 0 to 1
+                angle = 0.5 * pi * t + alpha
+                x = x_center + radius * cos(angle)
+                y = y_center + radius * sin(angle)
+                yield x
+                yield y
+        return list(_points(n_segments))
+    
+    def _clamp_radius(self, *args) -> List[float]:
+        """Ensure the radius values do not exceed the widget's size.
+
+        This method adjusts the radius values to ensure that the sum of 
+        the vertical radius does not exceed the widget's height,
+        and the sum of the horizontal radius does not exceed the 
+        widget's width.
+        
+        The radius values are scaled down proportionally if they exceed
+        the widget's dimensions.
+        """
+        if self.width <= 0 or self.height <= 0:
+            return [0., 0., 0., 0.]
+
+        v_radius = [r for r in self.radius]
+        h_radius = [r for r in self.radius]
+
+        # Check and fix vertical constraints (height)
+        left_sum = self.radius[0] + self.radius[3]  # top-left + bottom-left
+        if left_sum > self.height:
+            scale_factor = self.height / left_sum
+            v_radius[0] *= scale_factor
+            v_radius[3] *= scale_factor
+
+        right_sum = self.radius[1] + self.radius[2]  # top-right + bottom-right
+        if right_sum > self.height:
+            scale_factor = self.height / right_sum
+            v_radius[1] *= scale_factor
+            v_radius[2] *= scale_factor
+
+        # Check and fix horizontal constraints (width)
+        top_sum = self.radius[0] + self.radius[1]  # top-left + top-right
+        if top_sum > self.width:
+            scale_factor = self.width / top_sum
+            h_radius[0] *= scale_factor
+            h_radius[1] *= scale_factor
+
+        bottom_sum = self.radius[2] + self.radius[3]  # bottom-right + bottom-left
+        if bottom_sum > self.width:
+            scale_factor = self.width / bottom_sum
+            h_radius[2] *= scale_factor
+            h_radius[3] *= scale_factor
+
+        # Use the most restrictive constraint for each corner
+        return [
+            min(v_radius[0], h_radius[0]),
+            min(v_radius[1], h_radius[1]),
+            min(v_radius[2], h_radius[2]),
+            min(v_radius[3], h_radius[3]),]
+    
+    def _generate_contour(self) -> List[float]:
+        """Generate the complete contour points including corners and 
+        edges.
+
+        This method generates a list of points that define the contour
+        of the rounded rectangle.
+
+        Returns
+        -------
+        List[float]
+            A flat list of x, y coordinates representing the contour
+            path.
+        """
+        radius = self.clamped_radius
+        points = [
+            self.x + radius[0], self.y + self.height,
+            *self._generate_corner_arc_points('top-left', radius[0]),
+            self.x, self.y + radius[3],
+            *self._generate_corner_arc_points('bottom-left', radius[3]),
+            self.x + self.width - radius[2], self.y,
+            *self._generate_corner_arc_points('bottom-right', radius[2]),
+            self.x + self.width, self.y + self.height - radius[1],
+            *self._generate_corner_arc_points('top-right', radius[1]),]
+
+        return points
+
+    def _generate_mesh(self) -> Tuple[List[float], List[int]]:
+        """Generate the vertices and indices for the rounded rectangle
+        using tessellation.
+
+        This method uses Kivy's Tesselator to create a set of vertices
+        and indices that define the filled area of the rounded rectangle.
+
+        Returns
+        -------
+        Tuple[List[float], List[int]]
+            A tuple containing:
+            - A flat list of x, y coordinates representing the vertices
+              of the rounded rectangle.
+            - A list of indices defining the triangles for rendering.
+        """
+        vertices: List[float] = []
+        indices: List[int] = []
+        tesselator = Tesselator()
+        tesselator.add_contour(self.contour)
+        tesselator.tesselate()
+        if tesselator.meshes:
+            vertices, indices = tesselator.meshes[0]
+        return vertices, indices
     
     def _get_layer_types(self) -> List[str]:
         """Get the layer types supported by this behavior.
@@ -291,238 +523,6 @@ class BaseLayerBehavior(
             refresh_method = f'refresh_{layer_type}'
             if hasattr(self, refresh_method):
                 getattr(self, refresh_method)()
-
-    radius = VariableListProperty([0], length=4)
-    """Canvas radius for each corner.
-    
-    The order of the corners is: top-left, top-right, bottom-right, 
-    bottom-left.
-    
-    :attr:`radius` is a :class:`~kivy.properties.VariableListProperty`
-    and defaults to `[0, 0, 0, 0]`."""
-
-    clamped_radius: List[float] = AliasProperty(
-        lambda self: self._clamp_radius(),
-        bind=['size', 'radius'],
-        cache=True)
-    """Get the clamped radius values (read-only).
-
-    This property returns the radius values adjusted to ensure that
-    they do not exceed the widget's dimensions. It is automatically
-    updated when the widget's size or radius changes. This property is
-    applied internally when rendering rounded rectangles to ensure 
-    correct display.
-
-    :attr:`clamped_radius` is a :class:`~kivy.properties.AliasProperty`
-    """
-
-    rounded_rectangle_params: List[float] = AliasProperty(
-        lambda self: [
-            0 if isinstance(self, RelativeLayout) else self.x,
-            0 if isinstance(self, RelativeLayout) else self.y,
-            self.width,
-            self.height,
-            *self.clamped_radius], # type: ignore
-        bind=['size', 'pos', 'clamped_radius'],
-        cache=True)
-    """Get the parameters for creating a rounded rectangle (read-only).
-
-    The parameters are returned as a list suitable for use in
-    :class:`~kivy.graphics.instructions.SmoothLine` instruction. If the
-    widget is a `RelativeLayout`, the position is set to (0, 0) to
-    ensure correct rendering within the layout's coordinate system.
-    
-    Returns
-    -------
-    list of float
-        List containing [x, y, width, height, *radius] for the rounded
-        rectangle.
-    """
-
-    contour: List[float] = AliasProperty(
-        lambda self: self._generate_contour(),
-        bind=['size', 'pos', 'clamped_radius'],
-        cache=True)
-    """Get the contour points for the rounded rectangle (read-only).
-
-    This property returns a flat list of x, y coordinates representing
-    the contour of the rounded rectangle. It is automatically updated
-    when the widget's size, position, or clamped radius changes.
-
-    :attr:`contour` is a :class:`~kivy.properties.AliasProperty`
-    """
-
-    mesh: Tuple[List[float], List[float]] = AliasProperty(
-        lambda self: self._generate_mesh(),
-        bind=['contour'],
-        cache=True)
-
-    def _generate_corner_arc_points(
-            self,
-            corner: Literal['top-left', 'top-right', 'bottom-left', 'bottom-right'],
-            radius: float
-            ) -> List[float]:
-        """Generate points for a quarter circle arc at the specified 
-        corner.
-        
-        Will return a single point if the radius is less than 1. There
-        will be `int(radius) + 1` points if the radius is greater than
-        1. The generated points will start at the corner and proceed
-        counter-clockwise around the quarter circle.
-
-        Parameters
-        ----------
-        corner : Literal['top-left', 'top-right', 'bottom-left', 'bottom-right']
-            The corner for which to generate the quarter circle points.
-        radius : float
-            The radius of the quarter circle.
-
-        Returns
-        -------
-        List[float]
-            A flat list of x, y coordinates representing the quarter
-            circle points.
-
-        Raises
-        ------
-        ValueError
-            If an invalid corner is specified.
-        """
-        match corner:
-            case 'top-left':
-                alpha = 0.5 * pi
-                x_center = self.x + radius
-                y_center = self.y + self.height - radius
-            case 'bottom-left':
-                alpha = pi
-                x_center = self.x + radius
-                y_center = self.y + radius
-            case 'bottom-right':
-                alpha = 1.5 * pi
-                x_center = self.x + self.width - radius
-                y_center = self.y + radius
-            case 'top-right':
-                alpha = 0
-                x_center = self.x + self.width - radius
-                y_center = self.y + self.height - radius
-            case _:
-                raise ValueError("Invalid corner specified.")
-            
-        if radius <= 1:
-            return [x_center, y_center]
-
-        n_max = 45 # Limit maximum segments for performance (1 for each degree)
-        n_segments = min(int(radius) + 1, n_max)
-        def _points(n: int) -> Generator[float, None, None]:
-            for i in range(n + 1):  # Include end point for continuity
-                # Use normalized angle progression for consistent curvature
-                t = i / n  # Normalized parameter from 0 to 1
-                angle = 0.5 * pi * t + alpha
-                x = x_center + radius * cos(angle)
-                y = y_center + radius * sin(angle)
-                yield x
-                yield y
-        return list(_points(n_segments))
-    
-    def _clamp_radius(self, *args) -> List[float]:
-        """Ensure the radius values do not exceed the widget's size.
-
-        This method adjusts the radius values to ensure that the sum of 
-        the vertical radius does not exceed the widget's height,
-        and the sum of the horizontal radius does not exceed the 
-        widget's width.
-        
-        The radius values are scaled down proportionally if they exceed
-        the widget's dimensions.
-        """
-        if self.width <= 0 or self.height <= 0:
-            return [0., 0., 0., 0.]
-
-        v_radius = [r for r in self.radius]
-        h_radius = [r for r in self.radius]
-
-        # Check and fix vertical constraints (height)
-        left_sum = self.radius[0] + self.radius[3]  # top-left + bottom-left
-        if left_sum > self.height:
-            scale_factor = self.height / left_sum
-            v_radius[0] *= scale_factor
-            v_radius[3] *= scale_factor
-
-        right_sum = self.radius[1] + self.radius[2]  # top-right + bottom-right
-        if right_sum > self.height:
-            scale_factor = self.height / right_sum
-            v_radius[1] *= scale_factor
-            v_radius[2] *= scale_factor
-
-        # Check and fix horizontal constraints (width)
-        top_sum = self.radius[0] + self.radius[1]  # top-left + top-right
-        if top_sum > self.width:
-            scale_factor = self.width / top_sum
-            h_radius[0] *= scale_factor
-            h_radius[1] *= scale_factor
-
-        bottom_sum = self.radius[2] + self.radius[3]  # bottom-right + bottom-left
-        if bottom_sum > self.width:
-            scale_factor = self.width / bottom_sum
-            h_radius[2] *= scale_factor
-            h_radius[3] *= scale_factor
-
-        # Use the most restrictive constraint for each corner
-        return [
-            min(v_radius[0], h_radius[0]),
-            min(v_radius[1], h_radius[1]),
-            min(v_radius[2], h_radius[2]),
-            min(v_radius[3], h_radius[3]),]
-    
-    def _generate_contour(self) -> List[float]:
-        """Generate the complete contour points including corners and 
-        edges.
-
-        This method generates a list of points that define the contour
-        of the rounded rectangle.
-
-        Returns
-        -------
-        List[float]
-            A flat list of x, y coordinates representing the contour
-            path.
-        """
-        radius = self.clamped_radius
-        points = [
-            self.x + radius[0], self.y + self.height,
-            *self._generate_corner_arc_points('top-left', radius[0]),
-            self.x, self.y + radius[3],
-            *self._generate_corner_arc_points('bottom-left', radius[3]),
-            self.x + self.width - radius[2], self.y,
-            *self._generate_corner_arc_points('bottom-right', radius[2]),
-            self.x + self.width, self.y + self.height - radius[1],
-            *self._generate_corner_arc_points('top-right', radius[1]),]
-
-        return points
-
-    def _generate_mesh(self) -> Tuple[List[float], List[int]]:
-        """Generate the vertices and indices for the rounded rectangle
-        using tessellation.
-
-        This method uses Kivy's Tesselator to create a set of vertices
-        and indices that define the filled area of the rounded rectangle.
-
-        Returns
-        -------
-        Tuple[List[float], List[int]]
-            A tuple containing:
-            - A flat list of x, y coordinates representing the vertices
-              of the rounded rectangle.
-            - A list of indices defining the triangles for rendering.
-        """
-        vertices: List[float] = []
-        indices: List[int] = []
-        tesselator = Tesselator()
-        tesselator.add_contour(self.contour)
-        tesselator.tesselate()
-        if tesselator.meshes:
-            vertices, indices = tesselator.meshes[0]
-        return vertices, indices
 
 
 class MorphSurfaceLayerBehavior(BaseLayerBehavior):
