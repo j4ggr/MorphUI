@@ -95,10 +95,9 @@ class MorphCheckbox(
             content_color='content_surface_color',
             active_content_color='primary_color',
             disabled_content_color='outline_color',),
-        auto_size=False,
+        auto_size=True,
         round_sides=True,
-        size_hint=(None, None),
-        size=(dp(24), dp(24)),))
+        padding=dp(1),))
 
     def __init__(self, **kwargs) -> None:
         self.check_animation_out = Animation(
@@ -142,11 +141,5 @@ class MorphCheckbox(
     
     def _update_icon(self, *args) -> None:
         """Update the displayed icon based on the `active` state."""
-        # target_icon = self.active_icon if self.active else self.normal_icon
-        # anim = Animation(duration=0.1)
-        # anim += Animation(opacity=0, duration=0.1)
-        # anim.bind(on_complete=lambda *args: setattr(self, 'icon', target_icon))
-        # anim += Animation(opacity=1, duration=0.1)
-        # anim.start(self)
         self.icon = (
             self.active_icon if self.active else self.normal_icon)
