@@ -46,14 +46,25 @@ class MorphCheckbox(
     defaults to `"checkbox-blank-outline"`.
     """
 
-    check_animation_duration: float = NumericProperty(0.2)
+    check_animation_duration: float = NumericProperty(0.15)
     """Duration of the check animation in seconds.
     
     Specifies the duration of the animation that plays when the checkbox
     transitions between the 'normal' and 'active' states.
 
     :attr:`check_animation_duration` is a
-    :class:`~kivy.properties.NumberProperty` and defaults to `0.2`.
+    :class:`~kivy.properties.NumberProperty` and defaults to `0.15`.
+    """
+
+    check_animation_transition: str = StringProperty('out_sine')
+    """Transition type for the check animation.
+
+    This property defines the type of transition to use for the check
+    animation. It should correspond to a valid transition type in Kivy's
+    animation system.
+
+    :attr:`check_animation_transition` is a
+    :class:`~kivy.properties.StringProperty` and defaults to `'out_sine'`.
     """
 
     check_animation_out: Animation = ObjectProperty()
@@ -93,10 +104,12 @@ class MorphCheckbox(
         self.check_animation_out = Animation(
             scale_factor_x=0.0,
             scale_factor_y=0.0,
+            transition=self.check_animation_transition,
             duration=self.check_animation_duration / 2,)
         self.check_animation_in = Animation(
             scale_factor_x=1.0,
             scale_factor_y=1.0,
+            transition=self.check_animation_transition,
             duration=self.check_animation_duration / 2,)
         super().__init__(**kwargs)
 
