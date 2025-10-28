@@ -82,7 +82,7 @@ class MorphScaleBehavior(EventDispatcher):
                 y=self.scale_factor_y,
                 z=self.scale_factor_z,
                 origin=self.resolved_scale_origin,)
-        with self.canvas.before:
+        with self.canvas.after:
             PopMatrix()
 
         self.bind(
