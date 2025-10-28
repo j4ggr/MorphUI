@@ -285,7 +285,7 @@ class MorphButtonBehavior(EventDispatcher):
         if self._press_duration < self.min_state_time:
             release_delay = max(
                 release_delay, self.min_state_time - self._press_duration)
-        Clock.schedule_once(self._do_release(), release_delay)
+        Clock.schedule_once(self._do_release, release_delay)
         Clock.schedule_once(
             lambda dt: self.dispatch('on_release'), release_delay)
         return True
@@ -659,9 +659,10 @@ class MorphRippleBehavior(EventDispatcher):
             canvas = self.canvas.after
         else:
             canvas = self.canvas.before
-
+        
         with canvas:
-            StencilPush(group=group)
+            StencilPush(
+                group=group)
             RoundedRectangle(
                 size=self.size,
                 pos=self.pos,
@@ -679,13 +680,15 @@ class MorphRippleBehavior(EventDispatcher):
                     self.ripple_pos[0] - self._current_ripple_radius / 2,
                     self.ripple_pos[1] - self._current_ripple_radius / 2),
                 group=group)
-            StencilUnUse(group=group)
+            StencilUnUse(
+                group=group)
             RoundedRectangle(
                 size=self.size,
                 pos=self.pos,
                 radius=radius,
                 group=group)
-            StencilPop(group=group)
+            StencilPop(
+                group=group)
 
     def _on_ripple_complete(self, *args) -> None:
         """Callback when the ripple animation completes.
@@ -697,7 +700,7 @@ class MorphRippleBehavior(EventDispatcher):
         self._ripple_in_progress = False
         self._ripple_is_finishing = False
         self._ripple_is_fading = False
-
+        
         if self.ripple_layer == 'overlay':
             canvas = self.canvas.after
         else:
