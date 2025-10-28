@@ -1076,10 +1076,14 @@ class MorphContentLayerBehavior(BaseLayerBehavior):
         
         if prop_name:
             # Check if this property affects the current state
+            # TODO: simplify this logic, it's not working anyways
             current_state = self.current_content_state
             if (current_state == 'normal' and prop_name == 'content_color') or \
                (current_state != 'normal' and prop_name == f'{current_state}_content_color'):
                 self._update_content_layer()
+                
+                if self.__class__.__name__ == 'MorphCheckbox':
+                    print(self.current_content_state, value)
 
     def get_resolved_content_color(self) -> List[float] | None:
         """Determine the appropriate content color based on the current
@@ -1116,6 +1120,9 @@ class MorphContentLayerBehavior(BaseLayerBehavior):
         color = self.get_resolved_content_color()
         if color is not None:
             self.apply_content(color)
+            
+            if self.__class__.__name__ == 'MorphCheckbox':
+                print(self.current_content_state, color)
         self.dispatch('on_content_updated')
     
     def apply_content(self, color: List[float]) -> None:
