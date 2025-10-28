@@ -4,8 +4,8 @@ from kivy.event import EventDispatcher
 from kivy.graphics import Scale
 from kivy.graphics import PopMatrix
 from kivy.graphics import PushMatrix
+from kivy.properties import ListProperty
 from kivy.properties import BoundedNumericProperty
-from kivy.properties import VariableListProperty
 
 __all__ = [
     'MorphScaleBehavior',]
@@ -62,15 +62,15 @@ class MorphScaleBehavior(EventDispatcher):
     `1.0`.
     """
 
-    scale_origin: List[float] = VariableListProperty([0.0, 0.0, 0.0], length=3)
+    scale_origin: List[float] = ListProperty([])
     """Origin point for scaling transformations.
     
     This property defines the point around which the scaling occurs.
-    It is a 3D point represented by a list of three floats (x, y, z).
+    It is a 3D point represented by a list of two (x, y) or three floats 
+    (x, y, z).
 
-    :attr:`scale_origin` is a
-    :class:`~kivy.properties.VariableListProperty` of length 3 and
-    defaults to `[0.0, 0.0, 0.0]`.
+    :attr:`scale_origin` is a :class:`~kivy.properties.ListProperty`
+    and defaults to `[]`.
     """
 
     def __init__(self, **kwargs) -> None:
@@ -81,8 +81,8 @@ class MorphScaleBehavior(EventDispatcher):
                 x=self.scale_factor_x,
                 y=self.scale_factor_y,
                 z=self.scale_factor_z,
-                origin=self.scale_origin)
-        with self.canvas.after:
+                origin=self.resolved_scale_origin,)
+        with self.canvas.before:
             PopMatrix()
 
         self.bind(
@@ -90,6 +90,23 @@ class MorphScaleBehavior(EventDispatcher):
             scale_factor_y=self._update_scale,
             scale_factor_z=self._update_scale,
             scale_origin=self._update_scale)
+        
+    @property
+    def resolved_scale_origin(self) -> List[float]:
+        """Get the resolved scale origin as a 3D point.
+
+        This property returns the `scale_origin` property ensured to be
+        a list of three floats (x, y, z). If only two values are 
+        provided, it appends a `0.0` for the z-coordinate.
+
+        Returns
+        -------
+        List[float]
+            The resolved scale origin as a list of three floats.
+        """
+        if len(self.scale_origin) < 2:
+            return [self.center_x, self.center_y, 0.0]
+        return self.scale_origin
 
     def _update_scale(self, *args) -> None:
         """Update the scale transformation based on the current 
@@ -102,4 +119,4 @@ class MorphScaleBehavior(EventDispatcher):
         self._scale_instruction.x = self.scale_factor_x
         self._scale_instruction.y = self.scale_factor_y
         self._scale_instruction.z = self.scale_factor_z
-        self._scale_instruction.origin = self.scale_origin
+        self._scale_instruction.origin = self.resolved_scale_origin
