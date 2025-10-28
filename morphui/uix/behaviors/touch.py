@@ -1,5 +1,8 @@
+from time import time
 from typing import Any
 from typing import List
+from typing import Dict
+from weakref import ref
 
 from kivy.clock import Clock
 from kivy.event import EventDispatcher
@@ -16,6 +19,7 @@ from kivy.properties import OptionProperty
 from kivy.properties import StringProperty
 from kivy.properties import NumericProperty
 from kivy.properties import BooleanProperty
+from kivy.uix.behaviors import ToggleButtonBehavior
 from kivy.input.motionevent import MotionEvent
 from kivy.uix.relativelayout import RelativeLayout
 
@@ -24,7 +28,8 @@ from ...constants import NAME
 
 __all__ = [
     'MorphButtonBehavior',
-    'MorphRippleBehavior',]
+    'MorphRippleBehavior',
+    'MorphToggleButtonBehavior',]
 
 
 class MorphButtonBehavior(EventDispatcher):
@@ -83,10 +88,28 @@ class MorphButtonBehavior(EventDispatcher):
     and defaults to `False`.
     """
 
+    min_state_time: float = NumericProperty(0.035)
+    """The minimum period of time which the widget must remain in the
+    'down' state.
+
+    This property defines the minimum duration that the widget must
+    remain in the 'down' state before it can be released. This can help
+    prevent accidental taps or quick presses from triggering the
+    release action too quickly.
+
+    :attr:`min_state_time` is a :class:`~kivy.properties.NumericProperty`
+    and defaults to 0.035.
+    """
+
+    __touch_time: float | None = None
+    """Internal variable to track how long the touch has been down.
+    """
+
     def __init__(self, **kwargs) -> None:
         self.register_event_type('on_press')
         self.register_event_type('on_release')
         super().__init__(**kwargs)
+        self.__touch_time = None
 
     def on_touch_down(self, touch: MotionEvent) -> bool:
         """Handle touch down events to initiate the press action.
@@ -129,10 +152,11 @@ class MorphButtonBehavior(EventDispatcher):
         if getattr(self, 'disabled', False):
             return False
             
-        self.pressed = True
         self.last_touch = touch
         touch.grab(self)
         touch.ud[self] = True
+        self.__touch_time = time()
+        self._do_press()
 
         if getattr(self, 'ripple_enabled', False):
             assert hasattr(self, 'show_ripple_effect'), (
@@ -231,12 +255,34 @@ class MorphButtonBehavior(EventDispatcher):
             self.finish_ripple_animation()
             release_delay = self.ripple_duration_out
         
-        if not self.always_release and not self.collide_point(touch.x, touch.y):
-                return None
-
+        if not self.always_release and not self.collide_point(*touch.pos):
+            self._do_release()
+            return None
+        
+        elapsed_time = time() - (self.__touch_time or 0)
+        if elapsed_time < self.min_state_time:
+            release_delay = max(
+                release_delay, self.min_state_time - elapsed_time)
+        Clock.schedule_once(self._do_release(), release_delay)
         Clock.schedule_once(
             lambda dt: self.dispatch('on_release'), release_delay)
         return True
+    
+    def _do_press(self, *args) -> None:
+        """Internal method to handle press logic.
+
+        This method sets the pressed state to True. Override this method
+        to implement custom press behavior.
+        """
+        self.pressed = True
+
+    def _do_release(self, *args) -> None:
+        """Internal method to handle release logic.
+
+        This method sets the pressed state to False. Override this
+        method to implement custom release behavior.
+        """
+        self.pressed = False
     
     def on_press(self) -> None:
         """Event fired when the widget is pressed.
@@ -635,3 +681,217 @@ class MorphRippleBehavior(EventDispatcher):
                 self.ripple_pos[1] - self._current_ripple_radius / 2)
         if hasattr(self, '_ripple_color_instruction'):
             self._ripple_color_instruction.rgba = self._current_ripple_color
+
+
+class MorphToggleButtonBehavior(MorphButtonBehavior):
+    """A mixin class that provides toggle button behavior to widgets.
+
+    This behavior can be mixed into other widgets to give them the
+    ability to act as toggle buttons, allowing them to switch between
+    'normal' and 'down' states. It supports grouping of toggle buttons
+    to allow only one button in a group to be in the 'down' state at a
+    time.
+
+    The behavior dispatches press/release events similar to
+    :class:`~kivy.uix.behaviors.ButtonBehavior`.
+
+    Properties
+    ----------
+    state : str
+        The current state of the toggle button, either 'normal' or 'down'.
+    group : str | None
+        The group identifier for the toggle button. Buttons in the same
+        group will enforce mutual exclusivity.
+    allow_no_selection : bool
+        Whether the toggle button allows no selection in its group.
+
+    Events
+    ------
+    on_press() -> None
+        Event fired when the widget is pressed.
+    on_release() -> None  
+        Event fired when the widget is released.
+
+    Examples
+    --------
+    Create a toggle button:
+
+    ```python
+    class MyToggleButton(MorphToggleButtonBehavior, Button):
+        pass
+
+    toggle_button = MyToggleButton(text="Toggle me")
+    toggle_button.bind(on_press=lambda instance: print("Pressed!"))
+    toggle_button.bind(on_release=lambda instance: print("Released!"))
+    ```
+
+    Notes
+    -----
+    This implementation is based on Kivy's ToggleButtonBehavior, see
+    :class:`~kivy.uix.behaviors.ToggleButtonBehavior`.
+    """
+
+    __groups: Dict[str, List[ref]] = {}
+    """Internal dictionary to manage groups of toggle buttons.
+    
+    This class-level dictionary keeps track of toggle button groups,
+    allowing for mutual exclusivity among buttons in the same group.
+    """
+
+    group: str | None = StringProperty(None, allownone=True)
+    """The group identifier for the toggle button.
+
+    Buttons in the same group will enforce mutual exclusivity, meaning
+    that only one button in the group can be in the 'down' state at a
+    time.
+
+    :attr:`group` is a :class:`~kivy.properties.StringProperty`
+    and defaults to `None`.
+    """
+
+    allow_no_selection: bool = BooleanProperty(True)
+    """Whether the toggle button allows no selection in its group.
+
+    If set to `True`, the toggle button can be deselected, allowing
+    no button in the group to be in the 'down' state. If set to
+    `False`, at least one button in the group must be selected at
+    all times.
+
+    :attr:`allow_no_selection` is a :class:`~kivy.properties.BooleanProperty`
+    and defaults to `True`.
+    """
+
+    _previous_group: str | None = None
+    """Internal variable to track the previous group of the toggle 
+    button.
+    """
+
+    def __init__(self, **kwargs) -> None:
+        self._previous_group = None
+        super().__init__(**kwargs)
+        self.bind(group=self._on_group_change,)
+    
+    @staticmethod
+    def _clear_groups(weak_ref: ref) -> None:
+        """Clear the weak reference from all groups when the widget is
+        deleted.
+
+        This static method is used as a callback for weak references to
+        remove the reference from all groups when the widget is garbage
+        collected.
+
+        Parameters
+        ----------
+        weak_ref : ref
+            The weak reference to the toggle button instance.
+        """
+        groups = MorphToggleButtonBehavior.__groups
+        for grouped_items in list(groups.values()):
+            if weak_ref in grouped_items:
+                grouped_items.remove(weak_ref)
+                break
+    
+    @staticmethod
+    def get_widgets(group: str) -> List[Any]:
+        """Get all toggle button widgets in the specified group.
+
+        This static method retrieves all toggle button instances that
+        belong to the specified group.
+
+        Parameters
+        ----------
+        group : str
+            The group identifier.
+
+        Returns
+        -------
+        List[Any]
+            A list of toggle button instances in the specified group.
+        """
+        widgets = []
+        groups = MorphToggleButtonBehavior.__groups
+        grouped_items = groups.get(group, [])
+        for item in grouped_items:
+            widget = item()
+            if widget is not None:
+                widgets.append(widget)
+        return widgets
+
+    def _on_group_change(self, instance: Any, group: str) -> None:
+        """Handle changes to the group property.
+
+        This method updates the internal group management when the
+        `group` property changes. It ensures that the toggle button is
+        correctly registered in its new group and removed from its old
+        group.
+
+        Parameters
+        ----------
+        instance : Any
+            The instance of the toggle button.
+        group : str
+            The new group identifier.
+        """
+        groups = MorphToggleButtonBehavior.__groups
+        if self._previous_group is not None and self._previous_group in groups:
+            grouped_items = groups[self._previous_group]
+            for item in grouped_items[:]:
+                if item() is self:
+                    grouped_items.remove(item)
+                    break
+
+        self._previous_group = group
+        if group is None:
+            return None
+        
+        if group not in groups:
+            groups[group] = []
+        groups[group].append(ref(self, ToggleButtonBehavior._clear_groups))
+
+    def _release_group(self, current: ToggleButtonBehavior) -> None:
+        """Release other buttons in the same group when this button is
+        pressed.
+
+        This method sets the `pressed` state of all other buttons in
+        the same group to `False`, ensuring mutual exclusivity.
+
+        Parameters
+        ----------
+        current : ToggleButtonBehavior
+            The current toggle button instance.
+        """
+        if self.group is None:
+            return None
+        
+        grouped_items = self.__groups.get(self.group, [])
+        for item in grouped_items:
+            widget = item()
+            if widget is None:
+                grouped_items.remove(item)
+            elif widget is current:
+                continue
+            else:
+                widget.pressed = False
+
+    def _do_press(self, *args) -> None:
+        """Handle the press action for the toggle button.
+
+        This method updates the pressed state and manages the group
+        exclusivity when the button is pressed.
+        """
+        if all((
+                self.pressed,
+                self.group is not None,
+                not self.allow_no_selection,)):
+            return None
+        
+        self._release_group(self)
+        self.pressed = not self.pressed
+    
+    def _do_release(self, *args) -> None:
+        """Handle the release action for the toggle button.
+
+        This method is overridden to prevent changing the pressed
+        state on release, as toggle buttons only change state on press.
+        """
+        pass
