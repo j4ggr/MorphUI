@@ -206,7 +206,7 @@ class MorphColorThemeBehavior(BaseThemeBehavior):
     or additional style mappings.
     """
 
-    _theme_style_color_bindings: Dict[str, str] = {}
+    _theme_style_color_bindings: Dict[str, str] = DictProperty({})
     """Dictionary mapping theme style names to color bindings.
 
     This dictionary is populated with the color bindings for each
@@ -217,6 +217,9 @@ class MorphColorThemeBehavior(BaseThemeBehavior):
     The finally applied color bindings are a merge of the
     :attr:`theme_color_bindings` and the bindings from the current
     theme style.
+
+    :attr:`_theme_style_color_bindings` is a
+    :class:`~kivy.properties.DictProperty` and defaults to {}.
     """
 
     _theme_bound: bool = False
@@ -226,7 +229,16 @@ class MorphColorThemeBehavior(BaseThemeBehavior):
         self.register_event_type('on_colors_updated')
         super().__init__(**kwargs)
 
-        self.theme_manager.bind(on_colors_updated=self._update_colors)
+        self.bind(
+            theme_style=self._update_theme_style,
+            auto_theme=self._update_colors,
+            theme_color_bindings=self._update_colors,
+            _theme_style_color_bindings=self._update_colors)
+
+        self.theme_manager.bind(
+            on_colors_updated=self._update_colors)
+        
+        self.refresh_theme_colors()
 
     @property
     def effective_color_bindings(self) -> Dict[str, str]:
@@ -240,29 +252,10 @@ class MorphColorThemeBehavior(BaseThemeBehavior):
         :attr:`theme_color_bindings`. When both define the same widget
         property, the values from :attr:`theme_style` have priority.
         """
-        merged = (
-            self.theme_color_bindings
-            | self._theme_style_color_bindings)
+        merged = {
+            **self.theme_color_bindings,
+            **self._theme_style_color_bindings}
         return merged
-
-    def on_theme_color_bindings(
-            self, instance: Any, bindings: Dict[str, str]) -> None:
-        """Fired when :attr:`theme_color_bindings` property changes. 
-        
-        This method updates the widget's colors based on the new
-        dictionary of bindings by calling :meth:`_update_colors`.
-        
-        Parameters
-        ----------
-        instance : Any
-            The widget instance that triggered the property change.
-        bindings : Dict[str, str]
-            The new dictionary mapping widget properties to theme color
-            names. Where keys are widget property names (e.g.,
-            'surface_color') and values are theme color names (e.g.,
-            'primary_color').
-        """
-        self._update_colors()
 
     def apply_theme_color(self, widget_property: str, theme_color: str) -> bool:
         """Apply a specific theme color to a widget property.
@@ -330,12 +323,7 @@ class MorphColorThemeBehavior(BaseThemeBehavior):
             self.apply_theme_color(widget_prop, theme_color)
         self.dispatch('on_colors_updated')
 
-    def on_auto_theme(self, instance: Any, auto_theme: bool) -> None:
-        """Fired when :attr:`auto_theme` property changes."""
-        if auto_theme:
-            self._update_colors()
-
-    def on_theme_style(self, instance: Any, style_name: str) -> None:
+    def _update_theme_style(self, instance: Any, style_name: str) -> None:
         """Event handler fired when :attr:`theme_style` property 
         changes.
         
@@ -445,11 +433,12 @@ class MorphColorThemeBehavior(BaseThemeBehavior):
         """
         if style_name in self.theme_style_mappings:
             self._theme_style_color_bindings = self.theme_style_mappings[
-                style_name]
+                style_name].copy()
         elif style_name:
             warnings.warn(
                 f"Unknown theme_style '{style_name}', ignoring",
                 UserWarning)
+            self._theme_style_color_bindings = {}
 
     def add_custom_style(
             self, style_name: str, color_mappings: Dict[str, str]) -> None:
@@ -508,7 +497,8 @@ class MorphColorThemeBehavior(BaseThemeBehavior):
         :attr:`theme_style_mappings` class attribute.
         """
         if self.theme_style_mappings is self.__class__.theme_style_mappings:
-            self.theme_style_mappings = self.__class__.theme_style_mappings.copy()
+            self.theme_style_mappings = (
+                self.__class__.theme_style_mappings.copy())
         
         self.theme_style_mappings[style_name] = color_mappings
 
@@ -520,6 +510,7 @@ class MorphColorThemeBehavior(BaseThemeBehavior):
         """
         auto_theme = self.auto_theme
         self.auto_theme = True
+        self._update_theme_style(self, self.theme_style)
         self._update_colors()
         self.auto_theme = auto_theme
 
