@@ -499,19 +499,30 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
         
         self.bind(
             current_surface_state=self._on_surface_state_change,
-            surface_color=self._on_surface_property_change,
-            disabled_surface_color=self._on_surface_property_change,
-            error_surface_color=self._on_surface_property_change,
-            focus_surface_color=self._on_surface_property_change,
-            active_surface_color=self._on_surface_property_change,
-            border_color=self._on_surface_property_change,
-            disabled_border_color=self._on_surface_property_change,
-            error_border_color=self._on_surface_property_change,
-            focus_border_color=self._on_surface_property_change,
-            active_border_color=self._on_surface_property_change,
             contour=self._update_surface_layer,
             border_width=self._update_surface_layer,
             border_closed=self._update_surface_layer,)
+        
+        for state in self.surface_state_precedence:
+            property_name = f'{state}_surface_color'
+            self.fbind(
+                property_name,
+                self._on_surface_property_change,
+                property_name=property_name)
+            property_name = f'{state}_border_color'
+            self.fbind(
+                property_name,
+                self._on_surface_property_change,
+                property_name=property_name)
+
+        self.fbind(
+            'surface_color',
+            self._on_surface_property_change,
+            property_name='surface_color')
+        self.fbind(
+            'border_color',
+            self._on_surface_property_change,
+            property_name='border_color')
         
         self.refresh_surface()
 
@@ -552,30 +563,29 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
         """
         self._update_surface_layer()
     
-    def _on_surface_property_change(self, instance: Any, value: Any) -> None:
+    def _on_surface_property_change(
+            self, instance: Any, value: Any, property_name: str) -> None:
         """Handle surface property changes.
         
         Called when any surface color property changes. Only updates
         the surface if the changed property affects the current state.
+
+        Parameters
+        ----------
+        instance : Any
+            The instance that triggered the change.
+        value : Any
+            The new value of the property.
+        property_name : str
+            The name of the property that changed. Can be used to check
+            if the change affects the current surface state.
         """
-        # Only update if we're in normal state or the changed property
-        # matches our current state
-        prop_name = None
-        for prop in ['surface_color', 'border_color', 
-                    'disabled_surface_color', 'disabled_border_color',
-                    'error_surface_color', 'error_border_color',
-                    'focus_surface_color', 'focus_border_color',
-                    'active_surface_color', 'active_border_color',]:
-            if hasattr(self, prop) and getattr(self, prop) == value:
-                prop_name = prop
-                break
-        
-        if prop_name:
-            # Check if this property affects the current state
-            current_state = self.current_surface_state
-            if (current_state == 'normal' and not prop_name.startswith(('disabled_', 'error_', 'focus_', 'active_'))) or \
-               (current_state != 'normal' and prop_name.startswith(f'{current_state}_')):
-                self._update_surface_layer()
+        state = self.current_surface_state
+        prefix = f'{state}_' if state != 'normal' else ''
+        precedence_properties = (
+            f'{prefix}surface_color', f'{prefix}border_color',)
+        if property_name in precedence_properties:
+            self._update_surface_layer()
     
     def get_resolved_surface_colors(
             self) -> Tuple[List[float], List[float]]:
@@ -1038,8 +1048,8 @@ class MorphContentLayerBehavior(BaseLayerBehavior):
         """
         state = self.current_content_state
         prefix = f'{state}_' if state != 'normal' else ''
-        precedance_property = f'{prefix}content_color'
-        if property_name == precedance_property:
+        precedence_property = f'{prefix}content_color'
+        if property_name == precedence_property:
             self._update_content_layer()
 
     def get_resolved_content_color(self) -> List[float] | None:
@@ -1292,13 +1302,28 @@ class MorphOverlayLayerBehavior(BaseLayerBehavior):
             radius=self._update_overlay_layer,
             overlay_edge_width=self._update_overlay_layer,
             visible_edges=self._update_overlay_layer,
-            current_overlay_state=self._on_overlay_state_change,
-            overlay_color=self._on_overlay_property_change,
-            disabled_overlay_color=self._on_overlay_property_change,
-            resizing_overlay_color=self._on_overlay_property_change,
-            overlay_edge_color=self._on_overlay_property_change,
-            disabled_overlay_edge_color=self._on_overlay_property_change,
-            resizing_overlay_edge_color=self._on_overlay_property_change,)
+            current_overlay_state=self._on_overlay_state_change,)
+
+        for state in self.overlay_state_precedence:
+            property_name = f'{state}_overlay_color'
+            self.fbind(
+                property_name,
+                self._on_overlay_property_change,
+                property_name=property_name)
+            property_name = f'{state}_overlay_edge_color'
+            self.fbind(
+                property_name,
+                self._on_overlay_property_change,
+                property_name=property_name)
+
+        self.fbind(
+            'overlay_color',
+            self._on_overlay_property_change,
+            property_name='overlay_color')
+        self.fbind(
+            'overlay_edge_color',
+            self._on_overlay_property_change,
+            property_name='overlay_edge_color')
 
         self.refresh_overlay()
         
@@ -1339,28 +1364,19 @@ class MorphOverlayLayerBehavior(BaseLayerBehavior):
         """
         self._update_overlay_layer()
     
-    def _on_overlay_property_change(self, instance: Any, value: Any) -> None:
+    def _on_overlay_property_change(
+            self, instance: Any, value: Any, property_name: str) -> None:
         """Handle overlay property changes.
         
         Called when any overlay color property changes. Only updates
         the overlay if the changed property affects the current state.
         """
-        # Only update if we're in normal state or the changed property
-        # matches our current state
-        prop_name = None
-        for prop in ['overlay_color', 'overlay_edge_color',
-                    'disabled_overlay_color', 'disabled_overlay_edge_color',
-                    'resizing_overlay_color', 'resizing_overlay_edge_color']:
-            if hasattr(self, prop) and getattr(self, prop) == value:
-                prop_name = prop
-                break
-        
-        if prop_name:
-            # Check if this property affects the current state
-            current_state = self.current_overlay_state
-            if (current_state == 'normal' and not prop_name.startswith(('disabled_', 'resizing_'))) or \
-               (current_state != 'normal' and prop_name.startswith(f'{current_state}_')):
-                self._update_overlay_layer()
+        state = self.current_overlay_state
+        prefix = f'{state}_' if state != 'normal' else ''
+        precedence_properties = (
+            f'{prefix}overlay_color', f'{prefix}overlay_edge_color')
+        if property_name in precedence_properties:
+            self._update_overlay_layer()
 
     def _update_overlay_layer(self, *args) -> None:
         """Update the overlay position and size."""
