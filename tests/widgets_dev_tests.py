@@ -25,6 +25,7 @@ from morphui.uix.label import MorphLabel
 from morphui.uix.label import MorphIconLabel
 from morphui.uix.button import MorphButton
 from morphui.uix.button import MorphIconButton
+from morphui.uix.selection import MorphCheckbox
 from morphui.uix.boxlayout import MorphBoxLayout
 from morphui.uix.behaviors import MorphHoverBehavior
 from morphui.uix.behaviors import MorphInteractionLayerBehavior
@@ -124,6 +125,8 @@ class MyApp(MorphApp):
                 pos_hint={'center_x': 0.5, 'top': 0.7},
                 size_hint_x=None,
                 width=width,),
+            MorphCheckbox(
+                identity='checkbox',),
             theme_style='surface',
             orientation='vertical',
             padding=50,
@@ -141,7 +144,7 @@ class MyApp(MorphApp):
         Clock.schedule_interval(self.disabled_button.switch_state, dt)
         Clock.schedule_interval(self.icon_label.switch_auto_size, dt)
         Clock.schedule_interval(self.theme_manager.toggle_theme_mode, dt * 2)
-        
+
         return super().on_start()
 
 if __name__ == '__main__':
