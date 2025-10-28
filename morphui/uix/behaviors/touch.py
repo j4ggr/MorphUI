@@ -88,6 +88,18 @@ class MorphButtonBehavior(EventDispatcher):
     and defaults to `False`.
     """
 
+    active: bool = BooleanProperty(False)
+    """Indicates whether the widget is currently active.
+
+    This property is set to True when the widget is in an active state
+    (e.g., pressed or toggled on) and is set to False when it is not
+    active. It can be used to track the active state of the widget
+    for visual feedback or other logic.
+
+    :attr:`active` is a :class:`~kivy.properties.BooleanProperty`
+    and defaults to `False`.
+    """
+
     min_state_time: float = NumericProperty(0.035)
     """The minimum period of time which the widget must remain in the
     'down' state.
@@ -101,15 +113,26 @@ class MorphButtonBehavior(EventDispatcher):
     and defaults to 0.035.
     """
 
-    __touch_time: float | None = None
+    _press_start_time: float | None = None
     """Internal variable to track how long the touch has been down.
+    
+    This variable stores the timestamp when the touch event began,
+    allowing calculation of the elapsed time the widget has been
+    pressed.
+    """
+
+    _press_duration: float = 0.0
+    """Internal variable to track the elapsed time the widget has been
+    pressed.
+    This variable is updated when the touch event ends to determine
+    how long the widget was in the pressed state.
     """
 
     def __init__(self, **kwargs) -> None:
         self.register_event_type('on_press')
         self.register_event_type('on_release')
         super().__init__(**kwargs)
-        self.__touch_time = None
+        self.bind(pressed=self._update_press_timing)
 
     def on_touch_down(self, touch: MotionEvent) -> bool:
         """Handle touch down events to initiate the press action.
@@ -155,7 +178,7 @@ class MorphButtonBehavior(EventDispatcher):
         self.last_touch = touch
         touch.grab(self)
         touch.ud[self] = True
-        self.__touch_time = time()
+        self.pressed = True
         self._do_press()
 
         if getattr(self, 'ripple_enabled', False):
@@ -258,31 +281,50 @@ class MorphButtonBehavior(EventDispatcher):
         if not self.always_release and not self.collide_point(*touch.pos):
             self._do_release()
             return None
-        
-        elapsed_time = time() - (self.__touch_time or 0)
-        if elapsed_time < self.min_state_time:
+
+        if self._press_duration < self.min_state_time:
             release_delay = max(
-                release_delay, self.min_state_time - elapsed_time)
+                release_delay, self.min_state_time - self._press_duration)
         Clock.schedule_once(self._do_release(), release_delay)
         Clock.schedule_once(
             lambda dt: self.dispatch('on_release'), release_delay)
         return True
-    
+
+    def _update_press_timing(self, *args) -> None:
+        """Record the time when the touch event occurred.
+
+        This method is called when the touch state changes to pressed.
+        It stores the current time to calculate the duration of the
+        press event later.
+
+        Parameters
+        ----------
+        *args : Any
+            Additional arguments passed to the method (not used).
+        """
+        if self.pressed:
+            self._press_duration = 0.0
+            self._press_start_time = time()
+        else:
+            if self._press_start_time is not None:
+                self._press_duration = time() - self._press_start_time
+            self._press_start_time = None
+
     def _do_press(self, *args) -> None:
         """Internal method to handle press logic.
 
-        This method sets the pressed state to True. Override this method
-        to implement custom press behavior.
+        This method sets the :attr:`active` state to True. Override this 
+        method to implement custom press behavior.
         """
-        self.pressed = True
+        self.active = True
 
     def _do_release(self, *args) -> None:
         """Internal method to handle release logic.
 
-        This method sets the pressed state to False. Override this
-        method to implement custom release behavior.
+        This method sets the :attr:`active` state to False. Override 
+        this method to implement custom release behavior.
         """
-        self.pressed = False
+        self.active = False
     
     def on_press(self) -> None:
         """Event fired when the widget is pressed.
@@ -850,9 +892,9 @@ class MorphToggleButtonBehavior(MorphButtonBehavior):
 
     def _release_group(self, current: ToggleButtonBehavior) -> None:
         """Release other buttons in the same group when this button is
-        pressed.
+        active.
 
-        This method sets the `pressed` state of all other buttons in
+        This method sets the `active` state of all other buttons in
         the same group to `False`, ensuring mutual exclusivity.
 
         Parameters
@@ -871,27 +913,27 @@ class MorphToggleButtonBehavior(MorphButtonBehavior):
             elif widget is current:
                 continue
             else:
-                widget.pressed = False
+                widget.active = False
 
     def _do_press(self, *args) -> None:
         """Handle the press action for the toggle button.
 
-        This method updates the pressed state and manages the group
-        exclusivity when the button is pressed.
+        This method updates the :attr:`active` state and manages the
+        group exclusivity when the button is pressed.
         """
         if all((
-                self.pressed,
+                self.active,
                 self.group is not None,
                 not self.allow_no_selection,)):
             return None
         
         self._release_group(self)
-        self.pressed = not self.pressed
+        self.active = not self.active
     
     def _do_release(self, *args) -> None:
         """Handle the release action for the toggle button.
 
-        This method is overridden to prevent changing the pressed
+        This method is overridden to prevent changing the active
         state on release, as toggle buttons only change state on press.
         """
         pass
