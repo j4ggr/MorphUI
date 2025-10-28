@@ -347,15 +347,6 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
     :class:`~kivy.properties.ColorProperty` and defaults to
     `None`."""
 
-    selected_surface_color: List[float] | None = ColorProperty(None)
-    """Surface color when the widget is selected.
-
-    This color is applied when the widget is in a selected state.
-
-    :attr:`selected_surface_color` is a
-    :class:`~kivy.properties.ColorProperty` and defaults to
-    `None`."""
-
     border_color: List[float] = ColorProperty([0, 0, 0, 0])
     """Border color of the widget.
     
@@ -392,15 +383,6 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
     """Border color when the widget is active.
 
     :attr:`active_border_color` is a
-    :class:`~kivy.properties.ColorProperty` and defaults to
-    `None`."""
-
-    selected_border_color: List[float] | None = ColorProperty(None)
-    """Border color when the widget is selected.
-
-    This color is applied when the widget is in a selected state.
-
-    :attr:`selected_border_color` is a
     :class:`~kivy.properties.ColorProperty` and defaults to
     `None`."""
 
@@ -522,13 +504,11 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
             error_surface_color=self._on_surface_property_change,
             focus_surface_color=self._on_surface_property_change,
             active_surface_color=self._on_surface_property_change,
-            selected_surface_color=self._on_surface_property_change,
             border_color=self._on_surface_property_change,
             disabled_border_color=self._on_surface_property_change,
             error_border_color=self._on_surface_property_change,
             focus_border_color=self._on_surface_property_change,
             active_border_color=self._on_surface_property_change,
-            selected_border_color=self._on_surface_property_change,
             contour=self._update_surface_layer,
             border_width=self._update_surface_layer,
             border_closed=self._update_surface_layer,)
@@ -585,8 +565,7 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
                     'disabled_surface_color', 'disabled_border_color',
                     'error_surface_color', 'error_border_color',
                     'focus_surface_color', 'focus_border_color',
-                    'active_surface_color', 'active_border_color',
-                    'selected_surface_color', 'selected_border_color']:
+                    'active_surface_color', 'active_border_color',]:
             if hasattr(self, prop) and getattr(self, prop) == value:
                 prop_name = prop
                 break
@@ -594,7 +573,7 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
         if prop_name:
             # Check if this property affects the current state
             current_state = self.current_surface_state
-            if (current_state == 'normal' and not prop_name.startswith(('disabled_', 'error_', 'focus_', 'active_', 'selected_'))) or \
+            if (current_state == 'normal' and not prop_name.startswith(('disabled_', 'error_', 'focus_', 'active_'))) or \
                (current_state != 'normal' and prop_name.startswith(f'{current_state}_')):
                 self._update_surface_layer()
     
@@ -864,7 +843,7 @@ class MorphInteractionLayerBehavior(BaseLayerBehavior):
         Parameters
         ----------
         state : Literal[
-                'disabled', 'pressed', 'selected', 'focus', 'hovered', 'active']
+                'disabled', 'pressed', 'focus', 'hovered', 'active']
             The interactive state that is being applied. This should be
             one of the states defined in :attr:`supported_states`.
         opacity : float
@@ -1005,17 +984,6 @@ class MorphContentLayerBehavior(BaseLayerBehavior):
     content color will be used.
 
     :attr:`active_content_color` is a :class:`~kivy.properties.ColorProperty`
-    and defaults to None.
-    """
-
-    selected_content_color: List[float] | None = ColorProperty(None)
-    """Content color to use when the widget is selected.
-
-    This property allows you to specify a different content color for
-    the widget when it is in the selected state. If not set, the default
-    content color will be used.
-
-    :attr:`selected_content_color` is a :class:`~kivy.properties.ColorProperty`
     and defaults to None.
     """
 

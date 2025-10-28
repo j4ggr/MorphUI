@@ -46,7 +46,7 @@ class MorphStateBehavior(EventDispatcher):
 
     This property reflects the widget's current state used for surface
     interactions. It can be one of the following values: 'normal',
-    'disabled', 'selected' or 'active'. The value is determined by the
+    'disabled' or 'active'. The value is determined by the
     precedence of the states defined in :attr:`states_precedence`.
 
     :attr:`current_surface_state` is a
@@ -71,8 +71,8 @@ class MorphStateBehavior(EventDispatcher):
 
     This property reflects the widget's current state used for content
     interactions. It can be one of the following values: 'disabled',
-    'hovered', 'active', 'selected' or 'normal'. The value is determined
-    by the precedence of the states defined in :attr:`states_precedence`.
+    'hovered', 'active' or 'normal'. The value is determined by the 
+    precedence of the states defined in :attr:`states_precedence`.
 
     :attr:`current_content_state` is a
     :class:`~kivy.properties.StringProperty` and defaults to 'normal'.
@@ -191,8 +191,7 @@ class MorphStateBehavior(EventDispatcher):
             instance: Any,
             value: bool,
             state: Literal[
-                'disabled', 'pressed', 'selected', 'focus', 'hovered', 
-                'active', 'normal']
+                'disabled', 'pressed', 'focus', 'hovered', 'active', 'normal'] # TODO: generalize
             ) -> None:
         """Handle changes to state properties.
 

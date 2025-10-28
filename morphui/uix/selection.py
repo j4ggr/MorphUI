@@ -5,7 +5,6 @@ from kivy.metrics import dp
 from kivy.animation import Animation
 from kivy.properties import StringProperty
 from kivy.properties import ObjectProperty
-from kivy.properties import BooleanProperty
 from kivy.properties import NumericProperty
 
 from .label import MorphIconLabel
@@ -24,26 +23,15 @@ class MorphCheckbox(
         MorphToggleButtonBehavior,
         MorphScaleBehavior,
         MorphIconLabel,):
-    
-    selected = BooleanProperty(False)
-    """Indicates whether the checkbox is selected (checked) or not.
 
-    When set to `True`, the checkbox is in the 'selected' state 
-    (checked). When set to `False`, it is in the 'normal' state 
-    (unchecked).
+    active_icon = StringProperty("checkbox-marked")
+    """Icon name for the 'active' state of the checkbox.
 
-    :attr:`selected` is a :class:`~kivy.properties.BooleanProperty` and
-    defaults to `False`.
-    """
-    
-    selected_icon = StringProperty("checkbox-marked")
-    """Icon name for the 'selected' state of the checkbox.
-
-    The icon is displayed when the checkbox is in the 'selected' state
+    The icon is displayed when the checkbox is in the 'active' state
     (i.e., checked). The icon name should correspond to a valid icon in
     the Material Design Icons library.
 
-    :attr:`selected_icon` is a :class:`~kivy.properties.StringProperty` 
+    :attr:`active_icon` is a :class:`~kivy.properties.StringProperty` 
     and defaults to `"checkbox-marked"`.
     """
 
@@ -58,34 +46,34 @@ class MorphCheckbox(
     defaults to `"checkbox-blank-outline"`.
     """
 
-    selection_animation_duration: float = NumericProperty(0.2)
-    """Duration of the selection animation in seconds."
+    check_animation_duration: float = NumericProperty(0.2)
+    """Duration of the check animation in seconds.
     
     Specifies the duration of the animation that plays when the checkbox
     transitions between the 'normal' and 'active' states.
 
-    :attr:`selection_animation_duration` is a
+    :attr:`check_animation_duration` is a
     :class:`~kivy.properties.NumberProperty` and defaults to `0.2`.
     """
 
-    selection_animation_out: Animation = ObjectProperty()
-    """Animation played when the checkbox selection flag changes.
+    check_animation_out: Animation = ObjectProperty()
+    """Animation played when the checkbox check flag changes.
 
-    This animation is triggered when the checkbox transitions from 
+    This animation is triggered when the checkbox transitions from
     full scale to a zero scale.
-    
-    :attr:`selection_animation_out` is a 
+
+    :attr:`check_animation_out` is a
     :class:`~kivy.animation.Animation` and defaults to an animation that
     scales the checkbox down."""
 
-    selection_animation_in: Animation = ObjectProperty()
-    """Animation played when the :attr:`selection_animation_out`
+    check_animation_in: Animation = ObjectProperty()
+    """Animation played when the :attr:`check_animation_out`
     completes.
 
     This animation is triggered after the checkbox has been scaled down
     to zero, scaling it back up to full size.
 
-    :attr:`selection_animation_in` is a 
+    :attr:`check_animation_in` is a
     :class:`~kivy.animation.Animation` and defaults to an animation that
     scales the checkbox back up.
     """
@@ -94,7 +82,7 @@ class MorphCheckbox(
         theme_color_bindings=dict(
             surface_color='transparent_color',
             content_color='content_surface_color',
-            selected_content_color='primary_color',
+            active_content_color='primary_color',
             disabled_content_color='outline_color',),
         auto_size=False,
         round_sides=True,
@@ -102,30 +90,30 @@ class MorphCheckbox(
         size=(dp(24), dp(24)),))
 
     def __init__(self, **kwargs) -> None:
-        self.selection_animation_out = Animation(
+        self.check_animation_out = Animation(
             scale_factor_x=0.0,
             scale_factor_y=0.0,
-            duration=self.selection_animation_duration / 2,)
-        self.selection_animation_in = Animation(
+            duration=self.check_animation_duration / 2,)
+        self.check_animation_in = Animation(
             scale_factor_x=1.0,
             scale_factor_y=1.0,
-            duration=self.selection_animation_duration / 2,)
+            duration=self.check_animation_duration / 2,)
         super().__init__(**kwargs)
 
-        self.selection_animation_out.bind(
-            on_complete=lambda *_: self.selection_animation_in.start(self))
-        
+        self.check_animation_out.bind(
+            on_complete=lambda *_: self.check_animation_in.start(self))
+
         self.bind(
             normal_icon=self._update_icon,
-            selected_icon=self._update_icon,
-            selected=self._update_icon,)
+            active_icon=self._update_icon,
+            active=self._update_icon,)
         
         self._update_icon()
 
     def on_active(self, instance: Any, active: bool) -> None:
         """Handle the `active` property change. 
         
-        Triggers the selection animations and updates the icon based on
+        Triggers the check animations and updates the icon based on
         the new state. The `active` property is inherited from
         MorphToggleButtonBehavior.
         
@@ -136,17 +124,16 @@ class MorphCheckbox(
         active : bool
             The new value of the `active` property.
         """
-        self.selection_animation_in.cancel(self)
-        self.selection_animation_out.start(self)
-        self.selected = active
+        self.check_animation_in.cancel(self)
+        self.check_animation_out.start(self)
     
     def _update_icon(self, *args) -> None:
-        """Update the displayed icon based on the `selected` state."""
-        # target_icon = self.active_icon if self.selected else self.normal_icon
+        """Update the displayed icon based on the `active` state."""
+        # target_icon = self.active_icon if self.active else self.normal_icon
         # anim = Animation(duration=0.1)
         # anim += Animation(opacity=0, duration=0.1)
         # anim.bind(on_complete=lambda *args: setattr(self, 'icon', target_icon))
         # anim += Animation(opacity=1, duration=0.1)
         # anim.start(self)
         self.icon = (
-            self.selected_icon if self.selected else self.normal_icon)
+            self.active_icon if self.active else self.normal_icon)

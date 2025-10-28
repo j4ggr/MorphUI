@@ -23,7 +23,6 @@ State: TypeAlias = Literal[
     'hovered',
     'focus',
     'active',
-    'selected',
     'resizing',
     'dragging',
     'normal',]
@@ -40,14 +39,13 @@ SurfaceState: TypeAlias = Literal[
     'error',
     'focus',
     'active',
-    'selected',
     'normal',]
 """TypeAlias for surface-related states.
 
 These states typically affect the background or surface
 appearance of a widget. They are used to indicate the widget's
 interaction state, such as whether it is disabled, active, or
-selected. The 'normal' state represents the default state
+focused. The 'normal' state represents the default state
 when no other states are active.
 
 Notes
@@ -80,15 +78,14 @@ ContentState: TypeAlias = Literal[
     'focus',
     'hovered',
     'active',
-    'selected',
     'normal',]
 """TypeAlias for content-related states.
 
 These states typically affect the content or foreground
 appearance of a widget. They are used to indicate the widget's
-interaction state, such as whether it is disabled, active, or
-selected. The 'normal' state represents the default state
-when no other states are active.
+interaction state, such as whether it is disabled, active, or focused. 
+The 'normal' state represents the default state when no other states 
+are active.
 
 Notes
 -----

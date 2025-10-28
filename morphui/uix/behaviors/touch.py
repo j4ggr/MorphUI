@@ -798,8 +798,8 @@ class MorphToggleButtonBehavior(MorphButtonBehavior):
     """Whether the toggle button allows no selection in its group.
 
     If set to `True`, the toggle button can be deselected, allowing
-    no button in the group to be in the 'down' state. If set to
-    `False`, at least one button in the group must be selected at
+    no button in the group to be in the 'active' state. If set to
+    `False`, at least one button in the group must be active at
     all times.
 
     :attr:`allow_no_selection` is a :class:`~kivy.properties.BooleanProperty`

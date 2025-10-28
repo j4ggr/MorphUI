@@ -1687,7 +1687,6 @@ class TestMorphStateBehavior:
         """Test widget that combines Widget with MorphStateBehavior."""
 
         pressed = BooleanProperty(False)
-        selected = BooleanProperty(False)
         focus = BooleanProperty(False)
         hovered = BooleanProperty(False)
         active = BooleanProperty(False)
@@ -1706,7 +1705,6 @@ class TestMorphStateBehavior:
         # Widget already has disabled property from Kivy
         assert widget.disabled is False
         assert widget.pressed is False
-        assert widget.selected is False
         assert widget.focus is False
         assert widget.hovered is False
         assert widget.active is False
@@ -1729,10 +1727,6 @@ class TestMorphStateBehavior:
         # Test pressed state
         widget.pressed = True
         assert widget.pressed is True
-        
-        # Test selected state
-        widget.selected = True
-        assert widget.selected is True
         
         # Test focus state
         widget.focus = True
@@ -1827,18 +1821,6 @@ class TestMorphStateBehavior:
 
     def test_lower_precedence_active_when_higher_set_false(self):
         """Test that lower precedence active state becomes current when higher precedence state is set to false."""
-        widget = self.TestWidget()
-        
-        # Test with ContentState: active (higher) and selected (lower)
-        widget.active = True
-        widget.selected = True
-        
-        # active has higher precedence than selected, so current_content_state should be 'active'
-        assert widget.current_content_state == 'active'
-        
-        # Set active to False - should fall back to selected
-        widget.active = False
-        assert widget.current_content_state == 'selected'
         
         # Test with SurfaceState: focus (higher) and active (lower) 
         widget = self.TestWidget()  # Reset widget
