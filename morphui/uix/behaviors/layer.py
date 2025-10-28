@@ -1029,24 +1029,28 @@ class MorphContentLayerBehavior(BaseLayerBehavior):
                 self.content_color = self.foreground_color
             else:
                 self.content_color = self.theme_manager.content_surface_color
-        
         if hasattr(self, 'disabled_color'):
             self.disabled_color = (
                 self.disabled_content_color or self.disabled_color)
         if hasattr(self, 'disabled_foreground_color'):
             self.disabled_foreground_color = (
                 self.disabled_content_color or self.disabled_foreground_color)
-
+            
         self.bind(
-            current_content_state=self._on_content_state_change,
-            content_color=self._on_content_property_change,
-            disabled_content_color=self._on_content_property_change,
-            error_content_color=self._on_content_property_change,
-            focus_content_color=self._on_content_property_change,
-            hovered_content_color=self._on_content_property_change,
-            active_content_color=self._on_content_property_change,
-            selected_content_color=self._on_content_property_change,)
-        
+            current_content_state=self._on_content_state_change,)
+
+        for state in self.content_state_precedence:
+            property_name = f'{state}_content_color'
+            self.fbind(
+                property_name,
+                self._on_content_property_change,
+                property_name=property_name)
+
+        self.fbind(
+            'content_color',
+            self._on_content_property_change,
+            property_name='content_color')
+
         self.refresh_content()
 
     def _on_content_state_change(self, instance: Any, state: str) -> None:
@@ -1056,34 +1060,19 @@ class MorphContentLayerBehavior(BaseLayerBehavior):
         layer to reflect the new state.
         """
         self._update_content_layer()
-    
-    def _on_content_property_change(self, instance: Any, value: Any) -> None:
+
+    def _on_content_property_change(
+            self, instance: Any, value: Any, property_name: str) -> None:
         """Handle content property changes.
         
         Called when any content color property changes. Only updates
         the content if the changed property affects the current state.
         """
-        # Only update if we're in normal state or the changed property
-        # matches our current state
-        prop_name = None
-        for prop in ['content_color', 'disabled_content_color',
-                    'error_content_color', 'focus_content_color',
-                    'hovered_content_color', 'active_content_color',
-                    'selected_content_color']:
-            if hasattr(self, prop) and getattr(self, prop) == value:
-                prop_name = prop
-                break
-        
-        if prop_name:
-            # Check if this property affects the current state
-            # TODO: simplify this logic, it's not working anyways
-            current_state = self.current_content_state
-            if (current_state == 'normal' and prop_name == 'content_color') or \
-               (current_state != 'normal' and prop_name == f'{current_state}_content_color'):
-                self._update_content_layer()
-                
-                if self.__class__.__name__ == 'MorphCheckbox':
-                    print(self.current_content_state, value)
+        state = self.current_content_state
+        prefix = f'{state}_' if state != 'normal' else ''
+        precedance_property = f'{prefix}content_color'
+        if property_name == precedance_property:
+            self._update_content_layer()
 
     def get_resolved_content_color(self) -> List[float] | None:
         """Determine the appropriate content color based on the current
