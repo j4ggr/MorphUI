@@ -6,6 +6,7 @@ from typing import Tuple
 from typing import Literal
 from pathlib import Path
 from dataclasses import dataclass
+from material_color_utilities import Variant
 
 __all__ = [
     'THEME',
@@ -22,10 +23,7 @@ class _Theme_:
     """Light theme mode."""
     DARK: Literal['Dark'] = 'Dark'
     """Dark theme mode."""
-    SCHEMES: Tuple[str, ...] = (
-        'MONOCHROME', 'NEUTRAL', 'TONALSPOT', 'VIBRANT', 
-        'EXPRESSIVE', 'FIDELITY', 'CONTENT', 'RAINBOW', 'FRUITSALAD'
-    )
+    SCHEMES: Tuple[str, ...] = tuple(Variant.__members__.keys())
     """Available color schemes from Material Color Utilities."""
     
     @property

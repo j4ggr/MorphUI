@@ -5,11 +5,8 @@ This module provides a dynamic color system that automatically updates
 all widget colors when switching between light and dark themes.
 """
 from typing import Any
-from typing import List
-from typing import Dict
 from typing import Tuple
 from typing import Literal
-from typing import overload
 
 from kivy.utils import colormap
 from kivy.utils import hex_colormap
@@ -19,7 +16,9 @@ from kivy.properties import OptionProperty
 from kivy.properties import BooleanProperty
 from kivy.properties import BoundedNumericProperty
 
+from material_color_utilities import Theme
 from material_color_utilities import Variant
+from material_color_utilities import DynamicScheme
 from material_color_utilities import theme_from_color
 
 from ..constants import THEME
@@ -67,7 +66,7 @@ class ThemeManager(MorphDynamicColorPalette):
     and defaults to 'Blue'.
     """
 
-    color_scheme: str = OptionProperty('FIDELITY', options=THEME.SCHEMES)
+    color_scheme: str = OptionProperty('VIBRANT', options=THEME.SCHEMES)
     """The color scheme used for generating dynamic colors.
 
     This property determines the algorithm used to generate colors
@@ -75,7 +74,7 @@ class ThemeManager(MorphDynamicColorPalette):
     :obj:`morphui.constants.THEME.SCHEMES`.
 
     :attr:`color_scheme` is a :class:`~kivy.properties.OptionProperty`
-    and defaults to 'FIDELITY'.
+    and defaults to 'VIBRANT'.
     """
 
     color_scheme_contrast: float = BoundedNumericProperty(
@@ -136,7 +135,7 @@ class ThemeManager(MorphDynamicColorPalette):
     _available_seed_colors: Tuple[str, ...] = get_available_seed_colors()
     """List of available seed colors (read-only)."""
     
-    _cached_theme = None
+    _cached_theme: Theme | None = None
     """Cached theme containing both light and dark schemes."""
 
     def __init__(self, **kwargs) -> None:
@@ -144,14 +143,12 @@ class ThemeManager(MorphDynamicColorPalette):
         self.register_event_type('on_theme_changed')
         self.register_event_type('on_colors_updated')
         
-        # Bind properties that require theme regeneration
-        self.bind(seed_color=self._regenerate_theme)
-        self.bind(color_scheme=self._regenerate_theme)
-        self.bind(color_scheme_contrast=self._regenerate_theme)
-        self.bind(color_quality=self._regenerate_theme)
-        
-        # Bind theme_mode separately for optimized switching
-        self.bind(theme_mode=self._switch_theme_mode)
+        self.bind(
+            seed_color=self._regenerate_theme,
+            color_scheme=self._regenerate_theme,
+            color_scheme_contrast=self._regenerate_theme,
+            color_quality=self._regenerate_theme,
+            theme_mode=self._switch_theme_mode)
 
         self.refresh_theme_colors()
 
@@ -173,28 +170,9 @@ class ThemeManager(MorphDynamicColorPalette):
         is 'Light', returns 'Dark', and vice versa.
         """
         return THEME.LIGHT if self.is_dark_mode else THEME.DARK
-    #TODO: Refactor to use Enum for better type safety
-    @property
-    def material_schemes(self) -> Dict[str, Variant]:
-        """Get the available Material You color schemes (read-only).
-        
-        Returns a dictionary of available color scheme variants from
-        Material Color Utilities library.
-        """
-        return {
-            'MONOCHROME': Variant.MONOCHROME,
-            'NEUTRAL': Variant.NEUTRAL,
-            'TONALSPOT': Variant.TONALSPOT,
-            'VIBRANT': Variant.VIBRANT,
-            'EXPRESSIVE': Variant.EXPRESSIVE,
-            'FIDELITY': Variant.FIDELITY,
-            'CONTENT': Variant.CONTENT,
-            'RAINBOW': Variant.RAINBOW,
-            'FRUITSALAD': Variant.FRUITSALAD,
-        }
     
     @property
-    def cached_theme(self):
+    def cached_theme(self) -> Theme | None:
         """Get the currently cached theme (read-only).
         
         Returns the cached theme object containing both light and dark
@@ -207,6 +185,25 @@ class ThemeManager(MorphDynamicColorPalette):
             The cached theme object or None if not cached.
         """
         return self._cached_theme
+
+    @property  
+    def light_scheme(self) -> DynamicScheme:
+        """Get the light scheme from cached theme."""
+        if self._cached_theme is None:
+            self._cached_theme = self._generate_theme(False)
+        return self._cached_theme.schemes.light
+    
+    @property
+    def dark_scheme(self) -> DynamicScheme:
+        """Get the dark scheme from cached theme.""" 
+        if self._cached_theme is None:
+            self._cached_theme = self._generate_theme(False)
+        return self._cached_theme.schemes.dark
+    
+    @property
+    def current_scheme(self) -> DynamicScheme:
+        """Get the current scheme based on theme mode."""
+        return self.dark_scheme if self.is_dark_mode else self.light_scheme
 
     def toggle_theme_mode(self, *args) -> None:
         """Toggle between light and dark theme modes.
@@ -279,7 +276,7 @@ class ThemeManager(MorphDynamicColorPalette):
         """Event handler for when the seed color changes.
 
         This method is automatically called whenever the `seed_color`
-        property is updated. It triggers the `on_theme_changed` event 
+        property is updated. It is bound to the `on_theme_changed` event 
         which regenerates the color scheme and updates all dynamic 
         colors accordingly.
 
@@ -305,56 +302,68 @@ class ThemeManager(MorphDynamicColorPalette):
         if not self.auto_theme and self.colors_initialized:
             return
             
-        # Clear cached theme and regenerate
-        self._cached_theme = None
-        self._generate_and_apply_theme()
+        self._cached_theme = self._generate_theme(bypass_cache=True)
+        self._apply_current_scheme()
     
     def _switch_theme_mode(self, *args) -> None:
         """Efficiently switch between light and dark modes.
         
         This method is called when only theme_mode changes. It uses the
         cached theme if available, avoiding unnecessary regeneration.
+        If no cached theme exists, it generates one.
         """
         if not self.auto_theme and self.colors_initialized:
             return
             
-        # If we have a cached theme, just switch schemes
-        if self._cached_theme is not None:
-            self._apply_current_scheme()
-        else:
-            # No cached theme, do full regeneration
-            self._generate_and_apply_theme()
-    
-    def _generate_and_apply_theme(self) -> None:
-        """Generate theme and apply the current scheme."""
-        # Generate theme only if not cached
-        if self._cached_theme is None:
+        self._cached_theme = self._generate_theme(bypass_cache=False)
+        self._apply_current_scheme()
+
+    def _generate_theme(self, bypass_cache: bool) -> Theme:
+        """Generate theme and apply the current scheme.
+
+        This method creates a new theme based on the current seed color,
+        color scheme, and contrast level. If a cached theme already 
+        exists, it is reused to avoid unnecessary computation.
+
+        Parameters
+        ----------
+        bypass_cache : bool
+            If True, forces regeneration of the theme even if a cached 
+            version exists.
+
+        Returns
+        -------
+        Theme
+            The generated or cached theme object containing both light 
+            and dark schemes.
+        """
+        if self._cached_theme is None or bypass_cache:
             hex_color = hex_colormap[self.seed_color.lower()]
-            variant = self.material_schemes[self.color_scheme]
+            variant = getattr(Variant, self.color_scheme)
             
-            self._cached_theme = theme_from_color(
+            theme = theme_from_color(
                 source=hex_color,
                 contrast_level=self.color_scheme_contrast,
                 variant=variant)
+        else:
+            theme = self._cached_theme
         
         self.dispatch('on_theme_changed')
-        self._apply_current_scheme()
+        return theme
     
     def _apply_current_scheme(self) -> None:
-        """Apply the current scheme (light or dark) from cached theme."""
+        """Apply the current scheme (light or dark) from cached theme.
+        
+        This method updates all dynamic color properties based on the
+        current theme mode (light or dark). It retrieves the appropriate
+        scheme from the cached theme and sets all color attributes
+        accordingly."""
         if self._cached_theme is None:
             return
-            
-        # Get the appropriate scheme based on theme mode
-        scheme = (self._cached_theme.schemes.dark 
-                 if self.is_dark_mode 
-                 else self._cached_theme.schemes.light)
-        
-        # Apply colors using the new DynamicScheme structure
+
         for attr_name, scheme_property in self.material_color_map.items():
-            if hasattr(scheme, scheme_property):
-                hex_color = getattr(scheme, scheme_property)
-                # Convert hex color to RGBA
+            if hasattr(self.current_scheme, scheme_property):
+                hex_color = getattr(self.current_scheme, scheme_property)
                 rgba = list(get_color_from_hex(hex_color))
                 setattr(self, attr_name, rgba)
 
@@ -379,9 +388,7 @@ class ThemeManager(MorphDynamicColorPalette):
         """
         auto_theme = self.auto_theme
         self.auto_theme = True
-        # Clear cached theme to force regeneration
-        self._cached_theme = None
-        self._generate_and_apply_theme()
+        self._cached_theme = self._generate_theme(bypass_cache=True)
         self.auto_theme = auto_theme
 
     def on_theme_changed(self, *args) -> None:
@@ -404,25 +411,6 @@ class ThemeManager(MorphDynamicColorPalette):
         """
         pass
 
-    @property  
-    def light_scheme(self):
-        """Get the light scheme from cached theme."""
-        if self._cached_theme is None:
-            self._generate_and_apply_theme()
-        return self._cached_theme.schemes.light
-    
-    @property
-    def dark_scheme(self):
-        """Get the dark scheme from cached theme.""" 
-        if self._cached_theme is None:
-            self._generate_and_apply_theme()
-        return self._cached_theme.schemes.dark
-    
-    @property
-    def current_scheme(self):
-        """Get the current scheme based on theme mode."""
-        return self.dark_scheme if self.is_dark_mode else self.light_scheme
-
     def on_colors_updated(self, *args) -> None:
         """Event fired after color properties have been applied.
 
@@ -443,5 +431,14 @@ class ThemeManager(MorphDynamicColorPalette):
         theme_manager.bind(on_colors_updated=update_widget_colors)
         ```
         """
-        pass
+        
+        scheme_property = 'error'
+        attr_name = 'error_color'
+        print(self.theme_mode, 'applied error color', getattr(self, attr_name))
+        hex_color = getattr(self.light_scheme, scheme_property)
+        rgba = list(get_color_from_hex(hex_color))
+        print('light scheme', attr_name, rgba)
+        hex_color = getattr(self.dark_scheme, scheme_property)
+        rgba = list(get_color_from_hex(hex_color))
+        print('dark scheme', attr_name, rgba)
         pass
