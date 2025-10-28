@@ -26,7 +26,6 @@ from morphui.uix.behaviors import MorphStateBehavior
 from morphui.uix.behaviors import MorphIdentificationBehavior
 from morphui.uix.behaviors import MorphContentLayerBehavior
 from morphui.uix.behaviors import MorphInteractionLayerBehavior
-from morphui.uix.behaviors.layer import BaseLayerBehavior
 
 
 class TestMorphDeclarativeBehavior:
@@ -1189,11 +1188,10 @@ class TestMorphThemeBehavior:
             # Set up valid widget properties
             widget.surface_color = [1, 1, 1, 1]
             
-            # Test with non-existent theme color by patching hasattr directly
-            with patch('builtins.hasattr') as mock_hasattr:
-                mock_hasattr.side_effect = lambda obj, attr: attr in ['primary_color', 'content_primary_color'] if obj is mock_app_theme_manager else hasattr(obj, attr)
-                result = widget.apply_theme_color('surface_color', 'nonexistent_color')
-                assert result is False
+            # Test with non-existent theme color - just set it to None directly
+            mock_app_theme_manager.nonexistent_color = None
+            result = widget.apply_theme_color('surface_color', 'nonexistent_color')
+            assert result is False
             
             # Test with non-existent widget property
             result = widget.apply_theme_color('nonexistent_property', 'primary_color')
@@ -1224,8 +1222,7 @@ class TestMorphThemeBehavior:
             'content_on_surface_color': [0.1, 0.1, 0.1, 1.0],
         })
         
-        with patch.object(self.TestWidget, 'bind'), \
-             patch.object(self.TestWidget, 'register_event_type'), \
+        with patch.object(self.TestWidget, 'register_event_type'), \
              patch.object(self.TestWidget, 'dispatch'):
             
             widget = self.TestWidget()
@@ -1261,7 +1258,7 @@ class TestMorphThemeBehavior:
             initial_bindings = widget.theme_color_bindings.copy()
             
             # Test with invalid style name - should not change bindings
-            widget.on_theme_style(widget, 'invalid_style')
+            widget.theme_style = 'invalid_style'
             
             # Bindings should remain unchanged
             assert widget.theme_color_bindings == initial_bindings
@@ -1450,8 +1447,7 @@ class TestMorphColorThemeBehavior:
             'content_on_surface_color': [0.1, 0.1, 0.1, 1.0],
         })
         
-        with patch.object(self.TestWidget, 'bind'), \
-             patch.object(self.TestWidget, 'register_event_type'), \
+        with patch.object(self.TestWidget, 'register_event_type'), \
              patch.object(self.TestWidget, 'dispatch'):
             
             widget = self.TestWidget()

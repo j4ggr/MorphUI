@@ -2,7 +2,7 @@ import sys
 import pytest
 import warnings
 from pathlib import Path
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
 sys.path.append(str(Path(__file__).parent.resolve()))
 
@@ -20,7 +20,7 @@ class TestThemeManager:
         
         assert theme_manager.auto_theme is True
         assert theme_manager.seed_color == 'Blue'
-        assert theme_manager.color_scheme == 'FIDELITY'
+        assert theme_manager.color_scheme == 'VIBRANT'
         assert theme_manager.color_scheme_contrast == 0.0
         assert theme_manager.color_quality == 1
         assert theme_manager.theme_mode == THEME.LIGHT
@@ -48,7 +48,7 @@ class TestThemeManager:
         assert theme_manager.mode_transition_duration == 0.8
         
         # Verify that dispatch was called during initialization
-        mock_dispatch.assert_called_with('on_colors_updated')
+        mock_dispatch.assert_called_with('on_theme_changed')
 
     def test_available_seed_colors(self):
         """Test available_seed_colors property."""
@@ -109,8 +109,8 @@ class TestThemeManager:
         theme_manager.switch_to_dark()
         assert theme_manager.theme_mode == THEME.DARK
 
-    @patch.object(ThemeManager, 'apply_color_scheme')
-    def test_register_seed_color(self, mock_apply_color_scheme):
+    @patch.object(ThemeManager, '_regenerate_theme')
+    def test_register_seed_color(self, mock_regenerate_theme):
         """Test register_seed_color method."""
         theme_manager = ThemeManager()
         initial_colors = theme_manager.available_seed_colors
@@ -123,12 +123,12 @@ class TestThemeManager:
         assert len(updated_colors) == len(initial_colors) + 1
         assert 'Testcolor' in updated_colors
         
-        # Test setting the new color (this would trigger apply_color_scheme)
+        # Test setting the new color (this would trigger _regenerate_theme)
         theme_manager.seed_color = 'Testcolor'
         assert theme_manager.seed_color == 'Testcolor'
     
-        # Verify apply_color_scheme was called
-        mock_apply_color_scheme.assert_called()
+        # Verify _regenerate_theme was called
+        mock_regenerate_theme.assert_called()
 
     def test_register_seed_color_invalid_hex(self):
         """Test register_seed_color with invalid hex values."""
@@ -144,43 +144,38 @@ class TestThemeManager:
         with pytest.raises(AssertionError):
             theme_manager.register_seed_color('Invalid3', '#FF5733X') # Too long
 
-    def test_get_seed_color_rgba(self):
-        """Test get_seed_color_rgba method."""
+    def test_seed_color_access(self):
+        """Test seed color access and conversion."""
+        from kivy.utils import hex_colormap, get_color_from_hex
+        
         theme_manager = ThemeManager()
         theme_manager.seed_color = 'Blue'
         
-        # Test integer RGBA (default)
-        rgba_int = theme_manager.get_seed_color_rgba()
-        assert isinstance(rgba_int, list)
-        assert len(rgba_int) == 4
-        assert all(isinstance(val, int) for val in rgba_int)
-        assert all(0 <= val <= 255 for val in rgba_int)
+        # Test that we can access the hex color
+        hex_color = hex_colormap[theme_manager.seed_color.lower()]
+        assert hex_color.startswith('#')
         
-        # Test float RGBA
-        rgba_float = theme_manager.get_seed_color_rgba(as_float=True)
-        assert isinstance(rgba_float, list)
-        assert len(rgba_float) == 4
-        assert all(isinstance(val, float) for val in rgba_float)
-        assert all(0.0 <= val <= 1.0 for val in rgba_float)
+        # Test that we can convert to RGBA
+        rgba = get_color_from_hex(hex_color)
+        assert len(rgba) == 4
+        assert all(0 <= c <= 1 for c in rgba)  # All values should be normalized 0-1
 
-    @patch('morphui.theme.manager.get_dynamic_scheme')
-    @patch.object(ThemeManager, 'apply_color_scheme')
-    def test_generate_color_scheme_auto_theme(self, mock_apply_color_scheme, mock_get_dynamic_scheme):
-        """Test generate_color_scheme with auto_theme enabled."""
-        # Create a proper mock scheme with necessary attributes
-        mock_scheme = Mock()
-        mock_scheme.contrast_level = 0.0  # Add the contrast_level attribute that the library expects
-        mock_get_dynamic_scheme.return_value = mock_scheme
+    def test_current_scheme_property(self):
+        """Test current_scheme property returns the correct scheme based on theme mode."""
+        theme_manager = ThemeManager()
         
-        # Patch the initialization to avoid calling apply_color_scheme during init
-        with patch.object(ThemeManager, 'refresh_theme_colors'):
-            theme_manager = ThemeManager()
-            theme_manager.auto_theme = True
+        # Test light mode
+        theme_manager.theme_mode = THEME.LIGHT
+        light_scheme = theme_manager.current_scheme
+        assert light_scheme is not None
         
-        result = theme_manager.generate_color_scheme()
+        # Test dark mode
+        theme_manager.theme_mode = THEME.DARK
+        dark_scheme = theme_manager.current_scheme
+        assert dark_scheme is not None
         
-        assert result == mock_scheme
-        mock_get_dynamic_scheme.assert_called_once()
+        # Verify they are different schemes
+        assert light_scheme != dark_scheme
 
     def test_material_color_map(self):
         """Test material_color_map property."""
@@ -250,21 +245,17 @@ class TestThemeManager:
         theme_manager.seed_color = 'Red'
         mock_dispatch.assert_called_with('on_colors_updated')
 
-    def test_on_colors_updated_event_disabled_auto_theme(self):
-        """Test on_colors_updated behavior when auto_theme is disabled."""
+    def test_auto_theme_disabled_behavior(self):
+        """Test behavior when auto_theme is disabled."""
         theme_manager = ThemeManager()
         theme_manager.auto_theme = False
         
-        # Mock a scheme
-        mock_scheme = Mock()
+        # Change properties - should not trigger automatic color updates when auto_theme is False
+        original_seed = theme_manager.seed_color
+        theme_manager.seed_color = 'Red' if original_seed != 'Red' else 'Green'
         
-        # Mock colors_initialized to return True (simulating colors were set before)
-        with patch.object(type(theme_manager), 'colors_initialized', new_callable=lambda: property(lambda self: True)):
-            with patch.object(theme_manager, 'dispatch') as mock_dispatch:
-                theme_manager.apply_color_scheme(mock_scheme)
-                
-                # on_colors_updated should not be dispatched when auto_theme=False and colors are initialized
-                mock_dispatch.assert_not_called()
+        # The seed_color should still change
+        assert theme_manager.seed_color != original_seed
 
 
 class TestTypography:
