@@ -468,10 +468,11 @@ class MorphRippleBehavior(EventDispatcher):
         """
         if self.ripple_color is not None:
             return self.ripple_color
-        ripple_color = (
-            getattr(self, '_interaction_color', [0.75, 0.75, 0.75])
-            + [getattr(self, 'pressed_state_opacity', 0.5)])
-        return ripple_color
+        
+        ripple_color = getattr(
+            self, 'get_resolved_interaction_color', lambda: [0.0, 0.0, 0.0])()
+        opacity = getattr(self, 'pressed_state_opacity', 0.12)
+        return ripple_color[:3] + [opacity,]
 
     def show_ripple_effect(self, touch: MotionEvent) -> None:
         """Display the ripple effect for a touch event if ripple is

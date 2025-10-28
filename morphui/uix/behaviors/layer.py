@@ -897,14 +897,14 @@ class MorphInteractionLayerBehavior(BaseLayerBehavior):
     :attr:`hovered_state_opacity` is a 
     :class:`~kivy.properties.NumericProperty` and defaults to `0.08`."""
 
-    pressed_state_opacity: float = NumericProperty(0.10)
+    pressed_state_opacity: float = NumericProperty(0.12)
     """Opacity of the state layer when the widget is pressed.
 
     The opacity is specified as a float between 0 and 1. A value of 0
     means no state layer, while a value of 1 means a fully opaque state.
 
     :attr:`pressed_state_opacity` is a
-    :class:`~kivy.properties.NumericProperty` and defaults to `0.10`."""
+    :class:`~kivy.properties.NumericProperty` and defaults to `0.12`."""
 
     focus_state_opacity: float = NumericProperty(0.05)
     """Opacity of the state layer when the widget is focus.
