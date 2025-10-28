@@ -2,6 +2,8 @@ from .appreference import MorphAppReferenceBehavior
 
 from .states import MorphStateBehavior
 
+from .scale import MorphScaleBehavior
+
 from .layer import MorphSurfaceLayerBehavior
 from .layer import MorphInteractionLayerBehavior
 from .layer import MorphContentLayerBehavior
@@ -32,6 +34,7 @@ from .autosizing import MorphAutoSizingBehavior
 
 from .touch import MorphButtonBehavior
 from .touch import MorphRippleBehavior
+from .touch import MorphToggleButtonBehavior
 
 from .shape import MorphRoundSidesBehavior
 
@@ -41,6 +44,7 @@ from .icon import MorphIconBehavior
 __all__ = [
     'MorphAppReferenceBehavior',        # App reference handling
     'MorphStateBehavior',               # Interactive state properties
+    'MorphScaleBehavior',               # Scaling behavior
     'MorphSurfaceLayerBehavior',        # Surface and border styling
     'MorphInteractionLayerBehavior',    # Interaction layer (state-layer) management
     'MorphContentLayerBehavior',        # Content layer styling
@@ -62,6 +66,7 @@ __all__ = [
     'MorphAutoSizingBehavior',          # Automatic sizing
     'MorphButtonBehavior',              # Button touch behavior
     'MorphRippleBehavior',              # Ripple effects for buttons
+    'MorphToggleButtonBehavior',        # Toggle button behavior
     'MorphRoundSidesBehavior',          # Automatic rounded sides
     'MorphIconBehavior',                # Icon functionality
 ]
