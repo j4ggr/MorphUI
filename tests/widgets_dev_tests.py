@@ -113,6 +113,10 @@ class MyApp(MorphApp):
                 leading_icon='account',
                 label_text='User in Outlined TextField',
                 pos_hint={'center_x': 0.5, 'top': 0.8},
+                supporting_error_texts={
+                    'none': 'No errors.',
+                    'required': 'This field is required.',
+                    'max_text_length': 'Maximum length is 12 characters.',},
                 size_hint_x=None,
                 multiline=True,
                 max_text_length=12,

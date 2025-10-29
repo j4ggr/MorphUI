@@ -10,6 +10,7 @@ from kivy.graphics import Line
 from kivy.graphics import Color
 from kivy.graphics import BoxShadow
 from kivy.animation import Animation
+from kivy.properties import DictProperty
 from kivy.properties import ColorProperty
 from kivy.properties import AliasProperty
 from kivy.properties import StringProperty
@@ -57,6 +58,10 @@ __all__ = [
     'MorphTextFieldFilled',]
 
 
+NO_ERROR = 'none'
+"""Constant representing no error state."""
+
+
 class TextFieldLabel(MorphSimpleLabel):
 
     disabled: bool = BooleanProperty(False)
@@ -86,17 +91,19 @@ class TextFieldSupportingLabel(MorphSimpleLabel):
     focus: bool = BooleanProperty(False)
     
     error: bool = BooleanProperty(False)
+
+    maximum_width: int = NumericProperty(dp(200))
     
     default_config: Dict[str, Any] = dict(
         theme_color_bindings=dict(
-            content_color='transparent_color',
+            content_color='content_surface_color',
             error_content_color='error_color',),
         typography_role='Label',
         typography_size='small',
         typography_weight='Regular',
         halign='left',
         valign='middle',
-        shorten=True,)
+        auto_size=True,)
 
 
 class TextFieldTextLengthLabel(MorphSimpleLabel):
@@ -394,7 +401,7 @@ class TextValidator(EventDispatcher):
         
         if self.validator is None:
             self.error = False
-            self.error_type = ''
+            self.error_type = NO_ERROR
             return True
         
         if hasattr(self, f'is_valid_{self.validator}'):
@@ -403,7 +410,7 @@ class TextValidator(EventDispatcher):
         else:
             is_valid = True
         self.error = not is_valid
-        self.error_type = '' if is_valid else self.validator 
+        self.error_type = NO_ERROR if is_valid else self.validator
         return is_valid
 
 
@@ -645,6 +652,20 @@ class MorphTextField(
 
     :attr:`supporting_text` is a :class:`~kivy.properties.StringProperty`
     and defaults to ''."""
+
+    supporting_error_texts: Dict[str, str] = DictProperty({})
+    """Mapping of error types to supporting error messages.
+
+    This property holds a dictionary that maps specific error types to
+    corresponding error messages. When the text field enters an error
+    state, the appropriate error message can be displayed based on the
+    error type. The keys in the dictionary should match the possible
+    values of the :attr:`validator` property. If you want to set a
+    supporting text if there is no error, use the 'none' key.
+
+    :attr:`supporting_error_texts` is a
+    :class:`~kivy.properties.DictProperty` and defaults to an empty 
+    dictionary."""
 
     leading_icon: str = StringProperty('')
     """The icon displayed to the leading (left) side of the text input 
@@ -938,6 +959,8 @@ class MorphTextField(
             focus=self._animate_on_focus,
             selected_text_color=self._update_selection_color,
             selected_text_color_opacity=self._update_selection_color,
+            error_type=self._update_supporting_error_text,
+            supporting_error_texts=self._update_supporting_error_text,
             content_color=self._text_input.setter('content_color'),
             minimum_height=self.setter('height'),
             maximum_height=self._text_input.setter('maximum_height'),)
@@ -984,11 +1007,13 @@ class MorphTextField(
         identity : str
             The identity of the child widget being updated.
         """
+        add_widget = bool(text)
         match identity:
             case NAME.LABEL_WIDGET:
                 widget = self.label_widget
             case NAME.SUPPORTING_WIDGET:
                 widget = self.supporting_widget
+                add_widget = bool(self.supporting_error_texts)
             case NAME.LEADING_WIDGET:
                 widget = self.leading_widget
             case NAME.TRAILING_WIDGET:
@@ -1002,10 +1027,10 @@ class MorphTextField(
         else:
             widget.text = text
         
-        if text and identity not in self.identities:
+        if add_widget and identity not in self.identities:
             widget.identity = identity
             self.add_widget(widget)
-        elif not text and identity in self.identities:
+        elif not add_widget and identity in self.identities:
             self.remove_widget(widget)
         self._update_layout()
     
@@ -1063,22 +1088,21 @@ class MorphTextField(
             self.supporting_widget.x = self.x + self._horizontal_padding
             self.supporting_widget.y = (
                 self.y - self.supporting_widget.height - spacing)
-            self.supporting_widget.width = (
+            self.supporting_widget.maximum_width = (
                 self.width - 2 * self._horizontal_padding)
         
         if NAME.TEXT_LENGTH_WIDGET in self.identities:
             self.text_length_widget.right = (
                 self.x + self.width - self._horizontal_padding)
+            self.text_length_widget.y = (
+                    self.y - self.text_length_widget.height - spacing)
             if NAME.SUPPORTING_WIDGET in self.identities:
-                self.text_length_widget.y = self.supporting_widget.y
-                self.supporting_widget.width = (
+                self.supporting_widget.y = self.text_length_widget.y
+                self.supporting_widget.maximum_width = (
                     self.width
                     - 2 * self._horizontal_padding
                     - self.text_length_widget.width
                     - spacing)
-            else:
-                self.text_length_widget.y = (
-                    self.y - self.text_length_widget.height - spacing)
 
         self._text_input.pos = x_input, y_input
         self._text_input.padding = self._resolve_text_input_padding()
@@ -1100,6 +1124,10 @@ class MorphTextField(
         self._text_input_height = self._text_input.height
         self._text_input_min_width = self._text_input.minimum_width
 
+        self._update_text_length_widget(
+            self, self.max_text_length, NAME.TEXT_LENGTH_WIDGET)
+        self._update_supporting_error_text()
+
         self._update_child_widget(
             self, self.label_text, NAME.LABEL_WIDGET)
         self._update_child_widget(
@@ -1108,7 +1136,7 @@ class MorphTextField(
             self, self.leading_icon, NAME.LEADING_WIDGET)
         self._update_child_widget(
             self, self.trailing_icon, NAME.TRAILING_WIDGET)
-        
+    
         self._update_layout()
         self.on_current_content_state(self, self.current_content_state)
         self.validate(self.text)
@@ -1277,6 +1305,21 @@ class MorphTextField(
         """
         selection_color = color[:3] + [self.selected_text_color_opacity]
         self._text_input.selection_color = selection_color
+    
+    def _update_supporting_error_text(self, *args) -> None:
+        """Update the supporting text based on the error type.
+
+        This method sets the :attr:`supporting_text` property of the
+        text field based on the current error type. If there is an
+        error type and a corresponding message in
+        :attr:`supporting_error_texts`, it updates the supporting text
+        accordingly.
+        """
+        if not self.supporting_error_texts:
+            return
+        
+        error_text = self.supporting_error_texts.get(self.error_type, '')
+        self.supporting_text = error_text
 
     def on_text(self, instance: Any, text: str) -> None:
         """Fired when the text content changes.

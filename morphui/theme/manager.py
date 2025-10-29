@@ -110,7 +110,8 @@ class ThemeManager(MorphDynamicColorPalette):
     :attr:`theme_mode` is a :class:`~kivy.properties.OptionProperty`
     and defaults to THEME.LIGHT.
     """
-
+    
+    # TODO: Implement smooth transitions when switching modes at layers, but i think we need a flag when switching mode was triggered by user or programatically
     mode_transition: bool = BooleanProperty(True)
     """Enable smooth transitions when switching between theme modes.
 
