@@ -815,6 +815,8 @@ class MorphToggleButtonBehavior(MorphButtonBehavior):
         self._previous_group = None
         super().__init__(**kwargs)
         self.bind(group=self._on_group_change,)
+
+        self.refresh_toggle_group()
     
     @staticmethod
     def _clear_groups(weak_ref: ref) -> None:
@@ -862,7 +864,16 @@ class MorphToggleButtonBehavior(MorphButtonBehavior):
                 widgets.append(widget)
         return widgets
 
-    def _on_group_change(self, instance: Any, group: str) -> None:
+    def refresh_toggle_group(self) -> None:
+        """Refresh the toggle button's group registration.
+
+        This method ensures that the toggle button is correctly
+        registered in its current group. It removes the button from its
+        previous group (if any) and adds it to the new group.
+        """
+        self._on_group_change(self, self.group)
+
+    def _on_group_change(self, instance: Any, group: str | None) -> None:
         """Handle changes to the group property.
 
         This method updates the internal group management when the
@@ -874,7 +885,7 @@ class MorphToggleButtonBehavior(MorphButtonBehavior):
         ----------
         instance : Any
             The instance of the toggle button.
-        group : str
+        group : str | None
             The new group identifier.
         """
         groups = MorphToggleButtonBehavior.__groups
