@@ -5,6 +5,7 @@ from .behaviors import MorphSurfaceLayerBehavior
 from .behaviors import MorphAutoSizingBehavior
 from .behaviors import MorphDeclarativeBehavior
 
+from ..utils import clean_config
 
 __all__ = [
     'MorphBoxLayout',]
@@ -60,8 +61,13 @@ class MorphBoxLayout(
             
     MyApp().run()
     """
+    
     default_config = dict(
         orientation='horizontal',
-        theme_style='surface',)
+        theme_color_bindings=dict(
+            surface_color='transparent_color',))
+    """Initialize the MorphBoxLayout with the provided configuration."""
+    
     def __init__(self, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
+        config = clean_config(self.default_config, kwargs)
+        super().__init__(*args, **config)
