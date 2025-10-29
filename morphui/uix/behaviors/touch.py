@@ -520,8 +520,6 @@ class MorphRippleBehavior(EventDispatcher):
     """Kivy instruction of used shape for the ripple effect."""
 
     def __init__(self, **kwargs) -> None:
-        self.register_event_type('on_press')
-        self.register_event_type('on_release')
         super().__init__(**kwargs)
 
         self.bind(
@@ -944,7 +942,6 @@ class MorphToggleButtonBehavior(MorphButtonBehavior):
             return None
         
         self._release_group(self)
-        self.active = not self.active
     
     def _do_release(self, *args) -> None:
         """Handle the release action for the toggle button.
@@ -952,4 +949,4 @@ class MorphToggleButtonBehavior(MorphButtonBehavior):
         This method is overridden to prevent changing the active
         state on release, as toggle buttons only change state on press.
         """
-        pass
+        self.active = not self.active
