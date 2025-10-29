@@ -25,6 +25,7 @@ from morphui.uix.label import MorphLabel
 from morphui.uix.label import MorphIconLabel
 from morphui.uix.button import MorphButton
 from morphui.uix.button import MorphIconButton
+from morphui.uix.selection import MorphSwitch
 from morphui.uix.selection import MorphCheckbox
 from morphui.uix.selection import MorphRadioButton
 from morphui.uix.boxlayout import MorphBoxLayout
@@ -142,6 +143,7 @@ class MyApp(MorphApp):
                 MorphRadioButton(
                     identity='radiobutton3',
                     group='test_group',),
+                MorphSwitch(),
                 orientation='horizontal',
                 spacing=20,),
             theme_style='surface',
