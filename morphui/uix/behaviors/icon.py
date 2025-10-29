@@ -67,5 +67,9 @@ class MorphIconBehavior(MorphAppReferenceBehavior):
         icon : str
             The icon name to apply.
         """
+        if icon == '':
+            self.text = ''
+            return
+        
         if hasattr(self, 'text') and hasattr(self, 'typography'):
             self.text = self.typography.get_icon_character(icon)
