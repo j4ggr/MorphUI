@@ -2,6 +2,7 @@ from time import time
 from typing import Any
 from typing import List
 from typing import Dict
+from typing import Tuple
 from weakref import ref
 
 from kivy.clock import Clock
@@ -184,7 +185,7 @@ class MorphButtonBehavior(EventDispatcher):
         if getattr(self, 'ripple_enabled', False):
             assert hasattr(self, 'show_ripple_effect'), (
                 'Ripple behavior expected but not found.')
-            Clock.schedule_once(lambda dt: self.show_ripple_effect(touch), 0)
+            Clock.schedule_once(lambda dt: self.show_ripple_effect(touch.pos), 0)
 
         self.dispatch('on_press')
         return True
@@ -419,23 +420,23 @@ class MorphRippleBehavior(EventDispatcher):
     :class:`~kivy.properties.NumericProperty` and defaults to 0.3.
     """
 
-    ripple_function_in: str = StringProperty('out_quad')
+    ripple_transition_in: str = StringProperty('out_quad')
     """The easing function used for the ripple fade-in animation.
 
     This property defines the easing function that controls the
     acceleration and deceleration of the ripple effect as it fades in.
 
-    :attr:`ripple_function_in` is a
+    :attr:`ripple_transition_in` is a
     :class:`~kivy.properties.StringProperty` and defaults to 'out_quad'.
     """
 
-    ripple_function_out: str = StringProperty('in_quad')
+    ripple_transition_out: str = StringProperty('in_quad')
     """The easing function used for the ripple fade-out animation.
 
     This property defines the easing function that controls the
     acceleration and deceleration of the ripple effect as it fades out.
     
-    :attr:`ripple_function_out` is a
+    :attr:`ripple_transition_out` is a
     :class:`~kivy.properties.StringProperty` and defaults to 'in_quad'.
     """
 
@@ -529,17 +530,18 @@ class MorphRippleBehavior(EventDispatcher):
         if hasattr(self, 'disabled'):
             self.fbind('disabled', self.fade_ripple_animation)
 
-    def _evaluate_ripple_pos(self, touch: MotionEvent) -> None:
+    def _evaluate_ripple_pos(self, touch_pos: Tuple[float, float]) -> None:
         """Evaluate the position of the ripple effect based on the touch event.
 
         This method updates the `ripple_pos` property to reflect the
         current position of the touch event.
         """
+        touch_x, touch_y = touch_pos
         if isinstance(self, RelativeLayout):
             x, y = self.to_window(self.x, self.y)
-            self.ripple_pos = [touch.x - x, touch.y - y]
+            self.ripple_pos = [touch_x - x, touch_y - y]
         else:
-            self.ripple_pos = [touch.x, touch.y]
+            self.ripple_pos = [touch_x, touch_y]
 
     def determine_ripple_color(self) -> List[float]:
         """Get the effective ripple color, falling back to interaction 
@@ -562,14 +564,14 @@ class MorphRippleBehavior(EventDispatcher):
         opacity = getattr(self, 'pressed_state_opacity', 0.12)
         return ripple_color[:3] + [opacity,]
 
-    def show_ripple_effect(self, touch: MotionEvent) -> None:
+    def show_ripple_effect(self, touch_pos: Tuple[float, float]) -> None:
         """Display the ripple effect for a touch event if ripple is
         enabled.
 
         Parameters
         ----------
-        touch : MotionEvent
-            The touch event that triggered the ripple
+        touch_pos : Tuple[float, float]
+            The position of the touch event.
         """
         if not self.ripple_enabled:
             return None
@@ -586,7 +588,7 @@ class MorphRippleBehavior(EventDispatcher):
         self._current_ripple_radius = self.ripple_initial_radius
         self._current_ripple_color = self.determine_ripple_color()
         self._ripple_final_radius = max(self.size) * 2
-        self._evaluate_ripple_pos(touch)
+        self._evaluate_ripple_pos(touch_pos)
         self.ripple_canvas_instructions()
         self.start_ripple_animation()
 
@@ -599,7 +601,7 @@ class MorphRippleBehavior(EventDispatcher):
         animation = Animation(
             _current_ripple_radius=self._ripple_final_radius,
             duration=self.ripple_duration_in_long,
-            t=self.ripple_function_in)
+            t=self.ripple_transition_in)
         animation.bind(on_complete=self.fade_ripple_animation)
         animation.start(self)
     
@@ -614,7 +616,7 @@ class MorphRippleBehavior(EventDispatcher):
         animation = Animation(
             _current_ripple_radius=self._ripple_final_radius,
             duration=self.ripple_duration_in,
-            t=self.ripple_function_in)
+            t=self.ripple_transition_in)
         animation.bind(on_complete=self.fade_ripple_animation)
         animation.start(self)
 
@@ -630,7 +632,7 @@ class MorphRippleBehavior(EventDispatcher):
         animation = Animation(
             _current_ripple_color=self.determine_ripple_color()[:3] + [0],
             duration=self.ripple_duration_out,
-            t=self.ripple_function_out)
+            t=self.ripple_transition_out)
         animation.bind(on_complete=self._on_ripple_complete)
         animation.start(self)
 
@@ -718,7 +720,7 @@ class MorphRippleBehavior(EventDispatcher):
         current radius and color.
         """
         if hasattr(self, '_ripple_shape_instruction'):
-            self._evaluate_ripple_pos(self.last_touch)
+            self._evaluate_ripple_pos(self.last_touch.pos)
             self._ripple_shape_instruction.size = (
                 self._current_ripple_radius, self._current_ripple_radius)
             self._ripple_shape_instruction.pos = (
