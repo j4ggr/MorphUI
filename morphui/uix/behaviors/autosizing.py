@@ -102,6 +102,10 @@ class MorphAutoSizingBehavior(EventDispatcher):
             self.fbind('texture_size', self._update_size)
         for prop in ('auto_width', 'auto_height'):
             self.fbind(prop, self._update_auto_sizing, prop=prop)
+        if hasattr(self, 'maximum_width'):
+            self.fbind('maximum_width', self._update_size)
+        if hasattr(self, 'maximum_height'):
+            self.fbind('maximum_height', self._update_size)
 
         self.refresh_auto_sizing()
     
@@ -135,12 +139,16 @@ class MorphAutoSizingBehavior(EventDispatcher):
             if self.has_texture_size:
                 width = self.texture_size[0]
             width = getattr(self, 'minimum_width', width)
+            if getattr(self, 'maximum_width', None) is not None:
+                width = min(width, self.maximum_width)
 
         if self.auto_height:
             if self.has_texture_size:
                 height = self.texture_size[1]
             height = getattr(self, 'minimum_height', height)
-        
+            if getattr(self, 'maximum_height', None) is not None:
+                height = min(height, self.maximum_height)
+
         if self.size_hint[0] is None:
             self.width = width
         if self.size_hint[1] is None:
