@@ -134,6 +134,9 @@ class MorphAutoSizingBehavior(EventDispatcher):
         change, ensuring that the widget's size remains consistent with
         its content.
         """
+        if not self.auto_width and not self.auto_height:
+            return None
+        
         width, height = self._original_size
         if self.auto_width:
             if self.has_texture_size:
@@ -159,6 +162,9 @@ class MorphAutoSizingBehavior(EventDispatcher):
         """Update text_size to match current width when auto_width is 
         enabled. Only applies if the widget has a text_size attribute.
         """
+        if not self.auto_width and not self.auto_height:
+            return None
+        
         w_text, h_text = None, None
 
         if self.auto_height:
