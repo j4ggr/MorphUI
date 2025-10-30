@@ -80,6 +80,15 @@ class MorphRoundSidesBehavior(EventDispatcher):
     if __name__ == '__main__':
         MyApp().run()
     """
+    active: bool = BooleanProperty(False)
+    """Indicates whether the widget is in an active state.
+
+    This property is used to determine if the widget should apply the
+    `active_radius` when `active_radius_enabled` is set to True.
+
+    :attr:`active` is a :class:`~kivy.properties.BooleanProperty` and
+    defaults to False.
+    """
     
     round_sides: bool = BooleanProperty(False)
     """Enable automatic rounding of left and right sides.
