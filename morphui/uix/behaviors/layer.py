@@ -798,12 +798,12 @@ class MorphInteractionLayerBehavior(BaseLayerBehavior):
         This ensures that the interaction layer is visible against the
         surface. The returned list contains RGB values only.
         """
-        opacity = getattr(
-            self, f'{self.current_interaction_state}_state_opacity', None)
-    
+        state = self.current_interaction_state
+        opacity = getattr(self, f'{state}_state_opacity', None)
+
         if opacity is None:
             return self.theme_manager.transparent_color
-        
+
         value = self.interaction_gray_value
         if self.theme_manager.is_dark_mode:
             value = 1 - value
@@ -811,12 +811,14 @@ class MorphInteractionLayerBehavior(BaseLayerBehavior):
 
     def _update_interaction_layer(self, *args) -> None:
         """Update the state layer position and size."""
-        interaction_color = self.get_resolved_interaction_color()
-        self._interaction_color_instruction.rgba = interaction_color
-
         self._interaction_instruction.pos = self.pos
         self._interaction_instruction.size = self.size
         self._interaction_instruction.radius = self.clamped_radius
+        
+        state = self.current_interaction_state
+        if state != 'pressed' or not getattr(self, 'ripple_enabled', False):
+            interaction_color = self.get_resolved_interaction_color()
+            self._interaction_color_instruction.rgba = interaction_color
         self.dispatch('on_interaction_updated')
 
     def _on_interaction_state_change(self, instance: Any, state: str) -> None:
