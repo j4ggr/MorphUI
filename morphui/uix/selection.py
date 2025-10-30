@@ -222,7 +222,6 @@ class MorphSwitch(
         MorphToggleButtonBehavior,
         MorphColorThemeBehavior,
         MorphHoverBehavior,
-        MorphRippleBehavior,
         MorphContentLayerBehavior,
         MorphInteractionLayerBehavior,
         MorphSurfaceLayerBehavior,
@@ -247,7 +246,10 @@ class MorphSwitch(
 
     The icon is displayed on the thumb when the switch is in the
     'normal' state (i.e., switched off). The icon name should correspond
-    to a valid icon in the Material Design Icons library.
+    to a valid icon in the Material Design Icons library. If no icon is
+    specified, no icon will be shown in the 'normal' state and the
+    thumb will be smaller. A common choice for a switch in the 'off'
+    state is `"close"`.
 
     :attr:`normal_icon` is a :class:`~kivy.properties.StringProperty` and
     defaults to `"checkbox-blank-circle"`.
