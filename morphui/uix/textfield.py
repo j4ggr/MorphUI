@@ -79,7 +79,7 @@ class TextFieldLabel(MorphSimpleLabel):
         typography_size='medium',
         typography_weight='Regular',
         halign='left',
-        valign='middle',
+        valign='center',
         padding=[4, 0],
         auto_size=True,)
 
@@ -102,7 +102,7 @@ class TextFieldSupportingLabel(MorphSimpleLabel):
         typography_size='small',
         typography_weight='Regular',
         halign='left',
-        valign='middle',
+        valign='center',
         auto_size=True,)
 
 
@@ -120,7 +120,7 @@ class TextFieldTextLengthLabel(MorphSimpleLabel):
         typography_size='small',
         typography_weight='Regular',
         halign='right',
-        valign='middle',
+        valign='center',
         auto_size=True,)
 
 
@@ -141,7 +141,7 @@ class TextFieldLeadingIconLabel(MorphSimpleIconLabel):
         typography_role=MorphSimpleIconLabel.default_config['typography_role'],
         typography_size=MorphSimpleIconLabel.default_config['typography_size'],
         halign='center',
-        valign='middle',
+        valign='center',
         size_hint=(None, None),
         size=(dp(24), dp(24)),
         padding=dp(0),)
@@ -164,7 +164,7 @@ class TextFieldTrailingIconButton(MorphIconButton):
         typography_role=MorphIconButton.default_config['typography_role'],
         typography_size=MorphIconButton.default_config['typography_size'],
         halign='center',
-        valign='middle',
+        valign='center',
         round_sides=True,
         ripple_enabled=False,
         size_hint=(None, None),

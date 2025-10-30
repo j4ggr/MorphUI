@@ -18,7 +18,7 @@ class MorphWidget(BaseWidget):
     default_config: Dict[str, Any] = dict(
         # Alignment and positioning
         halign='left',
-        valign='middle',
+        valign='center',
         
         # Theme configuration
         theme_color_bindings=dict(
@@ -70,7 +70,7 @@ class MorphWidget(BaseWidget):
 default_config: Dict[str, Any] = dict(
     # 1. Layout and positioning
     halign='left',
-    valign='middle',
+    valign='center',
     
     # 2. Theme and appearance
     theme_color_bindings=dict(...),
@@ -165,7 +165,7 @@ def __init__(self, **kwargs) -> None:
 ```python
 # ❌ DON'T: Inline dictionary in __init__
 def __init__(self, **kwargs):
-    defaults = dict(halign='left', valign='middle')  # Hidden, hard to override
+    defaults = dict(halign='left', valign='center')  # Hidden, hard to override
     
 # ❌ DON'T: Magic values scattered in code
 def __init__(self, **kwargs):
@@ -198,7 +198,7 @@ class MorphButton(MorphLabel):
         
         # Layout
         halign='center',
-        valign='middle',
+        valign='center',
         
         # Appearance
         theme_color_bindings=dict(

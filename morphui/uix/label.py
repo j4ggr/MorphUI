@@ -90,7 +90,7 @@ class MorphSimpleLabel(
         typography_size='medium',
         typography_weight='Regular',
         halign='left',
-        valign='middle',)
+        valign='center',)
     """Default configuration values for MorphSimpleLabel instances.
     
     Provides minimal label appearance settings:
@@ -157,7 +157,7 @@ MyApp().run()
         typography_role='Label',
         typography_size='large',
         halign='center',
-        valign='middle',
+        valign='center',
         auto_size=True,
         padding=dp(4),)
     """Default configuration values for MorphSimpleIconLabel instances.
@@ -224,7 +224,7 @@ class MorphLabel(
         typography_size='medium',
         typography_weight='Regular',
         halign='left',
-        valign='middle',
+        valign='center',
         padding=dp(8),)
     """Default configuration values for MorphLabel instances.
     
@@ -296,7 +296,7 @@ class MorphIconLabel(
         typography_role='Label',
         typography_size='large',
         halign='center',
-        valign='middle',
+        valign='center',
         auto_size=True,
         padding=dp(8),)
     """Default configuration values for MorphIconLabel instances.

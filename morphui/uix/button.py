@@ -1,6 +1,7 @@
 from typing import Any
 from typing import Dict
 
+from kivy.metrics import dp
 from kivy.uix.label import Label
 
 from .behaviors import MorphIconBehavior
@@ -11,16 +12,71 @@ from .behaviors import MorphRippleBehavior
 from .behaviors import MorphElevationBehavior
 from .behaviors import MorphAutoSizingBehavior
 from .behaviors import MorphRoundSidesBehavior
+from .behaviors import MorphTypographyBehavior
 from .behaviors import MorphCompleteLayerBehavior
 from .behaviors import MorphIdentificationBehavior
+from .behaviors import MorphInteractionLayerBehavior
 
 from ..utils import clean_config
 
 from .label import MorphIconLabel
 
 __all__ = [
+    'MorphSimpleIconButton',
     'MorphButton',
     'MorphIconButton']
+
+
+class MorphSimpleIconButton(
+        MorphIconBehavior,
+        MorphAutoSizingBehavior,
+        MorphTypographyBehavior,
+        MorphHoverBehavior,
+        MorphRippleBehavior,
+        MorphInteractionLayerBehavior,
+        MorphButtonBehavior,
+        Label):
+    """A simple icon button widget with ripple effect and MorphUI
+    theming.
+
+    This class is a lightweight button designed for displaying icons
+    with ripple effects and theming support. It is useful for scenarios
+    where a full-featured button is not required but icon interaction is
+    needed (e.g., toolbar buttons, or within a chip).
+    """
+
+    default_config: Dict[str, Any] = dict(
+        theme_color_bindings=dict(
+            surface_color='transparent_color',
+            disabled_border_color='outline_variant_color',
+            content_color='content_surface_color',
+            hovered_content_color='content_surface_variant_color'),
+        typography_role=MorphIconLabel.default_config['typography_role'],
+        typography_size=MorphIconLabel.default_config['typography_size'],
+        font_name=MorphIconLabel.default_config['font_name'],
+        halign='center',
+        valign='center',
+        ripple_enabled=True,
+        ripple_color=None,
+        ripple_layer='interaction',
+        padding=dp(8),
+        auto_size=True,)
+    """Default configuration values for MorphSimpleIconButton.
+    
+    Provides standard icon button appearance and behavior settings:
+    - Center alignment for icon visibility
+    - Middle vertical alignment for centered appearance
+    - Bounded colors for theme integration
+    - Ripple effect for touch feedback
+    - Auto-sizing to fit content
+    These values can be overridden by subclasses or during 
+    instantiation.
+    """
+
+    def __init__(self, **kwargs) -> None:
+        config = clean_config(self.default_config, kwargs)
+        super().__init__(**config)
+
 
 
 class MorphButton(
@@ -42,7 +98,7 @@ class MorphButton(
     """
     default_config: Dict[str, Any] = dict(
         halign='center',
-        valign='middle',
+        valign='center',
         theme_color_bindings={
             'surface_color': 'surface_container_color',
             'border_color': 'outline_color',
@@ -85,7 +141,7 @@ class MorphIconButton(
     default_config: Dict[str, Any] = dict(
         font_name=MorphIconLabel.default_config['font_name'],
         halign='center',
-        valign='middle',
+        valign='center',
         theme_color_bindings={
             'surface_color': 'surface_container_color',
             'content_color': 'content_surface_color',
@@ -97,8 +153,8 @@ class MorphIconButton(
         ripple_color=None,
         ripple_layer='interaction',
         auto_size=True,
-        padding=10,
-        radius= [5] * 4,
+        padding=dp(8),
+        radius=[5] * 4,
         )
     """Default configuration values for MorphIconButton.
 
