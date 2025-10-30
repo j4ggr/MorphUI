@@ -529,7 +529,8 @@ class MorphRippleBehavior(EventDispatcher):
             self.fbind('disabled', self.fade_ripple_animation)
 
     def _evaluate_ripple_pos(self, touch_pos: Tuple[float, float]) -> None:
-        """Evaluate the position of the ripple effect based on the touch event.
+        """Evaluate the position of the ripple effect based on the touch 
+        event.
 
         This method updates the `ripple_pos` property to reflect the
         current position of the touch event.
@@ -718,7 +719,9 @@ class MorphRippleBehavior(EventDispatcher):
         current radius and color.
         """
         if hasattr(self, '_ripple_shape_instruction'):
-            self._evaluate_ripple_pos(self.last_touch.pos)
+            last_touch = getattr(self, 'last_touch', None)
+            x, y = last_touch.pos if last_touch else self.center
+            self._evaluate_ripple_pos((x, y))
             self._ripple_shape_instruction.size = (
                 self._current_ripple_radius, self._current_ripple_radius)
             self._ripple_shape_instruction.pos = (
@@ -726,6 +729,19 @@ class MorphRippleBehavior(EventDispatcher):
                 self.ripple_pos[1] - self._current_ripple_radius / 2)
         if hasattr(self, '_ripple_color_instruction'):
             self._ripple_color_instruction.rgba = self._current_ripple_color
+    
+    def trigger_ripple(self, *args) -> None:
+        """Manually trigger the ripple effect at the center of the 
+        widget.
+
+        This method can be used to programmatically display the ripple
+        effect at the center of the widget, without requiring a touch
+        event.
+        """
+        center_pos = (self.center_x, self.center_y)
+        self.last_touch = None
+        self.show_ripple_effect(center_pos)
+        self.finish_ripple_animation()
 
 
 class MorphToggleButtonBehavior(MorphButtonBehavior):
