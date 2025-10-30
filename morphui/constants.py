@@ -201,6 +201,10 @@ class _Name_:
     """Standard name for the leading widget in a combined component, 
     used for identification."""
 
+    TEXT_WIDGET: Literal['text_widget'] = 'text_widget'
+    """Standard name for the text widget in a combined component,
+    used for identification."""
+
     TRAILING_WIDGET: Literal[
         'trailing_widget'] = 'trailing_widget'
     """Standard name for the trailing widget in a combined component, 
