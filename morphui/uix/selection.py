@@ -120,7 +120,7 @@ class MorphCheckbox(
             scale_factor_x=0.0,
             scale_factor_y=0.0,
             t=self.check_animation_transition,
-            s=self.check_animation_duration / 2,)
+            d=self.check_animation_duration / 2,)
         self.check_animation_in = Animation(
             scale_factor_x=1.0,
             scale_factor_y=1.0,
