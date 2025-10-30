@@ -43,7 +43,8 @@ class MorphCheckbox(
 
     The icon is displayed when the checkbox is in the 'active' state
     (i.e., checked). The icon name should correspond to a valid icon in
-    the Material Design Icons library.
+    the Material Design Icons library. For a circle outline style, use
+    `"checkbox-marked-circle"`.
 
     :attr:`active_icon` is a :class:`~kivy.properties.StringProperty` 
     and defaults to `"checkbox-marked"`.
@@ -54,7 +55,8 @@ class MorphCheckbox(
 
     The icon is displayed when the checkbox is in the 'normal' state
     (i.e., unchecked). The icon name should correspond to a valid icon in
-    the Material Design Icons library.
+    the Material Design Icons library. For a circle outline style, use
+    `"checkbox-blank-circle-outline"`.
 
     :attr:`normal_icon` is a :class:`~kivy.properties.StringProperty` and
     defaults to `"checkbox-blank-outline"`.
@@ -173,8 +175,9 @@ class MorphRadioButton(MorphCheckbox):
 
     default_config: Dict[str, Any] = (
         MorphCheckbox.default_config.copy() | dict(
-        normal_icon='checkbox-blank-circle-outline',
-        active_icon='checkbox-marked-circle',
+        normal_icon='radiobox-blank',
+        active_icon='radiobox-marked',
+        ripple_enabled=False,
         allow_no_selection=False,))
 
 
@@ -219,6 +222,7 @@ class MorphSwitch(
         MorphToggleButtonBehavior,
         MorphColorThemeBehavior,
         MorphHoverBehavior,
+        MorphRippleBehavior,
         MorphContentLayerBehavior,
         MorphInteractionLayerBehavior,
         MorphSurfaceLayerBehavior,
