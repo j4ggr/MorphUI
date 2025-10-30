@@ -79,7 +79,7 @@ class MorphHoverBehavior(EventDispatcher):
     ```
     """
 
-    hover_enabled = BooleanProperty(True)
+    hover_enabled: bool = BooleanProperty(True)
     """Enable or disable hover behavior and event detection.
     
     When set to False, the behavior will not track mouse position or

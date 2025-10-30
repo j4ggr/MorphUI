@@ -19,21 +19,34 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).parents[1].resolve()))
 
 from morphui.app import MorphApp
-from morphui.uix.label import MorphSimpleIconLabel
-from morphui.uix.boxlayout import MorphBoxLayout
+from morphui.uix.label import MorphIconLabel
+from morphui.uix.behaviors import MorphToggleButtonBehavior
+from morphui.uix.floatlayout import MorphFloatLayout
+
+class MyWidget(
+        MorphToggleButtonBehavior,
+        MorphIconLabel,):
+
+    default_config = (
+        MorphIconLabel.default_config.copy() | dict(
+        theme_color_bindings=dict(
+            surface_color='transparent_color',
+            content_color='content_surface_variant_color',
+            border_color='outline_color',
+            active_surface_color='primary_color',
+            active_content_color='content_primary_color',),
+        round_sides=True,
+        active_radius_enabled=True,))
 
 class MyApp(MorphApp):
-    def build(self):
-        return MorphBoxLayout(
-            MorphSimpleIconLabel(
-                icon='home',
-                typography_size='large',),
-            MorphSimpleIconLabel(
+    def build(self) -> MorphFloatLayout:
+        self.theme_manager.switch_to_dark()
+        return MorphFloatLayout(
+            MyWidget(
+                identity='my_widget',
                 icon='language-python',
-                typography_size='large',),
-            orientation='vertical',
-            padding=50,
-            spacing=15,)
-    
+                pos_hint={'center_x': 0.5, 'center_y': 0.5},),
+            surface_color=self.theme_manager.surface_color,)
+
 if __name__ == '__main__':
     MyApp().run()

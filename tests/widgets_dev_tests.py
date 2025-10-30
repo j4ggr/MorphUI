@@ -23,26 +23,21 @@ from morphui.app import MorphApp
 
 from morphui.uix.label import MorphLabel
 from morphui.uix.label import MorphIconLabel
+
 from morphui.uix.button import MorphButton
 from morphui.uix.button import MorphIconButton
+
 from morphui.uix.selection import MorphSwitch
 from morphui.uix.selection import MorphCheckbox
 from morphui.uix.selection import MorphRadioButton
+
 from morphui.uix.boxlayout import MorphBoxLayout
-from morphui.uix.behaviors import MorphHoverBehavior
-from morphui.uix.behaviors import MorphInteractionLayerBehavior
+
 from morphui.uix.textfield import MorphTextInput
 from morphui.uix.textfield import MorphTextFieldFilled
 from morphui.uix.textfield import MorphTextFieldRounded
 from morphui.uix.textfield import MorphTextFieldOutlined
 
-
-class HoverLabel(
-        MorphHoverBehavior,
-        MorphInteractionLayerBehavior,
-        MorphLabel):
-    def __init__(self, **kwargs) -> None:
-        super().__init__(**kwargs)
 
 class DisabledButton(MorphButton):
 
@@ -65,12 +60,6 @@ class MyApp(MorphApp):
         self.theme_manager.seed_color = 'Purple'
         width = 350
         layout = MorphBoxLayout(
-            HoverLabel(
-                text="Hover Me",
-                radius=[25] * 4,
-                border_color=(0, 0.8, 0.5, 0.5),
-                border_width=2,
-                border_open_length=100,),
             DisabledButton(
                 identity='disabled_button',
                 text="Disabled",
@@ -143,7 +132,8 @@ class MyApp(MorphApp):
                 MorphRadioButton(
                     identity='radiobutton3',
                     group='test_group',),
-                MorphSwitch(),
+                MorphSwitch(
+                    identity='switch',),
                 orientation='horizontal',
                 spacing=20,),
             theme_style='surface',
@@ -156,6 +146,8 @@ class MyApp(MorphApp):
         self.rounded_textfield = layout.identities.rounded_textfield
         self.outlined_textfield = layout.identities.outlined_textfield
         self.filled_textfield = layout.identities.filled_textfield
+        self.checkbox = layout.identities.checkbox
+        self.switch = layout.identities.switch
         return layout
 
     def on_start(self) -> None:
@@ -163,6 +155,7 @@ class MyApp(MorphApp):
         Clock.schedule_interval(self.disabled_button.switch_state, dt)
         Clock.schedule_interval(self.icon_label.switch_auto_size, dt)
         Clock.schedule_interval(self.theme_manager.toggle_theme_mode, dt * 2)
+        Clock.schedule_interval(self.checkbox.trigger_ripple, 1)
 
         return super().on_start()
 

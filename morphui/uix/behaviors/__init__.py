@@ -2,8 +2,6 @@ from .appreference import MorphAppReferenceBehavior
 
 from .states import MorphStateBehavior
 
-from .scale import MorphScaleBehavior
-
 from .layer import MorphSurfaceLayerBehavior
 from .layer import MorphInteractionLayerBehavior
 from .layer import MorphContentLayerBehavior
@@ -36,6 +34,7 @@ from .touch import MorphButtonBehavior
 from .touch import MorphRippleBehavior
 from .touch import MorphToggleButtonBehavior
 
+from .shape import MorphScaleBehavior
 from .shape import MorphRoundSidesBehavior
 
 from .icon import MorphIconBehavior

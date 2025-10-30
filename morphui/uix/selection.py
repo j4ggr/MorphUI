@@ -119,13 +119,13 @@ class MorphCheckbox(
         self.check_animation_out = Animation(
             scale_factor_x=0.0,
             scale_factor_y=0.0,
-            transition=self.check_animation_transition,
-            duration=self.check_animation_duration / 2,)
+            t=self.check_animation_transition,
+            s=self.check_animation_duration / 2,)
         self.check_animation_in = Animation(
             scale_factor_x=1.0,
             scale_factor_y=1.0,
-            transition=self.check_animation_transition,
-            duration=self.check_animation_duration / 2,)
+            t=self.check_animation_transition,
+            d=self.check_animation_duration / 2,)
         super().__init__(**kwargs)
 
         self.check_animation_out.bind(
@@ -398,9 +398,8 @@ class MorphSwitch(
         animation = Animation(
             pos=pos,
             size=(diameter, diameter),
-            duration=self.switch_animation_duration,
-            transition=self.switch_animation_transition,
-            )
+            t=self.switch_animation_transition,
+            d=self.switch_animation_duration,)
         animation.bind(on_complete=self._update_thumb)
         animation.start(self.thumb)
         
