@@ -1069,6 +1069,9 @@ class MorphTextField(
         This method recalculates the positions and sizes of the child
         widgets based on the current layout settings.
         """
+        Animation.stop_all(self.label_widget)
+        Animation.stop_all(self._text_input)
+        Animation.stop_all(self)
         spacing = dp(4)
         x_input, y_input = self.pos
         w_input, h_input = self.size
@@ -1113,7 +1116,12 @@ class MorphTextField(
         self.height = max(self._text_input.height, self.minimum_height)
 
         if NAME.LABEL_WIDGET in self.identities:
+            self.label_widget.font_size = self._resolve_label_font_size()
             self.label_widget.pos = self._resolve_label_position()
+            border_open_x, border_open_length = (
+                self._resolve_border_open_params())
+            self.border_open_length = border_open_length
+            self.border_open_x = border_open_x
         
     def refresh_textfield_content(self, *args) -> None:
         """Refresh the content of the text field and its child widgets.
@@ -1211,7 +1219,31 @@ class MorphTextField(
             font_size = sp(int(font_size.replace('sp', '')))
         self._label_size_factor = font_size / self._label_initial_font_size
         return font_size
-    
+
+    def _resolve_border_open_params(self) -> Tuple[float | None, float]:
+        """Get the open border segment parameters for the text field.
+
+        The open border segment is used when the label floats over
+        the border. It defines where the border should be open to
+        accommodate the label.
+
+        Returns
+        -------
+        Tuple[float | None, float]
+            The (x, length) of the open border segment for the text field.
+        """
+        open_x = None
+        open_length = 0.0
+        if self.label_focus_behavior != 'float_to_border':
+            pass
+        
+        elif self.focus or self.text:
+            open_x = self._resolve_label_position()[0]
+            open_length = (
+                self.label_widget.width
+                * self._label_size_factor)
+        return open_x, open_length
+
     def _resolve_text_input_padding(self) -> List[float]:
         """Get the padding values for the internal text input widget.
 
@@ -1236,9 +1268,9 @@ class MorphTextField(
         if NAME.LABEL_WIDGET not in self.identities:
             return
 
-        Animation.stop_all(self.label_widget, 'pos', 'font_size', 'color')
-        Animation.stop_all(self._text_input, 'padding')
-        Animation.stop_all(self, 'border_open_length')
+        Animation.cancel_all(self.label_widget)
+        Animation.cancel_all(self._text_input)
+        Animation.cancel_all(self)
 
         font_size = self._resolve_label_font_size()
         target_pos = self._resolve_label_position()
@@ -1259,34 +1291,32 @@ class MorphTextField(
                 t=self.focus_animation_transition,
             ).start(self.label_widget)
             return
-
-        Animation(
+        
+        label_animation = Animation(
             x=target_pos[0],
             y=target_pos[1],
             font_size=font_size,
             d=self.focus_animation_duration,
-            t=self.focus_animation_transition,
-        ).start(self.label_widget)
-        
+            t=self.focus_animation_transition,)
+
         if self.label_focus_behavior == 'float_to_border':
-            if self.focus or self.text:
-                self.border_open_x = target_pos[0]
-                border_open_length = (
-                    self.label_widget.width * self._label_size_factor)
-            else:
-                self.border_open_x = None
-                border_open_length = 0
+            border_open_x, border_open_length = (
+                self._resolve_border_open_params())
+            self.border_open_x = border_open_x
             Animation(
                 border_open_length=border_open_length,
                 d=self.focus_animation_duration,
                 t=self.focus_animation_transition
             ).start(self)
         elif self.label_focus_behavior == 'move_above':
-            Animation(
+            input_animation = Animation(
                 padding=self._resolve_text_input_padding(),
                 d=self.focus_animation_duration,
-                t=self.focus_animation_transition
-            ).start(self._text_input)
+                t=self.focus_animation_transition)
+            label_animation.bind(
+                on_complete=lambda *args: input_animation.start(self._text_input))
+
+        label_animation.start(self.label_widget)
 
     def _update_selection_color(self, instance: Any, color: List[float]) -> None:
         """Fired when the selected text color changes.
