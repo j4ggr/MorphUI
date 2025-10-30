@@ -1,3 +1,5 @@
+from typing import Any
+
 from kivy.uix.widget import Widget
 from kivy.properties import ListProperty
 from kivy.properties import StringProperty
@@ -99,7 +101,7 @@ class MorphIdentificationBehavior:
         """
         return self._identities
     
-    def _register_declarative_child(self, widget: Widget) -> None:
+    def _register_declarative_child(self, widget: Any) -> None:
         """Register a child widget's identity for easy access.
         
         This internal method is called when a widget with an identity
@@ -122,14 +124,18 @@ class MorphIdentificationBehavior:
         It's automatically called by :meth:`add_widget` and similar 
         methods.
         """
+        # Always overwrite identities here to avoid class attribute
+        # conflicts in multiple inheritance scenarios!
+        if hasattr(widget, '_identities'):
+            for sub_widget in widget._identities.values():
+                self._register_declarative_child(sub_widget)
+
         identity = getattr(widget, 'identity', None)
-        if identity:
+        if identity is not None and identity != '':
             self._identities = DotDict(
                 {identity: widget} | {**self._identities})
-            # Always overwrite identities here to avoid class attribute
-            # conflicts in multiple inheritance scenarios
     
-    def _unregister_declarative_child(self, widget: Widget) -> None:
+    def _unregister_declarative_child(self, widget: Any) -> None:
         """Unregister a child widget's identity from the identities 
         mapping.
         
@@ -152,12 +158,16 @@ class MorphIdentificationBehavior:
         It's automatically called by :meth:`remove_widget` and similar 
         methods.
         """
+        # Always overwrite identities here to avoid class attribute
+        # conflicts in multiple inheritance scenarios!
+        if hasattr(widget, '_identities'):
+            for sub_widget in widget._identities.values():
+                self._unregister_declarative_child(sub_widget)
+
         identity = getattr(widget, 'identity', None)
         if identity and identity in self._identities:
             self._identities = DotDict(
                 {k: v for k, v in self._identities.items() if k != identity})
-            # Always overwrite identities here to avoid class attribute
-            # conflicts in multiple inheritance scenarios
 
 
 class MorphDeclarativeBehavior(MorphIdentificationBehavior):
