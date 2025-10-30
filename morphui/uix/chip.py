@@ -233,7 +233,7 @@ class MorphChip(
                 raise ValueError(
                     f'Widget not found for identity: {identity!r}')
 
-        if hasattr(widget, 'icon'):
+        if hasattr(widget, 'icon'): # TODO: animate
             widget.icon = text
             print(f'Set icon of {identity} to {text!r}')
         else:
