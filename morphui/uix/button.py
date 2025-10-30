@@ -12,7 +12,6 @@ from .behaviors import MorphRippleBehavior
 from .behaviors import MorphElevationBehavior
 from .behaviors import MorphAutoSizingBehavior
 from .behaviors import MorphRoundSidesBehavior
-from .behaviors import MorphTypographyBehavior
 from .behaviors import MorphCompleteLayerBehavior
 from .behaviors import MorphIdentificationBehavior
 from .behaviors import MorphInteractionLayerBehavior
@@ -30,7 +29,7 @@ __all__ = [
 class MorphSimpleIconButton(
         MorphIconBehavior,
         MorphAutoSizingBehavior,
-        MorphTypographyBehavior,
+        MorphThemeBehavior,
         MorphHoverBehavior,
         MorphRippleBehavior,
         MorphInteractionLayerBehavior,
