@@ -2,7 +2,6 @@ from typing import Any
 from typing import Dict
 from typing import Tuple
 
-from kivy.clock import Clock
 from kivy.metrics import dp
 from kivy.animation import Animation
 from kivy.properties import StringProperty
@@ -16,12 +15,13 @@ from .label import MorphIconLabel
 from .behaviors import MorphHoverBehavior
 from .behaviors import MorphScaleBehavior
 from .behaviors import MorphRippleBehavior
-from .behaviors import MorphSurfaceLayerBehavior
-from .behaviors import MorphContentLayerBehavior
-from .behaviors import MorphInteractionLayerBehavior
 from .behaviors import MorphColorThemeBehavior
 from .behaviors import MorphRoundSidesBehavior
+from .behaviors import MorphSurfaceLayerBehavior
+from .behaviors import MorphContentLayerBehavior
 from .behaviors import MorphToggleButtonBehavior
+from .behaviors import MorphIdentificationBehavior
+from .behaviors import MorphInteractionLayerBehavior
 
 from ..utils import clean_config
 
@@ -214,6 +214,7 @@ class ThumbSwitch(
 
 
 class MorphSwitch(
+        MorphIdentificationBehavior,
         MorphRoundSidesBehavior,
         MorphToggleButtonBehavior,
         MorphColorThemeBehavior,
