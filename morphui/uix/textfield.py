@@ -696,8 +696,8 @@ class MorphTextField(
     This widget represents the label associated with the text field.
     It is automatically created and managed by the MorphTextField class.
 
-    :attr:`label_widget` is a :class:`~kivy.properties.ObjectProperty`
-    and defaults to a TextFieldLabel instance."""
+    :attr:`label_widget` is by default an instance of
+    :class:`~morphui.uix.textfield.TextFieldLabel`."""
 
     supporting_widget: TextFieldSupportingLabel = ObjectProperty()
     """The supporting label widget displayed below the text input area.
@@ -706,8 +706,8 @@ class MorphTextField(
     field. It is automatically created and managed by the MorphTextField
     class.
 
-    :attr:`supporting_widget` is a :class:`~kivy.properties.ObjectProperty`
-    and defaults to a TextFieldSupportingLabel instance."""
+    :attr:`supporting_widget` is by default an instance of
+    :class:`~morphui.uix.textfield.TextFieldSupportingLabel`."""
 
     text_length_widget: TextFieldTextLengthLabel = ObjectProperty()
     """The text length label widget displayed to the right of the
@@ -729,8 +729,8 @@ class MorphTextField(
     field. It is automatically created and managed by the MorphTextField
     class.
 
-    :attr:`leading_widget` is a :class:`~kivy.properties.ObjectProperty`
-    and defaults to a TextFieldLeadingIconLabel instance."""
+    :attr:`leading_widget` is by default an instance of
+    :class:`~morphui.uix.textfield.TextFieldLeadingIconLabel`."""
 
     trailing_widget: TextFieldTrailingIconButton = ObjectProperty()
     """The trailing icon button widget displayed to the right of the text input
@@ -739,9 +739,9 @@ class MorphTextField(
     This widget represents the trailing icon button associated with the text
     field. It is automatically created and managed by the MorphTextField
     class.
-    
-    :attr:`trailing_widget` is a :class:`~kivy.properties.ObjectProperty`
-    and defaults to a TextFieldTrailingIconButton instance."""
+
+    :attr:`trailing_widget` is by default an instance of
+    :class:`~morphui.uix.textfield.TextFieldTrailingIconButton`."""
 
     maximum_height: float = NumericProperty(dp(100))
     """The maximum height of the text field. 
