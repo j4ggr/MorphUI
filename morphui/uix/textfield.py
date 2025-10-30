@@ -907,13 +907,6 @@ class MorphTextField(
     """Stores the size factor of the label widget for scaling purposes."""
 
     def __init__(self, **kwargs) -> None:
-        self._text_input = MorphTextInput(
-            theme_color_bindings=dict(
-                surface_color='transparent_color',),
-            identity=NAME.INPUT,
-            size_hint=(None, None),
-            padding=dp(0),
-            auto_height=True)
 
         child_classes = dict(
             label_widget=TextFieldLabel,
@@ -927,6 +920,15 @@ class MorphTextField(
                 config[attr] = cls()
 
         super().__init__(**config)
+
+        self._text_input = MorphTextInput(
+            theme_color_bindings=dict(
+                surface_color='transparent_color',),
+            identity=NAME.INPUT,
+            size_hint=(None, None),
+            padding=dp(0),
+            auto_height=True)
+        
         self.add_widget(self._text_input)
         self._label_initial_color_bindings = (
             self.label_widget.theme_color_bindings.copy())
