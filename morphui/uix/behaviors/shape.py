@@ -231,6 +231,37 @@ class MorphScaleBehavior(EventDispatcher):
     the X, Y, and Z axes, as well as the origin point for scaling
     transformations. It utilizes Kivy's graphics instructions to apply
     scaling effects to the widget.
+
+    The behavior also includes built-in animation methods to create
+    scale in and scale out effects, allowing for smooth transitions
+    between scaled states.
+
+    Examples
+    --------
+    ```python
+    from morphui.app import MorphApp
+    from morphui.uix.button import MorphButton
+    from morphui.uix.behaviors import MorphScaleBehavior
+    from morphui.uix.floatlayout import MorphFloatLayout
+
+    class MyWidget(MorphScaleBehavior, MorphButton):
+        
+        def on_release(self) -> None:
+            self.animate_scale_out(
+                callback=lambda *args: self.animate_scale_in(
+                    callback=self.theme_manager.toggle_theme_mode))
+
+    class MyApp(MorphApp):
+        def build(self) -> MorphFloatLayout:
+            layout = MorphFloatLayout(
+                MyWidget(
+                    text="Click Me",
+                    pos_hint={'center_x': 0.5, 'center_y': 0.5},),
+                theme_style='surface',)
+            return layout
+
+    if __name__ == '__main__':
+        MyApp().run()
     """
 
     scale_factor_x: float = BoundedNumericProperty(
@@ -286,6 +317,26 @@ class MorphScaleBehavior(EventDispatcher):
     and defaults to `[]`.
     """
 
+    scale_animation_duration: float = NumericProperty(0.2)
+    """Duration for scale animations in seconds.
+    
+    This property defines the duration of scale animations when using
+    the built-in animation methods like `animate_scale_in()` and
+    `animate_scale_out()`.
+    
+    :attr:`scale_animation_duration` is a 
+    :class:`~kivy.properties.NumericProperty` and defaults to `0.2`."""
+
+    scale_animation_transition: str = StringProperty('in_out_back')
+    """Transition type for scale animations.
+    
+    This property defines the easing transition used for scale animations.
+    Common values include 'linear', 'in_out_sine', 'out_bounce', etc.
+    See Kivy's Animation documentation for all available transitions.
+    
+    :attr:`scale_animation_transition` is a 
+    :class:`~kivy.properties.StringProperty` and defaults to `'out_quart'`."""
+
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         with self.canvas.before:
@@ -333,3 +384,108 @@ class MorphScaleBehavior(EventDispatcher):
         self._scale_instruction.y = self.scale_factor_y
         self._scale_instruction.z = self.scale_factor_z
         self._scale_instruction.origin = self.resolved_scale_origin
+
+    def animate_scale_in(self, callback=None) -> Animation:
+        """Animate scale from 0 to 1 (scale in effect).
+        
+        This method animates the widget from completely scaled down (0)
+        to normal size (1), creating a "scale in" or "zoom in" effect.
+        It's commonly used for entrance animations or showing elements.
+        
+        Parameters
+        ----------
+        callback : callable, optional
+            A function to call when the animation completes. The 
+            callback will receive the Animation instance and the widget
+            as arguments.
+            
+        Returns
+        -------
+        Animation
+            The Animation instance that was started.
+            
+        Examples
+        --------
+        ```python
+        # Simple scale in
+        widget.animate_scale_in()
+        
+        # Scale in with callback
+        def on_scale_complete(anim, widget):
+            print("Scale in complete!")
+            
+        widget.animate_scale_in(callback=on_scale_complete)
+        ```
+        """
+        Animation.cancel_all(
+            self, 'scale_factor_x', 'scale_factor_y', 'scale_factor_z')
+        
+        self.scale_factor_x = 0.0
+        self.scale_factor_y = 0.0
+        self.scale_factor_z = 0.0
+        
+        anim = Animation(
+            scale_factor_x=1.0,
+            scale_factor_y=1.0,
+            scale_factor_z=1.0,
+            duration=self.scale_animation_duration,
+            transition=self.scale_animation_transition)
+        
+        if callback:
+            anim.bind(on_complete=callback)
+            
+        anim.start(self)
+        return anim
+
+    def animate_scale_out(self, callback=None) -> Animation:
+        """Animate scale from 1 to 0 (scale out effect).
+        
+        This method animates the widget from normal size (1) to
+        completely scaled down (0), creating a "scale out" or 
+        "zoom out" effect. It's commonly used for exit animations or 
+        hiding elements.
+        
+        Parameters
+        ----------
+        callback : callable, optional
+            A function to call when the animation completes. The 
+            callback will receive the Animation instance and the widget
+            as arguments.
+            
+        Returns
+        -------
+        Animation
+            The Animation instance that was started.
+            
+        Examples
+        --------
+        ```python
+        # Simple scale out
+        widget.animate_scale_out()
+        
+        # Scale out with callback to hide widget
+        def on_scale_complete(anim, widget):
+            widget.opacity = 0  # Hide after scaling out
+            
+        widget.animate_scale_out(callback=on_scale_complete)
+        ```
+        """
+        Animation.cancel_all(
+            self, 'scale_factor_x', 'scale_factor_y', 'scale_factor_z')
+        
+        self.scale_factor_x = 1.0
+        self.scale_factor_y = 1.0
+        self.scale_factor_z = 1.0
+        
+        anim = Animation(
+            scale_factor_x=0.0,
+            scale_factor_y=0.0,
+            scale_factor_z=0.0,
+            duration=self.scale_animation_duration,
+            transition=self.scale_animation_transition)
+        
+        if callback:
+            anim.bind(on_complete=callback)
+            
+        anim.start(self)
+        return anim
