@@ -390,6 +390,7 @@ class ThemeManager(MorphDynamicColorPalette):
         auto_theme = self.auto_theme
         self.auto_theme = True
         self._cached_theme = self._generate_theme(bypass_cache=True)
+        self._apply_current_scheme()
         self.auto_theme = auto_theme
 
     def on_theme_changed(self, *args) -> None:
