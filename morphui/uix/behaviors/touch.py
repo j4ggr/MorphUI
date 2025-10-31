@@ -277,7 +277,9 @@ class MorphButtonBehavior(EventDispatcher):
             assert hasattr(self, 'finish_ripple_animation'), (
                 'Ripple behavior expected but not found.')
             self.finish_ripple_animation()
-            release_delay = self.ripple_duration_out
+            release_delay = (
+                0.8 * self.ripple_duration_in # 0.8, in order to achieve a small overlap, which leads to a smoother transition for elements that react to the active state.
+                + self.ripple_duration_out)
         
         if not self.always_release and not self.collide_point(*touch.pos):
             self._do_release()
