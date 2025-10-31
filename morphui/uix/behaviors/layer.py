@@ -756,6 +756,18 @@ class MorphInteractionLayerBehavior(BaseLayerBehavior):
     `0.0` (black).
     """
 
+    interaction_layer_expansion: List[float] = VariableListProperty(
+        [dp(0)], length=4)
+    """Expansion values for the interaction layer.
+    
+    When positive, these values make the interaction layer bigger than
+    the widget size. The values represent expansion in pixels for each
+    edge in the order: left, bottom, right, top.
+    
+    :attr:`interaction_layer_expansion` is a 
+    :class:`~kivy.properties.VariableListProperty` and defaults to
+    `[0, 0, 0, 0]`."""
+
     _interaction_color_instruction: Color
     """Kivy Color instruction for the state layer color."""
 
@@ -781,6 +793,7 @@ class MorphInteractionLayerBehavior(BaseLayerBehavior):
             pos=self._update_interaction_layer,
             size=self._update_interaction_layer,
             radius=self._update_interaction_layer,
+            interaction_layer_expansion=self._update_interaction_layer,
             current_interaction_state=self._on_interaction_state_change,
             hovered_state_opacity=self._on_interaction_property_change,
             pressed_state_opacity=self._on_interaction_property_change,
@@ -790,6 +803,52 @@ class MorphInteractionLayerBehavior(BaseLayerBehavior):
             interaction_enabled=self._on_interaction_property_change,)
 
         self.refresh_interaction()
+    
+    @property
+    def interaction_layer_pos(self) -> Tuple[float, float]:
+        """Get the position of the interaction layer (read-only).
+
+        The (x, y) position of the interaction layer is calculated
+        by accounting for any expansion."""
+        return (
+            self.x - self.interaction_layer_expansion[0],
+            self.y - self.interaction_layer_expansion[1],)
+
+    @property
+    def interaction_layer_size(self) -> Tuple[float, float]:
+        """Get the size of the interaction layer (read-only).
+
+        The (width, height) size of the interaction layer is calculated
+        by accounting for any expansion."""
+        expansion = self.interaction_layer_expansion
+        return (
+            self.size[0] + (expansion[0] + expansion[2]),
+            self.size[1] + (expansion[1] + expansion[3]),)
+    
+    def collide_point(self, x: float, y: float) -> bool:
+        """Check if a point collides with the interaction layer.
+
+        This method overrides the default collide_point to account
+        for any expansion of the interaction layer.
+
+        Parameters
+        ----------
+        x : float
+            The x coordinate of the point to check.
+        y : float
+            The y coordinate of the point to check.
+
+        Returns
+        -------
+        bool
+            True if the point collides with the interaction layer,
+            False otherwise.
+        """
+        layer_x, layer_y = self.interaction_layer_pos
+        layer_width, layer_height = self.interaction_layer_size
+        return (
+            layer_x <= x <= layer_x + layer_width and
+            layer_y <= y <= layer_y + layer_height)
 
     def get_resolved_interaction_color(self) -> List[float]:
         """Get the interaction layer color.
@@ -811,8 +870,13 @@ class MorphInteractionLayerBehavior(BaseLayerBehavior):
 
     def _update_interaction_layer(self, *args) -> None:
         """Update the state layer position and size."""
-        self._interaction_instruction.pos = self.pos
-        self._interaction_instruction.size = self.size
+        expansion = self.interaction_layer_expansion
+        self._interaction_instruction.pos = (
+            self.x - expansion[0],
+            self.y - expansion[1])
+        self._interaction_instruction.size = (
+            self.size[0] + (expansion[0] + expansion[2]), 
+            self.size[1] + (expansion[1] + expansion[3]))
         self._interaction_instruction.radius = self.clamped_radius
         
         state = self.current_interaction_state

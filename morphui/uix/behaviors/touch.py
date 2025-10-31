@@ -586,7 +586,8 @@ class MorphRippleBehavior(EventDispatcher):
         self._ripple_is_finishing = False
         self._current_ripple_radius = self.ripple_initial_radius
         self._current_ripple_color = self.determine_ripple_color()
-        self._ripple_final_radius = max(self.size) * 2
+        self._ripple_final_radius = (
+            max(getattr(self, 'interaction_layer_size', self.size)) * 2)
         self._evaluate_ripple_pos(touch_pos)
         self.ripple_canvas_instructions()
         self.start_ripple_animation()
@@ -660,13 +661,15 @@ class MorphRippleBehavior(EventDispatcher):
             canvas = self.canvas.after
         else:
             canvas = self.canvas.before
-        
+
+        pos = getattr(self, 'interaction_layer_pos', self.pos)
+        size = getattr(self, 'interaction_layer_size', self.size)
         with canvas:
             StencilPush(
                 group=group)
             RoundedRectangle(
-                size=self.size,
-                pos=self.pos,
+                pos=pos,
+                size=size,
                 radius=radius,
                 group=group)
             StencilUse(group=group)
@@ -675,8 +678,8 @@ class MorphRippleBehavior(EventDispatcher):
                 group=group)
             self._ripple_shape_instruction = RoundedRectangle(
                 size=(
-                    self.ripple_initial_radius,
-                    self.ripple_initial_radius),
+                    self.ripple_initial_radius * 2,
+                    self.ripple_initial_radius * 2),
                 pos=(
                     self.ripple_pos[0] - self._current_ripple_radius / 2,
                     self.ripple_pos[1] - self._current_ripple_radius / 2),
@@ -684,8 +687,8 @@ class MorphRippleBehavior(EventDispatcher):
             StencilUnUse(
                 group=group)
             RoundedRectangle(
-                size=self.size,
-                pos=self.pos,
+                pos=pos,
+                size=size,
                 radius=radius,
                 group=group)
             StencilPop(
