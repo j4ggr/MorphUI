@@ -48,7 +48,7 @@ class MorphIconBehavior(MorphAppReferenceBehavior):
     and defaults to ''.
     """
 
-    active_icon = StringProperty('checkbox-marked')
+    active_icon = StringProperty('')
     """Icon name for the 'active' state of the widget.
 
     The icon is displayed when the widget is in the 'active' state
@@ -58,10 +58,10 @@ class MorphIconBehavior(MorphAppReferenceBehavior):
     to the `active` property of the widget.
 
     :attr:`active_icon` is a :class:`~kivy.properties.StringProperty` 
-    and defaults to `"checkbox-marked"`.
+    and defaults to `""`.
     """
 
-    normal_icon = StringProperty('checkbox-blank-outline')
+    normal_icon = StringProperty('')
     """Icon name for the 'normal' state of the widget.
 
     The icon is displayed when the widget is in the 'normal' state
@@ -71,7 +71,7 @@ class MorphIconBehavior(MorphAppReferenceBehavior):
     to the `active` property of the widget.
 
     :attr:`normal_icon` is a :class:`~kivy.properties.StringProperty` and
-    defaults to `"checkbox-blank-outline"`.
+    defaults to `""`.
     """
 
     def __init__(self, **kwargs) -> None:
