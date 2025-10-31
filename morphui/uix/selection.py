@@ -11,6 +11,7 @@ from kivy.uix.floatlayout import FloatLayout
 
 from .label import MorphIconLabel
 
+from .behaviors import MorphIconBehavior
 from .behaviors import MorphHoverBehavior
 from .behaviors import MorphScaleBehavior
 from .behaviors import MorphRippleBehavior
@@ -136,6 +137,7 @@ class ThumbSwitch(
 
 
 class MorphSwitch(
+        MorphIconBehavior,
         MorphIdentificationBehavior,
         MorphRoundSidesBehavior,
         MorphToggleButtonBehavior,
@@ -296,12 +298,15 @@ class MorphSwitch(
         diameter = self._resolve_thumb_diameter()
         self.thumb.size = (diameter, diameter)
         self.thumb.pos = self._resolve_thumb_position()
-        self._set_icon()
+        self._update_icon()
         self.thumb.active = self.active
-            
-    def _set_icon(self, *args) -> None:
-        """Set the icon of the thumb based on the `active` state."""
-        self.thumb.icon = self.active_icon if self.active else self.normal_icon
+
+    def _apply_icon(self, instance: Any, icon: str) -> None:
+        """Apply the icon to the thumb based on the current state.
+
+        This method overrides the base method to delegate icon
+        application to the thumb."""
+        return self.thumb._apply_icon(instance, icon)
 
     def _toggle_active(self, *args) -> None:
         """Toggle the `active` state of the switch."""
