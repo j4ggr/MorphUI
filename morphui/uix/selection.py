@@ -37,30 +37,6 @@ class MorphCheckbox(
         MorphScaleBehavior,
         MorphIconLabel,):
 
-    active_icon = StringProperty('checkbox-marked')
-    """Icon name for the 'active' state of the checkbox.
-
-    The icon is displayed when the checkbox is in the 'active' state
-    (i.e., checked). The icon name should correspond to a valid icon in
-    the Material Design Icons library. For a circle outline style, use
-    `"checkbox-marked-circle"`.
-
-    :attr:`active_icon` is a :class:`~kivy.properties.StringProperty` 
-    and defaults to `"checkbox-marked"`.
-    """
-
-    normal_icon = StringProperty('checkbox-blank-outline')
-    """Icon name for the 'normal' state of the checkbox.
-
-    The icon is displayed when the checkbox is in the 'normal' state
-    (i.e., unchecked). The icon name should correspond to a valid icon in
-    the Material Design Icons library. For a circle outline style, use
-    `"checkbox-blank-circle-outline"`.
-
-    :attr:`normal_icon` is a :class:`~kivy.properties.StringProperty` and
-    defaults to `"checkbox-blank-outline"`.
-    """
-
     default_config: Dict[str, Any] = (
         MorphIconLabel.default_config.copy() | dict(
         theme_color_bindings=dict(
@@ -68,6 +44,8 @@ class MorphCheckbox(
             content_color='content_surface_color',
             active_content_color='primary_color',
             disabled_content_color='outline_color',),
+        normal_icon='checkbox-blank-outline',
+        active_icon='checkbox-marked',
         auto_size=True,
         round_sides=True,
         padding=dp(1),
@@ -76,10 +54,7 @@ class MorphCheckbox(
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
 
-        self.bind(
-            normal_icon=self._update_icon,
-            active_icon=self._update_icon,
-            active=self._update_icon,)
+        self.bind(active=self._update_icon,)
         
         self._update_icon()
 
@@ -103,11 +78,6 @@ class MorphCheckbox(
             self.animate_scale_in()
             
         self.animate_scale_out(callback=on_scale_out_complete)
-    
-    def _update_icon(self, *args) -> None:
-        """Update the displayed icon based on the `active` state."""
-        self.icon = (
-            self.active_icon if self.active else self.normal_icon)
 
 
 class MorphRadioButton(MorphCheckbox):
