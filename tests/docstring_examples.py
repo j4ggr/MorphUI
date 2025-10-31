@@ -20,20 +20,30 @@ sys.path.append(str(Path(__file__).parents[1].resolve()))
 
 from morphui.app import MorphApp
 from morphui.uix.chip import MorphChip
+from morphui.uix.chip import MorphInputChip
+from morphui.uix.chip import MorphFilterChip
 from morphui.uix.floatlayout import MorphFloatLayout
 
 class MyApp(MorphApp):
     def build(self) -> MorphFloatLayout:
+        self.theme_manager.seed_color = 'Purple'
         self.theme_manager.switch_to_dark()
         return MorphFloatLayout(
             MorphChip(
-                identity='my_widget',
+                identity='chip',
                 leading_icon='language-python',
-                trailing_icon='close-circle',
+                trailing_icon='close',
                 label_text='Python Chip',
-                pos_hint={'center_x': 0.5, 'center_y': 0.5},),
-            surface_color=self.theme_manager.surface_color,
-            )
+                pos_hint={'center_x': 0.5, 'center_y': 0.6},),
+            MorphFilterChip(
+                identity='filter',
+                label_text='Filter Chip',
+                pos_hint={'center_x': 0.5, 'center_y': 0.5}),
+            MorphInputChip(
+                identity='input_chip',
+                label_text='Input Chip',
+                pos_hint={'center_x': 0.5, 'center_y': 0.4},),
+            surface_color=self.theme_manager.surface_color,)
 
 if __name__ == '__main__':
     MyApp().run()
