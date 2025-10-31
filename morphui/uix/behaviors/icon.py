@@ -76,9 +76,15 @@ class MorphIconBehavior(MorphAppReferenceBehavior):
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
-        self.bind(icon=self._apply_icon) # type: ignore
+        self.bind(# type: ignore
+            normal_icon=self._update_icon,
+            active_icon=self._update_icon,
+            icon=self._apply_icon)
+        
         if self.icon:
             self._apply_icon(self, self.icon)
+        elif self.normal_icon or self.active_icon:
+            self._update_icon()
 
     def _apply_icon(self, instance: Any, icon: str) -> None:
         """Update the widget's text when the icon property changes.
