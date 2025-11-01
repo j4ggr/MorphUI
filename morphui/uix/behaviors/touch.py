@@ -732,6 +732,8 @@ class MorphRippleBehavior(EventDispatcher):
             self._ripple_shape_instruction.pos = (
                 self.ripple_pos[0] - self._current_ripple_radius / 2,
                 self.ripple_pos[1] - self._current_ripple_radius / 2)
+            self._ripple_shape_instruction.radius = [
+                self._current_ripple_radius / 2,] * 4
         if hasattr(self, '_ripple_color_instruction'):
             self._ripple_color_instruction.rgba = self._current_ripple_color
     
