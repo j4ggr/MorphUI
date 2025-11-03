@@ -1,9 +1,9 @@
 from kivy.uix.boxlayout import BoxLayout
 
-from morphui.uix.behaviors import MorphColorThemeBehavior
-from morphui.uix.behaviors import MorphSurfaceLayerBehavior
 from morphui.uix.behaviors import MorphAutoSizingBehavior
+from morphui.uix.behaviors import MorphColorThemeBehavior
 from morphui.uix.behaviors import MorphDeclarativeBehavior
+from morphui.uix.behaviors import MorphSurfaceLayerBehavior
 
 from morphui.utils import clean_config
 
