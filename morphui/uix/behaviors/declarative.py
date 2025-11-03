@@ -4,7 +4,7 @@ from kivy.uix.widget import Widget
 from kivy.properties import ListProperty
 from kivy.properties import StringProperty
 
-from ...utils.dotdict import DotDict
+from morphui.utils.dotdict import DotDict
 
 __all__ = [
     'MorphIdentificationBehavior',

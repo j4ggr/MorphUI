@@ -1,8 +1,8 @@
-from typing import Self
+
 from kivy.app import App
 
-from .theme.manager import ThemeManager
-from .theme.typography import Typography
+from morphui.theme.manager import ThemeManager
+from morphui.theme.typography import Typography
 
     
 

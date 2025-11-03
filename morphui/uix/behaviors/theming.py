@@ -12,7 +12,7 @@ from kivy.properties import BooleanProperty
 
 from .appreference import MorphAppReferenceBehavior
 
-from ...constants import THEME
+from morphui.constants import THEME
 
 
 __all__ = [

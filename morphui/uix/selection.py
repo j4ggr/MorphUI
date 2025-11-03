@@ -9,21 +9,21 @@ from kivy.properties import NumericProperty
 from kivy.properties import BooleanProperty
 from kivy.uix.floatlayout import FloatLayout
 
-from .label import MorphIconLabel
+from morphui.uix.label import MorphIconLabel
 
-from .behaviors import MorphIconBehavior
-from .behaviors import MorphHoverBehavior
-from .behaviors import MorphScaleBehavior
-from .behaviors import MorphRippleBehavior
-from .behaviors import MorphColorThemeBehavior
-from .behaviors import MorphRoundSidesBehavior
-from .behaviors import MorphSurfaceLayerBehavior
-from .behaviors import MorphContentLayerBehavior
-from .behaviors import MorphToggleButtonBehavior
-from .behaviors import MorphIdentificationBehavior
-from .behaviors import MorphInteractionLayerBehavior
+from morphui.uix.behaviors import MorphIconBehavior
+from morphui.uix.behaviors import MorphHoverBehavior
+from morphui.uix.behaviors import MorphScaleBehavior
+from morphui.uix.behaviors import MorphRippleBehavior
+from morphui.uix.behaviors import MorphColorThemeBehavior
+from morphui.uix.behaviors import MorphRoundSidesBehavior
+from morphui.uix.behaviors import MorphSurfaceLayerBehavior
+from morphui.uix.behaviors import MorphContentLayerBehavior
+from morphui.uix.behaviors import MorphToggleButtonBehavior
+from morphui.uix.behaviors import MorphIdentificationBehavior
+from morphui.uix.behaviors import MorphInteractionLayerBehavior
 
-from ..utils import clean_config
+from morphui.utils import clean_config
 
 
 __all__ = [

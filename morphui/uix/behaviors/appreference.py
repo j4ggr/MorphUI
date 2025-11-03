@@ -1,8 +1,8 @@
 from typing import Any
 
-from ...app import MorphApp
-from ...theme.manager import ThemeManager
-from ...theme.typography import Typography
+from morphui.app import MorphApp
+from morphui.theme.manager import ThemeManager
+from morphui.theme.typography import Typography
 
 __all__ = ['MorphAppReferenceBehavior']
 

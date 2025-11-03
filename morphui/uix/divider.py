@@ -6,10 +6,10 @@ from kivy.uix.widget import Widget
 from kivy.properties import StringProperty
 from kivy.properties import NumericProperty
 
-from ..utils import clean_config
+from morphui.utils import clean_config
 
-from .behaviors import MorphColorThemeBehavior
-from .behaviors import MorphSurfaceLayerBehavior
+from morphui.uix.behaviors import MorphColorThemeBehavior
+from morphui.uix.behaviors import MorphSurfaceLayerBehavior
 
 
 __all__ = [

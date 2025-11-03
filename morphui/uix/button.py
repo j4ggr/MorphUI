@@ -4,21 +4,21 @@ from typing import Dict
 from kivy.metrics import dp
 from kivy.uix.label import Label
 
-from .behaviors import MorphIconBehavior
-from .behaviors import MorphHoverBehavior
-from .behaviors import MorphThemeBehavior
-from .behaviors import MorphButtonBehavior
-from .behaviors import MorphRippleBehavior
-from .behaviors import MorphElevationBehavior
-from .behaviors import MorphAutoSizingBehavior
-from .behaviors import MorphRoundSidesBehavior
-from .behaviors import MorphCompleteLayerBehavior
-from .behaviors import MorphIdentificationBehavior
-from .behaviors import MorphInteractionLayerBehavior
+from morphui.uix.behaviors import MorphIconBehavior
+from morphui.uix.behaviors import MorphHoverBehavior
+from morphui.uix.behaviors import MorphThemeBehavior
+from morphui.uix.behaviors import MorphButtonBehavior
+from morphui.uix.behaviors import MorphRippleBehavior
+from morphui.uix.behaviors import MorphElevationBehavior
+from morphui.uix.behaviors import MorphAutoSizingBehavior
+from morphui.uix.behaviors import MorphRoundSidesBehavior
+from morphui.uix.behaviors import MorphCompleteLayerBehavior
+from morphui.uix.behaviors import MorphIdentificationBehavior
+from morphui.uix.behaviors import MorphInteractionLayerBehavior
 
-from ..utils import clean_config
+from morphui.utils import clean_config
 
-from .label import MorphIconLabel
+from morphui.uix.label import MorphIconLabel
 
 __all__ = [
     'MorphSimpleIconButton',

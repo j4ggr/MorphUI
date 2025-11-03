@@ -5,15 +5,15 @@ from kivy.metrics import dp
 from kivy.uix.label import Label
 from kivy.properties import AliasProperty
 
-from ..utils import clean_config
+from morphui.utils import clean_config
 
-from .behaviors import MorphIconBehavior
-from .behaviors import MorphThemeBehavior
-from .behaviors import MorphAutoSizingBehavior
-from .behaviors import MorphRoundSidesBehavior
-from .behaviors import MorphSurfaceLayerBehavior
-from .behaviors import MorphContentLayerBehavior
-from .behaviors import MorphIdentificationBehavior
+from morphui.uix.behaviors import MorphIconBehavior
+from morphui.uix.behaviors import MorphThemeBehavior
+from morphui.uix.behaviors import MorphAutoSizingBehavior
+from morphui.uix.behaviors import MorphRoundSidesBehavior
+from morphui.uix.behaviors import MorphSurfaceLayerBehavior
+from morphui.uix.behaviors import MorphContentLayerBehavior
+from morphui.uix.behaviors import MorphIdentificationBehavior
 
 
 __all__ = [

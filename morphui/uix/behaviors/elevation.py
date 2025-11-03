@@ -10,7 +10,7 @@ from kivy.properties import BooleanProperty
 from kivy.properties import BoundedNumericProperty
 
 
-from ...constants import NAME
+from morphui.constants import NAME
 
 
 __all__ = [

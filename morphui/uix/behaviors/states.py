@@ -8,11 +8,11 @@ from typing import cast
 from kivy.event import EventDispatcher
 from kivy.properties import StringProperty
 
-from ..._typing import State
-from ..._typing import SurfaceState
-from ..._typing import ContentState
-from ..._typing import OverlayState
-from ..._typing import InteractionState
+from morphui._typing import State
+from morphui._typing import SurfaceState
+from morphui._typing import ContentState
+from morphui._typing import OverlayState
+from morphui._typing import InteractionState
 
 
 __all__ = [

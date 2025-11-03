@@ -21,28 +21,28 @@ from kivy.properties import NumericProperty
 from kivy.properties import VariableListProperty
 from kivy.uix.textinput import TextInput
 
-from ..utils import clamp
-from ..utils import clean_config
+from morphui.utils import clamp
+from morphui.utils import clean_config
 
-from .behaviors import MorphThemeBehavior
-from .behaviors import MorphHoverBehavior
-from .behaviors import MorphTextLayerBehavior
-from .behaviors import MorphAutoSizingBehavior
-from .behaviors import MorphTypographyBehavior
-from .behaviors import MorphRoundSidesBehavior
-from .behaviors import MorphContentLayerBehavior
-from .behaviors import MorphIdentificationBehavior
-from .behaviors import MorphInteractionLayerBehavior
+from morphui.uix.behaviors import MorphThemeBehavior
+from morphui.uix.behaviors import MorphHoverBehavior
+from morphui.uix.behaviors import MorphTextLayerBehavior
+from morphui.uix.behaviors import MorphAutoSizingBehavior
+from morphui.uix.behaviors import MorphTypographyBehavior
+from morphui.uix.behaviors import MorphRoundSidesBehavior
+from morphui.uix.behaviors import MorphContentLayerBehavior
+from morphui.uix.behaviors import MorphIdentificationBehavior
+from morphui.uix.behaviors import MorphInteractionLayerBehavior
 
-from .floatlayout import MorphFloatLayout
+from morphui.uix.floatlayout import MorphFloatLayout
 
-from .label import MorphSimpleLabel
-from .label import MorphSimpleIconLabel
+from morphui.uix.label import MorphSimpleLabel
+from morphui.uix.label import MorphSimpleIconLabel
 
-from .button import MorphIconButton
+from morphui.uix.button import MorphIconButton
 
-from ..constants import NAME
-from ..constants import REGEX
+from morphui.constants import NAME
+from morphui.constants import REGEX
 
 
 __all__ = [

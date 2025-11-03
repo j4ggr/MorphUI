@@ -14,8 +14,8 @@ from kivy.core.text import LabelBase
 from kivy.properties import DictProperty
 from kivy.properties import StringProperty
 
-from ..constants import ICON
-from ..constants import FONTS
+from morphui.constants import ICON
+from morphui.constants import FONTS
 
 
 __all__ = [

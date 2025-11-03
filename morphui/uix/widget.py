@@ -1,9 +1,9 @@
 from kivy.uix.widget import Widget
 
-from .behaviors import MorphThemeBehavior
-from .behaviors import MorphCompleteLayerBehavior
-from .behaviors import MorphAutoSizingBehavior
-from .behaviors import MorphIdentificationBehavior
+from morphui.uix.behaviors import MorphThemeBehavior
+from morphui.uix.behaviors import MorphCompleteLayerBehavior
+from morphui.uix.behaviors import MorphAutoSizingBehavior
+from morphui.uix.behaviors import MorphIdentificationBehavior
 
 
 __all__ = [

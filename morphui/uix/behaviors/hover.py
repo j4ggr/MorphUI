@@ -22,7 +22,7 @@ from kivy.properties import NumericProperty
 from kivy.properties import BooleanProperty
 from kivy.core.window import Window
 
-from ...constants import NAME
+from morphui.constants import NAME
 
 
 __all__ = [

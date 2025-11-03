@@ -21,10 +21,10 @@ from kivy.properties import BooleanProperty
 from kivy.core.window import Window
 from kivy.input.motionevent import MotionEvent
 
-from ...constants import NAME
+from morphui.constants import NAME
 
-from ...utils import clamp
-from ...utils import FrozenGeometry
+from morphui.utils import clamp
+from morphui.utils import FrozenGeometry
 
 from .hover import MorphHoverEnhancedBehavior
 from .layer import MorphOverlayLayerBehavior

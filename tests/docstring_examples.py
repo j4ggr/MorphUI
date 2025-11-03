@@ -18,6 +18,7 @@ import sys
 from pathlib import Path
 sys.path.append(str(Path(__file__).parents[1].resolve()))
 
+from kivy.clock import Clock
 from morphui.app import MorphApp
 from morphui.uix.chip import MorphChip
 from morphui.uix.chip import MorphInputChip
@@ -28,7 +29,7 @@ class MyApp(MorphApp):
     def build(self) -> MorphFloatLayout:
         self.theme_manager.seed_color = 'Purple'
         self.theme_manager.switch_to_dark()
-        return MorphFloatLayout(
+        self.layout = MorphFloatLayout(
             MorphChip(
                 identity='chip',
                 leading_icon='language-python',
@@ -44,6 +45,17 @@ class MyApp(MorphApp):
                 label_text='Input Chip',
                 pos_hint={'center_x': 0.5, 'center_y': 0.4},),
             surface_color=self.theme_manager.surface_color,)
+        self.input_chip = self.layout.identities.input_chip
+        return self.layout
+    
+    def on_start(self) -> None:
+        Clock.schedule_interval(self.re_add_chip, 2)
+
+    def re_add_chip(self, dt: float) -> None:
+        if not self.input_chip.parent:
+            self.layout.add_widget(self.input_chip)
+        
+
 
 if __name__ == '__main__':
     MyApp().run()

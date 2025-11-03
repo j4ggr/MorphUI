@@ -8,7 +8,7 @@ from kivy.properties import ObjectProperty
 from kivy.properties import StringProperty
 from kivy.properties import NumericProperty
 
-from ...constants import ICON
+from morphui.constants import ICON
 
 
 __all__ = [

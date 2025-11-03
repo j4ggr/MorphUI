@@ -1,11 +1,11 @@
 from kivy.uix.boxlayout import BoxLayout
 
-from .behaviors import MorphColorThemeBehavior
-from .behaviors import MorphSurfaceLayerBehavior
-from .behaviors import MorphAutoSizingBehavior
-from .behaviors import MorphDeclarativeBehavior
+from morphui.uix.behaviors import MorphColorThemeBehavior
+from morphui.uix.behaviors import MorphSurfaceLayerBehavior
+from morphui.uix.behaviors import MorphAutoSizingBehavior
+from morphui.uix.behaviors import MorphDeclarativeBehavior
 
-from ..utils import clean_config
+from morphui.utils import clean_config
 
 __all__ = [
     'MorphBoxLayout',]

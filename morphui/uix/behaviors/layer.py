@@ -25,8 +25,8 @@ from kivy.properties import BoundedNumericProperty
 from kivy.uix.relativelayout import RelativeLayout
 from kivy.graphics.tesselator import Tesselator
 
-from ..._typing import InteractionState
-from ...constants import NAME
+from morphui._typing import InteractionState
+from morphui.constants import NAME
 
 from .appreference import MorphAppReferenceBehavior
 from .states import MorphStateBehavior

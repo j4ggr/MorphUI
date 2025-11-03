@@ -21,9 +21,9 @@ from material_color_utilities import Variant
 from material_color_utilities import DynamicScheme
 from material_color_utilities import theme_from_color
 
-from ..constants import THEME
+from morphui.constants import THEME
 
-from .palette import MorphDynamicColorPalette
+from morphui.theme.palette import MorphDynamicColorPalette
 
 __all__ = [
     'ThemeManager',]

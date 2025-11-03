@@ -24,7 +24,7 @@ from kivy.uix.behaviors import ToggleButtonBehavior
 from kivy.input.motionevent import MotionEvent
 from kivy.uix.relativelayout import RelativeLayout
 
-from ...constants import NAME
+from morphui.constants import NAME
 
 
 __all__ = [
