@@ -10,7 +10,7 @@ Usage:
     from morphui.uix.visualization import MorphPlotWidget
 """
 
-from typing import NoReturn
+from typing import NoReturn, Any
 
 
 try:
@@ -40,9 +40,14 @@ except ImportError:
         def __init__(self, *args, **kwargs) -> None:
             _missing_dependencies()
     
-    class MorphChart:
-        def __init__(self, *args, **kwargs) -> None:
-            _missing_dependencies()
+    # Use a dynamic placeholder typed as Any to avoid static type conflicts
+    MorphChart: Any = type(
+        'MorphChart',
+        (),
+        {
+            '__init__': lambda self, *args, **kwargs: _missing_dependencies()
+        }
+    )
     
     __all__ = [
         'MorphPlotWidget', 

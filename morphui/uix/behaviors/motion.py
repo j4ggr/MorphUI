@@ -96,3 +96,10 @@ class MorphMenuMotionBehavior(MorphScaleBehavior,):
         self.scale_animation_duration = self.menu_dismissing_duration
         self.scale_animation_transition = self.menu_dismissing_transition
         self.animate_scale_out()
+
+    def toggle(self, *args) -> None:
+        """Toggle the menu open/closed state with animation."""
+        if self.is_open:
+            self.dismiss()
+        else:
+            self.open()
