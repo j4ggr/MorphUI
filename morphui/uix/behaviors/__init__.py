@@ -37,6 +37,8 @@ from .touch import MorphToggleButtonBehavior
 from .shape import MorphScaleBehavior
 from .shape import MorphRoundSidesBehavior
 
+from .motion import MorphMenuMotionBehavior
+
 from .icon import MorphIconBehavior
 
 
@@ -67,5 +69,6 @@ __all__ = [
     'MorphRippleBehavior',              # Ripple effects for buttons
     'MorphToggleButtonBehavior',        # Toggle button behavior
     'MorphRoundSidesBehavior',          # Automatic rounded sides
+    'MorphMenuMotionBehavior',          # Menu motion behavior
     'MorphIconBehavior',                # Icon functionality
 ]
