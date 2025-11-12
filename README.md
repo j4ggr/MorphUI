@@ -112,6 +112,53 @@ text_input = MorphTextInput(
 text_input.set_error("This field is required")
 ```
 
+### Data Visualization (Optional)
+
+MorphUI includes optional matplotlib integration for creating beautiful charts and plots:
+
+```bash
+# Install with visualization support
+pip install morphui[visualization]
+```
+
+#### MorphPlotWidget
+Direct matplotlib integration widget:
+
+```python
+from morphui.uix.visualization import MorphPlotWidget
+import numpy as np
+
+plot_widget = MorphPlotWidget()
+
+# Simple plotting
+x = np.linspace(0, 10, 100)
+y = np.sin(x)
+plot_widget.plot(x, y, kind='line', title='Sine Wave')
+
+# Or use matplotlib directly
+import matplotlib.pyplot as plt
+fig, ax = plt.subplots()
+ax.plot(x, y)
+plot_widget.set_figure(fig)
+```
+
+#### MorphChartCard
+Complete chart component with title and description:
+
+```python
+from morphui.uix.visualization import MorphChartCard
+
+chart = MorphChartCard(
+    title="Sales Data",
+    description="Monthly revenue trends"
+)
+
+# Add data
+months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']
+sales = [10000, 12000, 11000, 15000, 13000, 16000]
+chart.plot_widget.plot(months, sales, kind='bar')
+```
+
 ## Theme System
 
 MorphUI includes a comprehensive theme system:
@@ -159,6 +206,7 @@ theme_manager.current_theme = "custom"
 Check out the `examples/` directory for complete sample applications:
 
 - `basic_example.py` - Showcase of all components
+- `visualization/visualization_example.py` - Data visualization with charts and plots
 - More examples coming soon!
 
 ## Development

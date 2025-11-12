@@ -22,3 +22,7 @@ distribution = true
 test = [
     "pytest>=8.4.2",
 ]
+visualization = [
+    "matplotlib>=3.5.0",
+    "numpy>=1.20.0",
+]
