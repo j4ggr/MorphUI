@@ -37,17 +37,17 @@ class FigureCanvas(FigureCanvasAgg):
     ----------
     figure : `~matplotlib.figure.Figure`
         A high-level figure instance.
-    figure_widget : `~kivymd.uix.widget.MDWidget`
+    plot_widget : `~morphui.uix.visualization.plotting.MorphPlotWidget`
         Graphical representation of the figure in the application.
     """
     def __init__(
             self,
             figure: Figure,
-            figure_widget: Any,
+            plot_widget: Any,
             *args,
             **kwargs) -> None:
         self.is_drawn = False
-        self.figure_widget = figure_widget
+        self.plot_widget = plot_widget
         super().__init__(figure, *args, **kwargs)
 
     def draw(self) -> None:
@@ -61,7 +61,7 @@ class FigureCanvas(FigureCanvasAgg):
 
     def blit(self, bbox=None) -> None:
         """Render the figure using agg (blit method)."""
-        self.figure_widget._draw_bitmap_(self.get_renderer())
+        self.plot_widget._draw_bitmap_(self.get_renderer())
     
     def enter_notify_event(self, gui_event=None) -> None: # pyright: ignore[reportIncompatibleMethodOverride]
         name = 'figure_enter_event'
@@ -127,7 +127,7 @@ class Navigation(NavigationToolbar2):
         Toolbar widget connected with the figure widget
     """
 
-    figure_widget: Any
+    plot_widget: Any
     """MatplotFigure widget set in `widgets.kv` file"""
 
     _zoom_info: ZoomInfo
@@ -175,14 +175,14 @@ class Navigation(NavigationToolbar2):
         
     def draw_rubberband(self, event, x0, y0, x1, y1) -> None:
         """Draw rubberband for zoom."""
-        self.figure_widget.draw_rubberband(event, x0, y0, x1, y1)
+        self.plot_widget.draw_rubberband(event, x0, y0, x1, y1)
     
     def remove_rubberband(self) -> None:
         """Remove rubberband for zoom."""
-        self.figure_widget.remove_rubberband()
+        self.plot_widget.remove_rubberband()
     
     def set_message(self, s: str) -> None:
-        if self.toolbar.figure_widget.show_info:
+        if self.toolbar.plot_widget.show_info:
             self.toolbar.info_label.text = s
     
     def mouse_move(self, event) -> None:

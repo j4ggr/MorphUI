@@ -18,6 +18,7 @@ try:
     import numpy  # noqa: F401
     VISUALIZATION_AVAILABLE = True
     
+    from .backend import *
     from .plotting import MorphPlotWidget
     from .chart import MorphChart
     

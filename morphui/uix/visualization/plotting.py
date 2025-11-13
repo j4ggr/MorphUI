@@ -273,7 +273,7 @@ class MorphPlotWidget(MorphWidget):
     def on_figure(self, caller: Self, figure: Figure) -> None:
         """Callback function, called when `figure` attribute changes."""
         # self.figure.set_layout_engine('constrained')
-        self.figure_canvas = FigureCanvas(self.figure, figure_widget=self)
+        self.figure_canvas = FigureCanvas(self.figure, plot_widget=self)
         bbox = getattr(self.figure, 'bbox', None)
         if bbox is None:
             warnings.warn('Figure bbox not found, cannot set size.')
@@ -301,6 +301,7 @@ class MorphPlotWidget(MorphWidget):
         """
         if self.inaxes is None:
             return points
+        
         points = (
             self.inaxes.transData
             + self.inaxes.transAxes.inverted()
@@ -314,6 +315,7 @@ class MorphPlotWidget(MorphWidget):
         """
         if self.inaxes is None:
             return points
+        
         return self.inaxes.transData.inverted().transform(points)
     
     def data_to_display(self, points: ArrayLike) -> ArrayLike:
@@ -323,6 +325,7 @@ class MorphPlotWidget(MorphWidget):
         """
         if self.inaxes is None:
             return points
+
         return self.inaxes.transData.transform(points)
     
     def display_to_axes(self, points: ArrayLike) -> ArrayLike:
