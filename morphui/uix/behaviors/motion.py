@@ -30,9 +30,9 @@ class MorphMenuMotionBehavior(MorphScaleBehavior,):
     :attr:`caller` is a :class:`~kivy.properties.ObjectProperty`
     and defaults to `None`."""
 
-    is_open: bool = AliasProperty(
-        lambda self: bool(self.parent),
-        bind=['parent'])
+    is_open: bool = AliasProperty( # TODO this does not work as expected
+        lambda self: self.scale_factor_x > 0 or self.scale_factor_y > 0,
+        bind=['scale_factor_x', 'scale_factor_y'])
     """Flag indicating whether the menu is currently open.
 
     This property is `True` when the menu is visible and `False`

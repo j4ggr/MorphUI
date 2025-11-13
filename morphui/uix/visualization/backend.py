@@ -139,9 +139,6 @@ class Navigation(NavigationToolbar2):
     zoom_x_only: bool = False
     """Flag to zoom in X axis only."""
 
-    canvas: FigureCanvas
-    """Internal AGG canvas the figure renders into."""
-
     def __init__(self, canvas: FigureCanvas, toolbar: Any) -> None:
         self.toolbar = toolbar
         super().__init__(canvas)

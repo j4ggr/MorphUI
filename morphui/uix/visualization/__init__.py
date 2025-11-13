@@ -14,13 +14,18 @@ from typing import NoReturn, Any
 
 
 try:
-    import matplotlib  # noqa: F401
-    import numpy  # noqa: F401
+    import matplotlib as mpl
     VISUALIZATION_AVAILABLE = True
     
-    from .backend import *
+    from .backend import Navigation
+    from .backend import FigureCanvas
     from .plotting import MorphPlotWidget
     from .chart import MorphChart
+
+    import logging
+
+    mpl.use('Agg') # Switch matplotlib backend to non-interactive.
+    logging.getLogger('matplotlib.font_manager').disabled = True # Disable annoying font warnings from matplotlib.
     
     __all__ = [
         'MorphPlotWidget',
@@ -45,13 +50,9 @@ except ImportError:
     MorphChart: Any = type(
         'MorphChart',
         (),
-        {
-            '__init__': lambda self, *args, **kwargs: _missing_dependencies()
-        }
-    )
+        {'__init__': lambda self, *args, **kwargs: _missing_dependencies()})
     
     __all__ = [
         'MorphPlotWidget', 
         'MorphChart',
-        'VISUALIZATION_AVAILABLE'
-    ]
+        'VISUALIZATION_AVAILABLE']

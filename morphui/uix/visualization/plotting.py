@@ -19,9 +19,10 @@ from kivy.metrics import dp
 from kivy.graphics import Color
 from kivy.graphics import Line
 from kivy.graphics import BorderImage
+from kivy.properties import ListProperty
+from kivy.properties import ColorProperty
 from kivy.properties import ObjectProperty
 from kivy.properties import BooleanProperty
-from kivy.properties import ColorProperty
 from kivy.properties import VariableListProperty
 from kivy.graphics.texture import Texture
 from kivy.input.motionevent import MotionEvent
@@ -49,7 +50,8 @@ class MorphPlotWidget(MorphWidget):
     created, see method `on_figure` (callback)."""
     
     figure_canvas: FigureCanvas = ObjectProperty(None)
-    """Canvas to render the plots into. Is set in method `on_figure` (callback)."""
+    """Canvas to render the plots into. Is set in method `on_figure` 
+    (callback)."""
     
     texture: Texture = ObjectProperty(None)
     """Texture to blit the figure into."""
@@ -61,30 +63,33 @@ class MorphPlotWidget(MorphWidget):
     of the rubberband rectangle during zoom operations. The coordinates
     are in widget space.
     
-    :attr:`rubberband_pos` is a :class:`~kivy.properties.VariableListProperty`
-    and defaults to `[0, 0]`."""
+    :attr:`rubberband_pos` is a
+    :class:`~kivy.properties.VariableListProperty` and defaults to 
+    `[0, 0]`."""
     
     rubberband_size: List[float] = VariableListProperty([0, 0], length=2)
     """Size of the rubberband when using the zoom tool.
     
-    This property stores the [width, height] dimensions of the rubberband
-    rectangle during zoom operations. Values of 0 indicate no rubberband
-    is currently displayed.
+    This property stores the [width, height] dimensions of the 
+    rubberband rectangle during zoom operations. Values of 0 indicate no
+    rubberband is currently displayed.
     
-    :attr:`rubberband_size` is a :class:`~kivy.properties.VariableListProperty`
-    and defaults to `[0, 0]`."""
+    :attr:`rubberband_size` is a
+    :class:`~kivy.properties.VariableListProperty` and defaults to 
+    `[0, 0]`."""
     
-    rubberband_corners: List[float] = VariableListProperty(
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], length=10)
+    rubberband_corners: List[float] = ListProperty(
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
     """Corner points of the rubberband when using the zoom tool.
     
     This property stores a flat list of [x, y] coordinates representing
-    the corners of the rubberband rectangle in order: top-left, top-right,
-    bottom-right, bottom-left, and back to top-left to close the path.
-    Used for drawing the rubberband border as a line.
+    the corners of the rubberband rectangle in order: top-left, 
+    top-right, bottom-right, bottom-left, and back to top-left to close
+    the path. Used for drawing the rubberband border as a line.
     
-    :attr:`rubberband_corners` is a :class:`~kivy.properties.VariableListProperty`
-    and defaults to `[0, 0, 0, 0, 0, 0, 0, 0, 0, 0]`."""
+    :attr:`rubberband_corners` is a 
+    :class:`~kivy.properties.ListProperty` and defaults to 
+    `[0, 0, 0, 0, 0, 0, 0, 0, 0, 0]`."""
     
     rubberband_threshold: float = dp(20)
     """Threshold at which it will switch between axis-wise zoom or 
@@ -96,8 +101,9 @@ class MorphPlotWidget(MorphWidget):
     The color should be provided as a list of RGBA values between 0 and 
     1. Example: `[0, 0, 0, 0.2]` for semi-transparent black.
     
-    :attr:`rubberband_color` is a :class:`~kivy.properties.ColorProperty`
-    and defaults to `[0, 0, 0, 0.2]`."""
+    :attr:`rubberband_color` is a 
+    :class:`~kivy.properties.ColorProperty` and defaults to 
+    `[0, 0, 0, 0.2]`."""
     
     rubberband_edge_color: ColorProperty = ColorProperty([0, 0, 0, 0.6])
     """Color of the rubberband edges when using the zoom tool.
@@ -105,14 +111,20 @@ class MorphPlotWidget(MorphWidget):
     The color should be provided as a list of RGBA values between 0 and 
     1. Example: `[0, 0, 0, 0.6]` for semi-transparent black.
     
-    :attr:`rubberband_edge_color` is a :class:`~kivy.properties.ColorProperty`
-    and defaults to `[0, 0, 0, 0.6]`."""
+    :attr:`rubberband_edge_color` is a
+    :class:`~kivy.properties.ColorProperty` and defaults to 
+    `[0, 0, 0, 0.6]`."""
     
     toolbar: Any = ObjectProperty(None)
-    """Toolbar widget to display the toolbar."""
+    """Toolbar widget to display the toolbar.
+    
+    This property holds a reference to the toolbar widget associated
+    with this plot widget. It is used to coordinate interactions
+    between the plot and the toolbar."""
     
     is_pressed: bool = False
-    """Flag to distinguish whether the mouse is moved with the key pressed or not"""
+    """Flag to distinguish whether the mouse is moved with the key 
+    pressed or not."""
     
     mouse_pos: List[float] = VariableListProperty([0, 0], length=2)
     """Current mouse position relative to the parent widget.
@@ -122,8 +134,9 @@ class MorphPlotWidget(MorphWidget):
     automatically updated during mouse movement events and used for
     determining which matplotlib axes the cursor is hovering over.
     
-    :attr:`mouse_pos` is a :class:`~kivy.properties.VariableListProperty`
-    and defaults to `[0, 0]`."""
+    :attr:`mouse_pos` is a
+    :class:`~kivy.properties.VariableListProperty` and defaults to 
+    `[0, 0]`."""
     
     inaxes: Axes | None = None
     """Current axis on which the mouse is hovering, is automatically 

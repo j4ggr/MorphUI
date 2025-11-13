@@ -5,7 +5,9 @@ description = "MorphUI is a creative and flexible UI extension for Kivy, designe
 authors = [
     {name = "j4ggr", email = "reto@jaeggli.email"},
 ]
-dependencies = ["kivy>=2.3.1", "material-color-utilities>=0.2.6"]
+dependencies = [
+  "kivy>=2.3.1",
+  "material-color-utilities>=0.2.6"]
 requires-python = ">=3.13"
 readme = "README.md"
 license = {text = "MIT"}
@@ -20,9 +22,7 @@ distribution = true
 
 [dependency-groups]
 test = [
-    "pytest>=8.4.2",
-]
+  "pytest>=8.4.2",]
 visualization = [
-    "matplotlib>=3.5.0",
-    "numpy>=1.20.0",
+    "matplotlib>=3.10.7",
 ]
