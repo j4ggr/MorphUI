@@ -20,6 +20,7 @@ from kivy.metrics import dp
 from kivy.graphics import Color
 from kivy.graphics import Line
 from kivy.graphics import BorderImage
+from kivy.uix.widget import Widget
 from kivy.properties import ListProperty
 from kivy.properties import ColorProperty
 from kivy.properties import ObjectProperty
@@ -29,6 +30,7 @@ from kivy.graphics.texture import Texture
 from kivy.input.motionevent import MotionEvent
 from kivy.core.window.window_sdl2 import WindowSDL
 
+from morphui.utils import clean_config
 from morphui.uix.widget import MorphWidget
 
 from .backend import FigureCanvas
@@ -159,13 +161,14 @@ class MorphPlotWidget(MorphWidget):
     """Kivy Line instruction for the rubberband edge."""
 
     default_config: Dict[str, Any] = dict(
+        surface_color= 'white',
         size_hint=(1, 1),
-        auto_size=False,
-    )
+        pos_hint={'center_x': 0.5, 'center_y': 0.5},)
     """Default configuration for the plot widget."""
 
     def __init__(self, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
+        config = clean_config(self.default_config, kwargs)
+        super().__init__(*args, **config)
         
         with self.canvas.after:
             self._rubberband_color_instruction = Color(rgba=self.rubberband_color)
@@ -294,15 +297,14 @@ class MorphPlotWidget(MorphWidget):
     def on_figure(self, caller: Self, figure: Figure) -> None:
         """Callback function, called when `figure` attribute changes."""
         # self.figure.set_layout_engine('constrained')
-        self.figure_canvas = FigureCanvas(self.figure, plot_widget=self)
-        bbox = getattr(self.figure, 'bbox', None)
+        self.figure_canvas = FigureCanvas(figure, plot_widget=self)
+        bbox = getattr(figure, 'bbox', None)
         if bbox is None:
             warnings.warn('Figure bbox not found, cannot set size.')
             return
         
-        self.width = math.ceil(bbox.width)
-        self.height = math.ceil(bbox.height)
-        self.texture = Texture.create(size=(self.width, self.height))
+        self.size = (math.ceil(bbox.width), math.ceil(bbox.height))
+        self.texture = Texture.create(size=self.size)
 
     def _update_figure_size(
             self, caller: Self, size: Tuple[float, float]) -> None:
@@ -433,10 +435,7 @@ class MorphPlotWidget(MorphWidget):
 
     def _draw_bitmap_(self, renderer: RendererAgg) -> None:
         """Draw the bitmap from the given renderer into the texture."""
-        try:
-            size = (renderer.width, renderer.height) # type: ignore
-        except AttributeError:
-            size = tuple(map(int, renderer.get_canvas_width_height()))
+        size = renderer.get_canvas_width_height()
         bitmap = renderer.tostring_argb()
         self.texture = Texture.create(size=size)
         self.texture.blit_buffer(bitmap, colorfmt='argb', bufferfmt='ubyte')
@@ -449,7 +448,7 @@ class MorphPlotWidget(MorphWidget):
         """If possible, connvert `button` attribute of given event to a
         number using enum `~matplotlib.backend_bases.MouseButton`. If it
         is a scroll event, return "up" or "down" as appropriate."""
-        name = event.button if hasattr(event, 'button') else ''
+        name = getattr(event, 'button', None)
         if name is None:
             return None
         
