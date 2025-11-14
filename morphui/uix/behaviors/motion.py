@@ -90,13 +90,28 @@ class MorphMenuMotionBehavior(MorphScaleBehavior,):
             pos=self._update_position,
             size=self._update_position,)
 
+    def _resolve_caller_pos(self) -> tuple[float, float]:
+        """Get the caller button position in window coordinates."""
+        if self.caller is None:
+            return (0, 0)
+        
+        return self.caller.to_window(*self.caller.pos)
+    
+    def _resolve_pos(self) -> tuple[float, float]:
+        """Get the menu position relative to the caller button."""
+        caller_pos = self._resolve_caller_pos()
+        pos = (caller_pos[0], max(caller_pos[1] - self.height, 0))
+        return pos
+
+    def set_scale_origin(self, *args) -> None:
+        """Set the scale origin based on the caller button position."""
+        caller_pos = self._resolve_caller_pos()
+        x_offset = self.caller.width / 2 if self.caller else 0
+        self.scale_origin = [caller_pos[0] + x_offset, caller_pos[1]]
+
     def _update_position(self, *args) -> None:
         """Update the menu position relative to the caller button."""
-        if self.caller is not None:
-            caller_pos = self.caller.to_window(
-                *self.caller.pos, relative=True)
-            print("Caller pos:", caller_pos, Window.size)
-            self.pos = (caller_pos[0], caller_pos[1])
+        self.pos = self._resolve_pos()
 
     def _add_to_window(self, *args) -> None:
         """Add the menu to the window and update its position."""
@@ -116,6 +131,7 @@ class MorphMenuMotionBehavior(MorphScaleBehavior,):
         self._add_to_window()
         self.scale_animation_duration = self.menu_opening_duration
         self.scale_animation_transition = self.menu_opening_transition
+        self.set_scale_origin()
         self.animate_scale_in()
 
     def dismiss(self, *args) -> None:
@@ -125,6 +141,7 @@ class MorphMenuMotionBehavior(MorphScaleBehavior,):
         
         self.scale_animation_duration = self.menu_dismissing_duration
         self.scale_animation_transition = self.menu_dismissing_transition
+        self.set_scale_origin()
         self.animate_scale_out(callback=self._remove_from_window)
 
     def toggle(self, *args) -> None:
