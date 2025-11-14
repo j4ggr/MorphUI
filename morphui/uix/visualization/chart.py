@@ -5,12 +5,8 @@ from typing import Dict
 
 from pathlib import Path
 
-from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from matplotlib.backend_bases import _Mode
-from matplotlib.backend_bases import MouseEvent
-from matplotlib.backend_bases import MouseButton
-from matplotlib.backends.backend_agg import RendererAgg
 
 from kivy.metrics import dp
 from kivy.properties import ObjectProperty
@@ -21,8 +17,8 @@ from morphui.uix.button import MorphIconButton
 from morphui.uix.boxlayout import MorphBoxLayout
 from morphui.uix.behaviors import MorphMenuMotionBehavior
 from morphui.uix.behaviors import MorphToggleButtonBehavior
+from morphui.uix.floatlayout import MorphFloatLayout
 from morphui.uix.visualization import MorphPlotWidget
-from morphui.uix.relativelayout import MorphRelativeLayout
 from morphui.uix.visualization.backend import Navigation
 from morphui.uix.visualization.backend import FigureCanvas
 
@@ -85,11 +81,11 @@ class MorphChartNavigationToggleButton(
         MorphChartNavigationButton.default_config.copy() | dict(
         theme_color_bindings={
             'surface_color': 'transparent_color',
-            'active_surface_color': 'primary_color',
             'content_color': 'content_surface_color',
-            'active_content_color': 'content_primary_color',
+            'active_content_color': 'primary_color',
             'hovered_content_color': 'content_surface_variant_color',
-            'border_color': 'outline_color',},
+            'border_color': 'outline_color',
+            'active_border_color': 'primary_color'},
         active_radius_enabled=True,))
 
 
@@ -208,7 +204,10 @@ class MorphChartToolbar(MorphChartNavigationButton):
         self.menu.identities.chart_toolbar_coordinate_button.bind(
             active=plot_widget.setter('show_info'))
 
-    def _figure_canvas_updated_(self, instance: Any, figure_canvas: Any) -> None:
+    def _figure_canvas_updated_(
+            self,
+            instance: Any,
+            figure_canvas: FigureCanvas) -> None:
         """Update toolbar button states based on the figure canvas.
 
         This method initializes the Navigation instance and binds
@@ -289,7 +288,7 @@ class MorphChartToolbar(MorphChartNavigationButton):
             self.navigation.pan()
 
 
-class MorphChart(MorphRelativeLayout):
+class MorphChart(MorphFloatLayout):
     """Chart component for data visualization within MorphUI.
 
     This class integrates a `MorphPlotWidget` with a toolbar for
@@ -422,11 +421,15 @@ class MorphChart(MorphRelativeLayout):
         self.toolbar.menu.identities.chart_toolbar_save_button.bind(
             on_release=self.save_figure)
         
+        self.bind(
+            pos=self._update_layout,
+            size=self._update_layout,)
+
         self.add_widget(self.plot_widget)
         self.add_widget(self.toolbar)
-        self.add_widget(self.toolbar.menu)
         self.add_widget(self.info_label)
-        self.toolbar.menu.dismiss()
+
+        self._update_layout()
         
     def on_figure(self, instance: Any, figure: Figure) -> None:
         """Callback function, called when `figure` attribute changes.
@@ -533,3 +536,11 @@ class MorphChart(MorphRelativeLayout):
         
         kwargs = {k: v for k, v in self.kw_savefig.items() if k != 'fname'}
         self.figure.savefig(str(save_dir/filename), **kwargs)
+
+    def _update_layout(self, *args) -> None:
+        """Update the layout of the chart components."""
+        self.plot_widget.size = self.size
+        self.plot_widget.pos = self.pos
+        self.toolbar.pos = (
+            self.x + self.width - self.toolbar.width,
+            self.y + self.height - self.toolbar.height)

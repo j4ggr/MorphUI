@@ -4,6 +4,7 @@ import warnings
 from typing import Any
 from typing import Self
 from typing import List
+from typing import Dict
 from typing import Tuple
 from typing import Literal
 from numpy.typing import ArrayLike
@@ -157,6 +158,12 @@ class MorphPlotWidget(MorphWidget):
     _rubberband_edge_instruction: Line
     """Kivy Line instruction for the rubberband edge."""
 
+    default_config: Dict[str, Any] = dict(
+        size_hint=(1, 1),
+        auto_size=False,
+    )
+    """Default configuration for the plot widget."""
+
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         
@@ -177,12 +184,13 @@ class MorphPlotWidget(MorphWidget):
         
         EventLoop.window.bind(mouse_pos=self.on_mouse_move) # type: ignore
         self.bind(
-            size=self.on_size,
+            size=self._update_figure_size,
             rubberband_pos=self._update_rubberband_area,
             rubberband_size=self._update_rubberband_area,
             rubberband_corners=self._update_rubberband_edge,
             rubberband_color=self._update_rubberband_colors,
             rubberband_edge_color=self._update_rubberband_colors,)
+        self._update_figure_size(self, self.size)
     
     def _update_rubberband_area(self, *args) -> None:
         """Update the rubberband area graphics instructions."""
@@ -296,14 +304,15 @@ class MorphPlotWidget(MorphWidget):
         self.height = math.ceil(bbox.height)
         self.texture = Texture.create(size=(self.width, self.height))
 
-    def on_size(self, caller: Self, size: Tuple[float, float]) -> None:
+    def _update_figure_size(
+            self, caller: Self, size: Tuple[float, float]) -> None:
         """Creat a new, correctly sized bitmap"""
         if self.figure is None or size[0] <= 1 or size[1] <= 1:
             return
         
-        self.width, self.height = size
         self.figure.set_size_inches(
-            self.width/self.figure.dpi, self.height/self.figure.dpi)
+            size[0] / self.figure.dpi,
+            size[1] / self.figure.dpi)
         self.figure_canvas.resize_event()
         self.figure_canvas.draw()
     
@@ -387,6 +396,7 @@ class MorphPlotWidget(MorphWidget):
         y0 += self.pos[1]
         y1 += self.pos[1]
 
+        x0, x1, y0, y1 = float(x0), float(x1), float(y0), float(y1)
         self.rubberband_pos = [x0, y0]
         self.rubberband_size = [x1 - x0, y1 - y0]
         self.rubberband_corners = [x0, y0, x1, y0, x1, y1, x0, y1, x0, y0]

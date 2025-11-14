@@ -417,7 +417,7 @@ class MorphScaleBehavior(EventDispatcher):
         widget.animate_scale_in(callback=on_scale_complete)
         ```
         """
-        Animation.cancel_all(
+        Animation.stop_all(
             self, 'scale_factor_x', 'scale_factor_y', 'scale_factor_z')
         
         self.scale_factor_x = 0.0
@@ -470,7 +470,7 @@ class MorphScaleBehavior(EventDispatcher):
         widget.animate_scale_out(callback=on_scale_complete)
         ```
         """
-        Animation.cancel_all(
+        Animation.stop_all(
             self, 'scale_factor_x', 'scale_factor_y', 'scale_factor_z')
         
         self.scale_factor_x = 1.0

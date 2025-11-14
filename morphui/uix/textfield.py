@@ -956,7 +956,7 @@ class MorphTextField(
         self.bind(
             pos=self._update_layout,
             width=self._update_layout,
-            size=self._update_layout,
+            height=self._update_layout, # TODO: check if just size works
             declarative_children=self._update_layout,
             focus=self._animate_on_focus,
             selected_text_color=self._update_selection_color,

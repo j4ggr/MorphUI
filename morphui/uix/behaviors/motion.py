@@ -4,6 +4,7 @@ from kivy.properties import AliasProperty
 from kivy.properties import ObjectProperty
 from kivy.properties import StringProperty
 from kivy.properties import NumericProperty
+from kivy.core.window import Window
 
 from morphui.uix.behaviors import MorphScaleBehavior
 
@@ -30,9 +31,9 @@ class MorphMenuMotionBehavior(MorphScaleBehavior,):
     :attr:`caller` is a :class:`~kivy.properties.ObjectProperty`
     and defaults to `None`."""
 
-    is_open: bool = AliasProperty( # TODO this does not work as expected
-        lambda self: self.scale_factor_x > 0 or self.scale_factor_y > 0,
-        bind=['scale_factor_x', 'scale_factor_y'])
+    is_open: bool = AliasProperty(
+        lambda self: bool(self.parent),
+        bind=['parent'])
     """Flag indicating whether the menu is currently open.
 
     This property is `True` when the menu is visible and `False`
@@ -79,11 +80,40 @@ class MorphMenuMotionBehavior(MorphScaleBehavior,):
     :class:`~kivy.properties.StringProperty` and defaults to 
     `'in_sine'`."""
 
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.bind(size=self._update_position)
+        
+    def on_caller(self, instance: Any, caller: Any) -> None:
+        """Update the menu position when the caller button changes."""
+        self.caller.bind(
+            pos=self._update_position,
+            size=self._update_position,)
+
+    def _update_position(self, *args) -> None:
+        """Update the menu position relative to the caller button."""
+        if self.caller is not None:
+            caller_pos = self.caller.to_window(
+                *self.caller.pos, relative=True)
+            print("Caller pos:", caller_pos, Window.size)
+            self.pos = (caller_pos[0], caller_pos[1])
+
+    def _add_to_window(self, *args) -> None:
+        """Add the menu to the window and update its position."""
+        Window.add_widget(self)
+        self._update_position()
+
+    def _remove_from_window(self, *args) -> None:
+        """Remove the menu from the window."""
+        if self.parent is not None:
+            Window.remove_widget(self)
+
     def open(self, *args) -> None:
         """Open the menu with animation."""
         if self.is_open:
             return
         
+        self._add_to_window()
         self.scale_animation_duration = self.menu_opening_duration
         self.scale_animation_transition = self.menu_opening_transition
         self.animate_scale_in()
@@ -95,7 +125,7 @@ class MorphMenuMotionBehavior(MorphScaleBehavior,):
         
         self.scale_animation_duration = self.menu_dismissing_duration
         self.scale_animation_transition = self.menu_dismissing_transition
-        self.animate_scale_out()
+        self.animate_scale_out(callback=self._remove_from_window)
 
     def toggle(self, *args) -> None:
         """Toggle the menu open/closed state with animation."""
