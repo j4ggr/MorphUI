@@ -19,6 +19,7 @@ from kivy.base import EventLoop
 from kivy.metrics import dp
 from kivy.graphics import Color
 from kivy.graphics import Line
+from kivy.graphics import Rectangle
 from kivy.graphics import BorderImage
 from kivy.uix.widget import Widget
 from kivy.properties import ListProperty
@@ -31,20 +32,37 @@ from kivy.input.motionevent import MotionEvent
 from kivy.core.window.window_sdl2 import WindowSDL
 
 from morphui.utils import clean_config
-from morphui.uix.widget import MorphWidget
+from morphui.uix.behaviors import MorphThemeBehavior
+from morphui.uix.behaviors import MorphSurfaceLayerBehavior
+from morphui.uix.behaviors import MorphIdentificationBehavior
 
 from .backend import FigureCanvas
 
 
-class MorphPlotWidget(MorphWidget):
+class MorphPlotWidget(
+        MorphIdentificationBehavior,
+        MorphThemeBehavior, 
+        MorphSurfaceLayerBehavior,
+        Widget):
     """Kivy Widget to show a matplotlib figure in kivy.
     The figure is rendered internally in an AGG backend then
     the rgb data is obtained and blitted into a kivy texture.
+    
+    This widget uses only the essential MorphUI behaviors for lightweight operation:
+    - MorphIdentificationBehavior: For widget identification and identity-based styling
+    - MorphThemeBehavior: For theme integration and color binding
+    - MorphSurfaceLayerBehavior: For background color, borders, and radius styling
+    
+    This focused approach provides theming and styling capabilities while avoiding
+    unnecessary behaviors like interaction layers, content layers, or auto-sizing.
     
     Parameters
     ----------
     figure : `~matplotlib.figure.Figure`
         The top level container for all the plot elements.
+    surface_color : list or tuple, optional
+        Background color for the plot. Defaults to white (1.0, 1.0, 1.0, 1.0).
+        Can be customized for different themes or transparent overlays.
     """
     
     figure: Figure = ObjectProperty(None)
@@ -160,8 +178,11 @@ class MorphPlotWidget(MorphWidget):
     _rubberband_edge_instruction: Line
     """Kivy Line instruction for the rubberband edge."""
 
+    _texture_rectangle_instruction: Rectangle
+    """Kivy Rectangle instruction for rendering the matplotlib texture."""
+
     default_config: Dict[str, Any] = dict(
-        surface_color= 'white',
+        surface_color=(1.0, 1.0, 1.0, 1.0),  # White background for charts
         size_hint=(1, 1),
         pos_hint={'center_x': 0.5, 'center_y': 0.5},)
     """Default configuration for the plot widget."""
@@ -170,7 +191,13 @@ class MorphPlotWidget(MorphWidget):
         config = clean_config(self.default_config, kwargs)
         super().__init__(*args, **config)
         
+        # Rubberband rendering
         with self.canvas.after:
+            self._texture_rectangle_instruction = Rectangle(
+                pos=self.pos,
+                size=self.size,
+                texture=self.texture)
+            
             self._rubberband_color_instruction = Color(rgba=self.rubberband_color)
             self._rubberband_instruction = BorderImage(
                 source='border.png',
@@ -187,14 +214,23 @@ class MorphPlotWidget(MorphWidget):
         
         EventLoop.window.bind(mouse_pos=self.on_mouse_move) # type: ignore
         self.bind(
+            pos=self._update_texture_rectangle,
             size=self._update_figure_size,
+            texture=self._update_texture_rectangle,
             rubberband_pos=self._update_rubberband_area,
             rubberband_size=self._update_rubberband_area,
             rubberband_corners=self._update_rubberband_edge,
             rubberband_color=self._update_rubberband_colors,
             rubberband_edge_color=self._update_rubberband_colors,)
         self._update_figure_size(self, self.size)
+        self._update_texture_rectangle(self, self.texture)
     
+    def _update_texture_rectangle(self, *args) -> None:
+        """Update the main texture rectangle graphics instructions."""
+        self._texture_rectangle_instruction.pos = self.pos
+        self._texture_rectangle_instruction.size = self.size
+        self._texture_rectangle_instruction.texture = self.texture
+
     def _update_rubberband_area(self, *args) -> None:
         """Update the rubberband area graphics instructions."""
         self._rubberband_instruction.pos = self.rubberband_pos

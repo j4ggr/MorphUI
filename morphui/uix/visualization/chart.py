@@ -407,7 +407,8 @@ class MorphChart(MorphFloatLayout):
 
     default_config: Dict[str, Any] = dict(
         theme_color_bindings={
-            'surface_color': 'surface_color',},)
+            'surface_color': 'surface_color',},
+        size_hint=(1, 1),)
     """Default configuration for the MorphChart."""
 
     def __init__(
@@ -543,7 +544,7 @@ class MorphChart(MorphFloatLayout):
     def _update_layout(self, *args) -> None:
         """Update the layout of the chart components."""
         self.plot_widget.size = self.size
-        self.plot_widget.pos = self.pos
+        self.plot_widget.pos = (0, 0)
         self.toolbar.pos = (
             self.x + self.width - self.toolbar.width,
             self.y + self.height - self.toolbar.height)
