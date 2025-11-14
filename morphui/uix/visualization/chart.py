@@ -98,6 +98,7 @@ class MorphChartToolbarMenu(
         theme_color_bindings={
             'surface_color': 'transparent_color',},
         orientation='vertical',
+        auto_size=True,
         spacing=dp(4),
         padding=[dp(0), dp(0), dp(0), dp(0)],)
     """Container for toolbar menu items in MorphChartCard."""
@@ -150,8 +151,7 @@ class MorphChartToolbar(MorphChartNavigationButton):
 
     default_config: Dict[str, Any] = (
         MorphChartNavigationButton.default_config.copy() | dict(
-            icon='menu',
-            pos_hint = {'right': 1, 'top': 1},))
+            icon='menu',))
 
     def __init__(self, **kwargs) -> None:
         self.menu = kwargs.pop('menu', MorphChartToolbarMenu(
@@ -405,13 +405,16 @@ class MorphChart(MorphFloatLayout):
     save location.
     """
 
-    default_config: Dict[str, Any] = dict()
+    default_config: Dict[str, Any] = dict(
+        theme_color_bindings={
+            'surface_color': 'surface_color',},)
     """Default configuration for the MorphChart."""
 
     def __init__(
             self,
             kw_savefig: Dict[str, Any] = {},
             **kwargs) -> None:
+        self.kw_savefig = kw_savefig
         config = clean_config(self.default_config, kwargs)
         super().__init__(**config)
         self.info_label = MorphChartInfoLabel()
