@@ -560,9 +560,16 @@ class MorphRippleBehavior(EventDispatcher):
         if self.ripple_color is not None:
             return self.ripple_color
         
-        ripple_color = getattr(
-            self, 'get_resolved_interaction_color', lambda: [0.0, 0.0, 0.0])()
-        opacity = getattr(self, 'pressed_state_opacity', 0.12)
+        if hasattr(self, 'get_resolved_interaction_color'):
+            ripple_color = self.get_resolved_interaction_color()
+        else:
+            gray_value = 0.0
+            if hasattr(self, 'theme_manager'):
+                if self.theme_manager.is_dark_mode:
+                    gray_value = 1 - gray_value
+            ripple_color = [gray_value] * 3
+        
+        opacity = getattr(self, 'pressed_state_opacity', 0.16)
         return ripple_color[:3] + [opacity,]
 
     def show_ripple_effect(self, touch_pos: Tuple[float, float]) -> None:
@@ -975,6 +982,6 @@ class MorphToggleButtonBehavior(MorphButtonBehavior):
                 self.group is None,
                 self.allow_no_selection,)):
             self._release_group(self)
-            
+
         self.active = not self.active
 
