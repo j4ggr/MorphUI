@@ -1,5 +1,6 @@
 import math
 import warnings
+import weakref
 
 from typing import Any
 from typing import Self
@@ -37,6 +38,11 @@ from morphui.uix.behaviors import MorphSurfaceLayerBehavior
 from morphui.uix.behaviors import MorphIdentificationBehavior
 
 from .backend import FigureCanvas
+
+
+__all__ = [
+    'MorphPlotWidget',
+]
 
 
 class MorphPlotWidget(
@@ -191,6 +197,8 @@ class MorphPlotWidget(
         config = clean_config(self.default_config, kwargs)
         super().__init__(*args, **config)
         
+        self._flipped_textures = weakref.WeakSet()
+        
         with self.canvas.before:
             self._texture_rectangle_color_instruction = Color(
                 rgba=self.get_resolved_surface_colors()[0])
@@ -214,7 +222,9 @@ class MorphPlotWidget(
                 dash_offset=4,
                 dash_length=6)
         
-        EventLoop.window.bind(mouse_pos=self.on_mouse_move) # type: ignore
+        EventLoop.window.bind( # type: ignore
+            mouse_pos=self.on_mouse_move)
+        
         self.bind(
             size=self._update_figure_size,
             texture=self._update_surface_layer,
@@ -231,37 +241,6 @@ class MorphPlotWidget(
     def rubberband_drawn(self) -> bool:
         """True if a rubberband is drawn (read-only)"""
         return self.rubberband_size[0] > 1 or self.rubberband_size[1] > 1
-        
-    def _update_surface_layer(self, *args) -> None:
-        """Update the surface when any relevant property changes.
-        
-        This method overrides the base implementation to also update
-        the texture rectangle instruction with the current texture
-        and size. It ensures that the background surface reflects the
-        current state of the plot widget.
-        """
-        super()._update_surface_layer(*args)
-        if not hasattr(self, '_texture_rectangle_color_instruction'):
-            self._surface_color_instruction.rgba = (
-                self.theme_manager.transparent_color)
-            return
-        
-        surface_color, border_color = self.get_resolved_surface_colors()
-        assert surface_color[3] > 0, (
-            'MorphPlotWidget requires a non-transparent surface color '
-            'to render the matplotlib figure correctly.')
-        
-        self._texture_rectangle_color_instruction.rgba = surface_color
-        self._texture_rectangle_instruction.pos = self.pos
-        self._texture_rectangle_instruction.size = self.size
-        self._texture_rectangle_instruction.texture = self.texture
-
-        self._border_instruction.width = dp(self.border_width)
-        self._border_instruction.points = self._generate_border_path()
-        self._border_instruction.close = self.border_closed
-        self._border_color_instruction.rgba = border_color
-
-        self.dispatch('on_surface_updated')
 
     def _update_rubberband_area(self, *args) -> None:
         """Update the rubberband area graphics instructions."""
@@ -276,6 +255,77 @@ class MorphPlotWidget(
         """Update the rubberband color graphics instructions."""
         self._rubberband_color_instruction.rgba = self.rubberband_color
         self._rubberband_edge_color_instruction.rgba = self.rubberband_edge_color
+
+    def get_resolved_surface_colors(self) -> Tuple[List[float], List[float]]:
+        """Get the resolved surface and border colors based on the
+        current theme and surface color settings.
+
+        Returns
+        -------
+        Tuple[List[float], List[float]]
+            A tuple containing two lists:
+            - The resolved surface color as an RGBA list.
+            - The resolved border color as an RGBA list.
+
+        Raises
+        ------
+        ValueError
+            If the resolved surface color is fully transparent.
+        """
+        surface_color, border_color = super().get_resolved_surface_colors()
+        assert surface_color[3] > 0, (
+            'MorphPlotWidget requires a non-transparent surface color '
+            'to render the matplotlib figure correctly.')
+        return surface_color, border_color
+    
+    def _safe_flip_texture_vertical(self, texture: Texture | None) -> None:
+        """Safely flip the given texture vertically if it hasn't been
+        flipped yet, using weak references to track flipped textures.
+
+        Parameters
+        ----------
+        texture : Texture | None
+            The texture to flip vertically if it hasn't been flipped yet.
+        """
+        if texture is None:
+            return
+        
+        if texture not in self._flipped_textures:
+            texture.flip_vertical()
+            self._flipped_textures.add(texture)
+        
+    def _update_surface_layer(self, *args) -> None:
+        """Update the surface when any relevant property changes.
+        
+        This method overrides the base implementation to also update
+        the texture rectangle instruction with the current texture
+        and size. It ensures that the background surface reflects the
+        current state of the plot widget.
+
+        The method checks if the texture has been created and flips it
+        vertically only once per texture instance to ensure correct
+        rendering.
+        """
+        super()._update_surface_layer(*args)
+        if not hasattr(self, '_texture_rectangle_color_instruction'):
+            self._surface_color_instruction.rgba = (
+                self.theme_manager.transparent_color)
+            return
+        
+        surface_color, border_color = self.get_resolved_surface_colors()
+
+        self._border_instruction.width = dp(self.border_width)
+        self._border_instruction.points = self._generate_border_path()
+        self._border_instruction.close = self.border_closed
+        self._border_color_instruction.rgba = border_color
+        
+        self._safe_flip_texture_vertical(self.texture)
+        self._texture_rectangle_color_instruction.rgba = surface_color
+        self._texture_rectangle_instruction.pos = self.pos
+        self._texture_rectangle_instruction.size = self.size
+        self._texture_rectangle_instruction.texture = self.texture
+
+        self.dispatch('on_surface_updated')
     
     def on_mouse_pos(
             self, caller: Self, mouse_pos: Tuple[float, float]) -> None:
@@ -359,15 +409,14 @@ class MorphPlotWidget(
 
     def on_figure(self, caller: Self, figure: Figure) -> None:
         """Callback function, called when `figure` attribute changes."""
-        # self.figure.set_layout_engine('constrained')
         self.figure_canvas = FigureCanvas(figure, plot_widget=self)
+        self.figure_canvas.draw()
         bbox = getattr(figure, 'bbox', None)
         if bbox is None:
             warnings.warn('Figure bbox not found, cannot set size.')
             return
         
         self.size = (math.ceil(bbox.width), math.ceil(bbox.height))
-        self.texture = Texture.create(size=self.size)
 
     def _update_figure_size(
             self, caller: Self, size: Tuple[float, float]) -> None:
@@ -500,9 +549,9 @@ class MorphPlotWidget(
         """Draw the bitmap from the given renderer into the texture."""
         size = renderer.get_canvas_width_height()
         bitmap = renderer.tostring_argb()
+
         self.texture = Texture.create(size=size)
         self.texture.blit_buffer(bitmap, colorfmt='argb', bufferfmt='ubyte')
-        self.texture.flip_vertical()
     
     def _button_(
             self,
