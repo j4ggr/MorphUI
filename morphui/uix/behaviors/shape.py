@@ -215,13 +215,23 @@ class MorphRoundSidesBehavior(EventDispatcher):
         if not self.active_radius_enabled:
             return
         
-        Animation.cancel_all(self)
+        Animation.stop_all(self, 'radius')
         
-        Animation(
+        animation = Animation(
             radius=self._resolve_radius(),
             d=self.round_sides_animation_duration,
             t=self.round_sides_animation_transition,
-        ).start(self)
+        )
+        animation.bind(on_complete=self.round_sides_animation_complete)
+        animation.start(self)
+    
+    def round_sides_animation_complete(self, *args) -> None:
+        """Callback for when the round sides animation completes.
+        
+        This method is called when the animation transitioning to the
+        active radius completes. Override this method to perform any
+        additional actions upon completion of the animation.
+        """
 
 
 class MorphScaleBehavior(EventDispatcher):
