@@ -191,20 +191,22 @@ class MorphPlotWidget(
         config = clean_config(self.default_config, kwargs)
         super().__init__(*args, **config)
         
-        # Rubberband rendering
-        with self.canvas.after:
+        with self.canvas.before:
+            self._texture_rectangle_color_instruction = Color(
+                rgba=self.get_resolved_surface_colors()[0])
             self._texture_rectangle_instruction = Rectangle(
                 pos=self.pos,
                 size=self.size,
                 texture=self.texture)
-            
+    
+        with self.canvas.after:
             self._rubberband_color_instruction = Color(rgba=self.rubberband_color)
             self._rubberband_instruction = BorderImage(
                 source='border.png',
                 pos=self.rubberband_pos,
                 size=self.rubberband_size,
                 border=(1, 1, 1, 1))
-            
+
             self._rubberband_edge_color_instruction = Color(rgba=self.rubberband_edge_color)
             self._rubberband_edge_instruction = Line(
                 points=self.rubberband_corners,
@@ -214,22 +216,52 @@ class MorphPlotWidget(
         
         EventLoop.window.bind(mouse_pos=self.on_mouse_move) # type: ignore
         self.bind(
-            pos=self._update_texture_rectangle,
             size=self._update_figure_size,
-            texture=self._update_texture_rectangle,
+            texture=self._update_surface_layer,
             rubberband_pos=self._update_rubberband_area,
             rubberband_size=self._update_rubberband_area,
             rubberband_corners=self._update_rubberband_edge,
             rubberband_color=self._update_rubberband_colors,
             rubberband_edge_color=self._update_rubberband_colors,)
+       
         self._update_figure_size(self, self.size)
-        self._update_texture_rectangle(self, self.texture)
-    
-    def _update_texture_rectangle(self, *args) -> None:
-        """Update the main texture rectangle graphics instructions."""
+        self._update_surface_layer(self, self.texture)
+
+    @property
+    def rubberband_drawn(self) -> bool:
+        """True if a rubberband is drawn (read-only)"""
+        return self.rubberband_size[0] > 1 or self.rubberband_size[1] > 1
+        
+    def _update_surface_layer(self, *args) -> None:
+        """Update the surface when any relevant property changes.
+        
+        This method overrides the base implementation to also update
+        the texture rectangle instruction with the current texture
+        and size. It ensures that the background surface reflects the
+        current state of the plot widget.
+        """
+        super()._update_surface_layer(*args)
+        if not hasattr(self, '_texture_rectangle_color_instruction'):
+            self._surface_color_instruction.rgba = (
+                self.theme_manager.transparent_color)
+            return
+        
+        surface_color, border_color = self.get_resolved_surface_colors()
+        assert surface_color[3] > 0, (
+            'MorphPlotWidget requires a non-transparent surface color '
+            'to render the matplotlib figure correctly.')
+        
+        self._texture_rectangle_color_instruction.rgba = surface_color
         self._texture_rectangle_instruction.pos = self.pos
         self._texture_rectangle_instruction.size = self.size
         self._texture_rectangle_instruction.texture = self.texture
+
+        self._border_instruction.width = dp(self.border_width)
+        self._border_instruction.points = self._generate_border_path()
+        self._border_instruction.close = self.border_closed
+        self._border_color_instruction.rgba = border_color
+
+        self.dispatch('on_surface_updated')
 
     def _update_rubberband_area(self, *args) -> None:
         """Update the rubberband area graphics instructions."""
@@ -244,11 +276,6 @@ class MorphPlotWidget(
         """Update the rubberband color graphics instructions."""
         self._rubberband_color_instruction.rgba = self.rubberband_color
         self._rubberband_edge_color_instruction.rgba = self.rubberband_edge_color
-
-    @property
-    def rubberband_drawn(self) -> bool:
-        """True if a rubberband is drawn (read-only)"""
-        return self.rubberband_size[0] > 1 or self.rubberband_size[1] > 1
     
     def on_mouse_pos(
             self, caller: Self, mouse_pos: Tuple[float, float]) -> None:
