@@ -387,7 +387,7 @@ class MorphRippleBehavior(EventDispatcher):
     :class:`~kivy.properties.ColorProperty` and is managed internally.
     """
 
-    ripple_duration_in: float = NumericProperty(0.3)
+    ripple_duration_in: float = NumericProperty(0.2)
     """The duration of the ripple fade-in animation in seconds.
 
     This property defines how long it takes for the ripple effect to
@@ -399,7 +399,7 @@ class MorphRippleBehavior(EventDispatcher):
     :class:`~kivy.properties.NumericProperty` and defaults to 0.3.
     """
 
-    ripple_duration_in_long: float = NumericProperty(1.5)
+    ripple_duration_in_long: float = NumericProperty(1.2)
     """The duration of the ripple fade-in animation for long presses.
 
     This property defines how long it takes for the ripple effect to
@@ -410,7 +410,7 @@ class MorphRippleBehavior(EventDispatcher):
     :class:`~kivy.properties.NumericProperty` and defaults to 0.6.
     """
 
-    ripple_duration_out: float = NumericProperty(0.3)
+    ripple_duration_out: float = NumericProperty(0.2)
     """The duration of the ripple fade-out animation in seconds.
 
     This property defines how long it takes for the ripple effect to
@@ -422,24 +422,24 @@ class MorphRippleBehavior(EventDispatcher):
     :class:`~kivy.properties.NumericProperty` and defaults to 0.3.
     """
 
-    ripple_transition_in: str = StringProperty('out_quad')
+    ripple_transition_in: str = StringProperty('out_sine')
     """The easing function used for the ripple fade-in animation.
 
     This property defines the easing function that controls the
     acceleration and deceleration of the ripple effect as it fades in.
 
     :attr:`ripple_transition_in` is a
-    :class:`~kivy.properties.StringProperty` and defaults to 'out_quad'.
+    :class:`~kivy.properties.StringProperty` and defaults to 'out_sine'.
     """
 
-    ripple_transition_out: str = StringProperty('in_quad')
+    ripple_transition_out: str = StringProperty('in_sine')
     """The easing function used for the ripple fade-out animation.
 
     This property defines the easing function that controls the
     acceleration and deceleration of the ripple effect as it fades out.
     
     :attr:`ripple_transition_out` is a
-    :class:`~kivy.properties.StringProperty` and defaults to 'in_quad'.
+    :class:`~kivy.properties.StringProperty` and defaults to 'in_sine'.
     """
 
     ripple_enabled: bool = BooleanProperty(True)
@@ -658,7 +658,7 @@ class MorphRippleBehavior(EventDispatcher):
         radius = getattr(self, 'radius', [0])
         if isinstance(radius, (int, float)):
             radius = [radius,]
-        group = NAME.RIPPLE
+
         if self.ripple_layer == 'overlay':
             canvas = self.canvas.after
         else:
@@ -668,16 +668,16 @@ class MorphRippleBehavior(EventDispatcher):
         size = getattr(self, 'interaction_layer_size', self.size)
         with canvas:
             StencilPush(
-                group=group)
+                group=NAME.RIPPLE)
             RoundedRectangle(
                 pos=pos,
                 size=size,
                 radius=radius,
-                group=group)
-            StencilUse(group=group)
+                group=NAME.RIPPLE)
+            StencilUse(group=NAME.RIPPLE)
             self._ripple_color_instruction = Color(
                 rgba=self.determine_ripple_color(),
-                group=group)
+                group=NAME.RIPPLE)
             self._ripple_shape_instruction = RoundedRectangle(
                 size=(
                     self.ripple_initial_radius * 2,
@@ -685,16 +685,16 @@ class MorphRippleBehavior(EventDispatcher):
                 pos=(
                     self.ripple_pos[0] - self._current_ripple_radius / 2,
                     self.ripple_pos[1] - self._current_ripple_radius / 2),
-                group=group)
+                group=NAME.RIPPLE)
             StencilUnUse(
-                group=group)
+                group=NAME.RIPPLE)
             RoundedRectangle(
                 pos=pos,
                 size=size,
                 radius=radius,
-                group=group)
+                group=NAME.RIPPLE)
             StencilPop(
-                group=group)
+                group=NAME.RIPPLE)
 
     def _on_ripple_complete(self, *args) -> None:
         """Callback when the ripple animation completes.
@@ -711,7 +711,9 @@ class MorphRippleBehavior(EventDispatcher):
             canvas = self.canvas.after
         else:
             canvas = self.canvas.before
+        
         canvas.remove_group(NAME.RIPPLE)
+        self._ripple_color_instruction.rgba = [0, 0, 0, 0]
 
     def _update_ripple_instruction(self, *args) -> None:
         """Update the size and position of the ripple shape during
@@ -955,21 +957,24 @@ class MorphToggleButtonBehavior(MorphButtonBehavior):
     def _do_press(self, *args) -> None:
         """Handle the press action for the toggle button.
 
-        This method updates the :attr:`active` state and manages the
-        group exclusivity when the button is pressed.
+        This method overrides the base press behavior to ensure that the
+        active state is handled at the release action instead.
+
+        For more details, see :meth:`_do_release`.
         """
-        if all((
-                self.active,
-                self.group is not None,
-                not self.allow_no_selection,)):
-            return None
-        
-        self._release_group(self)
+        pass
     
     def _do_release(self, *args) -> None:
         """Handle the release action for the toggle button.
-
-        This method is overridden to prevent changing the active
-        state on release, as toggle buttons only change state on press.
+        
+        This method toggles the active state of the button and manages
+        group exclusivity.
         """
+        if any((
+                not self.active,
+                self.group is None,
+                self.allow_no_selection,)):
+            self._release_group(self)
+            
         self.active = not self.active
+
