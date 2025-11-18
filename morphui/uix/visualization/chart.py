@@ -17,7 +17,7 @@ from morphui.uix.button import MorphIconButton
 from morphui.uix.boxlayout import MorphBoxLayout
 from morphui.uix.behaviors import MorphMenuMotionBehavior
 from morphui.uix.behaviors import MorphToggleButtonBehavior
-from morphui.uix.floatlayout import MorphFloatLayout
+from morphui.uix.anchorlayout import MorphAnchorLayout
 from morphui.uix.visualization import MorphPlotWidget
 from morphui.uix.visualization.backend import Navigation
 from morphui.uix.visualization.backend import FigureCanvas
@@ -59,14 +59,15 @@ class MorphChartNavigationButton(MorphIconButton):
         valign='center',
         theme_color_bindings={
             'surface_color': 'transparent_color',
-            'content_color': 'content_surface_color',
-            'hovered_content_color': 'content_surface_variant_color',
-            'border_color': 'outline_color',},
+            'content_color': 'content_secondary_fixed_color',
+            'hovered_content_color': 'content_secondary_fixed_variant_color',
+            'border_color': 'outline_variant_color',},
         typography_role=MorphIconButton.default_config['typography_role'],
         typography_size=MorphIconButton.default_config['typography_size'],
+        interaction_gray_value=0.0,
         ripple_enabled=True,
-        ripple_color=None,
         ripple_layer='interaction',
+        hover_enabled=True,
         auto_size=True,
         round_sides=True,
         padding=dp(8),)
@@ -81,10 +82,10 @@ class MorphChartNavigationToggleButton(
         MorphChartNavigationButton.default_config.copy() | dict(
         theme_color_bindings={
             'surface_color': 'transparent_color',
-            'content_color': 'content_surface_color',
-            'active_content_color': 'primary_color',
-            'hovered_content_color': 'content_surface_variant_color',
-            'border_color': 'outline_color',
+            'content_color': 'content_secondary_fixed_color',
+            'hovered_content_color': 'content_secondary_fixed_variant_color',
+            'active_content_color': 'content_primary_fixed_color',
+            'border_color': 'outline_variant_color',
             'active_border_color': 'primary_color'},
         active_radius_enabled=True,))
 
@@ -100,7 +101,7 @@ class MorphChartToolbarMenu(
         orientation='vertical',
         auto_size=True,
         spacing=dp(4),
-        padding=[dp(0), dp(0), dp(0), dp(0)],)
+        padding=[dp(0), dp(4)],)
     """Container for toolbar menu items in MorphChartCard."""
 
     def __init__(self, *args, caller: MorphChartNavigationButton, **kwargs) -> None:
@@ -288,7 +289,7 @@ class MorphChartToolbar(MorphChartNavigationButton):
             self.navigation.pan()
 
 
-class MorphChart(MorphFloatLayout):
+class MorphChart(MorphAnchorLayout):
     """Chart component for data visualization within MorphUI.
 
     This class integrates a `MorphPlotWidget` with a toolbar for
@@ -406,9 +407,11 @@ class MorphChart(MorphFloatLayout):
     """
 
     default_config: Dict[str, Any] = dict(
-        theme_color_bindings={
-            'surface_color': 'surface_color',},
-        size_hint=(1, 1),)
+        surface_color=(1.0, 1.0, 1.0, 1.0),  # White background for charts
+        size_hint=(1, 1),
+        anchor_x='right',
+        anchor_y='top',
+        padding=dp(8))
     """Default configuration for the MorphChart."""
 
     def __init__(
