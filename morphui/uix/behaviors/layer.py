@@ -743,17 +743,21 @@ class MorphInteractionLayerBehavior(BaseLayerBehavior):
     :attr:`interaction_enabled` is a 
     :class:`~kivy.properties.BooleanProperty` and defaults to `True`."""
 
-    interaction_gray_value: float = BoundedNumericProperty(0.0, min=0, max=1)
+    interaction_gray_value: float | None = BoundedNumericProperty(
+        None, min=0, max=1, allownone=True)
     """Base color value for the interaction layer.
     
-    This value determines the base color (black or white) used for the
-    interaction layer. In dark theme, this value is inverted to ensure
-    visibility against the surface. The opacity of the layer is
-    determined by the specific state (hovered, pressed, focus, etc.).
+    This value determines the base grayscale color used for the
+    interaction layer. When set to None (default), the color is
+    automatically determined based on the theme: white (1.0) for dark
+    theme and black (0.0) for light theme to ensure visibility against
+    the surface. When set to a specific value (0-1), that value is used
+    regardless of theme. The opacity of the layer is determined by the
+    specific state (hovered, pressed, focus, etc.).
     
     :attr:`interaction_gray_value` is a 
     :class:`~kivy.properties.BoundedNumericProperty` and defaults to
-    `0.0` (black).
+    `None` (theme-based automatic selection).
     """
 
     interaction_layer_expansion: List[float] = VariableListProperty(
@@ -853,9 +857,19 @@ class MorphInteractionLayerBehavior(BaseLayerBehavior):
     def get_resolved_interaction_color(self) -> List[float]:
         """Get the interaction layer color.
         
-        The base color is white in dark theme and black in light theme.
-        This ensures that the interaction layer is visible against the
-        surface. The returned list contains RGB values only.
+        Returns the interaction layer color as RGBA values. The base 
+        color is determined by the interaction_gray_value property: if 
+        None, it automatically uses white (1.0) in dark theme and black
+        (0.0) in light theme to ensure visibility against the surface.
+        If a specific value is set, that value is used regardless of 
+        theme. The opacity is determined by the current interaction
+        state's opacity setting.
+        
+        Returns
+        -------
+        List[float]
+            RGBA color values [r, g, b, a] where r=g=b is the gray value
+            and a is the state-specific opacity.
         """
         state = self.current_interaction_state
         opacity = getattr(self, f'{state}_state_opacity', None)
@@ -863,9 +877,11 @@ class MorphInteractionLayerBehavior(BaseLayerBehavior):
         if opacity is None:
             return self.theme_manager.transparent_color
 
-        value = self.interaction_gray_value
-        if self.theme_manager.is_dark_mode:
-            value = 1 - value
+        if self.interaction_gray_value is None:
+            value = 1.0 if self.theme_manager.is_dark_mode else 0.0
+        else:
+            value = self.interaction_gray_value
+            
         return [value, value, value, opacity]
 
     def _update_interaction_layer(self, *args) -> None:
