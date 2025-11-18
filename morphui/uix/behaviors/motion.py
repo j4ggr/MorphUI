@@ -100,7 +100,7 @@ class MorphMenuMotionBehavior(MorphScaleBehavior,):
     def _resolve_pos(self) -> tuple[float, float]:
         """Get the menu position relative to the caller button."""
         caller_pos = self._resolve_caller_pos()
-        pos = (caller_pos[0], max(caller_pos[1] - self.height, 0))
+        pos = (caller_pos[0], caller_pos[1] - self.height)
         return pos
 
     def set_scale_origin(self, *args) -> None:

@@ -7,11 +7,13 @@ from typing import Tuple
 
 from dataclasses import dataclass
 from kivy.core.text import Label as CoreLabel
+from kivy.uix.relativelayout import RelativeLayout
 
 __all__ = [
     'clean_config',
     'calculate_text_size',
     'clamp',
+    'get_effective_pos',
     'FrozenGeometry',]
 
 
@@ -133,6 +135,63 @@ def clamp(
         value = min(max_value, value)
         
     return value
+
+
+def get_effective_pos(widget) -> Tuple[float, float]:
+    """Get the effective position for canvas operations.
+    
+    Returns (0, 0) for RelativeLayout widgets since they use local 
+    coordinates, otherwise returns (widget.x, widget.y). This is a
+    common pattern in MorphUI for handling position calculations that
+    need to work correctly with both regular widgets and RelativeLayout
+    containers.
+    
+    Parameters
+    ----------
+    widget
+        The widget to get the effective position for. Should have x and y
+        attributes.
+        
+    Returns
+    -------
+    Tuple[float, float]
+        The effective (x, y) position for canvas graphics operations.
+        
+    Examples
+    --------
+    Use in canvas operations:
+    
+    ```python
+    from morphui.utils.helpers import get_effective_pos
+    
+    # Get position that works for both regular widgets and RelativeLayout
+    x, y = get_effective_pos(self)
+    
+    # Use in canvas instructions
+    with self.canvas:
+        Rectangle(pos=(x, y), size=self.size)
+    ```
+    
+    Use in layout calculations:
+    
+    ```python
+    # Calculate absolute position for child widgets
+    container_x, container_y = get_effective_pos(container)
+    child_absolute_x = container_x + child.x
+    child_absolute_y = container_y + child.y
+    ```
+    
+    Notes
+    -----
+    - RelativeLayout widgets use local coordinate system where (0, 0) is 
+      always the bottom-left corner of the layout
+    - Regular widgets use absolute coordinates within their parent
+    - This function abstracts away this difference for canvas operations
+    """
+    if isinstance(widget, RelativeLayout):
+        return (0, 0)
+    
+    return (widget.x, widget.y)
 
 
 @dataclass(frozen=True)

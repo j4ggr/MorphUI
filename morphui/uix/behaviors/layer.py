@@ -22,11 +22,11 @@ from kivy.properties import BooleanProperty
 from kivy.properties import AliasProperty
 from kivy.properties import VariableListProperty
 from kivy.properties import BoundedNumericProperty
-from kivy.uix.relativelayout import RelativeLayout
 from kivy.graphics.tesselator import Tesselator
 
 from morphui._typing import InteractionState
 from morphui.constants import NAME
+from morphui.utils.helpers import get_effective_pos
 
 from .appreference import MorphAppReferenceBehavior
 from .states import MorphStateBehavior
@@ -84,8 +84,7 @@ class BaseLayerBehavior(
 
     rounded_rectangle_params: List[float] = AliasProperty(
         lambda self: [
-            0 if isinstance(self, RelativeLayout) else self.x,
-            0 if isinstance(self, RelativeLayout) else self.y,
+            *get_effective_pos(self),
             self.width,
             self.height,
             *self.clamped_radius], # type: ignore
@@ -814,9 +813,10 @@ class MorphInteractionLayerBehavior(BaseLayerBehavior):
 
         The (x, y) position of the interaction layer is calculated
         by accounting for any expansion."""
+        x, y = get_effective_pos(self)
         return (
-            self.x - self.interaction_layer_expansion[0],
-            self.y - self.interaction_layer_expansion[1],)
+            x - self.interaction_layer_expansion[0],
+            y - self.interaction_layer_expansion[1],)
 
     @property
     def interaction_layer_size(self) -> Tuple[float, float]:
@@ -886,13 +886,8 @@ class MorphInteractionLayerBehavior(BaseLayerBehavior):
 
     def _update_interaction_layer(self, *args) -> None:
         """Update the state layer position and size."""
-        expansion = self.interaction_layer_expansion
-        self._interaction_instruction.pos = (
-            self.x - expansion[0],
-            self.y - expansion[1])
-        self._interaction_instruction.size = (
-            self.size[0] + (expansion[0] + expansion[2]), 
-            self.size[1] + (expansion[1] + expansion[3]))
+        self._interaction_instruction.pos = self.interaction_layer_pos
+        self._interaction_instruction.size = self.interaction_layer_size
         self._interaction_instruction.radius = self.clamped_radius
         
         state = self.current_interaction_state
@@ -1424,9 +1419,7 @@ class MorphOverlayLayerBehavior(BaseLayerBehavior):
             List containing four lists, each with [x1, y1, x2, y2]
             coordinates for the edge lines.
         """
-        is_relative = isinstance(self, RelativeLayout)
-        left = (0 if is_relative else self.x)
-        bottom = (0 if is_relative else self.y)
+        left, bottom = get_effective_pos(self)
         right = left + self.width
         top = bottom + self.height
         offset = dp(self.overlay_edge_width) if self.overlay_edge_inside else 0
