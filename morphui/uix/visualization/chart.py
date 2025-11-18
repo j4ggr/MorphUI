@@ -10,6 +10,7 @@ from matplotlib.backend_bases import _Mode
 
 from kivy.metrics import dp
 from kivy.properties import ObjectProperty
+from kivy.properties import VariableListProperty
 
 from morphui.utils import clean_config
 from morphui.uix.label import MorphSimpleLabel
@@ -17,7 +18,7 @@ from morphui.uix.button import MorphIconButton
 from morphui.uix.boxlayout import MorphBoxLayout
 from morphui.uix.behaviors import MorphMenuMotionBehavior
 from morphui.uix.behaviors import MorphToggleButtonBehavior
-from morphui.uix.anchorlayout import MorphAnchorLayout
+from morphui.uix.floatlayout import MorphFloatLayout
 from morphui.uix.visualization import MorphPlotWidget
 from morphui.uix.visualization.backend import Navigation
 from morphui.uix.visualization.backend import FigureCanvas
@@ -289,7 +290,7 @@ class MorphChartToolbar(MorphChartNavigationButton):
             self.navigation.pan()
 
 
-class MorphChart(MorphAnchorLayout):
+class MorphChart(MorphFloatLayout):
     """Chart component for data visualization within MorphUI.
 
     This class integrates a `MorphPlotWidget` with a toolbar for
@@ -371,6 +372,19 @@ class MorphChart(MorphAnchorLayout):
     and defaults to `None`.
     """
 
+    padding: VariableListProperty = VariableListProperty(
+        [dp(8), dp(8), dp(8), dp(8)])
+    """Padding around the chart components.
+
+    This property defines the padding around the chart components
+    (plot widget, toolbar, info label) within the `MorphChart`. It is a
+    list of four values representing the padding on the left, top,
+    right, and bottom sides, respectively.
+
+    :attr:`padding` is a :class:`~kivy.properties.VariableListProperty`
+    and defaults to `[dp(8), dp(8), dp(8), dp(8)]`.
+    """
+
     kw_savefig: Dict[str, Any]
     """Keyword arguments for saving the figure.
 
@@ -407,34 +421,32 @@ class MorphChart(MorphAnchorLayout):
     """
 
     default_config: Dict[str, Any] = dict(
-        surface_color=(1.0, 1.0, 1.0, 1.0),  # White background for charts
-        size_hint=(1, 1),
-        anchor_x='right',
-        anchor_y='top',
-        padding=dp(8))
+        surface_color=(1.0, 1.0, 0.0, 1.0),  # White background for charts
+        size_hint=(1, 1),)
     """Default configuration for the MorphChart."""
 
     def __init__(
             self,
             kw_savefig: Dict[str, Any] = {},
             **kwargs) -> None:
-        self.kw_savefig = kw_savefig
         config = clean_config(self.default_config, kwargs)
+
+        self.kw_savefig = kw_savefig
         super().__init__(**config)
         self.info_label = MorphChartInfoLabel()
         self.toolbar = MorphChartToolbar(info_label=self.info_label)
         self.plot_widget = MorphPlotWidget(toolbar=self.toolbar)
         self.toolbar.plot_widget = self.plot_widget
-        self.toolbar.menu.identities.chart_toolbar_save_button.bind(
-            on_release=self.save_figure)
-        
-        self.bind(
-            pos=self._update_layout,
-            size=self._update_layout,)
 
         self.add_widget(self.plot_widget)
         self.add_widget(self.toolbar)
         self.add_widget(self.info_label)
+        
+        self.bind(
+            pos=self._update_layout,
+            size=self._update_layout,)
+        self.toolbar.menu.identities.chart_toolbar_save_button.bind(
+            on_release=self.save_figure)
 
         self._update_layout()
         
@@ -546,8 +558,13 @@ class MorphChart(MorphAnchorLayout):
 
     def _update_layout(self, *args) -> None:
         """Update the layout of the chart components."""
-        self.plot_widget.size = self.size
-        self.plot_widget.pos = (0, 0)
+        self.plot_widget.pos = (
+            self.x + self.padding[0],
+            self.y + self.padding[3],)
+        self.plot_widget.size = (
+            self.width - self.padding[0] - self.padding[2],
+            self.height - self.padding[1] - self.padding[3])
         self.toolbar.pos = (
-            self.x + self.width - self.toolbar.width,
-            self.y + self.height - self.toolbar.height)
+            self.plot_widget.x + self.plot_widget.width - self.toolbar.width,
+            self.plot_widget.y + self.plot_widget.height - self.toolbar.height)
+        

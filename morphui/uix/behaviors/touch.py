@@ -537,12 +537,12 @@ class MorphRippleBehavior(EventDispatcher):
         This method updates the `ripple_pos` property to reflect the
         current position of the touch event.
         """
-        touch_x, touch_y = touch_pos
+        x_touch, y_touch = touch_pos
         if isinstance(self, RelativeLayout):
-            x, y = self.to_window(self.x, self.y)
-            self.ripple_pos = [touch_x - x, touch_y - y]
+            x_window, y_window = self.to_window(self.x, self.y)
+            self.ripple_pos = [x_touch - x_window, y_touch - y_window]
         else:
-            self.ripple_pos = [touch_x, touch_y]
+            self.ripple_pos = [x_touch, y_touch]
 
     def determine_ripple_color(self) -> List[float]:
         """Get the effective ripple color, falling back to interaction 

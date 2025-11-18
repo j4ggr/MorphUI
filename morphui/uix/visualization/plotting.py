@@ -189,8 +189,7 @@ class MorphPlotWidget(
 
     default_config: Dict[str, Any] = dict(
         surface_color=(1.0, 1.0, 1.0, 1.0),  # White background for charts
-        size_hint=(1, 1),
-        pos_hint={'center_x': 0.5, 'center_y': 0.5},)
+        size_hint=(1, 1),)
     """Default configuration for the plot widget."""
 
     def __init__(self, *args, **kwargs) -> None:
