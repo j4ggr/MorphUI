@@ -25,7 +25,6 @@ def create_color_property_mapping() -> Dict[str, str]:
         'content_primary_color': 'on_primary',
         'primary_container_color': 'primary_container',
         'content_primary_container_color': 'on_primary_container',
-        'inverse_primary_color': 'inverse_primary',
         'secondary_color': 'secondary',
         'content_secondary_color': 'on_secondary',
         'secondary_container_color': 'secondary_container',
@@ -53,7 +52,8 @@ def create_color_property_mapping() -> Dict[str, str]:
         'surface_container_highest_color': 'surface_container_highest',
         'surface_tint_color': 'surface_tint',
         'inverse_surface_color': 'inverse_surface',
-        'inverse_on_surface_color': 'inverse_on_surface',
+        'inverse_primary_color': 'inverse_primary',
+        'inverse_content_surface_color': 'inverse_on_surface',
         'outline_color': 'outline',
         'outline_variant_color': 'outline_variant',
         'shadow_color': 'shadow',
@@ -99,7 +99,7 @@ class MorphDynamicColorPalette(EventDispatcher):
         - surface_container_high_color, surface_container_highest_color
         - content_surface_color, surface_variant_color,
           content_surface_variant_color
-        - inverse_surface_color, inverse_on_surface_color
+        - inverse_surface_color, inverse_content_surface_color
     Outline and shadow colors:
         - outline_color, outline_variant_color
         - shadow_color, scrim_color
@@ -408,11 +408,11 @@ class MorphDynamicColorPalette(EventDispatcher):
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 
-    inverse_on_surface_color: List[float] | None = ColorProperty(None)
+    inverse_content_surface_color: List[float] | None = ColorProperty(None)
     """Inverse on surface color.
     This property holds the dynamic color value set by the theme.
 
-    :attr:`inverse_on_surface_color` is a
+    :attr:`inverse_content_surface_color` is a
     :class:`~kivy.properties.ColorProperty` that holds a dynamic color
     value and defaults to None"""
 

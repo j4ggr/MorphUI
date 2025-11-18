@@ -288,6 +288,11 @@ class ThemeManager(MorphDynamicColorPalette):
         seed_color : str
             The new seed color value.
         """
+        _seed_color = seed_color.lower().capitalize()
+        if _seed_color != seed_color:
+            self.seed_color = _seed_color
+            return
+        
         assert seed_color in self.available_seed_colors, (
             f'Seed color {seed_color!r} is not registered. Use '
             'register_seed_color() to add it. Available colors: '
