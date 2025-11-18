@@ -21,23 +21,25 @@ from kivy.metrics import dp
 from kivy.uix.screenmanager import ScreenManager, Screen
 
 from morphui.app import MorphApp
-from morphui.uix.visualization import MorphChart, VISUALIZATION_AVAILABLE
-from morphui.uix.boxlayout import MorphBoxLayout
-from morphui.uix.button import MorphButton
 from morphui.uix.label import MorphLabel
+from morphui.uix.button import MorphButton
+from morphui.uix.boxlayout import MorphBoxLayout
+from morphui.uix.visualization import MorphChart
+from morphui.uix.visualization import VISUALIZATION_AVAILABLE
 
 
 class VisualizationExample(MorphApp):
     """Example application demonstrating MorphUI visualization capabilities."""
     
-    def build(self):
+    def build(self) -> MorphLabel | MorphBoxLayout:
         """Build the main application interface."""
+        self.theme_manager.theme_mode = 'Dark'
+        self.theme_manager.seed_color = 'Orange'
         if not VISUALIZATION_AVAILABLE:
             return MorphLabel(
                 text="Visualization components not available.\nInstall with: pip install morphui[visualization]",
                 halign='center',
-                valign='center'
-            )
+                valign='center')
         
         # Create screen manager for different chart examples
         self.screen_manager = ScreenManager()
@@ -49,30 +51,32 @@ class VisualizationExample(MorphApp):
         self.screen_manager.add_widget(self.create_multiple_plots_screen())
         
         # Create main layout with navigation
-        main_layout = MorphBoxLayout(orientation='vertical', spacing=dp(10), padding=dp(20))
-        
-        # Navigation buttons
-        nav_layout = MorphBoxLayout(orientation='horizontal', spacing=dp(10), size_hint_y=None, height=dp(50))
-        
-        nav_layout.add_widget(MorphButton(
-            text="Line Chart",
-            on_release=lambda x: setattr(self.screen_manager, 'current', 'line_chart')
-        ))
-        nav_layout.add_widget(MorphButton(
-            text="Scatter Plot", 
-            on_release=lambda x: setattr(self.screen_manager, 'current', 'scatter_plot')
-        ))
-        nav_layout.add_widget(MorphButton(
-            text="Bar Chart",
-            on_release=lambda x: setattr(self.screen_manager, 'current', 'bar_chart')
-        ))
-        nav_layout.add_widget(MorphButton(
-            text="Multiple Plots",
-            on_release=lambda x: setattr(self.screen_manager, 'current', 'multiple_plots')
-        ))
-        
-        main_layout.add_widget(nav_layout)
-        main_layout.add_widget(self.screen_manager)
+        main_layout = MorphBoxLayout(
+            MorphBoxLayout(
+                MorphButton(
+                    text="Line Chart",
+                    on_release=lambda x: setattr(
+                        self.screen_manager, 'current', 'line_chart')),
+                MorphButton(
+                    text="Scatter Plot", 
+                    on_release=lambda x: setattr(
+                        self.screen_manager, 'current', 'scatter_plot')),
+                MorphButton(
+                    text="Bar Chart",
+                    on_release=lambda x: setattr(
+                        self.screen_manager, 'current', 'bar_chart')),
+                MorphButton(
+                    text="Multiple Plots",
+                    on_release=lambda x: setattr(
+                        self.screen_manager, 'current', 'multiple_plots')),
+                orientation='horizontal',
+                spacing=dp(10),
+                size_hint_y=None,
+                height=dp(50)),
+            self.screen_manager,
+            orientation='vertical',
+            spacing=dp(10),
+            padding=dp(20))
         
         return main_layout
     
