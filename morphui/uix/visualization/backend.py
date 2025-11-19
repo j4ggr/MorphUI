@@ -1,4 +1,3 @@
-from token import NAME
 import warnings
 
 from typing import Any

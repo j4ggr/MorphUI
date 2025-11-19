@@ -1,6 +1,8 @@
 import math
 import warnings
 import weakref
+import textwrap
+
 
 from typing import Any
 from typing import Self
@@ -16,6 +18,7 @@ from matplotlib.backend_bases import MouseEvent
 from matplotlib.backend_bases import MouseButton
 from matplotlib.backends.backend_agg import RendererAgg
 
+from kivy.lang import Builder
 from kivy.base import EventLoop
 from kivy.metrics import dp
 from kivy.graphics import Color
@@ -153,18 +156,6 @@ class MorphPlotWidget(
     """Flag to distinguish whether the mouse is moved with the key 
     pressed or not."""
     
-    mouse_pos: List[float] = VariableListProperty([0, 0], length=2)
-    """Current mouse position relative to the parent widget.
-    
-    This property stores the [x, y] coordinates of the mouse cursor
-    position relative to the parent widget's coordinate system. It is
-    automatically updated during mouse movement events and used for
-    determining which matplotlib axes the cursor is hovering over.
-    
-    :attr:`mouse_pos` is a
-    :class:`~kivy.properties.VariableListProperty` and defaults to 
-    `[0, 0]`."""
-    
     inaxes: Axes | None = None
     """Current axis on which the mouse is hovering, is automatically 
     set in `on_mouse_pos` callback"""
@@ -189,7 +180,7 @@ class MorphPlotWidget(
 
     default_config: Dict[str, Any] = dict(
         surface_color=(1.0, 1.0, 1.0, 1.0),  # White background for charts
-        size_hint=(1, 1),)
+        size_hint=(None, None),)
     """Default configuration for the plot widget."""
 
     def __init__(self, *args, **kwargs) -> None:
@@ -226,6 +217,7 @@ class MorphPlotWidget(
         
         self.bind(
             size=self._update_figure_size,
+            pos=self._update_surface_layer,
             texture=self._update_surface_layer,
             rubberband_pos=self._update_rubberband_area,
             rubberband_size=self._update_rubberband_area,
@@ -326,14 +318,6 @@ class MorphPlotWidget(
 
         self.dispatch('on_surface_updated')
     
-    def on_mouse_pos(
-            self, caller: Self, mouse_pos: Tuple[float, float]) -> None:
-        """Callback function, called when `mouse_pos` attribute changes."""
-        if self.figure_canvas is None:
-            self.inaxes = None
-        else:
-            self.inaxes = self.figure_canvas.inaxes(mouse_pos)
-    
     def on_touch_down(self, touch: MotionEvent) -> None:
         """Callback function, called on mouse button press or touch 
         event."""
@@ -353,8 +337,19 @@ class MorphPlotWidget(
         self.is_pressed = True
         self.figure_canvas.button_press_event(
             x = touch.x,
-            y = touch.y - self.pos[1],
+            y = touch.y,
             button = self._button_(touch),
+            gui_event = touch)
+
+    def on_touch_move(self, touch: MotionEvent) -> None:
+        """Callback function, called on mouse movement event while mouse
+        button pressed or touch."""
+        if not self.collide_point(*touch.pos) or self.figure_canvas is None:
+            return
+
+        self.figure_canvas.motion_notify_event(
+            x = touch.x,
+            y = touch.y,
             gui_event = touch)
     
     def on_touch_up(self, touch: MotionEvent) -> None:
@@ -370,62 +365,46 @@ class MorphPlotWidget(
         self.is_pressed = False
         self.figure_canvas.button_release_event(
             x = touch.x,
-            y = touch.y - self.pos[1],
+            y = touch.y,
             button = self._button_(touch),
             gui_event = touch)
     
     def on_mouse_move(
             self, window: WindowSDL, mouse_pos: Tuple[float, float]) -> None:
         """Callback function, called on mouse movement event"""
-        self.mouse_pos = [
-            mouse_pos[0] - self.parent.x,
-            mouse_pos[1] - self.parent.y]
-        if self.collide_point(*self.mouse_pos) and not self.is_pressed:
-            if self.figure_canvas is None:
-                return
-            
-            self.figure_canvas.motion_notify_event(
-                x = self.mouse_pos[0],
-                y = self.mouse_pos[1] - self.pos[1],
-                gui_event = None)
-            self.adjust_toolbar_info_pos()
-        else:
+        if any((
+                not self.collide_point(*mouse_pos),
+                self.is_pressed,
+                self.figure_canvas is None)):
             self.clear_toolbar_info()
+            self.inaxes = None
+            return
 
-    def on_touch_move(self, touch: MotionEvent) -> None:
-        """Callback function, called on mouse movement event while mouse
-        button pressed or touch."""
-        if not self.collide_point(touch.x, touch.y):
-            return
-        
-        if self.figure_canvas is None:
-            return
-        
+        self.inaxes = self.figure_canvas.inaxes(mouse_pos)
         self.figure_canvas.motion_notify_event(
-            x = touch.x,
-            y = touch.y - self.pos[1],
-            gui_event = touch)
+            x = mouse_pos[0],
+            y = mouse_pos[1],
+            gui_event = None)
+        self.adjust_toolbar_info_pos(mouse_pos)
 
     def on_figure(self, caller: Self, figure: Figure) -> None:
         """Callback function, called when `figure` attribute changes."""
+        self.texture = None
         self.figure_canvas = FigureCanvas(figure, plot_widget=self)
         self.figure_canvas.draw()
-        bbox = getattr(figure, 'bbox', None)
-        if bbox is None:
-            warnings.warn('Figure bbox not found, cannot set size.')
-            return
-        
-        self.size = (math.ceil(bbox.width), math.ceil(bbox.height))
+        self.size = list(map(float, self.figure.bbox.size))
+        self._update_figure_size(self, self.size)
 
-    def _update_figure_size(
-            self, caller: Self, size: Tuple[float, float]) -> None:
+    def _update_figure_size(self, caller: Self, size: List[float]) -> None:
         """Creat a new, correctly sized bitmap"""
         if self.figure is None or size[0] <= 1 or size[1] <= 1:
             return
         
-        self.figure.set_size_inches(
-            size[0] / self.figure.dpi,
-            size[1] / self.figure.dpi)
+        fig_size = (size[0] / self.figure.dpi, size[1] / self.figure.dpi)
+        if tuple(self.figure.get_size_inches()) == fig_size:
+            return
+
+        self.figure.set_size_inches(*fig_size, forward=True)
         self.figure_canvas.resize_event()
         self.figure_canvas.draw()
     
@@ -506,8 +485,6 @@ class MorphPlotWidget(
             x0, x1 = x1, x0
         if y0 > y1: 
             y0, y1 = y1, y0
-        y0 += self.pos[1]
-        y1 += self.pos[1]
 
         x0, x1, y0, y1 = float(x0), float(x1), float(y0), float(y1)
         self.rubberband_pos = [x0, y0]
@@ -536,21 +513,43 @@ class MorphPlotWidget(
         
         self.toolbar.info_label.text = ''
     
-    def adjust_toolbar_info_pos(self, *args) -> None:
-        """Adjust position of toolbar label if available"""
+    def adjust_toolbar_info_pos(
+            self,
+            pos: Tuple[float, float],
+            center_x: bool = True
+            ) -> None:
+        """Adjust position of toolbar label if available
+        
+        This method repositions the toolbar's info label to the given
+        position. It is typically called during mouse movement events
+        to keep the info label near the cursor.
+        
+        Parameters
+        ----------
+        pos : Tuple[float, float]
+            The position (x, y) to align the info label to.
+        center_x : bool, optional
+            Whether to center the label horizontally at the given x
+            position. Defaults to True.
+
+        Notes
+        -----
+        If the toolbar or info label is not available, the method
+        exits without making any changes.
+        """
         if self.toolbar is None or self.toolbar.info_label.text == '':
             return
-        self.toolbar.info_label.pos = (
-            self.mouse_pos[0] - self.toolbar.info_label.width/2,
-            self.mouse_pos[1])
+        
+        x_offset = -self.toolbar.info_label.width / 2 if center_x else 0
+        self.toolbar.info_label.pos = (pos[0] + x_offset, pos[1] + dp(4))
 
     def _draw_bitmap_(self, renderer: RendererAgg) -> None:
         """Draw the bitmap from the given renderer into the texture."""
-        size = renderer.get_canvas_width_height()
-        bitmap = renderer.tostring_argb()
-
-        self.texture = Texture.create(size=size)
-        self.texture.blit_buffer(bitmap, colorfmt='argb', bufferfmt='ubyte')
+        self.texture = Texture.create(size=self.size,)
+        self.texture.blit_buffer(
+            renderer.tostring_argb(),
+            colorfmt='argb',
+            bufferfmt='ubyte')
     
     def _button_(
             self,
