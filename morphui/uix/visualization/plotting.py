@@ -382,6 +382,7 @@ class MorphPlotWidget(
             self.inaxes = None
             return
     
+        
         self.inaxes = self.figure_canvas.inaxes(mouse_pos)
         self.figure_canvas.motion_notify_event(
             *mouse_pos,
