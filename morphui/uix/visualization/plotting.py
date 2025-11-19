@@ -1,8 +1,4 @@
-import math
-import warnings
 import weakref
-import textwrap
-
 
 from typing import Any
 from typing import Self
@@ -18,7 +14,6 @@ from matplotlib.backend_bases import MouseEvent
 from matplotlib.backend_bases import MouseButton
 from matplotlib.backends.backend_agg import RendererAgg
 
-from kivy.lang import Builder
 from kivy.base import EventLoop
 from kivy.metrics import dp
 from kivy.graphics import Color
@@ -317,6 +312,16 @@ class MorphPlotWidget(
         self._texture_rectangle_instruction.texture = self.texture
 
         self.dispatch('on_surface_updated')
+
+    def to_figure_canvas(self, x: float, y: float) -> Tuple[float, float]:
+        """Convert widget coordinates to figure canvas coordinates.
+
+        This method transforms the given (x, y) coordinates from
+        widget space to figure canvas space, accounting for the
+        coordinate system differences between Kivy and Matplotlib.
+        """
+        x, y = self.to_widget(x, y)
+        return x, y
     
     def on_touch_down(self, touch: MotionEvent) -> None:
         """Callback function, called on mouse button press or touch 
@@ -336,10 +341,9 @@ class MorphPlotWidget(
         
         self.is_pressed = True
         self.figure_canvas.button_press_event(
-            x = touch.x,
-            y = touch.y,
-            button = self._button_(touch),
-            gui_event = touch)
+            *touch.pos,
+            button=self._button_(touch),
+            gui_event=touch)
 
     def on_touch_move(self, touch: MotionEvent) -> None:
         """Callback function, called on mouse movement event while mouse
@@ -348,9 +352,8 @@ class MorphPlotWidget(
             return
 
         self.figure_canvas.motion_notify_event(
-            x = touch.x,
-            y = touch.y,
-            gui_event = touch)
+            *touch.pos,
+            gui_event=touch)
     
     def on_touch_up(self, touch: MotionEvent) -> None:
         """Callback function, called on mouse button release or touch up
@@ -364,10 +367,9 @@ class MorphPlotWidget(
         
         self.is_pressed = False
         self.figure_canvas.button_release_event(
-            x = touch.x,
-            y = touch.y,
-            button = self._button_(touch),
-            gui_event = touch)
+            *touch.pos,
+            button=self._button_(touch),
+            gui_event=touch)
     
     def on_mouse_move(
             self, window: WindowSDL, mouse_pos: Tuple[float, float]) -> None:
@@ -379,11 +381,10 @@ class MorphPlotWidget(
             self.clear_toolbar_info()
             self.inaxes = None
             return
-
+    
         self.inaxes = self.figure_canvas.inaxes(mouse_pos)
         self.figure_canvas.motion_notify_event(
-            x = mouse_pos[0],
-            y = mouse_pos[1],
+            *mouse_pos,
             gui_event = None)
         self.adjust_toolbar_info_pos(mouse_pos)
 

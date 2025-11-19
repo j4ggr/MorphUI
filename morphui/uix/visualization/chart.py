@@ -371,7 +371,7 @@ class MorphChart(MorphFloatLayout):
     """
 
     padding: VariableListProperty = VariableListProperty(
-        [dp(8), dp(8), dp(8), dp(8)])
+        [dp(0)], length=4)
     """Padding around the chart components.
 
     This property defines the padding around the chart components
@@ -380,7 +380,7 @@ class MorphChart(MorphFloatLayout):
     right, and bottom sides, respectively.
 
     :attr:`padding` is a :class:`~kivy.properties.VariableListProperty`
-    and defaults to `[dp(8), dp(8), dp(8), dp(8)]`.
+    and defaults to `[dp(0), dp(0), dp(0), dp(0)]`.
     """
 
     kw_savefig: Dict[str, Any]
