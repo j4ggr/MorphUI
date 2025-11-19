@@ -419,7 +419,8 @@ class MorphChart(MorphFloatLayout):
     """
 
     default_config: Dict[str, Any] = dict(
-        surface_color=(1.0, 1.0, 0.0, 1.0),  # White background for charts
+        theme_color_bindings=dict(
+            surface_color='transparent_color',),
         size_hint=(1, 1),)
     """Default configuration for the MorphChart."""
 
@@ -447,6 +448,16 @@ class MorphChart(MorphFloatLayout):
             on_release=self.save_figure)
 
         self._update_layout()
+
+    def on_touch_down(self, touch) -> None:
+        """Callback function, called on mouse button press or touch.
+
+        This method dismisses the toolbar menu if a touch occurs
+        outside the chart area.
+        """
+        if not self.plot_widget.collide_point(*touch.pos):
+            self.toolbar.menu.dismiss()
+        return super().on_touch_down(touch)
         
     def on_figure(self, instance: Any, figure: Figure) -> None:
         """Callback function, called when `figure` attribute changes.
@@ -567,9 +578,9 @@ class MorphChart(MorphFloatLayout):
             self.plot_widget.x
             + self.plot_widget.width
             - self.toolbar.width
-            - self.padding[2])
+            - dp(4))
         self.toolbar.y = (
             self.plot_widget.y
             + self.plot_widget.height
             - self.toolbar.height
-            - self.padding[3])
+            - dp(4))
