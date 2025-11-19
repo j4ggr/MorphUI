@@ -42,7 +42,7 @@ class MorphChartInfoLabel(MorphSimpleLabel):
     """
     default_config: Dict[str, Any] = dict(
         theme_color_bindings=dict(
-            content_color='content_surface_color',),
+            content_color='content_primary_fixed_variant_color',),
         typography_role='Label',
         typography_size='medium',
         typography_weight='Regular',
@@ -60,9 +60,8 @@ class MorphChartNavigationButton(MorphIconButton):
         valign='center',
         theme_color_bindings={
             'surface_color': 'transparent_color',
-            'content_color': 'content_secondary_fixed_color',
-            'hovered_content_color': 'content_secondary_fixed_variant_color',
-            'border_color': 'outline_variant_color',},
+            'content_color': 'content_primary_fixed_variant_color',
+            'hovered_content_color': 'content_primary_fixed_color',},
         typography_role=MorphIconButton.default_config['typography_role'],
         typography_size=MorphIconButton.default_config['typography_size'],
         interaction_gray_value=0.0,
@@ -83,11 +82,10 @@ class MorphChartNavigationToggleButton(
         MorphChartNavigationButton.default_config.copy() | dict(
         theme_color_bindings={
             'surface_color': 'transparent_color',
-            'content_color': 'content_secondary_fixed_color',
-            'hovered_content_color': 'content_secondary_fixed_variant_color',
-            'active_content_color': 'content_primary_fixed_color',
-            'border_color': 'outline_variant_color',
-            'active_border_color': 'primary_color'},
+            'active_surface_color': 'primary_fixed_color',
+            'content_color': 'content_primary_fixed_variant_color',
+            'hovered_content_color': 'content_primary_fixed_color',
+            'active_content_color': 'content_primary_fixed_color',},
         active_radius_enabled=True,))
 
 
@@ -559,12 +557,21 @@ class MorphChart(MorphFloatLayout):
     def _update_layout(self, *args) -> None:
         """Update the layout of the chart components."""
         self.plot_widget.pos = (
-            self.x + self.padding[0],
-            self.y + self.padding[3],)
+            self.pos[0] + self.padding[0],
+            self.pos[1] + self.padding[1])
         self.plot_widget.size = (
-            self.width - self.padding[0] - self.padding[2],
-            self.height - self.padding[1] - self.padding[3])
-        self.toolbar.pos = (
-            self.plot_widget.x + self.plot_widget.width - self.toolbar.width,
-            self.plot_widget.y + self.plot_widget.height - self.toolbar.height)
+            self.size[0] - self.padding[0] - self.padding[2],
+            self.size[1] - self.padding[1] - self.padding[3])
         
+        print(self.size, self.plot_widget.size)
+
+        self.toolbar.x = (
+            self.plot_widget.x
+            + self.plot_widget.width
+            - self.toolbar.width
+            - self.padding[2])
+        self.toolbar.y = (
+            self.plot_widget.y
+            + self.plot_widget.height
+            - self.toolbar.height
+            - self.padding[3])
