@@ -1,3 +1,4 @@
+from token import NAME
 import warnings
 
 from typing import Any
@@ -65,55 +66,91 @@ class FigureCanvas(FigureCanvasAgg):
     
     def enter_notify_event(self, gui_event=None) -> None: # pyright: ignore[reportIncompatibleMethodOverride]
         name = 'figure_enter_event'
-        figure_enter_event = Event(name, self, gui_event)
-        self.callbacks.process(name, figure_enter_event)
+        event = Event(
+            name=name,
+            canvas=self,
+            guiEvent=gui_event)
+        self.callbacks.process(name, event)
 
     def leave_notify_event(self, gui_event=None) -> None: # pyright: ignore[reportIncompatibleMethodOverride]
         name = 'figure_leave_event'
-        figure_leave_event = Event(name, self, gui_event)
-        self.callbacks.process(name, figure_leave_event)
+        event = Event(
+            name=name,
+            canvas=self,
+            guiEvent=gui_event)
+        self.callbacks.process(name, event)
 
     def resize_event(self) -> None:
         name = 'resize_event'
-        resize_event = ResizeEvent(name, self)
-        self.callbacks.process(name, resize_event)
+        event = ResizeEvent(
+            name=name,
+            canvas=self)
+        self.callbacks.process(name, event)
 
     def motion_notify_event(self, x, y, gui_event=None) -> None: # pyright: ignore[reportIncompatibleMethodOverride]
         name = 'motion_notify_event'
-        self.callbacks.process(
-            name, MouseEvent(name, self, x, y, guiEvent=gui_event))
+        event = MouseEvent(
+            name=name,
+            canvas=self,
+            x=x, 
+            y=y,
+            guiEvent=gui_event)
+        self.callbacks.process(name, event)
 
     def button_press_event( # pyright: ignore[reportIncompatibleMethodOverride]
             self, x, y, button, dblclick=False, gui_event=None) -> None:
         name = 'button_press_event'
-        button_press_event = MouseEvent(
-            name, self, x, y, button=button, dblclick=dblclick,
+        event = MouseEvent(
+            name=name,
+            canvas=self,
+            x=x, 
+            y=y,
+            button=button,
+            dblclick=dblclick,
             guiEvent=gui_event)
-        self.callbacks.process(name, button_press_event)
-
+        self.callbacks.process(name, event)
+        
     def button_release_event( # pyright: ignore[reportIncompatibleMethodOverride]
             self, x, y, button, dblclick=False, gui_event=None) -> None:
         name = 'button_release_event'
-        button_release_event = MouseEvent(
-            name, self, x, y, button=button, dblclick=dblclick,
+        event = MouseEvent(
+            name=name,
+            canvas=self,
+            x=x, 
+            y=y,
+            button=button,
+            dblclick=dblclick,
             guiEvent=gui_event)
-        self.callbacks.process(name, button_release_event)
+        self.callbacks.process(name, event)
 
     def scroll_event(self, x, y, step, gui_event=None) -> None: # pyright: ignore[reportIncompatibleMethodOverride]
         name = 'scroll_event'
-        scroll_event = MouseEvent(
-            name, self, x, y, step=step, guiEvent=gui_event)
-        self.callbacks.process(name, scroll_event)
+        event = MouseEvent(
+            name=name,
+            canvas=self,
+            x=x, 
+            y=y,
+            step=step,
+            guiEvent=gui_event)
+        self.callbacks.process(name, event)
 
     def key_press_event(self, key, gui_event=None) -> None: # pyright: ignore[reportIncompatibleMethodOverride]
         name = 'key_press_event'
-        key_press_event = KeyEvent(name, self, key=key, guiEvent=gui_event)
-        self.callbacks.process(name, key_press_event)
+        event = KeyEvent(
+            name=name,
+            canvas=self,
+            key=key,
+            guiEvent=gui_event)
+        self.callbacks.process(name, event)
 
     def key_release_event(self, key, gui_event=None) -> None: # pyright: ignore[reportIncompatibleMethodOverride]
         name = 'key_release_event'
-        key_release_event = KeyEvent(name, self, key=key, guiEvent=gui_event)
-        self.callbacks.process(name, key_release_event)
+        event = KeyEvent(
+            name=name,
+            canvas=self,
+            key=key,
+            guiEvent=gui_event)
+        self.callbacks.process(name, event)
 
 
 class Navigation(NavigationToolbar2):
