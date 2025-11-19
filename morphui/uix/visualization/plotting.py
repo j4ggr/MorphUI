@@ -313,15 +313,32 @@ class MorphPlotWidget(
 
         self.dispatch('on_surface_updated')
 
-    def to_figure_canvas(self, x: float, y: float) -> Tuple[float, float]:
-        """Convert widget coordinates to figure canvas coordinates.
+    def window_to_figure_canvas(self, x: float, y: float) -> Tuple[float, float]:
+        """Convert window coordinates to figure canvas coordinates.
 
-        This method transforms the given (x, y) coordinates from
-        widget space to figure canvas space, accounting for the
-        coordinate system differences between Kivy and Matplotlib.
+        This method transforms the given (x, y) coordinates from window
+        space to figure canvas space.
         """
-        x, y = self.to_widget(x, y)
-        return x, y
+        x_offset, y_offset = self.to_window(*self.pos)
+        return x - x_offset, y - y_offset
+
+    def touch_to_figure_canvas(self, touch: MotionEvent) -> Tuple[float, float]:
+        """Convert touch coordinates to figure canvas coordinates.
+
+        This method transforms the given touch event's (x, y)
+        coordinates from window space to figure canvas space.
+        """
+        return self.window_to_figure_canvas(*self.to_window(touch.x, touch.y))
+    
+    def figure_canvas_to_widget(self, x: float, y: float) -> Tuple[float, float]:
+        """Convert figure canvas coordinates to widget coordinates.
+
+        This method transforms the given (x, y) coordinates from figure
+        canvas space to widget space.
+        """
+        x_offset, y_offset = self.to_window(*self.pos)
+        x, y = x + x_offset, y + y_offset
+        return self.to_widget(x, y)
     
     def on_touch_down(self, touch: MotionEvent) -> None:
         """Callback function, called on mouse button press or touch 
@@ -341,7 +358,7 @@ class MorphPlotWidget(
         
         self.is_pressed = True
         self.figure_canvas.button_press_event(
-            *touch.pos,
+            *self.touch_to_figure_canvas(touch),
             button=self._button_(touch),
             gui_event=touch)
 
@@ -352,7 +369,7 @@ class MorphPlotWidget(
             return
 
         self.figure_canvas.motion_notify_event(
-            *touch.pos,
+            *self.touch_to_figure_canvas(touch),
             gui_event=touch)
     
     def on_touch_up(self, touch: MotionEvent) -> None:
@@ -367,7 +384,7 @@ class MorphPlotWidget(
         
         self.is_pressed = False
         self.figure_canvas.button_release_event(
-            *touch.pos,
+            *self.touch_to_figure_canvas(touch),
             button=self._button_(touch),
             gui_event=touch)
     
@@ -381,13 +398,13 @@ class MorphPlotWidget(
             self.clear_toolbar_info()
             self.inaxes = None
             return
-    
-        
-        self.inaxes = self.figure_canvas.inaxes(mouse_pos)
+
+        transformed_pos = self.window_to_figure_canvas(*mouse_pos)
+        self.inaxes = self.figure_canvas.inaxes(transformed_pos)
         self.figure_canvas.motion_notify_event(
-            *mouse_pos,
+            *transformed_pos,
             gui_event = None)
-        self.adjust_toolbar_info_pos(mouse_pos)
+        self.adjust_toolbar_info_pos(self.to_widget(*mouse_pos))
 
     def on_figure(self, caller: Self, figure: Figure) -> None:
         """Callback function, called when `figure` attribute changes."""
@@ -483,12 +500,10 @@ class MorphPlotWidget(
                 y0, y1 = ax.bbox.intervaly
                 self.toolbar.navigation.zoom_x_only = True
 
-        if x0 > x1: 
-            x0, x1 = x1, x0
-        if y0 > y1: 
-            y0, y1 = y1, y0
+        x0, x1, y0, y1 = map(float, (*sorted((x0, x1)), *sorted((y0, y1))))
+        x0, y0 = self.figure_canvas_to_widget(x0, y0)
+        x1, y1 = self.figure_canvas_to_widget(x1, y1)
 
-        x0, x1, y0, y1 = float(x0), float(x1), float(y0), float(y1)
         self.rubberband_pos = [x0, y0]
         self.rubberband_size = [x1 - x0, y1 - y0]
         self.rubberband_corners = [x0, y0, x1, y0, x1, y1, x0, y1, x0, y0]

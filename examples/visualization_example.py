@@ -108,7 +108,7 @@ class VisualizationExample(MorphApp):
         # Set the figure - this automatically sets up all interactive features!
         chart.figure = fig
         
-        layout = MorphBoxLayout(orientation='vertical', spacing=dp(10), padding=dp(10))
+        layout = MorphBoxLayout(orientation='vertical', spacing=dp(10), padding=dp(30))
         layout.add_widget(MorphLabel(
             text="Line Chart with multiple series. Try the toolbar for zoom, pan, and save!",
             size_hint_y=None,

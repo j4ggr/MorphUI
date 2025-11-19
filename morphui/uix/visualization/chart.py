@@ -562,8 +562,6 @@ class MorphChart(MorphFloatLayout):
         self.plot_widget.size = (
             self.size[0] - self.padding[0] - self.padding[2],
             self.size[1] - self.padding[1] - self.padding[3])
-        
-        print(self.size, self.plot_widget.size)
 
         self.toolbar.x = (
             self.plot_widget.x
