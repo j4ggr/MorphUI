@@ -17,6 +17,7 @@ from typing import Tuple
 
 from kivy.metrics import dp
 from kivy.properties import ListProperty
+from kivy.properties import AliasProperty
 from kivy.properties import BooleanProperty
 from kivy.core.window import Window
 from kivy.input.motionevent import MotionEvent
@@ -121,11 +122,30 @@ class MorphResizeBehavior(
     
     Prevents the widget from being resized smaller than these dimensions.
     Useful for maintaining usability and preventing widgets from becoming
-    too small to interact with. Use [None, None] to disable minimum size
-    constraints.
+    too small to interact with. Use [0, 0] to disable minimum size
+    constraints. If None is specified for a dimension, the widget's
+    inherent minimum size will be used.
     
     :attr:`min_size` is a :class:`~kivy.properties.ListProperty`
     and defaults to [None, None].
+    """
+
+    _resolved_min_size: Tuple[float, float] = AliasProperty(
+        lambda self: (
+            self.min_size[0] or self.minimum_width,
+            self.min_size[1] or self.minimum_height),
+        bind=['min_size', 'minimum_width', 'minimum_height'],
+        cache=True)
+    """Resolved minimum size considering widget's minimum dimensions.
+
+    This property computes the effective minimum size by combining
+    :attr:`min_size` with the widget's inherent minimum dimensions
+    (`minimum_width` and `minimum_height`). It ensures that the widget
+    cannot be resized below its functional limits if no explicit minimum
+    size is set.
+
+    :attr:`_resolved_min_size` is a
+    :class:`~kivy.properties.AliasProperty` and is read-only.
     """
 
     max_size: List[float | None] = ListProperty([None], length=2)
@@ -136,6 +156,23 @@ class MorphResizeBehavior(
     
     :attr:`max_size` is a :class:`~kivy.properties.ListProperty`
     and defaults to [None, None].
+    """
+
+    _resolved_max_size: Tuple[float, float] = AliasProperty(
+        lambda self: (
+            self.max_size[0] or float('inf'),
+            self.max_size[1] or float('inf')),
+        bind=['max_size'],
+        cache=True)
+    """Resolved maximum size considering widget's maximum dimensions.
+
+    This property gets the effective maximum size by combining
+    :attr:`max_size` with infinity for any dimension not explicitly set.
+    It ensures that there is no upper limit on resizing if no maximum
+    size is defined.
+
+    :attr:`_resolved_max_size` is a
+    :class:`~kivy.properties.AliasProperty` and is read-only.
     """
 
     preserve_aspect_ratio: bool = BooleanProperty(False)
@@ -391,8 +428,8 @@ class MorphResizeBehavior(
                 else: 
                     h = w / target_ratio    # Height is too large relative to width
 
-        w = clamp(w, self.min_size[0], self.max_size[0])
-        h = clamp(h, self.min_size[1], self.max_size[1])
+        w = clamp(w, self._resolved_min_size[0], self._resolved_max_size[0])
+        h = clamp(h, self._resolved_min_size[1], self._resolved_max_size[1])
         new_size = (w, h)
         new_pos = (x, y)
         self.dispatch(

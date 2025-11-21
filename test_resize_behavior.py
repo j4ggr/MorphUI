@@ -26,7 +26,7 @@ class ResizableBox(MorphBoxLayout, MorphResizeBehavior):
     """A simple resizable box layout."""
 
     default_options: Dict[str, Any] = dict(
-        min_size=(100, 100),
+        min_size=(None, None),
         max_size=(800, 600),
         size=(300, 200),
         resizing_overlay_edge_color=(0.7, 0.7, 0.7, 1),)
