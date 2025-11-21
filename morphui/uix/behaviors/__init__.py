@@ -41,6 +41,8 @@ from .motion import MorphMenuMotionBehavior
 
 from .icon import MorphIconBehavior
 
+from .scrollsync import MorphScrollSyncBehavior
+
 
 __all__ = [
     'MorphAppReferenceBehavior',        # App reference handling
@@ -71,4 +73,5 @@ __all__ = [
     'MorphRoundSidesBehavior',          # Automatic rounded sides
     'MorphMenuMotionBehavior',          # Menu motion behavior
     'MorphIconBehavior',                # Icon functionality
+    'MorphScrollSyncBehavior',          # Scroll synchronization behavior
 ]

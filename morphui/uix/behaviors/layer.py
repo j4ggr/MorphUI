@@ -1302,11 +1302,11 @@ class MorphOverlayLayerBehavior(BaseLayerBehavior):
     `[0, 0, 0, 0]`.
     """
 
-    overlay_edge_width: float = NumericProperty(2)
+    overlay_edge_width: float = NumericProperty(dp(2))
     """Width of the overlay edge.
 
     :attr:`overlay_edge_width` is a
-    :class:`~kivy.properties.NumericProperty` and defaults to 3.
+    :class:`~kivy.properties.NumericProperty` and defaults to 2.
     """
 
     overlay_edge_inside: bool = BooleanProperty(True)
