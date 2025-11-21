@@ -1,25 +1,26 @@
 from kivy.uix.recycleboxlayout import RecycleBoxLayout
+from kivy.uix.recycleview.layout import LayoutSelectionBehavior
 
+from morphui.uix.behaviors import MorphAutoSizingBehavior
 from morphui.uix.behaviors import MorphColorThemeBehavior
 from morphui.uix.behaviors import MorphSurfaceLayerBehavior
-from morphui.uix.behaviors import MorphDeclarativeBehavior
 
 
 __all__ = [
-    'MorphRecycleBoxLayout',]
+    'MorphRecycleBoxLayout',
+    'MorphSelectableRecycleBoxLayout',]
 
 
 class MorphRecycleBoxLayout(
-        MorphDeclarativeBehavior,
+        MorphAutoSizingBehavior,
         MorphColorThemeBehavior,
         MorphSurfaceLayerBehavior,
         RecycleBoxLayout):
-    """A RecycleBoxLayout that supports declarative child widgets via
-    :class:`~morphui.uix.behaviors.MorphDeclarativeBehavior`.
+    """A RecycleBoxLayout using MorphUI theming and surface layer 
+    behaviors.
 
-    This class combines the functionality of Kivy's RecycleBoxLayout with
-    several MorphUI behaviors to enhance its capabilities:
-    - `MorphDeclarativeBehavior`: Enables declarative property binding.
+    This class combines the functionality of Kivy's RecycleBoxLayout 
+    with several MorphUI behaviors to enhance its capabilities:
     - `MorphColorThemeBehavior`: Integrates color theming capabilities.
     - `MorphSurfaceLayerBehavior`: Provides surface styling options.
 
@@ -45,4 +46,17 @@ class MorphRecycleBoxLayout(
                 theme_style='surface',)
     MyApp().run()
     ```
+    """
+
+
+class MorphSelectableRecycleBoxLayout(
+        LayoutSelectionBehavior,
+        MorphRecycleBoxLayout):
+    """A selectable RecycleBoxLayout using MorphUI theming and surface
+    layer behaviors.
+
+    This class extends the MorphRecycleBoxLayout by adding selection
+    capabilities through the LayoutSelectionBehavior. It allows for
+    selecting items within the RecycleBoxLayout while maintaining the
+    theming and surface layer features provided by MorphUI.
     """
