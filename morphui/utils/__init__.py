@@ -9,6 +9,7 @@ from .helpers import clamp
 from .helpers import FrozenGeometry
 from .helpers import calculate_text_size
 from .helpers import clean_config
+from .helpers import calculate_widget_local_pos
 
 
 __all__ = [
@@ -17,4 +18,5 @@ __all__ = [
     'clamp',
     'FrozenGeometry',
     'calculate_text_size',
-    'clean_config',]
+    'clean_config',
+    'calculate_widget_local_pos',]

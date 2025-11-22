@@ -3,6 +3,7 @@ Helper utilities for MorphUI components
 """
 from typing import Any
 from typing import Dict
+from typing import List
 from typing import Tuple
 
 from dataclasses import dataclass
@@ -14,7 +15,7 @@ __all__ = [
     'calculate_text_size',
     'clamp',
     'get_effective_pos',
-    'calculate_local_touch_pos',
+    'calculate_widget_local_pos',
     'FrozenGeometry',]
 
 
@@ -195,77 +196,96 @@ def get_effective_pos(widget) -> Tuple[float, float]:
     return (widget.x, widget.y)
 
 
-def calculate_local_touch_pos(
-        widget, 
-        touch_pos: Tuple[float, float]
+def calculate_widget_local_pos(
+        widget: Any, 
+        window_pos: Tuple[float, float] | List[float]
         ) -> Tuple[float, float]:
-    """Calculate the local touch position accounting for relative layout offsets.
+    """Calculate widget-local coordinates from window coordinates.
     
-    This function converts touch coordinates from window space to widget-local
-    coordinates, accounting for coordinate system differences that occur when
-    widgets are placed inside RelativeLayout containers (such as Screen widgets).
+    This function converts coordinates from window space to widget-local
+    coordinates, accounting for coordinate system differences that occur
+    when widgets are placed inside RelativeLayout containers (such as
+    Screen widgets).
     
-    In RelativeLayout containers, child widgets use local coordinates where
-    their position is relative to the container, but touch events are reported
-    in absolute window coordinates. This function calculates the necessary
-    offset to transform the touch position into the widget's coordinate space.
+    This function works for all types of coordinate transformations:
+    - Touch events (touch down, move, up)
+    - Mouse coordinates (position, movement, hovering)
+    - Any other window-space coordinates that need widget-local conversion
+    
+    In RelativeLayout containers, child widgets use local coordinates
+    where their position is relative to the container, but events are
+    reported in absolute window coordinates. This function calculates
+    the necessary offset to transform any window position into the
+    widget's coordinate space.
     
     The calculation works by:
     1. Getting the widget's absolute window position using to_window()
     2. Comparing it with the widget's local position to find the offset
-    3. Applying this offset to the touch coordinates
+    3. Applying this offset to the input coordinates
     
     Parameters
     ----------
     widget
-        The widget for which to calculate local touch position. Must have
+        The widget for which to calculate local coordinates. Must have
         x, y attributes and a to_window() method (like Kivy widgets).
-    touch_pos : Tuple[float, float]
-        The touch position in window coordinates as (x, y).
+    window_pos : Tuple[float, float] | List[float]
+        The position in window coordinates as (x, y).
         
     Returns
     -------
     Tuple[float, float]
-        The touch position in widget-local coordinates as (x, y).
+        The position in widget-local coordinates as (x, y).
         
     Examples
     --------
     Calculate ripple position for touch events:
     
     ```python
-    from morphui.utils.helpers import calculate_local_touch_pos
+    from morphui.utils.helpers import calculate_widget_local_pos
     
     def on_touch_down(self, touch):
         # Convert window coordinates to widget-local coordinates
-        local_pos = calculate_local_touch_pos(self, touch.pos)
+        local_pos = calculate_widget_local_pos(self, touch.pos)
         self.ripple_pos = local_pos
     ```
     
-    Handle touch in RelativeLayout child:
+    Handle mouse hovering:
+    
+    ```python
+    def on_mouse_pos(self, *args):
+        mouse_x, mouse_y = Window.mouse_pos
+        local_x, local_y = calculate_widget_local_pos(self, (mouse_x, mouse_y))
+        # Use local coordinates for hover effects
+        self.is_hovered = self.collide_point(local_x, local_y)
+    ```
+    
+    Handle coordinates in RelativeLayout child:
     
     ```python
     # Widget inside a Screen (RelativeLayout)
     class MyWidget(Widget):
-        def on_touch_down(self, touch):
+        def on_touch_move(self, touch):
             # This correctly handles coordinate transformation
-            local_x, local_y = calculate_local_touch_pos(self, touch.pos)
+            local_x, local_y = calculate_widget_local_pos(self, touch.pos)
             # Use local_x, local_y for widget-relative calculations
     ```
     
     Notes
     -----
-    - This function is particularly important for widgets inside Screen widgets
-      or other RelativeLayout containers
-    - For widgets in regular layouts, this function typically returns the
-      same coordinates as the input (no offset needed)
+    - This function is particularly important for widgets inside Screen 
+      widgets or other RelativeLayout containers
+    - For widgets in regular layouts, this function typically returns
+      the same coordinates as the input (no offset needed)
+    - Works for any coordinate source: touch events, mouse position,
+      programmatic coordinates, etc.
     - The offset calculation handles the coordinate system differences
       automatically
     """
-    x_touch, y_touch = touch_pos
+    x_coord, y_coord = window_pos
     x_absolute, y_absolute = widget.to_window(widget.x, widget.y)
     x_offset = widget.x - x_absolute
     y_offset = widget.y - y_absolute
-    return (x_touch + x_offset, y_touch + y_offset)
+    return (x_coord + x_offset, y_coord + y_offset)
 
 
 @dataclass(frozen=True)

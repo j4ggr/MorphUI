@@ -24,7 +24,7 @@ from kivy.uix.behaviors import ToggleButtonBehavior
 from kivy.input.motionevent import MotionEvent
 
 from morphui.constants import NAME
-from morphui.utils.helpers import calculate_local_touch_pos
+from morphui.utils.helpers import calculate_widget_local_pos
 
 
 __all__ = [
@@ -531,23 +531,29 @@ class MorphRippleBehavior(EventDispatcher):
             self.fbind('disabled', self.fade_ripple_animation)
 
     def _evaluate_ripple_pos(self, touch_pos: Tuple[float, float]) -> None:
-        """Calculate and set the local ripple position from touch coordinates.
+        """Calculate and set the local ripple position from touch 
+        coordinates.
 
-        This method converts touch coordinates from window space to widget-local
-        coordinates and updates the `ripple_pos` property accordingly. The
-        coordinate transformation is necessary to ensure ripples appear at the
-        correct location regardless of the widget's container type.
+        This method converts touch coordinates from window space to
+        widget-local coordinates and updates the `ripple_pos` property
+        accordingly. The coordinate transformation is necessary to
+        ensure ripples appear at the correct location regardless of the
+        widget's container type.
         
-        When widgets are placed inside RelativeLayout containers (such as 
-        Screen widgets), their local coordinate system differs from the global
-        window coordinates where touch events are reported. This method handles
-        the coordinate transformation automatically using the general-purpose
-        `calculate_local_touch_pos` utility function.
+        When widgets are placed inside RelativeLayout containers (such
+        as Screen widgets), their local coordinate system differs from
+        the global window coordinates where touch events are reported.
+        This method handles the coordinate transformation automatically
+        using the general-purpose
+        :func:`morphui.utils.helpers.calculate_widget_local_pos`
+        utility function.
         
         The transformation ensures that:
         - Ripples appear exactly where the user touched
-        - Coordinates work correctly in both regular and RelativeLayout containers
-        - The ripple position is relative to the widget's local coordinate space
+        - Coordinates work correctly in both regular and RelativeLayout
+          containers
+        - The ripple position is relative to the widget's local
+          coordinate space
         
         Parameters
         ----------
@@ -556,10 +562,11 @@ class MorphRippleBehavior(EventDispatcher):
         
         See Also
         --------
-        morphui.utils.helpers.calculate_local_touch_pos : The underlying utility
-            function that performs the coordinate transformation.
+        :func:`morphui.utils.helpers.calculate_widget_local_pos`:
+        The underlying utility function that performs the coordinate
+        transformation.
         """
-        local_pos = calculate_local_touch_pos(self, touch_pos)
+        local_pos = calculate_widget_local_pos(self, touch_pos)
         self.ripple_pos = list(local_pos)
 
     def determine_ripple_color(self) -> List[float]:

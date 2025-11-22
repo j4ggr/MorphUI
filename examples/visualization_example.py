@@ -11,7 +11,7 @@ Requirements:
 
 import sys
 from pathlib import Path
-sys.path.append(str(Path(__file__).parents[2].resolve()))
+sys.path.append(str(Path(__file__).parents[1].resolve()))
 
 import numpy as np
 import matplotlib.pyplot as plt

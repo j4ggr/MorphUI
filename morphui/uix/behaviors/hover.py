@@ -22,6 +22,7 @@ from kivy.properties import NumericProperty
 from kivy.properties import BooleanProperty
 from kivy.core.window import Window
 
+from morphui.utils import calculate_widget_local_pos
 from morphui.constants import NAME
 
 
@@ -154,11 +155,9 @@ class MorphHoverBehavior(EventDispatcher):
         if not self.is_displayed or not self.hover_enabled:
             return
 
-        # Convert to widget coordinates
         self.current_pos = self.to_window(*pos)
-        inside = self.collide_point(*pos)
+        inside = self.collide_point(*calculate_widget_local_pos(self, pos))
 
-        # Handle hover state changes
         if inside and not self.hovered:
             self.enter_pos = self.current_pos
             self.hovered = True
