@@ -411,7 +411,7 @@ class MorphPlotWidget(
         self.texture = None
         self.figure_canvas = FigureCanvas(figure, plot_widget=self)
         self.figure_canvas.draw()
-        self.size = list(map(float, self.figure.bbox.size))
+        self.size = list(map(float, self.figure.bbox.size)) # type: ignore
         self._update_figure_size(self, self.size)
 
     def _update_figure_size(self, caller: Self, size: List[float]) -> None:
