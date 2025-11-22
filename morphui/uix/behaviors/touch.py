@@ -22,9 +22,9 @@ from kivy.properties import NumericProperty
 from kivy.properties import BooleanProperty
 from kivy.uix.behaviors import ToggleButtonBehavior
 from kivy.input.motionevent import MotionEvent
-from kivy.uix.relativelayout import RelativeLayout
 
 from morphui.constants import NAME
+from morphui.utils.helpers import calculate_local_touch_pos
 
 
 __all__ = [
@@ -531,18 +531,36 @@ class MorphRippleBehavior(EventDispatcher):
             self.fbind('disabled', self.fade_ripple_animation)
 
     def _evaluate_ripple_pos(self, touch_pos: Tuple[float, float]) -> None:
-        """Evaluate the position of the ripple effect based on the touch 
-        event.
+        """Calculate and set the local ripple position from touch coordinates.
 
-        This method updates the `ripple_pos` property to reflect the
-        current position of the touch event.
+        This method converts touch coordinates from window space to widget-local
+        coordinates and updates the `ripple_pos` property accordingly. The
+        coordinate transformation is necessary to ensure ripples appear at the
+        correct location regardless of the widget's container type.
+        
+        When widgets are placed inside RelativeLayout containers (such as 
+        Screen widgets), their local coordinate system differs from the global
+        window coordinates where touch events are reported. This method handles
+        the coordinate transformation automatically using the general-purpose
+        `calculate_local_touch_pos` utility function.
+        
+        The transformation ensures that:
+        - Ripples appear exactly where the user touched
+        - Coordinates work correctly in both regular and RelativeLayout containers
+        - The ripple position is relative to the widget's local coordinate space
+        
+        Parameters
+        ----------
+        touch_pos : Tuple[float, float]
+            The touch position in window coordinates as (x, y).
+        
+        See Also
+        --------
+        morphui.utils.helpers.calculate_local_touch_pos : The underlying utility
+            function that performs the coordinate transformation.
         """
-        x_touch, y_touch = touch_pos
-        if isinstance(self, RelativeLayout):
-            x_window, y_window = self.to_window(self.x, self.y)
-            self.ripple_pos = [x_touch - x_window, y_touch - y_window]
-        else:
-            self.ripple_pos = [x_touch, y_touch]
+        local_pos = calculate_local_touch_pos(self, touch_pos)
+        self.ripple_pos = list(local_pos)
 
     def determine_ripple_color(self) -> List[float]:
         """Get the effective ripple color, falling back to interaction 
