@@ -1302,11 +1302,22 @@ class MorphOverlayLayerBehavior(BaseLayerBehavior):
     `[0, 0, 0, 0]`.
     """
 
-    overlay_edge_width: float = NumericProperty(dp(2))
+    overlay_edge_width: float = NumericProperty(dp(1))
     """Width of the overlay edge.
 
+    This width is applied when the widget is in a normal state.
+
     :attr:`overlay_edge_width` is a
-    :class:`~kivy.properties.NumericProperty` and defaults to 2.
+    :class:`~kivy.properties.NumericProperty` and defaults to 1.
+    """
+
+    resizing_overlay_edge_width: float = NumericProperty(dp(3))
+    """Width of the overlay edge during resizing.
+
+    This width is applied when the widget is in a resizing state.
+
+    :attr:`resizing_overlay_edge_width` is a
+    :class:`~kivy.properties.NumericProperty` and defaults to 3.
     """
 
     overlay_edge_inside: bool = BooleanProperty(True)
@@ -1369,7 +1380,7 @@ class MorphOverlayLayerBehavior(BaseLayerBehavior):
                     group=NAME.OVERLAY_EDGES)
                 self._overlay_edges_instruction[name] = Line(
                     points=points,
-                    width=dp(self.overlay_edge_width),
+                    width=self.overlay_edge_width,
                     cap='none',
                     group=NAME.OVERLAY_EDGES)
 
@@ -1378,6 +1389,7 @@ class MorphOverlayLayerBehavior(BaseLayerBehavior):
             size=self._update_overlay_layer,
             radius=self._update_overlay_layer,
             overlay_edge_width=self._update_overlay_layer,
+            resizing_overlay_edge_width=self._update_overlay_layer,
             visible_edges=self._update_overlay_layer,
             current_overlay_state=self._on_overlay_state_change,)
 
@@ -1422,7 +1434,7 @@ class MorphOverlayLayerBehavior(BaseLayerBehavior):
         left, bottom = get_effective_pos(self)
         right = left + self.width
         top = bottom + self.height
-        offset = dp(self.overlay_edge_width) if self.overlay_edge_inside else 0
+        offset = self.overlay_edge_width if self.overlay_edge_inside else 0
 
         edges = {
             'top': [left, top-offset, right, top-offset],
@@ -1430,6 +1442,28 @@ class MorphOverlayLayerBehavior(BaseLayerBehavior):
             'bottom': [right, bottom+offset, left, bottom+offset],
             'left': [left+offset, bottom, left+offset, top],}
         return edges
+    
+    def get_resolved_edge_width(self, edge: str | None) -> float:
+        """Get the overlay edge width based on the current state.
+
+        Parameters
+        ----------
+        edge : str | None
+            The name of the edge for which to get the width. If `None`,
+            the default overlay edge width is returned.
+
+        Returns
+        -------
+        float
+            The width of the overlay edge. If the current overlay state
+            is 'resizing', the `resizing_overlay_edge_width` is returned;
+            otherwise, the standard `overlay_edge_width` is returned.
+        """
+        current_state = self.current_overlay_state
+        resizible_edges = getattr(self, 'resizible_edges', [])
+        if current_state == 'resizing' and edge in resizible_edges:
+            return self.resizing_overlay_edge_width
+        return self.overlay_edge_width
 
     def _on_overlay_state_change(self, instance: Any, state: str) -> None:
         """Handle overlay state changes.
@@ -1475,7 +1509,7 @@ class MorphOverlayLayerBehavior(BaseLayerBehavior):
 
         for name, line in self._overlay_edges_instruction.items():
             line.points = self._overlay_edges_params[name]
-            line.width = dp(self.overlay_edge_width)
+            line.width = self.get_resolved_edge_width(name)
             if name in self.visible_edges:
                 self._overlay_edges_color_instructions[name].rgba = edge_color
             else:
