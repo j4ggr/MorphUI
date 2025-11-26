@@ -19,6 +19,7 @@ from kivy.metrics import dp
 from kivy.properties import ListProperty
 from kivy.properties import AliasProperty
 from kivy.properties import BooleanProperty
+from kivy.properties import VariableListProperty
 from kivy.core.window import Window
 from kivy.input.motionevent import MotionEvent
 
@@ -117,23 +118,23 @@ class MorphResizeBehavior(
     and defaults to all edges (left, right, top, bottom).
     """
 
-    min_size: List[float | None] = ListProperty([None], length=2)
+    min_size: List[float | None] = VariableListProperty([-1, -1], length=2)
     """Minimum size constraints [width, height].
     
     Prevents the widget from being resized smaller than these dimensions.
     Useful for maintaining usability and preventing widgets from becoming
     too small to interact with. Use [0, 0] to disable minimum size
-    constraints. If None is specified for a dimension, the widget's
-    inherent minimum size will be used.
+    constraints. If a negative value is specified for a dimension, the 
+    widget's inherent minimum size will be used.
     
     :attr:`min_size` is a :class:`~kivy.properties.ListProperty`
-    and defaults to [None, None].
+    and defaults to [-1, -1].
     """
 
     _resolved_min_size: Tuple[float, float] = AliasProperty(
         lambda self: (
-            self.min_size[0] or self.minimum_width,
-            self.min_size[1] or self.minimum_height),
+            self.min_size[0] if self.min_size[0] >= 0 else self.minimum_width,
+            self.min_size[1] if self.min_size[1] >= 0 else self.minimum_height),
         bind=['min_size', 'minimum_width', 'minimum_height'],
         cache=True)
     """Resolved minimum size considering widget's minimum dimensions.
@@ -148,20 +149,20 @@ class MorphResizeBehavior(
     :class:`~kivy.properties.AliasProperty` and is read-only.
     """
 
-    max_size: List[float | None] = ListProperty([None], length=2)
+    max_size: List[float] = VariableListProperty([-1, -1], length=2)
     """Maximum size constraints [width, height].
     
     Prevents the widget from being resized larger than these dimensions.
-    Use [None, None] to disable maximum size constraints.
+    Use [-1, -1] to disable maximum size constraints.
     
     :attr:`max_size` is a :class:`~kivy.properties.ListProperty`
-    and defaults to [None, None].
+    and defaults to [-1, -1].
     """
 
     _resolved_max_size: Tuple[float, float] = AliasProperty(
         lambda self: (
-            self.max_size[0] or float('inf'),
-            self.max_size[1] or float('inf')),
+            self.max_size[0] if self.max_size[0] >= 0 else float('inf'),
+            self.max_size[1] if self.max_size[1] >= 0 else float('inf')),
         bind=['max_size'],
         cache=True)
     """Resolved maximum size considering widget's maximum dimensions.
