@@ -13,7 +13,9 @@ from .layer import MorphCompleteLayerBehavior
 from .hover import MorphHoverBehavior
 from .hover import MorphHoverEnhancedBehavior
 
-from .resize import MorphResizeBehavior
+from .sizing import MorphSizeBoundsBehavior
+from .sizing import MorphAutoSizingBehavior
+from .sizing import MorphResizeBehavior
 
 from .theming import MorphColorThemeBehavior
 from .theming import MorphTypographyBehavior
@@ -27,8 +29,6 @@ from .dropdown import MorphDropdownBehavior
 
 from .declarative import MorphDeclarativeBehavior
 from .declarative import MorphIdentificationBehavior
-
-from .autosizing import MorphAutoSizingBehavior
 
 from .touch import MorphButtonBehavior
 from .touch import MorphRippleBehavior
@@ -57,6 +57,8 @@ __all__ = [
     'MorphCompleteLayerBehavior',       # All layer behaviors combined
     'MorphHoverBehavior',               # Basic hover behavior
     'MorphHoverEnhancedBehavior',       # Enhanced hover with edges/corners
+    'MorphSizeBoundsBehavior',          # Size constraint functionality
+    'MorphAutoSizingBehavior',          # Automatic sizing based on content
     'MorphResizeBehavior',              # Interactive resize functionality
     'MorphColorThemeBehavior',          # Color theme integration only
     'MorphTypographyBehavior',          # Typography integration only

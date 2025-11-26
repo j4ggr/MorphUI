@@ -16,6 +16,7 @@ from typing import Tuple
 from typing import Literal
 
 from kivy.event import EventDispatcher
+from kivy.metrics import dp
 from kivy.properties import ListProperty
 from kivy.properties import StringProperty
 from kivy.properties import NumericProperty
@@ -326,7 +327,7 @@ class MorphHoverEnhancedBehavior(MorphHoverBehavior):
     and defaults to False.
     """
 
-    edge_detection_size = NumericProperty(4)
+    edge_detection_size = NumericProperty(dp(4))
     """Size of the edge area for detection in pixels.
     
     Determines how many pixels from the widget edge count as "edge area"
