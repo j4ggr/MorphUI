@@ -771,6 +771,188 @@ class MorphInteractionLayerBehavior(BaseLayerBehavior):
     :class:`~kivy.properties.VariableListProperty` and defaults to
     `[0, 0, 0, 0]`."""
 
+    def _get_interaction_layer_pos(self, *args) -> Tuple[float, float]:
+        """Get the position of the interaction layer.
+        
+        The (x, y) position of the interaction layer is calculated
+        by accounting for any expansion. This method is used internally
+        by the :attr:`interaction_layer_pos` property."""
+        x, y = get_effective_pos(self)
+        pos = (
+            x - self.interaction_layer_expansion[0],
+            y - self.interaction_layer_expansion[1],)
+        return pos
+    
+    def _set_interaction_layer_pos(self, *args) -> None:
+        """Set the position of the interaction layer.
+        
+        The (x, y) position of the interaction layer is calculated
+        by accounting for any expansion. This method is used internally
+        by the :attr:`interaction_layer_pos` property."""
+        self._interaction_instruction.pos = self._get_interaction_layer_pos()
+        
+    interaction_layer_pos: Tuple[float, float] = AliasProperty(
+        _get_interaction_layer_pos,
+        _set_interaction_layer_pos,
+        bind=['pos', 'interaction_layer_expansion'],
+        cache=True)
+    """Get or set the position of the interaction layer.
+
+    The (x, y) position of the interaction layer is calculated
+    by accounting for any expansion.
+    
+    :attr:`interaction_layer_pos` is a
+    :class:`~kivy.properties.AliasProperty` and is bound to the
+    `pos` and `interaction_layer_expansion` properties.
+    """
+
+    def _get_interaction_layer_size(self, *args) -> Tuple[float, float]:
+        """Get the size of the interaction layer.
+        
+        The (width, height) size of the interaction layer is calculated
+        by accounting for any expansion. This method is used internally
+        by the :attr:`interaction_layer_size` property."""
+        expansion = self.interaction_layer_expansion
+        size = (
+            self.width + (expansion[0] + expansion[2]),
+            self.height + (expansion[1] + expansion[3]),)
+        return size
+    
+    def _set_interaction_layer_size(self, *args) -> None:
+        """Set the size of the interaction layer.
+        
+        The (width, height) size of the interaction layer is calculated
+        by accounting for any expansion. This method is used internally
+        by the :attr:`interaction_layer_size` property."""
+        if not self.interaction_enabled:
+            return
+        
+        self._interaction_instruction.size = self._get_interaction_layer_size()
+
+    interaction_layer_size: Tuple[float, float] = AliasProperty(
+        _get_interaction_layer_size,
+        _set_interaction_layer_size,
+        bind=['size', 'interaction_layer_expansion'],
+        cache=True)
+    """Get the size of the interaction layer (read-only).
+
+    The (width, height) size of the interaction layer is calculated
+    by accounting for any expansion. Setting this property updates the 
+    size of the interaction layer accordingly. Passing different values
+    will have no effect since it is always synced to the widget's size
+    and expansion. However, it can be useful to trigger updates.
+    
+    :attr:`interaction_layer_size` is a
+    :class:`~kivy.properties.AliasProperty` and is bound to the
+    `size` and `interaction_layer_expansion` properties.
+    """
+
+    def _get_interaction_layer_radius(self, *args) -> List[float]:
+        """Get the radius of the interaction layer.
+        
+        The radius values of the interaction layer are the same as the
+        widget's clamped radius. This method is used internally by the
+        :attr:`interaction_layer_radius` property."""
+        return self.clamped_radius
+    
+    def _set_interaction_layer_radius(self, *args) -> None:
+        """Set the radius of the interaction layer.
+        
+        The radius values of the interaction layer are the same as the
+        widget's clamped radius. This method is used internally by the
+        :attr:`interaction_layer_radius` property."""
+        if not self.interaction_enabled:
+            return
+        
+        self._interaction_instruction.radius = self.clamped_radius
+
+    interaction_layer_radius: List[float] = AliasProperty(
+        _get_interaction_layer_radius,
+        _set_interaction_layer_radius,
+        bind=['radius'],
+        cache=True)
+    """Get the radius of the interaction layer (read-only).
+
+    The radius values of the interaction layer are the same as the
+    widget's clamped radius. Setting this property updates the radius
+    of the interaction layer accordingly. Passing different values
+    will have no effect since it is always synced to the widget's
+    clamped radius. However, it can be useful to trigger updates.
+    
+    :attr:`interaction_layer_radius` is a
+    :class:`~kivy.properties.AliasProperty` and is bound to the
+    `radius` property.
+    """
+
+    def _get_interaction_layer_color(self, *args) -> List[float]:
+        """Get the interaction layer color.
+        
+        Returns the interaction layer color as RGBA values. The base 
+        color is determined by the interaction_gray_value property: if 
+        None, it automatically uses white (1.0) in dark theme and black
+        (0.0) in light theme to ensure visibility against the surface.
+        If a specific value is set, that value is used regardless of 
+        theme. The opacity is determined by the current interaction
+        state's opacity setting.
+
+        It is used internally by the :attr:`interaction_layer_color`
+        property.
+        
+        Returns
+        -------
+        List[float]
+            RGBA color values [r, g, b, a] where r=g=b is the gray value
+            and a is the state-specific opacity.
+        """
+        state = self.current_interaction_state
+        opacity = getattr(self, f'{state}_state_opacity', None)
+
+        if opacity is None:
+            return self.theme_manager.transparent_color
+
+        if self.interaction_gray_value is None:
+            value = 1.0 if self.theme_manager.is_dark_mode else 0.0
+        else:
+            value = self.interaction_gray_value
+            
+        return [value, value, value, opacity]
+
+    def _set_interaction_layer_color(self, *args) -> None:
+        """Set the interaction layer color.
+        
+        This method updates the interaction layer color instruction
+        based on the resolved interaction layer color. It is used
+        internally by the :attr:`interaction_layer_color` property.
+        """
+        if not self.interaction_enabled:
+            return
+        
+        state = self.current_interaction_state
+        if state != 'pressed' or not getattr(self, 'ripple_enabled', False):
+            interaction_color = self.get_resolved_interaction_color()
+            self._interaction_color_instruction.rgba = interaction_color
+
+    interaction_layer_color: List[float] = AliasProperty(
+        _get_interaction_layer_color,
+        _set_interaction_layer_color,
+        bind=[
+            'current_interaction_state',
+            'hovered_state_opacity',
+            'pressed_state_opacity',
+            'focus_state_opacity',
+            'disabled_state_opacity',
+            'interaction_gray_value',
+            'interaction_enabled'])
+    """Get the interaction layer color or trigger updates.
+
+    The interaction layer color is determined by the current theme
+    (light or dark) and the specific state opacity. Setting this
+    property updates the interaction layer color accordingly.
+    
+    :attr:`interaction_layer_color` is a
+    :class:`~kivy.properties.AliasProperty`.
+    """
+
     _interaction_color_instruction: Color
     """Kivy Color instruction for the state layer color."""
 
@@ -793,41 +975,22 @@ class MorphInteractionLayerBehavior(BaseLayerBehavior):
                 group=group)
         
         self.bind(
-            pos=self._update_interaction_layer,
-            size=self._update_interaction_layer,
-            radius=self._update_interaction_layer,
+            pos=self.setter('interaction_layer_pos'),
+            size=self.setter('interaction_layer_size'),
+            radius=self.setter('interaction_layer_radius'),
+            current_interaction_state=self.setter('interaction_layer_color'),
+            hovered_state_opacity=self.setter('interaction_layer_color'),
+            pressed_state_opacity=self.setter('interaction_layer_color'),
+            focus_state_opacity=self.setter('interaction_layer_color'),
+            disabled_state_opacity=self.setter('interaction_layer_color'),
+            interaction_gray_value=self.setter('interaction_layer_color'),
+            interaction_enabled=self._update_interaction_layer,
             interaction_layer_expansion=self._update_interaction_layer,
-            current_interaction_state=self._on_interaction_state_change,
-            hovered_state_opacity=self._on_interaction_property_change,
-            pressed_state_opacity=self._on_interaction_property_change,
-            focus_state_opacity=self._on_interaction_property_change,
-            disabled_state_opacity=self._on_interaction_property_change,
-            interaction_gray_value=self._on_interaction_property_change,
-            interaction_enabled=self._on_interaction_property_change,)
+            interaction_layer_pos=self.on_interaction_updated,
+            interaction_layer_size=self.on_interaction_updated,
+            interaction_layer_radius=self.on_interaction_updated,)
 
         self.refresh_interaction()
-    
-    @property
-    def interaction_layer_pos(self) -> Tuple[float, float]:
-        """Get the position of the interaction layer (read-only).
-
-        The (x, y) position of the interaction layer is calculated
-        by accounting for any expansion."""
-        x, y = get_effective_pos(self)
-        return (
-            x - self.interaction_layer_expansion[0],
-            y - self.interaction_layer_expansion[1],)
-
-    @property
-    def interaction_layer_size(self) -> Tuple[float, float]:
-        """Get the size of the interaction layer (read-only).
-
-        The (width, height) size of the interaction layer is calculated
-        by accounting for any expansion."""
-        expansion = self.interaction_layer_expansion
-        return (
-            self.size[0] + (expansion[0] + expansion[2]),
-            self.size[1] + (expansion[1] + expansion[3]),)
     
     def collide_point(self, x: float, y: float) -> bool:
         """Check if a point collides with the interaction layer.
@@ -885,38 +1048,11 @@ class MorphInteractionLayerBehavior(BaseLayerBehavior):
         return [value, value, value, opacity]
 
     def _update_interaction_layer(self, *args) -> None:
-        """Update the state layer position and size."""
-        self._interaction_instruction.pos = self.interaction_layer_pos
-        self._interaction_instruction.size = self.interaction_layer_size
-        self._interaction_instruction.radius = self.clamped_radius
-        
-        state = self.current_interaction_state
-        if state != 'pressed' or not getattr(self, 'ripple_enabled', False):
-            interaction_color = self.get_resolved_interaction_color()
-            self._interaction_color_instruction.rgba = interaction_color
-        self.dispatch('on_interaction_updated')
-
-    def _on_interaction_state_change(self, instance: Any, state: str) -> None:
-        """Handle changes to the interaction state.
-        
-        This method is called whenever the current_interaction_state
-        changes. It updates the interaction layer color based on the 
-        new state.
-        """
-        if not self.interaction_enabled:
-            return
-        self._update_interaction_layer()
-
-    def _on_interaction_property_change(self, instance: Any, value: Any) -> None:
-        """Handle changes to interaction properties.
-        
-        Called when interaction-related properties change (opacities,
-        gray value, enabled state). Updates the interaction layer
-        if necessary.
-        """
-        if not self.interaction_enabled:
-            return
-        self._update_interaction_layer()
+        """Update the state layer position, size, radius and color."""
+        self.interaction_layer_pos = self.pos
+        self.interaction_layer_size = self.size
+        self.interaction_layer_radius = self.clamped_radius
+        self.interaction_layer_color = self.get_resolved_interaction_color()
 
     def apply_interaction(self, state: InteractionState) -> None:
         """Apply the interaction layer color for the specified state
@@ -974,7 +1110,7 @@ class MorphInteractionLayerBehavior(BaseLayerBehavior):
         """
         enabled = self.interaction_enabled
         self.interaction_enabled = True
-        self._on_interaction_state_change(self, self.current_interaction_state)
+        self._update_interaction_layer()
             
         color = self.theme_manager.transparent_color
         self._interaction_color_instruction.rgba = color
