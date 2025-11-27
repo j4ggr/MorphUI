@@ -75,7 +75,7 @@ class MorphDivider(
 
     default_config: Dict[str, Any] = dict(
         theme_color_bindings=dict(
-            surface_color='outline_color'))
+            normal_surface_color='outline_color'))
     """Default configuration values for MorphDivider.
 
     Provides standard appearance and behavior settings:

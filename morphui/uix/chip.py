@@ -106,7 +106,7 @@ class MorphChip(
                 MorphChip(
                     identity='my_widget',
                     leading_icon='language-python',),
-                surface_color=self.theme_manager.surface_color,)
+                normal_surface_color=self.theme_manager.surface_color,)
 
     if __name__ == '__main__':
         MyApp().run()
@@ -187,8 +187,8 @@ class MorphChip(
 
     default_config: Dict[str, Any] = dict(
         theme_color_bindings=dict(
-            surface_color='transparent_color',
-            border_color='outline_variant_color',),
+            normal_surface_color='transparent_color',
+            normal_border_color='outline_variant_color',),
         orientation='horizontal',
         auto_size=True,
         padding=dp(8),
@@ -381,7 +381,7 @@ class MorphFilterChip(
                 MorphFilterChip(
                     identity='my_widget',
                     leading_icon='filter',),
-                surface_color=self.theme_manager.surface_color,)
+                normal_surface_color=self.theme_manager.surface_color,)
     
     if __name__ == '__main__':
         MyApp().run()
@@ -390,9 +390,9 @@ class MorphFilterChip(
     default_config: Dict[str, Any] = (
         MorphChip.default_config.copy() | dict(
         theme_color_bindings=dict(
-            surface_color='transparent_color',
+            normal_surface_color='transparent_color',
             content_color='content_surface_color',
-            border_color='outline_variant_color',
+            normal_border_color='outline_variant_color',
             active_surface_color='secondary_container_color',
             active_content_color='content_secondary_container_color',
             active_border_color='transparent_color',
@@ -438,7 +438,7 @@ class MorphInputChip(
                     identity='my_widget',
                     label_text='Input Chip',
                     trailing_icon='close',),
-                surface_color=self.theme_manager.surface_color,)
+                normal_surface_color=self.theme_manager.surface_color,)
     if __name__ == '__main__':
         MyApp().run()
     """

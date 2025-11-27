@@ -112,7 +112,7 @@ class MorphDataViewHeaderLayout(
         orientation='horizontal',
         auto_size=True,
         theme_color_bindings={
-            'surface_color': 'surface_color'
+            'normal_surface_color': 'surface_color'
         })
     """Default configuration for the MorphDataViewHeaderLayout."""
 

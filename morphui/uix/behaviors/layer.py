@@ -303,14 +303,14 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
     surface with optional border.
     """
 
-    surface_color: ColorProperty = ColorProperty()
-    """Surface color of the widget.
+    normal_surface_color: List[float] = ColorProperty([0, 0, 0, 0])
+    """Surface color of the widget when it is in its normal state.
     
     The color should be provided as a list of RGBA values between 0 and 
     1. Example: `[1, 0, 0, 1]` for solid red.
     
-    :attr:`surface_color` is a :class:`~kivy.properties.ColorProperty`
-    and defaults to `[1, 1, 1, 1]` (white)."""
+    :attr:`normal_surface_color` is a :class:`~kivy.properties.ColorProperty`
+    and defaults to `[0, 0, 0, 0]` (fully transparent)."""
 
     disabled_surface_color: List[float] | None = ColorProperty([0, 0, 0, 0])
     """Surface color when the widget is disabled.
@@ -346,13 +346,66 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
     :class:`~kivy.properties.ColorProperty` and defaults to
     `None`."""
 
-    border_color: List[float] = ColorProperty([0, 0, 0, 0])
-    """Border color of the widget.
+    def _get_surface_color(self, *args) -> List[float]:
+        """Get the surface color based on the current state.
+
+        This method determines the appropriate surface color based on
+        the widget's current state (normal, disabled, error, focus,
+        active). If a specific color for the state is not set, it falls
+        back to the normal surface color or white if normal is not set.
+        This method is used by the :attr:`surface_color` AliasProperty.
+
+        Returns
+        -------
+        List[float]
+            The resolved surface color as a list of RGBA values.
+        """
+        surface_color = getattr(
+            self, f'{self.current_surface_state}_surface_color', None)
+        if surface_color is None:
+            surface_color = self.normal_surface_color
+            
+        return surface_color
+    
+    def _set_surface_color(self, *args) -> None:
+        """Set the surface color based on the current state.
+
+        This method updates the surface color instruction to reflect the
+        appropriate surface color based on the widget's current state.
+        """
+        self._surface_color_instruction.rgba = self._get_surface_color()
+
+    surface_color: List[float] = AliasProperty(
+        _get_surface_color,
+        _set_surface_color,
+        bind=[
+            'normal_surface_color',
+            'disabled_surface_color',
+            'error_surface_color',
+            'focus_surface_color',
+            'active_surface_color',
+            'current_surface_state'])
+    """Get the current surface color based on the current state or
+    trigger updates.
+
+    This property automatically resolves the appropriate surface color
+    based on the widget's current state (normal, disabled, error,
+    focus, active). Setting this property updates the surface color
+    accordingly. Passing different values will have no effect since it 
+    is always synced to the widget's state. However, it can be useful to
+    trigger updates.
+
+    :attr:`surface_color` is a :class:`~kivy.properties.AliasProperty`
+    and defaults to the resolved surface color based on the current
+    state."""
+
+    normal_border_color: List[float] = ColorProperty([0, 0, 0, 0])
+    """Border color of the widget when in the normal state.
     
     The color should be provided as a list of RGBA values between 0 and 
     1. Example: `[0, 1, 0, 1]` for solid green.
 
-    :attr:`border_color` is a :class:`~kivy.properties.ColorProperty`
+    :attr:`normal_border_color` is a :class:`~kivy.properties.ColorProperty`
     and defaults to `[0, 0, 0, 0]` (fully transparent)."""
 
     disabled_border_color: List[float] | None = ColorProperty(None)
@@ -385,7 +438,60 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
     :class:`~kivy.properties.ColorProperty` and defaults to
     `None`."""
 
-    border_width: float = BoundedNumericProperty(1, min=0.01, errorvalue=1)
+    def _get_border_color(self, *args) -> List[float]:
+        """Get the border color based on the current state.
+
+        This method determines the appropriate border color based on
+        the widget's current state (normal, disabled, error, focus,
+        active). If a specific color for the state is not set, it falls
+        back to the normal border color. This method is used by the
+        :attr:`border_color` AliasProperty.
+
+        Returns
+        -------
+        List[float]
+            The resolved border color as a list of RGBA values.
+        """
+        border_color = getattr(
+            self, f'{self.current_surface_state}_border_color', None)
+        if border_color is None:
+            border_color = self.normal_border_color
+            
+        return border_color
+    
+    def _set_border_color(self, *args) -> None:
+        """Set the border color based on the current state.
+
+        This method updates the border color instruction to reflect the
+        appropriate border color based on the widget's current state.
+        """
+        self._border_color_instruction.rgba = self._get_border_color()
+
+    border_color: List[float] = AliasProperty(
+        _get_border_color,
+        _set_border_color,
+        bind=[
+            'normal_border_color',
+            'disabled_border_color',
+            'error_border_color',
+            'focus_border_color',
+            'active_border_color',
+            'current_surface_state'])
+    """Get the current border color based on the current state or
+    trigger updates.
+
+    This property automatically resolves the appropriate border color
+    based on the widget's current state (normal, disabled, error,
+    focus, active). Setting this property updates the border color
+    accordingly. Passing different values will have no effect since it 
+    is always synced to the widget's state. However, it can be useful to
+    trigger updates.
+
+    :attr:`border_color` is a :class:`~kivy.properties.AliasProperty`
+    and defaults to the resolved border color based on the current
+    state."""
+
+    border_width: float = BoundedNumericProperty(dp(1), min=0.01, errorvalue=1)
     """Width of the border.
 
     The width is specified in pixels.
@@ -428,8 +534,12 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
     
     border_path = AliasProperty(
         lambda self: self._generate_border_path(),
-        bind=['contour', 'border_bottom_line_only', 'border_open_length', 'border_closed'],
-        cache=True)
+        cache=True,
+        bind=[
+            'contour',
+            'border_bottom_line_only',
+            'border_open_length',
+            'border_closed'],)
     """Get the border path points (read-only).
 
     This property returns a flat list of x, y coordinates representing
@@ -443,7 +553,9 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
         lambda self: (
             not self.border_bottom_line_only 
             and self.border_open_length < dp(1)),
-        bind=['border_bottom_line_only', 'border_open_length'])
+        bind=[
+            'border_bottom_line_only',
+            'border_open_length'])
     """Whether the border is closed (read-only).
 
     This property returns True if the border is closed (i.e., 
@@ -497,32 +609,21 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
                 group=NAME.SURFACE_BORDER)
         
         self.bind(
-            current_surface_state=self._on_surface_state_change,
+            current_surface_state=self._update_surface_layer,
             contour=self._update_surface_layer,
             border_width=self._update_surface_layer,
-            border_closed=self._update_surface_layer,)
+            border_closed=self._update_surface_layer,
+            surface_color=self.on_surface_updated,
+            border_color=self.on_surface_updated,)
         
         for state in self.surface_state_precedence:
-            property_name = f'{state}_surface_color'
             self.fbind(
-                property_name,
-                self._on_surface_property_change,
-                property_name=property_name)
-            property_name = f'{state}_border_color'
+                f'{state}_surface_color',
+                self.setter('surface_color'),)
             self.fbind(
-                property_name,
-                self._on_surface_property_change,
-                property_name=property_name)
+                f'{state}_border_color',
+                self.setter('border_color'),)
 
-        self.fbind(
-            'surface_color',
-            self._on_surface_property_change,
-            property_name='surface_color')
-        self.fbind(
-            'border_color',
-            self._on_surface_property_change,
-            property_name='border_color')
-        
         self.refresh_surface()
 
     def _generate_border_path(self) -> List[float]:
@@ -553,90 +654,17 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
                 path[-1]])
 
         return path
-    
-    def _on_surface_state_change(self, instance: Any, state: str) -> None:
-        """Handle surface state changes.
-        
-        Called when current_surface_state changes. Updates the surface
-        layer to reflect the new state.
-        """
-        self._update_surface_layer()
-    
-    def _on_surface_property_change(
-            self, instance: Any, value: Any, property_name: str) -> None:
-        """Handle surface property changes.
-        
-        Called when any surface color property changes. Only updates
-        the surface if the changed property affects the current state.
-
-        Parameters
-        ----------
-        instance : Any
-            The instance that triggered the change.
-        value : Any
-            The new value of the property.
-        property_name : str
-            The name of the property that changed. Can be used to check
-            if the change affects the current surface state.
-        """
-        state = self.current_surface_state
-        prefix = f'{state}_' if state != 'normal' else ''
-        precedence_properties = (
-            f'{prefix}surface_color', f'{prefix}border_color',)
-        if property_name in precedence_properties:
-            self._update_surface_layer()
-    
-    def get_resolved_surface_colors(
-            self) -> Tuple[List[float], List[float]]:
-        """Determine the appropriate surface and border colors based
-        on the current state.
-
-        This method checks the widget's current surface state and
-        returns the corresponding surface and border colors. If a
-        specific color for the state is not set, it falls back to the
-        default colors.
-
-        Override this method in subclasses to customize color
-        resolution logic.
-
-        Returns
-        -------
-        Tuple[List[float], List[float]]
-            A tuple containing the resolved surface color and border
-            color as lists of RGBA values.
-        """
-        current_state = self.current_surface_state
-        
-        # Resolve surface color
-        if current_state != 'normal':
-            surface_color = getattr(self, f'{current_state}_surface_color', None)
-            if surface_color is None:
-                surface_color = self.surface_color
-        else:
-            surface_color = self.surface_color
-            
-        # Resolve border color
-        if current_state != 'normal':
-            border_color = getattr(self, f'{current_state}_border_color', None)
-            if border_color is None:
-                border_color = self.border_color
-        else:
-            border_color = self.border_color
-            
-        return surface_color, border_color
         
     def _update_surface_layer(self, *args) -> None:
         """Update the surface when any relevant property changes."""
-        surface_color, border_color = self.get_resolved_surface_colors()
-
         self._surface_instruction.vertices = self.mesh[0]
         self._surface_instruction.indices = self.mesh[1]
-        self._surface_color_instruction.rgba = surface_color
+        self.surface_color = self._get_surface_color()
         
-        self._border_instruction.width = dp(self.border_width)
+        self._border_instruction.width = self.border_width
         self._border_instruction.points = self._generate_border_path()
         self._border_instruction.close = self.border_closed
-        self._border_color_instruction.rgba = border_color
+        self.border_color = self._get_border_color()
 
         self.dispatch('on_surface_updated')
     
@@ -796,10 +824,14 @@ class MorphInteractionLayerBehavior(BaseLayerBehavior):
         _set_interaction_layer_pos,
         bind=['pos', 'interaction_layer_expansion'],
         cache=True)
-    """Get or set the position of the interaction layer.
+    """Get the current position of the interaction layer or trigger
+    updates.
 
     The (x, y) position of the interaction layer is calculated
-    by accounting for any expansion.
+    by accounting for any expansion. Setting this property updates the 
+    position of the interaction layer accordingly. Passing different
+    values will have no effect since it is always synced to the widget's
+    position and expansion. However, it can be useful to trigger updates.
     
     :attr:`interaction_layer_pos` is a
     :class:`~kivy.properties.AliasProperty` and is bound to the
@@ -834,7 +866,7 @@ class MorphInteractionLayerBehavior(BaseLayerBehavior):
         _set_interaction_layer_size,
         bind=['size', 'interaction_layer_expansion'],
         cache=True)
-    """Get the size of the interaction layer (read-only).
+    """Get the current size of the interaction layer or trigger updates.
 
     The (width, height) size of the interaction layer is calculated
     by accounting for any expansion. Setting this property updates the 
@@ -871,7 +903,8 @@ class MorphInteractionLayerBehavior(BaseLayerBehavior):
         _set_interaction_layer_radius,
         bind=['radius'],
         cache=True)
-    """Get the radius of the interaction layer (read-only).
+    """Get the current radius of the interaction layer or trigger 
+    updates.
 
     The radius values of the interaction layer are the same as the
     widget's clamped radius. Setting this property updates the radius

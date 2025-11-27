@@ -158,7 +158,7 @@ class TextFieldTrailingIconButton(MorphIconButton):
     default_config: Dict[str, Any] = dict(
         theme_color_bindings=dict(
             content_color='primary_color',
-            surface_color='transparent_color',
+            normal_surface_color='transparent_color',
             hovered_content_color='content_surface_variant_color',),
         font_name=MorphIconButton.default_config['font_name'],
         typography_role=MorphIconButton.default_config['typography_role'],
@@ -874,8 +874,8 @@ class MorphTextField(
 
     default_config = dict(
         theme_color_bindings=dict(
-            surface_color='surface_color',
-            border_color='outline_color',
+            normal_surface_color='surface_color',
+            normal_border_color='outline_color',
             error_border_color='error_color',
             focus_border_color='primary_color',
             disabled_border_color='outline_variant_color',
@@ -923,7 +923,7 @@ class MorphTextField(
 
         self._text_input = MorphTextInput(
             theme_color_bindings=dict(
-                surface_color='transparent_color',),
+                normal_surface_color='transparent_color',),
             identity=NAME.INPUT,
             size_hint=(None, None),
             padding=dp(0),

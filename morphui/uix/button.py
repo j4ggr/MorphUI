@@ -46,7 +46,7 @@ class MorphSimpleIconButton(
 
     default_config: Dict[str, Any] = dict(
         theme_color_bindings=dict(
-            surface_color='transparent_color',
+            normal_surface_color='transparent_color',
             disabled_border_color='outline_variant_color',
             content_color='content_surface_color',
             hovered_content_color='content_surface_variant_color'),
@@ -99,8 +99,8 @@ class MorphButton(
         halign='center',
         valign='center',
         theme_color_bindings={
-            'surface_color': 'surface_container_color',
-            'border_color': 'outline_color',
+            'normal_surface_color': 'surface_container_color',
+            'normal_border_color': 'outline_color',
             'disabled_border_color': 'outline_variant_color',
             'content_color': 'content_surface_color',
             'hovered_content_color': 'content_surface_variant_color',},
@@ -142,10 +142,10 @@ class MorphIconButton(
         halign='center',
         valign='center',
         theme_color_bindings={
-            'surface_color': 'surface_container_color',
+            'normal_surface_color': 'surface_container_color',
             'content_color': 'content_surface_color',
             'hovered_content_color': 'content_surface_variant_color',
-            'border_color': 'outline_color',},
+            'normal_border_color': 'outline_color',},
         typography_role=MorphIconLabel.default_config['typography_role'],
         typography_size=MorphIconLabel.default_config['typography_size'],
         ripple_enabled=True,

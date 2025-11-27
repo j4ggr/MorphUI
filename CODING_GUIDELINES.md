@@ -23,7 +23,7 @@ class MorphWidget(BaseWidget):
         # Theme configuration
         theme_color_bindings=dict(
             content_color='content_surface_color',
-            surface_color='transparent_color',
+            normal_surface_color='transparent_color',
         ),
         
         # Typography settings
@@ -101,7 +101,7 @@ class MorphIconLabel(MorphLabel):
         # Add new defaults
         theme_color_bindings=dict(
             content_color='primary_color',
-            surface_color='transparent_color',
+            normal_surface_color='transparent_color',
         ),
     )
     """Icon-specific default configuration.
@@ -202,9 +202,9 @@ class MorphButton(MorphLabel):
         
         # Appearance
         theme_color_bindings=dict(
-            surface_color='primary_color',
+            normal_surface_color='primary_color',
             content_color='content_primary_color',
-            border_color='primary_color',
+            normal_border_color='primary_color',
         ),
         
         # Typography

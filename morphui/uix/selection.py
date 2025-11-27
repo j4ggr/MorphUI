@@ -41,7 +41,7 @@ class MorphCheckbox(
     default_config: Dict[str, Any] = (
         MorphIconLabel.default_config.copy() | dict(
         theme_color_bindings=dict(
-            surface_color='transparent_color',
+            normal_surface_color='transparent_color',
             content_color='content_surface_color',
             active_content_color='primary_color',
             disabled_content_color='outline_color',),
@@ -117,7 +117,7 @@ class ThumbSwitch(
 
     default_config: Dict[str, Any] = dict(
         theme_color_bindings=dict(
-            surface_color='content_surface_color',
+            normal_surface_color='content_surface_color',
             active_surface_color='content_primary_color',
             disabled_surface_color='outline_color',
             content_color='surface_dim_color',
@@ -206,9 +206,9 @@ class MorphSwitch(
 
     default_config: Dict[str, Any] = dict(
         theme_color_bindings=dict(
-            surface_color='surface_dim_color',
+            normal_surface_color='surface_dim_color',
             active_surface_color='primary_color',
-            border_color='outline_color',
+            normal_border_color='outline_color',
             active_border_color='primary_color',),
         round_sides=True,
         size_hint=(None, None),

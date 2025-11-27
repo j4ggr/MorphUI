@@ -93,8 +93,8 @@ class MorphColorThemeBehavior(BaseThemeBehavior):
             super().__init__(**kwargs)
             # Bind widget properties to theme colors
             self.theme_color_bindings = {
-                'surface_color': 'primary_color',
-                'border_color': 'outline_color',
+                'normal_surface_color': 'primary_color',
+                'normal_border_color': 'outline_color',
                 'content_color': 'content_primary_color'  # text color
             }
     ```
@@ -178,9 +178,9 @@ class MorphColorThemeBehavior(BaseThemeBehavior):
     
     ```python
     widget.theme_color_bindings = {
-        'surface_color': 'primary_color',
+        'normal_surface_color': 'primary_color',
         'content_color': 'content_primary_color',
-        'border_color': 'outline_color'
+        'normal_border_color': 'outline_color'
     }
     ```
     
@@ -188,9 +188,9 @@ class MorphColorThemeBehavior(BaseThemeBehavior):
     
     ```python
     widget.theme_color_bindings = {
-        'surface_color': 'error_color',
+        'normal_surface_color': 'error_color',
         'content_color': 'content_error_color',
-        'border_color': 'error_color'
+        'normal_border_color': 'error_color'
     }
     ```
     
@@ -467,9 +467,9 @@ class MorphColorThemeBehavior(BaseThemeBehavior):
         
         ```python
         widget.add_custom_style('warning', {
-            'surface_color': 'error_container_color',
+            'normal_surface_color': 'error_container_color',
             'content_color': 'content_error_container_color',
-            'border_color': 'outline_color'
+            'normal_border_color': 'outline_color'
         })
         
         # Now use the custom style
@@ -480,9 +480,9 @@ class MorphColorThemeBehavior(BaseThemeBehavior):
         
         ```python
         widget.add_custom_style('subtle', {
-            'surface_color': 'surface_variant_color',
+            'normal_surface_color': 'surface_variant_color',
             'content_color': 'content_surface_variant_color',
-            'border_color': 'outline_variant_color'
+            'normal_border_color': 'outline_variant_color'
         })
         ```
 

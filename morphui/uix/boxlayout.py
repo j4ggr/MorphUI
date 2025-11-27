@@ -41,17 +41,17 @@ class MorphBoxLayout(
                     identity="label1",
                     text="Label 1",
                     theme_color_bindings={
-                        'surface_color': 'surface_container_color',
+                        'normal_surface_color': 'surface_container_color',
                         'content_color': 'content_surface_color',
-                        'border_color': 'outline_color',},
+                        'normal_border_color': 'outline_color',},
                     radius=[5, 25, 5, 25],),
                 MorphLabel(
                     identity="label2",
                     text="Label 2",
                     theme_color_bindings={
-                        'surface_color': 'surface_container_low_color',
+                        'normal_surface_color': 'surface_container_low_color',
                         'content_color': 'content_surface_color',
-                        'border_color': 'outline_variant_color',},
+                        'normal_border_color': 'outline_variant_color',},
                     radius=[25, 5, 25, 5],),
                 theme_style='surface',
                 orientation='vertical',
@@ -65,7 +65,7 @@ class MorphBoxLayout(
     default_config = dict(
         orientation='horizontal',
         theme_color_bindings=dict(
-            surface_color='transparent_color',))
+            normal_surface_color='transparent_color',))
     """Initialize the MorphBoxLayout with the provided configuration."""
     
     def __init__(self, *args, **kwargs) -> None:

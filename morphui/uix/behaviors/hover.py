@@ -174,14 +174,6 @@ class MorphHoverBehavior(EventDispatcher):
         Override this method in subclasses to add custom hover
         behavior. The mouse position where the widget was entered
         is available in :attr:`enter_pos`.
-        
-        Examples
-        --------
-        ```python
-        def on_enter(self):
-            self.surface_color = (0, 1, 0, 0.3)  # Light green
-            Animation(opacity=0.8, duration=0.2).start(self)
-        ```
         """
         pass
 
@@ -191,14 +183,6 @@ class MorphHoverBehavior(EventDispatcher):
         Override this method in subclasses to add custom hover
         behavior. The mouse position where the widget was left
         is available in :attr:`leave_pos`.
-        
-        Examples
-        --------
-        ```python
-        def on_leave(self):
-            self.surface_color = (1, 1, 1, 1)  # White
-            Animation(opacity=1.0, duration=0.2).start(self)
-        ```
         """
         pass
 

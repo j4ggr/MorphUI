@@ -59,9 +59,9 @@ class MorphRoundSidesBehavior(EventDispatcher):
         default_config = (
             MorphIconLabel.default_config.copy() | dict(
             theme_color_bindings=dict(
-                surface_color='transparent_color',
+                normal_surface_color='transparent_color',
                 content_color='content_surface_variant_color',
-                border_color='outline_color',
+                normal_border_color='outline_color',
                 active_surface_color='primary_color',
                 active_content_color='content_primary_color',),
             round_sides=True,
@@ -75,7 +75,7 @@ class MorphRoundSidesBehavior(EventDispatcher):
                     identity='my_widget',
                     icon='language-python',
                     pos_hint={'center_x': 0.5, 'center_y': 0.5},),
-                surface_color=self.theme_manager.surface_color,)
+                normal_surface_color=self.theme_manager.surface_color,)
 
     if __name__ == '__main__':
         MyApp().run()

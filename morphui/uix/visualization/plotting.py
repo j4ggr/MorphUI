@@ -174,7 +174,7 @@ class MorphPlotWidget(
     """Kivy Rectangle instruction for rendering the matplotlib texture."""
 
     default_config: Dict[str, Any] = dict(
-        surface_color=(1.0, 1.0, 1.0, 1.0),  # White background for charts
+        normal_surface_color=(1.0, 1.0, 1.0, 1.0),  # White background for charts
         size_hint=(None, None),)
     """Default configuration for the plot widget."""
 
@@ -186,7 +186,7 @@ class MorphPlotWidget(
         
         with self.canvas.before:
             self._texture_rectangle_color_instruction = Color(
-                rgba=self.get_resolved_surface_colors()[0])
+                rgba=self._get_surface_color())
             self._texture_rectangle_instruction = Rectangle(
                 pos=self.pos,
                 size=self.size,
@@ -242,27 +242,13 @@ class MorphPlotWidget(
         self._rubberband_color_instruction.rgba = self.rubberband_color
         self._rubberband_edge_color_instruction.rgba = self.rubberband_edge_color
 
-    def get_resolved_surface_colors(self) -> Tuple[List[float], List[float]]:
-        """Get the resolved surface and border colors based on the
-        current theme and surface color settings.
-
-        Returns
-        -------
-        Tuple[List[float], List[float]]
-            A tuple containing two lists:
-            - The resolved surface color as an RGBA list.
-            - The resolved border color as an RGBA list.
-
-        Raises
-        ------
-        ValueError
-            If the resolved surface color is fully transparent.
-        """
-        surface_color, border_color = super().get_resolved_surface_colors()
+    def _get_surface_color(self, *args) -> List[float]:
+        # inherited docstring from MorphSurfaceLayerBehavior
+        surface_color = super()._get_surface_color()
         assert surface_color[3] > 0, (
             'MorphPlotWidget requires a non-transparent surface color '
             'to render the matplotlib figure correctly.')
-        return surface_color, border_color
+        return surface_color
     
     def _safe_flip_texture_vertical(self, texture: Texture | None) -> None:
         """Safely flip the given texture vertically if it hasn't been
@@ -297,16 +283,14 @@ class MorphPlotWidget(
             self._surface_color_instruction.rgba = (
                 self.theme_manager.transparent_color)
             return
-        
-        surface_color, border_color = self.get_resolved_surface_colors()
 
         self._border_instruction.width = dp(self.border_width)
         self._border_instruction.points = self._generate_border_path()
         self._border_instruction.close = self.border_closed
-        self._border_color_instruction.rgba = border_color
+        self.border_color = self._get_border_color()
         
         self._safe_flip_texture_vertical(self.texture)
-        self._texture_rectangle_color_instruction.rgba = surface_color
+        self.surface_color = self._get_surface_color()
         self._texture_rectangle_instruction.pos = self.pos
         self._texture_rectangle_instruction.size = self.size
         self._texture_rectangle_instruction.texture = self.texture

@@ -44,7 +44,7 @@ class MyApp(MorphApp):
                 identity='input_chip',
                 label_text='Input Chip',
                 pos_hint={'center_x': 0.5, 'center_y': 0.4},),
-            surface_color=self.theme_manager.surface_color,)
+            normal_surface_color=self.theme_manager.surface_color,)
         self.input_chip = self.layout.identities.input_chip
         return self.layout
     

@@ -358,15 +358,10 @@ class TestBaseLayerBehavior:
     def test_surface_layer_explicit_bindings(self, mock_app_theme_manager):
         """Test that surface layer has explicit bindings set up."""
         mock_app_theme_manager.configure_mock(**{
-            'content_surface_color': [0, 0, 0, 1]
-        })
+            'content_surface_color': [0, 0, 0, 1]})
         
         widget = self.TestSurfaceWidget()
         
-        # Test that surface-specific methods exist (moved from BaseLayerBehavior)
-        assert hasattr(widget, '_on_surface_state_change')
-        assert hasattr(widget, '_on_surface_property_change')
-        assert hasattr(widget, 'get_resolved_surface_colors')
         assert hasattr(widget, 'refresh_surface')
 
     @patch('morphui.app.MorphApp._theme_manager')
@@ -379,21 +374,19 @@ class TestBaseLayerBehavior:
         widget = self.TestSurfaceWidget()
         
         # Set up test colors
-        widget.surface_color = [1, 1, 1, 1]
+        widget.normal_surface_color = [1, 1, 1, 1]
         widget.error_surface_color = [1, 0, 0, 1]
-        widget.border_color = [0, 0, 0, 1]
+        widget.normal_border_color = [0, 0, 0, 1]
         
         # Test normal state resolution
         widget.current_surface_state = 'normal'
-        surface_color, border_color = widget.get_resolved_surface_colors()
-        assert surface_color == [1, 1, 1, 1]
-        assert border_color == [0, 0, 0, 1]
+        assert widget.surface_color == [1, 1, 1, 1]
+        assert widget.border_color == [0, 0, 0, 1]
         
         # Test error state resolution
         widget.current_surface_state = 'error'
-        surface_color, border_color = widget.get_resolved_surface_colors()
-        assert surface_color == [1, 0, 0, 1]  # Should use error color
-        assert border_color == [0, 0, 0, 1]   # Should fall back to base color
+        assert widget.surface_color == [1, 0, 0, 1]  # Should use error color
+        assert widget.border_color == [0, 0, 0, 1]   # Should fall back to base color
 
 
 class TestMorphSurfaceLayerBehavior:
@@ -406,7 +399,7 @@ class TestMorphSurfaceLayerBehavior:
     def test_initialization(self):
         """Test basic initialization of MorphSurfaceLayerBehavior."""
         widget = self.TestWidget()
-        assert widget.surface_color == [1, 1, 1, 1]
+        assert widget.surface_color == [0, 0, 0, 0]
         assert widget.radius == [0, 0, 0, 0]
         assert widget.border_width == 1
         assert widget.border_color == [0, 0, 0, 0]
@@ -416,7 +409,7 @@ class TestMorphSurfaceLayerBehavior:
         widget = self.TestWidget()
         
         test_color = [0.5, 0.5, 0.5, 0.8]
-        widget.surface_color = test_color
+        widget.normal_surface_color = test_color
         assert widget.surface_color == test_color
 
     def test_surface_radius_property(self):
@@ -435,7 +428,7 @@ class TestMorphSurfaceLayerBehavior:
         assert widget.border_width == 2
         
         test_border_color = [1, 0, 0, 1.]
-        widget.border_color = test_border_color
+        widget.normal_border_color = test_border_color
         assert widget.border_color == test_border_color
 
 
@@ -1258,7 +1251,7 @@ class TestMorphThemeBehavior:
             'content_primary_color': [1.0, 1.0, 1.0, 1.0],
             'secondary_color': [0.0, 1.0, 0.0, 1.0],
             'content_secondary_color': [0.8, 0.8, 0.8, 1.0],
-            'surface_color': [0.9, 0.9, 0.9, 1.0],
+            'normal_surface_color': [0.9, 0.9, 0.9, 1.0],
             'content_surface_color': [0.2, 0.2, 0.2, 1.0],
             'error_color': [1.0, 0.0, 0.0, 1.0],
             'content_error_color': [1.0, 1.0, 1.0, 1.0],
@@ -1272,13 +1265,14 @@ class TestMorphThemeBehavior:
             
             widget = self.TestWidget()
             # Set up valid widget properties
-            widget.surface_color = [1, 1, 1, 1]
+            widget.normal_surface_color = [1, 1, 1, 1]
             
             # Test successful color application
-            result = widget.apply_theme_color('surface_color', 'primary_color')
+            result = widget.apply_theme_color(
+                'normal_surface_color', 'primary_color')
             
             assert result is True
-            assert widget.surface_color == [1.0, 0.0, 0.0, 1.0]
+            assert widget.normal_surface_color == [1.0, 0.0, 0.0, 1.0]
 
     @patch('morphui.app.MorphApp._theme_manager')
     def test_apply_theme_color_failure_cases(self, mock_app_theme_manager):
@@ -1302,7 +1296,7 @@ class TestMorphThemeBehavior:
             
             widget = self.TestWidget()
             # Set up valid widget properties
-            widget.surface_color = [1, 1, 1, 1]
+            widget.normal_surface_color = [1, 1, 1, 1]
             
             # Test with non-existent theme color - just set it to None directly
             mock_app_theme_manager.nonexistent_color = None
@@ -1330,7 +1324,7 @@ class TestMorphThemeBehavior:
             'content_primary_color': [1.0, 1.0, 1.0, 1.0],
             'secondary_color': [0.0, 1.0, 0.0, 1.0],
             'content_secondary_color': [0.8, 0.8, 0.8, 1.0],
-            'surface_color': [0.9, 0.9, 0.9, 1.0],
+            'normal_surface_color': [0.9, 0.9, 0.9, 1.0],
             'content_surface_color': [0.2, 0.2, 0.2, 1.0],
             'error_color': [1.0, 0.0, 0.0, 1.0],
             'content_error_color': [1.0, 1.0, 1.0, 1.0],
@@ -1343,9 +1337,9 @@ class TestMorphThemeBehavior:
             
             widget = self.TestWidget()
             # Set up valid widget properties
-            widget.surface_color = [1, 1, 1, 1]
+            widget.normal_surface_color = [1, 1, 1, 1]
             widget.content_color = [0, 0, 0, 1]
-            widget.border_color = [0, 0, 0, 0]
+            widget.normal_border_color = [0, 0, 0, 0]
             
             # Test setting primary style
             widget.theme_style = 'primary'
@@ -1391,7 +1385,7 @@ class TestMorphThemeBehavior:
             
             # Add a custom style
             custom_mappings = {
-                'surface_color': 'tertiary_color',
+                'normal_surface_color': 'tertiary_color',
                 'content_color': 'on_tertiary_color'
             }
             
@@ -1420,7 +1414,7 @@ class TestMorphThemeBehavior:
             assert widget1.theme_style_mappings is self.TestWidget.theme_style_mappings
             
             # Add custom style to widget1
-            widget1.add_custom_style('custom1', {'surface_color': 'primary_color'})
+            widget1.add_custom_style('custom1', {'normal_surface_color': 'primary_color'})
             
             # Now widget1 should have its own copy
             assert widget1.theme_style_mappings is not widget2.theme_style_mappings
@@ -1501,7 +1495,7 @@ class TestMorphColorThemeBehavior:
             'content_primary_color': [1.0, 1.0, 1.0, 1.0],
             'secondary_color': [0.0, 1.0, 0.0, 1.0],
             'content_secondary_color': [0.8, 0.8, 0.8, 1.0],
-            'surface_color': [0.9, 0.9, 0.9, 1.0],
+            'normal_surface_color': [0.9, 0.9, 0.9, 1.0],
             'content_surface_color': [0.2, 0.2, 0.2, 1.0],
             'error_color': [1.0, 0.0, 0.0, 1.0],
             'content_error_color': [1.0, 1.0, 1.0, 1.0],
@@ -1527,7 +1521,7 @@ class TestMorphColorThemeBehavior:
             'content_primary_color': [1.0, 1.0, 1.0, 1.0],
             'secondary_color': [0.0, 1.0, 0.0, 1.0],
             'content_secondary_color': [0.8, 0.8, 0.8, 1.0],
-            'surface_color': [0.9, 0.9, 0.9, 1.0],
+            'normal_surface_color': [0.9, 0.9, 0.9, 1.0],
             'content_surface_color': [0.2, 0.2, 0.2, 1.0],
             'error_color': [1.0, 0.0, 0.0, 1.0],
             'content_error_color': [1.0, 1.0, 1.0, 1.0],
@@ -1555,7 +1549,7 @@ class TestMorphColorThemeBehavior:
             'content_primary_color': [1.0, 1.0, 1.0, 1.0],
             'secondary_color': [0.0, 1.0, 0.0, 1.0],
             'content_secondary_color': [0.8, 0.8, 0.8, 1.0],
-            'surface_color': [0.9, 0.9, 0.9, 1.0],
+            'normal_surface_color': [0.9, 0.9, 0.9, 1.0],
             'content_surface_color': [0.2, 0.2, 0.2, 1.0],
             'error_color': [1.0, 0.0, 0.0, 1.0],
             'content_error_color': [1.0, 1.0, 1.0, 1.0],

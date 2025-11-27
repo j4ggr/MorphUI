@@ -59,7 +59,7 @@ class MorphChartNavigationButton(MorphIconButton):
         halign='center',
         valign='center',
         theme_color_bindings={
-            'surface_color': 'transparent_color',
+            'normal_surface_color': 'transparent_color',
             'content_color': 'content_primary_fixed_variant_color',
             'hovered_content_color': 'content_primary_fixed_color',},
         typography_role=MorphIconButton.default_config['typography_role'],
@@ -81,7 +81,7 @@ class MorphChartNavigationToggleButton(
     default_config: Dict[str, Any] = (
         MorphChartNavigationButton.default_config.copy() | dict(
         theme_color_bindings={
-            'surface_color': 'transparent_color',
+            'normal_surface_color': 'transparent_color',
             'active_surface_color': 'primary_fixed_color',
             'content_color': 'content_primary_fixed_variant_color',
             'hovered_content_color': 'content_primary_fixed_color',
@@ -96,7 +96,7 @@ class MorphChartToolbarMenu(
     """
     default_config: Dict[str, Any] = dict(
         theme_color_bindings={
-            'surface_color': 'transparent_color',},
+            'normal_surface_color': 'transparent_color',},
         orientation='vertical',
         auto_size=True,
         spacing=dp(4),
@@ -420,7 +420,7 @@ class MorphChart(MorphFloatLayout):
 
     default_config: Dict[str, Any] = dict(
         theme_color_bindings=dict(
-            surface_color='transparent_color',),
+            normal_surface_color='transparent_color',),
         size_hint=(1, 1),)
     """Default configuration for the MorphChart."""
 

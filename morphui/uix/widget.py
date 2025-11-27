@@ -55,11 +55,11 @@ class MorphWidget(
         def build(self):
             root = MorphBoxLayout( 
                 MorphWidget(
-                    surface_color=[0.2, 0.6, 0.8, 1],
+                    normal_surface_color=[0.2, 0.6, 0.8, 1],
                     radius=[10, 10, 10, 10],
                 ),
                 MorphWidget(
-                    surface_color=[0.8, 0.4, 0.2, 1],
+                    normal_surface_color=[0.8, 0.4, 0.2, 1],
                     radius=[5, 5, 5, 5],
                 ),
                 orientation='vertical',
