@@ -929,7 +929,7 @@ class MorphInteractionLayerBehavior(BaseLayerBehavior):
         
         state = self.current_interaction_state
         if state != 'pressed' or not getattr(self, 'ripple_enabled', False):
-            interaction_color = self.get_resolved_interaction_color()
+            interaction_color = self._get_interaction_layer_color()
             self._interaction_color_instruction.rgba = interaction_color
 
     interaction_layer_color: List[float] = AliasProperty(
@@ -1017,42 +1017,16 @@ class MorphInteractionLayerBehavior(BaseLayerBehavior):
             layer_x <= x <= layer_x + layer_width and
             layer_y <= y <= layer_y + layer_height)
 
-    def get_resolved_interaction_color(self) -> List[float]:
-        """Get the interaction layer color.
-        
-        Returns the interaction layer color as RGBA values. The base 
-        color is determined by the interaction_gray_value property: if 
-        None, it automatically uses white (1.0) in dark theme and black
-        (0.0) in light theme to ensure visibility against the surface.
-        If a specific value is set, that value is used regardless of 
-        theme. The opacity is determined by the current interaction
-        state's opacity setting.
-        
-        Returns
-        -------
-        List[float]
-            RGBA color values [r, g, b, a] where r=g=b is the gray value
-            and a is the state-specific opacity.
-        """
-        state = self.current_interaction_state
-        opacity = getattr(self, f'{state}_state_opacity', None)
-
-        if opacity is None:
-            return self.theme_manager.transparent_color
-
-        if self.interaction_gray_value is None:
-            value = 1.0 if self.theme_manager.is_dark_mode else 0.0
-        else:
-            value = self.interaction_gray_value
-            
-        return [value, value, value, opacity]
-
     def _update_interaction_layer(self, *args) -> None:
-        """Update the state layer position, size, radius and color."""
+        """Update the state layer position, size, radius and color.
+        
+        This method updates the interaction layer's position, size,
+        radius, and color based on the current properties. It is called
+        whenever any relevant property changes."""
         self.interaction_layer_pos = self.pos
         self.interaction_layer_size = self.size
-        self.interaction_layer_radius = self.clamped_radius
-        self.interaction_layer_color = self.get_resolved_interaction_color()
+        self.interaction_layer_radius = self.radius
+        self.interaction_layer_color = [0, 0, 0, 0]  # Trigger update
 
     def apply_interaction(self, state: InteractionState) -> None:
         """Apply the interaction layer color for the specified state

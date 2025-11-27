@@ -585,8 +585,8 @@ class MorphRippleBehavior(EventDispatcher):
         if self.ripple_color is not None:
             return self.ripple_color
         
-        if hasattr(self, 'get_resolved_interaction_color'):
-            ripple_color = self.get_resolved_interaction_color()
+        if hasattr(self, 'interaction_layer_color'):
+            ripple_color = self.interaction_layer_color
         else:
             gray_value = 0.0
             if hasattr(self, 'theme_manager'):
