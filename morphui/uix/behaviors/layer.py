@@ -2,7 +2,6 @@ from math import pi
 from math import sin
 from math import cos
 
-from typing import Any
 from typing import List
 from typing import Dict
 from typing import Tuple

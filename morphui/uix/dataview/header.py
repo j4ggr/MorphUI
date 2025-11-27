@@ -10,6 +10,7 @@ from kivy.metrics import dp
 from kivy.uix.label import Label
 from kivy.properties import AliasProperty
 from kivy.properties import ObjectProperty
+from kivy.properties import NumericProperty
 from kivy.uix.recycleview import RecycleView
 from kivy.uix.recycleview.views import RecycleDataViewBehavior
 
@@ -50,6 +51,15 @@ class MorphDataViewHeaderLabel(
     supports user-controlled resizing and integrates with Kivy's
     RecycleView framework.
     """
+
+    index: int = NumericProperty(0)
+    """The index of this label in the RecycleView data.
+
+    :attr:`index` is a :class:`~kivy.properties.NumericProperty`
+    and defaults to `0`.
+    """
+
+    rv: RecycleView = ObjectProperty(None)
     
     minimum_height: float = AliasProperty(
         lambda self: self.texture_size[1] + self.padding[1] + self.padding[3],
@@ -84,10 +94,36 @@ class MorphDataViewHeaderLabel(
         valign='center',
         padding=[dp(8), dp(4)],
         overlay_edge_width=dp(1),
-        resizable_edges= ['right',],
+        auto_size=True,
         visible_edges=['right', 'bottom'],)
     """Default configuration for the MorphDataViewHeaderLabel."""
-    
+
+    def refresh_view_attrs(
+            self,
+            rv: RecycleView,
+            index: int,
+            data: List[Dict[str, Any]]
+            ) -> None:
+        """Refresh the view attributes when the data changes.
+        
+        This method is called by the RecycleView framework to update
+        the view's attributes based on the provided data.
+        
+        Parameters
+        ----------
+        rv : RecycleView
+            The RecycleView instance managing this view.
+        index : int
+            The index of this view in the RecycleView data.
+        data : List[Dict[str, Any]]
+            The data dictionary for this view.
+        """
+        self.index = index
+        self.refresh_auto_sizing()
+        self.refresh_content()
+        self.refresh_overlay()
+        return super().refresh_view_attrs(rv, index, data)
+
 
 class MorphDataViewHeaderLayout(
         MorphRecycleBoxLayout):
@@ -109,16 +145,27 @@ class MorphDataViewHeaderLayout(
     """
     
     default_config: Dict[str, Any] = dict(
-        orientation='horizontal',
-        auto_size=True,
         theme_color_bindings={
-            'normal_surface_color': 'surface_color'
-        })
+            'normal_surface_color': 'surface_color'},
+        orientation='horizontal',
+        auto_width=True,
+        auto_height=False,
+        size_hint_y=None,)
     """Default configuration for the MorphDataViewHeaderLayout."""
 
     def __init__(self, **kwargs) -> None:
         config = clean_config(self.default_config, kwargs)
         super().__init__(**config)
+    
+    def on_cells(self, instance, value) -> None:
+        height = 0
+        for cell in value:
+            cell.refresh_view_attrs(
+                self.parent, cell.index, self.parent.data[cell.index])
+            if cell.minimum_height > height:
+                height = cell.minimum_height # TODO: copy size hint behavior
+        self.height = height
+
 
 
 class MorphDataViewHeader(
@@ -198,8 +245,11 @@ class MorphDataViewHeader(
             A sequence representing the column names to be displayed in 
             the header.
         """
-        self.data = [{'text': str(name), 'auto_size': True} for name in names]
-        self.height = self.layout.height
+        self.data = [
+            {'text': str(n), **MorphDataViewHeaderLabel.default_config}
+            for n in names]
+        for child in self.layout.children:
+            child.refresh_overlay()
 
     column_names: List[str] = AliasProperty(
         _get_column_names,
