@@ -87,7 +87,7 @@ class MyApp(MorphApp):
                 auto_height=True,
                 theme_color_bindings={
                     'normal_surface_color': 'surface_container_color',
-                    'content_color': 'content_surface_color',
+                    'normal_content_color': 'content_surface_color',
                     'normal_border_color': 'outline_color',
                     'focus_border_color': 'primary_color',
                     'hint_text_color': 'primary_color'},),

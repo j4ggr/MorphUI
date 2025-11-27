@@ -48,7 +48,7 @@ class MorphSimpleIconButton(
         theme_color_bindings=dict(
             normal_surface_color='transparent_color',
             disabled_border_color='outline_variant_color',
-            content_color='content_surface_color',
+            normal_content_color='content_surface_color',
             hovered_content_color='content_surface_variant_color'),
         typography_role=MorphIconLabel.default_config['typography_role'],
         typography_size=MorphIconLabel.default_config['typography_size'],
@@ -102,7 +102,7 @@ class MorphButton(
             'normal_surface_color': 'surface_container_color',
             'normal_border_color': 'outline_color',
             'disabled_border_color': 'outline_variant_color',
-            'content_color': 'content_surface_color',
+            'normal_content_color': 'content_surface_color',
             'hovered_content_color': 'content_surface_variant_color',},
         ripple_enabled=True,
         ripple_color=None,
@@ -143,7 +143,7 @@ class MorphIconButton(
         valign='center',
         theme_color_bindings={
             'normal_surface_color': 'surface_container_color',
-            'content_color': 'content_surface_color',
+            'normal_content_color': 'content_surface_color',
             'hovered_content_color': 'content_surface_variant_color',
             'normal_border_color': 'outline_color',},
         typography_role=MorphIconLabel.default_config['typography_role'],

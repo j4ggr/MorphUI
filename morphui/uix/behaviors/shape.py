@@ -60,7 +60,7 @@ class MorphRoundSidesBehavior(EventDispatcher):
             MorphIconLabel.default_config.copy() | dict(
             theme_color_bindings=dict(
                 normal_surface_color='transparent_color',
-                content_color='content_surface_variant_color',
+                normal_content_color='content_surface_variant_color',
                 normal_border_color='outline_color',
                 active_surface_color='primary_color',
                 active_content_color='content_primary_color',),

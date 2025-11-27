@@ -122,22 +122,22 @@ def create_category_box(category_name) -> MorphBoxLayout:
             text=f'{category_name.capitalize()}',
             theme_color_bindings={
                 'normal_surface_color': f'{category_name}_color',
-                'content_color': f'content_{category_name}_color'},),
+                'normal_content_color': f'content_{category_name}_color'},),
         ColorLabel(
             text=f'Content {category_name}',
             theme_color_bindings={
                 'normal_surface_color': f'content_{category_name}_color',
-                'content_color': f'{category_name}_color'},),
+                'normal_content_color': f'{category_name}_color'},),
         ColorLabel(
             text=f'{category_name.capitalize()} Container',
             theme_color_bindings={
                 'normal_surface_color': f'{category_name}_container_color',
-                'content_color': f'content_{category_name}_container_color'},),
+                'normal_content_color': f'content_{category_name}_container_color'},),
         ColorLabel(
             text=f'Content {category_name} Container',
             theme_color_bindings={
                 'normal_surface_color': f'content_{category_name}_container_color',
-                'content_color': f'{category_name}_container_color'},),
+                'normal_content_color': f'{category_name}_container_color'},),
         orientation='vertical',
         size_hint= (None, None),
         auto_height=True,
@@ -153,24 +153,24 @@ def create_fixed_box(category_name) -> MorphBoxLayout:
                 text=f'{category_name.capitalize()} Fixed',
                 theme_color_bindings={
                     'normal_surface_color': f'{category_name}_fixed_color',
-                    'content_color': f'content_{category_name}_fixed_color'},),
+                    'normal_content_color': f'content_{category_name}_fixed_color'},),
             ColorLabel(
                 text=f'{category_name.capitalize()} Fixed Dim',
                 theme_color_bindings={
                     'normal_surface_color': f'{category_name}_fixed_dim_color',
-                    'content_color': f'content_{category_name}_fixed_color'},),
+                    'normal_content_color': f'content_{category_name}_fixed_color'},),
             orientation='horizontal',
             auto_height=True,),
         ColorLabel(
             text=f'Content {category_name} Fixed',
             theme_color_bindings={
                 'normal_surface_color': f'content_{category_name}_fixed_color',
-                'content_color': f'{category_name}_fixed_color'},),
+                'normal_content_color': f'{category_name}_fixed_color'},),
         ColorLabel(
             text=f'Content {category_name} Fixed Variant',
             theme_color_bindings={
                 'normal_surface_color': f'content_{category_name}_fixed_variant_color',
-                'content_color': f'{category_name}_fixed_color'},),
+                'normal_content_color': f'{category_name}_fixed_color'},),
         orientation='vertical',
         size_hint= (None, None),
         auto_height=True,
@@ -185,17 +185,17 @@ def create_surface_box() -> MorphBoxLayout:
                 text='Surface Dim',
                 theme_color_bindings={
                     'normal_surface_color': 'surface_dim_color',
-                    'content_color': 'content_surface_color'},),
+                    'normal_content_color': 'content_surface_color'},),
             ColorLabel(
                 text='Surface',
                 theme_color_bindings={
                     'normal_surface_color': 'surface_color',
-                    'content_color': 'content_surface_color'},),
+                    'normal_content_color': 'content_surface_color'},),
             ColorLabel(
                 text='Surface Bright',
                 theme_color_bindings={
                     'normal_surface_color': 'surface_bright_color',
-                    'content_color': 'content_surface_color'},),
+                    'normal_content_color': 'content_surface_color'},),
             orientation='horizontal',
             auto_height=True,),
 
@@ -204,27 +204,27 @@ def create_surface_box() -> MorphBoxLayout:
                 text='Surface Container Lowest',
                 theme_color_bindings={
                     'normal_surface_color': 'surface_container_lowest_color',
-                    'content_color': 'content_surface_color'},),
+                    'normal_content_color': 'content_surface_color'},),
             ColorLabel(
                 text='Surface Container Low',
                 theme_color_bindings={
                     'normal_surface_color': 'surface_container_low_color',
-                    'content_color': 'content_surface_color'},),
+                    'normal_content_color': 'content_surface_color'},),
             ColorLabel(
                 text='Surface Container',
                 theme_color_bindings={
                     'normal_surface_color': 'surface_container_color',
-                    'content_color': 'content_surface_color'},),
+                    'normal_content_color': 'content_surface_color'},),
             ColorLabel(
                 text='Surface Container High',
                 theme_color_bindings={
                     'normal_surface_color': 'surface_container_high_color',
-                    'content_color': 'content_surface_color'},),
+                    'normal_content_color': 'content_surface_color'},),
             ColorLabel(
                 text='Surface Container Highest',
                 theme_color_bindings={
                     'normal_surface_color': 'surface_container_highest_color',
-                    'content_color': 'content_surface_color'},),
+                    'normal_content_color': 'content_surface_color'},),
             orientation='horizontal',
             auto_height=True,),
 
@@ -233,22 +233,22 @@ def create_surface_box() -> MorphBoxLayout:
                 text='Content Surface',
                 theme_color_bindings={
                     'normal_surface_color': 'content_surface_color',
-                    'content_color': 'surface_color'},),
+                    'normal_content_color': 'surface_color'},),
             ColorLabel(
                 text='Content Surface Variant',
                 theme_color_bindings={
                     'normal_surface_color': 'content_surface_variant_color',
-                    'content_color': 'surface_color'},),
+                    'normal_content_color': 'surface_color'},),
             ColorLabel(
                 text='Outline',
                 theme_color_bindings={
                     'normal_surface_color': 'outline_color',
-                    'content_color': 'surface_color'},),
+                    'normal_content_color': 'surface_color'},),
             ColorLabel(
                 text='Outline Variant',
                 theme_color_bindings={
                     'normal_surface_color': 'outline_variant_color',
-                    'content_color': 'content_surface_color'},),
+                    'normal_content_color': 'content_surface_color'},),
             orientation='horizontal',
             auto_height=True,),
         orientation='vertical',
@@ -264,26 +264,26 @@ def create_inverse_box() -> MorphBoxLayout:
             text='Inverse Surface',
             theme_color_bindings={
                 'normal_surface_color': 'inverse_surface_color',
-                'content_color': 'inverse_content_surface_color'},),
+                'normal_content_color': 'inverse_content_surface_color'},),
         ColorLabel(
             text='Content Inverse Surface',
             theme_color_bindings={
                 'normal_surface_color': 'inverse_content_surface_color',
-                'content_color': 'inverse_surface_color'},),
+                'normal_content_color': 'inverse_surface_color'},),
         ColorLabel(
             text='Inverse Primary',
             theme_color_bindings={
                 'normal_surface_color': 'inverse_primary_color',
-                'content_color': 'inverse_surface_color'},),
+                'normal_content_color': 'inverse_surface_color'},),
         MorphBoxLayout(
             ColorLabel(
                 text='Scrim',
-                content_color='white',
+                normal_content_color='white',
                 theme_color_bindings={
                     'normal_surface_color': 'scrim_color',},),
             ColorLabel(
                 text='Shadow',
-                content_color='white',
+                normal_content_color='white',
                 theme_color_bindings={
                     'normal_surface_color': 'shadow_color',},),
             orientation='horizontal',

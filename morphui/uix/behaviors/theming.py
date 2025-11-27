@@ -95,7 +95,7 @@ class MorphColorThemeBehavior(BaseThemeBehavior):
             self.theme_color_bindings = {
                 'normal_surface_color': 'primary_color',
                 'normal_border_color': 'outline_color',
-                'content_color': 'content_primary_color'  # text color
+                'normal_content_color': 'content_primary_color'  # text color
             }
     ```
     
@@ -179,7 +179,7 @@ class MorphColorThemeBehavior(BaseThemeBehavior):
     ```python
     widget.theme_color_bindings = {
         'normal_surface_color': 'primary_color',
-        'content_color': 'content_primary_color',
+        'normal_content_color': 'content_primary_color',
         'normal_border_color': 'outline_color'
     }
     ```
@@ -189,7 +189,7 @@ class MorphColorThemeBehavior(BaseThemeBehavior):
     ```python
     widget.theme_color_bindings = {
         'normal_surface_color': 'error_color',
-        'content_color': 'content_error_color',
+        'normal_content_color': 'content_error_color',
         'normal_border_color': 'error_color'
     }
     ```
@@ -468,7 +468,7 @@ class MorphColorThemeBehavior(BaseThemeBehavior):
         ```python
         widget.add_custom_style('warning', {
             'normal_surface_color': 'error_container_color',
-            'content_color': 'content_error_container_color',
+            'normal_content_color': 'content_error_container_color',
             'normal_border_color': 'outline_color'
         })
         
@@ -481,7 +481,7 @@ class MorphColorThemeBehavior(BaseThemeBehavior):
         ```python
         widget.add_custom_style('subtle', {
             'normal_surface_color': 'surface_variant_color',
-            'content_color': 'content_surface_variant_color',
+            'normal_content_color': 'content_surface_variant_color',
             'normal_border_color': 'outline_variant_color'
         })
         ```

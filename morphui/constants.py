@@ -33,19 +33,19 @@ class _Theme_:
         return {
             'primary': {
                 'normal_surface_color': 'primary_color',
-                'content_color': 'content_primary_color',
+                'normal_content_color': 'content_primary_color',
                 'disabled_content_color': 'outline_color',
                 'normal_border_color': 'primary_color',},
 
             'secondary': {
                 'normal_surface_color': 'secondary_color', 
-                'content_color': 'content_secondary_color',
+                'normal_content_color': 'content_secondary_color',
                 'disabled_content_color': 'outline_color',
                 'normal_border_color': 'secondary_color',},
 
             'tertiary': {
                 'normal_surface_color': 'tertiary_color',
-                'content_color': 'content_tertiary_color',
+                'normal_content_color': 'content_tertiary_color',
                 'disabled_content_color': 'outline_color',
                 'normal_border_color': 'tertiary_color',},
 
@@ -55,7 +55,7 @@ class _Theme_:
 
             'error': {
                 'normal_surface_color': 'error_color',
-                'content_color': 'content_error_color', 
+                'normal_content_color': 'content_error_color', 
                 'normal_border_color': 'error_color',},
 
             'outline': {

@@ -368,7 +368,6 @@ class ThemeManager(MorphDynamicColorPalette):
             return
 
         for attr_name, scheme_property in self.material_color_map.items():
-            print(attr_name, scheme_property)
             if hasattr(self.current_scheme, scheme_property):
                 hex_color = getattr(self.current_scheme, scheme_property)
                 rgba = list(get_color_from_hex(hex_color))

@@ -1159,7 +1159,7 @@ class MorphContentLayerBehavior(BaseLayerBehavior):
     be used for text outlines/shadows, but this is less commonly used.
     """
     
-    content_color: List[float] | None = ColorProperty(None)
+    normal_content_color: List[float] | None = ColorProperty(None)
     """Explicit content color property for theme binding disambiguation.
 
     This property provides a clear, dedicated binding target for content
@@ -1168,8 +1168,8 @@ class MorphContentLayerBehavior(BaseLayerBehavior):
     property allows theme bindings to unambiguously specify content
     color intentions in :attr:`theme_color_bindings`.
 
-    :attr:`content_color` is a :class:`~kivy.properties.ColorProperty`
-    and defaults to None.
+    :attr:`normal_content_color` is a 
+    :class:`~kivy.properties.ColorProperty` and defaults to None.
     """
 
     disabled_content_color: List[float] | None = ColorProperty(None)
@@ -1226,72 +1226,15 @@ class MorphContentLayerBehavior(BaseLayerBehavior):
     and defaults to None.
     """
 
-    def __init__(self, **kwargs) -> None:
-        self.register_event_type('on_content_updated')
-        super().__init__(**kwargs)
-        if self.content_color is None:
-            if hasattr(self, 'color'):
-                self.content_color = self.color
-            elif hasattr(self, 'foreground_color'):
-                self.content_color = self.foreground_color
-            else:
-                self.content_color = self.theme_manager.content_surface_color
-        if hasattr(self, 'disabled_color'):
-            self.disabled_color = (
-                self.disabled_content_color or self.disabled_color)
-        if hasattr(self, 'disabled_foreground_color'):
-            self.disabled_foreground_color = (
-                self.disabled_content_color or self.disabled_foreground_color)
-            
-        self.bind(
-            current_content_state=self._on_content_state_change,)
+    def _get_content_color(self, *args) -> List[float] | None:
+        """Get the content color based on the current state.
 
-        for state in self.content_state_precedence:
-            property_name = f'{state}_content_color'
-            self.fbind(
-                property_name,
-                self._on_content_property_change,
-                property_name=property_name)
-
-        self.fbind(
-            'content_color',
-            self._on_content_property_change,
-            property_name='content_color')
-
-        self.refresh_content()
-
-    def _on_content_state_change(self, instance: Any, state: str) -> None:
-        """Handle content state changes.
-        
-        Called when current_content_state changes. Updates the content
-        layer to reflect the new state.
-        """
-        self._update_content_layer()
-
-    def _on_content_property_change(
-            self, instance: Any, value: Any, property_name: str) -> None:
-        """Handle content property changes.
-        
-        Called when any content color property changes. Only updates
-        the content if the changed property affects the current state.
-        """
-        state = self.current_content_state
-        prefix = f'{state}_' if state != 'normal' else ''
-        precedence_property = f'{prefix}content_color'
-        if property_name == precedence_property:
-            self._update_content_layer()
-
-    def get_resolved_content_color(self) -> List[float] | None:
-        """Determine the appropriate content color based on the current
-        state.
-
-        This method checks the widget's current content state and
-        returns the corresponding content color. If a specific color
-        for the state is not set, it falls back to the default
-        `content_color`.
-
-        Override this method in subclasses to customize color
-        resolution logic.
+        This method determines the appropriate content color based on
+        the widget's current content state (normal, disabled, error, 
+        focus, hovered, active). If a specific color for the state is 
+        not set, it falls back to the normal_content_color.
+        This method is used by the :attr:`content_color` 
+        AliasProperty.
 
         Returns
         -------
@@ -1302,9 +1245,90 @@ class MorphContentLayerBehavior(BaseLayerBehavior):
         content_color = getattr(self, f'{state}_content_color', None)
         
         if content_color is None:
-            content_color = self.content_color
+            content_color = self.normal_content_color
 
         return content_color
+    
+    def _set_content_color(self, *args) -> None:
+        """Set the content color based on the current state.
+
+        This method updates the widget's content color to reflect the
+        appropriate content color based on the widget's current state.
+        """
+        color = self._get_content_color()
+        if color is not None:
+            self.apply_content(color)
+
+    content_color: List[float] | None = AliasProperty(
+        _get_content_color,
+        _set_content_color,
+        bind=[
+            'normal_content_color',
+            'disabled_content_color',
+            'error_content_color',
+            'focus_content_color',
+            'hovered_content_color',
+            'active_content_color',
+            'current_content_state'])
+    """Get the current content color based on the current state or
+    trigger updates.
+
+    This property automatically resolves the appropriate content color
+    based on the widget's current state (normal, disabled, error,
+    focus, hovered, active). Setting this property updates the content 
+    color accordingly. Passing different values will have no effect since it 
+    is always synced to the widget's state. However, it can be useful to
+    trigger updates.
+
+    :attr:`content_color` is a :class:`~kivy.properties.AliasProperty`
+    and defaults to the resolved content color based on the current
+    state."""
+
+    def __init__(self, **kwargs) -> None:
+        self.register_event_type('on_content_updated')
+        super().__init__(**kwargs)
+        if self.normal_content_color is None:
+            if hasattr(self, 'color'):
+                self.normal_content_color = self.color
+            elif hasattr(self, 'foreground_color'):
+                self.normal_content_color = self.foreground_color
+            else:
+                self.normal_content_color = self.theme_manager.content_surface_color
+        if hasattr(self, 'disabled_color'):
+            self.disabled_color = (
+                self.disabled_content_color or self.disabled_color)
+        if hasattr(self, 'disabled_foreground_color'):
+            self.disabled_foreground_color = (
+                self.disabled_content_color or self.disabled_foreground_color)
+            
+        self.bind(
+            content_color=self.on_content_updated,)
+
+        for state in self.content_state_precedence:
+            self.fbind(
+                f'{state}_content_color',
+                self.setter('content_color'),)
+
+        self.refresh_content()
+
+    def get_resolved_content_color(self) -> List[float] | None:
+        """Determine the appropriate content color based on the current
+        state.
+
+        This method checks the widget's current content state and
+        returns the corresponding content color. If a specific color
+        for the state is not set, it falls back to the default
+        `normal_content_color`.
+
+        Override this method in subclasses to customize color
+        resolution logic.
+
+        Returns
+        -------
+        List[float] | None
+            The resolved content color as a list of RGBA values.
+        """
+        return self._get_content_color()
     
     def _update_content_layer(self, *args) -> None:
         """Update the content layer based on the current properties.
@@ -1347,7 +1371,7 @@ class MorphContentLayerBehavior(BaseLayerBehavior):
         widget's state properties are modified externally. It ensures
         that the content color reflects the current state and theme.
         """
-        self._update_content_layer()
+        self.content_color = self._get_content_color()
     
     def on_content_updated(self, *args) -> None:
         """Event dispatched when the content layer is updated.

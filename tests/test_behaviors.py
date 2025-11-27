@@ -1630,7 +1630,7 @@ class TestMorphThemeBehavior:
             # Add a custom style
             custom_mappings = {
                 'normal_surface_color': 'tertiary_color',
-                'content_color': 'on_tertiary_color'
+                'normal_content_color': 'on_tertiary_color'
             }
             
             widget.add_custom_style('custom', custom_mappings)
@@ -2390,7 +2390,7 @@ class TestMorphContentLayerBehavior:
         widget = self.TestWidget()
         
         test_color = [1, 0, 0, 1.]
-        widget.content_color = test_color
+        widget.normal_content_color = test_color
         assert widget.content_color == test_color
 
     @patch('morphui.app.MorphApp._theme_manager')
@@ -2429,9 +2429,14 @@ class TestMorphContentLayerBehavior:
         
         widget = self.TestWidget()
         
-        with patch.object(widget, '_update_content_layer') as mock_update:
+        # Set a test color to verify refresh works
+        test_color = [1, 0, 0, 1.]
+        widget.normal_content_color = test_color
+        
+        with patch.object(widget, '_get_content_color', return_value=test_color) as mock_getter:
             widget.refresh_content()
-            mock_update.assert_called_once()
+            # The refresh should trigger the content_color AliasProperty
+            mock_getter.assert_called()
 
 
 class TestMorphInteractionLayerBehavior:

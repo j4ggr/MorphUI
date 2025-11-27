@@ -85,7 +85,7 @@ class MorphSimpleLabel(
 
     default_config: Dict[str, Any] = dict(
         theme_color_bindings=dict(
-            content_color='content_surface_color',),
+            normal_content_color='content_surface_color',),
         typography_role='Label',
         typography_size='medium',
         typography_weight='Regular',
@@ -152,7 +152,7 @@ MyApp().run()
 
     default_config: Dict[str, Any] = dict(
         theme_color_bindings=dict(
-            content_color='content_surface_color',),
+            normal_content_color='content_surface_color',),
         font_name='MaterialIcons',
         typography_role='Label',
         typography_size='large',
@@ -218,7 +218,7 @@ class MorphLabel(
 
     default_config: Dict[str, Any] = dict(
         theme_color_bindings=dict(
-            content_color='content_surface_color',
+            normal_content_color='content_surface_color',
             normal_surface_color='surface_color',),
         typography_role='Label',
         typography_size='medium',
@@ -290,7 +290,7 @@ class MorphIconLabel(
 
     default_config: Dict[str, Any] = dict(
         theme_color_bindings=dict(
-            content_color='content_surface_variant_color',
+            normal_content_color='content_surface_variant_color',
             normal_surface_color='transparent_color',),
         font_name='MaterialIcons',
         typography_role='Label',

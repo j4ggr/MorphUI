@@ -42,7 +42,7 @@ class MorphBoxLayout(
                     text="Label 1",
                     theme_color_bindings={
                         'normal_surface_color': 'surface_container_color',
-                        'content_color': 'content_surface_color',
+                        'normal_content_color': 'content_surface_color',
                         'normal_border_color': 'outline_color',},
                     radius=[5, 25, 5, 25],),
                 MorphLabel(
@@ -50,7 +50,7 @@ class MorphBoxLayout(
                     text="Label 2",
                     theme_color_bindings={
                         'normal_surface_color': 'surface_container_low_color',
-                        'content_color': 'content_surface_color',
+                        'normal_content_color': 'content_surface_color',
                         'normal_border_color': 'outline_variant_color',},
                     radius=[25, 5, 25, 5],),
                 theme_style='surface',

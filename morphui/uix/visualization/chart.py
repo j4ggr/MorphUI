@@ -42,7 +42,7 @@ class MorphChartInfoLabel(MorphSimpleLabel):
     """
     default_config: Dict[str, Any] = dict(
         theme_color_bindings=dict(
-            content_color='content_primary_fixed_variant_color',),
+            normal_content_color='content_primary_fixed_variant_color',),
         typography_role='Label',
         typography_size='medium',
         typography_weight='Regular',
@@ -60,7 +60,7 @@ class MorphChartNavigationButton(MorphIconButton):
         valign='center',
         theme_color_bindings={
             'normal_surface_color': 'transparent_color',
-            'content_color': 'content_primary_fixed_variant_color',
+            'normal_content_color': 'content_primary_fixed_variant_color',
             'hovered_content_color': 'content_primary_fixed_color',},
         typography_role=MorphIconButton.default_config['typography_role'],
         typography_size=MorphIconButton.default_config['typography_size'],
@@ -83,7 +83,7 @@ class MorphChartNavigationToggleButton(
         theme_color_bindings={
             'normal_surface_color': 'transparent_color',
             'active_surface_color': 'primary_fixed_color',
-            'content_color': 'content_primary_fixed_variant_color',
+            'normal_content_color': 'content_primary_fixed_variant_color',
             'hovered_content_color': 'content_primary_fixed_color',
             'active_content_color': 'content_primary_fixed_color',},
         active_radius_enabled=True,))

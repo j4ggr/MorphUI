@@ -72,7 +72,7 @@ class TextFieldLabel(MorphSimpleLabel):
     
     default_config: Dict[str, Any] = dict(
         theme_color_bindings=dict(
-            content_color='content_surface_color',
+            normal_content_color='content_surface_color',
             focus_content_color='primary_color',
             error_content_color='error_color',),
         typography_role='Label',
@@ -96,7 +96,7 @@ class TextFieldSupportingLabel(MorphSimpleLabel):
     
     default_config: Dict[str, Any] = dict(
         theme_color_bindings=dict(
-            content_color='content_surface_color',
+            normal_content_color='content_surface_color',
             error_content_color='error_color',),
         typography_role='Label',
         typography_size='small',
@@ -114,7 +114,7 @@ class TextFieldTextLengthLabel(MorphSimpleLabel):
     
     default_config: Dict[str, Any] = dict(
         theme_color_bindings=dict(
-            content_color='content_surface_color',
+            normal_content_color='content_surface_color',
             error_content_color='error_color',),
         typography_role='Label',
         typography_size='small',
@@ -134,7 +134,7 @@ class TextFieldLeadingIconLabel(MorphSimpleIconLabel):
     
     default_config: Dict[str, Any] = dict(
         theme_color_bindings=dict(
-            content_color='content_surface_color',
+            normal_content_color='content_surface_color',
             focus_content_color='primary_color',
             error_content_color='error_color',),
         font_name=MorphSimpleIconLabel.default_config['font_name'],
@@ -157,7 +157,7 @@ class TextFieldTrailingIconButton(MorphIconButton):
 
     default_config: Dict[str, Any] = dict(
         theme_color_bindings=dict(
-            content_color='primary_color',
+            normal_content_color='primary_color',
             normal_surface_color='transparent_color',
             hovered_content_color='content_surface_variant_color',),
         font_name=MorphIconButton.default_config['font_name'],
@@ -534,7 +534,7 @@ class MorphTextInput(
             cursor_color=self.update_cursor,
             cursor_width=self.update_cursor,
             focus=self.update_cursor,
-            content_color=self.setter('cursor_color'),)
+            normal_content_color=self.setter('cursor_color'),)
 
     def update_cursor(self, *args) -> None:
         """Update the cursor appearance based on focus and blink state.
@@ -879,7 +879,7 @@ class MorphTextField(
             error_border_color='error_color',
             focus_border_color='primary_color',
             disabled_border_color='outline_variant_color',
-            content_color='content_surface_color',
+            normal_content_color='content_surface_color',
             selected_text_color='secondary_color',),
         size_hint_y=None,)
     """Default configuration values for MorphTextField.
@@ -963,7 +963,7 @@ class MorphTextField(
             selected_text_color_opacity=self._update_selection_color,
             error_type=self._update_supporting_error_text,
             supporting_error_texts=self._update_supporting_error_text,
-            content_color=self._text_input.setter('content_color'),
+            normal_content_color=self._text_input.setter('content_color'),
             minimum_height=self.setter('height'),
             maximum_height=self._text_input.setter('maximum_height'),)
         self.fbind(

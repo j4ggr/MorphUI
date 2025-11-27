@@ -42,7 +42,7 @@ class MorphCheckbox(
         MorphIconLabel.default_config.copy() | dict(
         theme_color_bindings=dict(
             normal_surface_color='transparent_color',
-            content_color='content_surface_color',
+            normal_content_color='content_surface_color',
             active_content_color='primary_color',
             disabled_content_color='outline_color',),
         normal_icon='checkbox-blank-outline',
@@ -120,7 +120,7 @@ class ThumbSwitch(
             normal_surface_color='content_surface_color',
             active_surface_color='content_primary_color',
             disabled_surface_color='outline_color',
-            content_color='surface_dim_color',
+            normal_content_color='surface_dim_color',
             active_content_color='primary_color',),
         font_name='MaterialIcons',
         typography_role='Label',
