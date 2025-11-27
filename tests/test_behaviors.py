@@ -3123,10 +3123,10 @@ class TestMorphButtonBehavior:
         assert self.widget._press_start_time is None
         assert self.widget._press_duration == original_duration
 
-    def test_do_press(self):
-        """Test _do_press method."""
+    def test_do_release(self):
+        """Test _do_release method."""
         assert self.widget.active is False
-        self.widget._do_press()
+        self.widget._do_release()
         assert self.widget.active is True
 
     def test_do_release(self):
@@ -3260,86 +3260,83 @@ class TestMorphToggleButtonBehavior:
 
     def test_get_widgets_with_widgets(self):
         """Test get_widgets with widgets in group."""
-        # Note: Due to implementation bug, groups aren't properly registered
-        # This test verifies that get_widgets doesn't crash and returns empty list
         widget1 = self.TestWidget(group='test_group')
         widget2 = self.TestWidget(group='test_group')
 
         widgets = MorphToggleButtonBehavior.get_widgets('test_group')
-        # Due to implementation bug with wrong callback reference, no widgets are found
-        assert len(widgets) == 0
+        assert len(widgets) == 2
+        assert widget1 in widgets
+        assert widget2 in widgets
 
     def test_get_widgets_with_garbage_collected_widget(self):
         """Test get_widgets when some widgets are garbage collected."""
         widget1 = self.TestWidget(group='test_group')
         
-        # Due to implementation bug, groups aren't properly set up
-        # Since groups are empty due to callback bug, we can't test garbage collection
-        # This test verifies that get_widgets doesn't crash
         widgets = MorphToggleButtonBehavior.get_widgets('test_group')
-        assert len(widgets) == 0
+        assert len(widgets) == 1
 
-    def test_do_press_toggle_active(self):
-        """Test _do_press toggles active state."""
+    def test_do_release_toggle_active(self):
+        """Test _do_release toggles active state."""
         assert self.widget.active is False
-        self.widget._do_press()
+        self.widget._do_release()
         assert self.widget.active is True
         
-        self.widget._do_press()
+        self.widget._do_release()
         assert self.widget.active is False
 
-    def test_do_press_with_group_exclusive(self):
-        """Test _do_press with group exclusivity."""
+    def test_do_release_with_group_exclusive(self):
+        """Test _do_release with group exclusivity."""
         widget1 = self.TestWidget(group='test_group')
         widget2 = self.TestWidget(group='test_group')
 
-        # Due to group registration bug, exclusivity doesn't work correctly
-        # Test the toggle behavior instead
-        widget1._do_press()
+        # Test group exclusivity works correctly
+        widget1._do_release()
         assert widget1.active is True
         
-        # Second press should toggle off (since no group exclusivity)
-        widget2._do_press()
+        # When widget2 is activated, widget1 should be deactivated due to group exclusivity
+        widget2._do_release()
         assert widget2.active is True  # Widget2 becomes active
-        # widget1 remains active due to group bug    def test_do_press_no_selection_not_allowed(self):
-        """Test _do_press when no selection is not allowed."""
+        assert widget1.active is False  # Widget1 should be deactivated by group exclusivity
+
+    def test_do_release_no_selection_not_allowed(self):
+        """Test _do_release when no selection is not allowed."""
         self.widget.group = 'test_group'
         self.widget.allow_no_selection = False
         self.widget.active = True
         
         # Should not toggle off when it's the only active button
-        self.widget._do_press()
+        self.widget._do_release()
         assert self.widget.active is True
 
-    def test_do_press_no_selection_allowed(self):
-        """Test _do_press when no selection is allowed."""
+    def test_do_release_no_selection_allowed(self):
+        """Test _do_release when no selection is allowed."""
         self.widget.group = 'test_group'
         self.widget.allow_no_selection = True
         self.widget.active = True
         
         # Should toggle off even in a group
-        self.widget._do_press()
+        self.widget._do_release()
         assert self.widget.active is False
 
-    def test_do_press_no_group(self):
-        """Test _do_press with no group set."""
+    def test_do_release_no_group(self):
+        """Test _do_release with no group set."""
         self.widget.group = None
         
-        self.widget._do_press()
+        self.widget._do_release()
         assert self.widget.active is True
         
-        self.widget._do_press()
+        self.widget._do_release()
         assert self.widget.active is False
 
     def test_do_release_no_change(self):
         """Test _do_release doesn't change active state."""
         self.widget.active = True
         self.widget._do_release()
-        assert self.widget.active is True
+        assert self.widget.active is False
         
         self.widget.active = False
         self.widget._do_release()
-        assert self.widget.active is False
+        assert self.widget.active is True
 
     def test_release_group_no_group(self):
         """Test _release_group when widget has no group."""
@@ -3364,22 +3361,29 @@ class TestMorphToggleButtonBehavior:
         widget2.active = True
         widget3.active = True
 
-        # Due to group registration bug, _release_group doesn't find other widgets
+        # Test that _release_group correctly deactivates other widgets in the group
         widget1._release_group(widget1)
 
-        # All widgets remain active since group mechanism is broken
+        # Only widget1 should remain active, others should be deactivated
         assert widget1.active is True
-        assert widget2.active is True  # Should be False if group worked
-        assert widget3.active is True  # Should be False if group worked    def test_clear_groups_static_method(self):
+        assert widget2.active is False  # Should be False when group works
+        assert widget3.active is False  # Should be False when group works
+
+    def test_clear_groups_static_method(self):
         """Test _clear_groups static method."""
-        # Due to group registration bug, groups are never populated
-        # This test verifies the method doesn't crash when groups are empty
-        
-        self.TestWidget(group='test_group')  # Create widget to set up group
+        widget = self.TestWidget(group='test_group')  # Create widget to set up group
         groups = MorphToggleButtonBehavior._MorphToggleButtonBehavior__groups
 
-        # Groups will be empty due to implementation bug
-        assert 'test_group' not in groups  # Bug means groups aren't created
+        # Groups should be created correctly
+        assert 'test_group' in groups
+        assert len(groups['test_group']) == 1
+        
+        # Test the clear groups method by simulating widget deletion
+        weak_ref = groups['test_group'][0]
+        MorphToggleButtonBehavior._clear_groups(weak_ref)
+        
+        # The weak reference should be removed from the group
+        assert len(groups['test_group']) == 0
 
     def test_full_toggle_interaction(self):
         """Test full toggle button interaction with touch events."""
@@ -3395,11 +3399,18 @@ class TestMorphToggleButtonBehavior:
             self.mock_touch.ud[self.widget] = True
             self.widget._press_duration = 0.1  # Above min_state_time
             
-            with patch.object(Clock, 'schedule_once'):
+            with patch.object(Clock, 'schedule_once') as mock_schedule:
                 result = self.widget.on_touch_up(self.mock_touch)
             
             assert result is True
             assert self.widget.pressed is False
+            
+            # Simulate the scheduled _do_release call
+            # Get the scheduled function call
+            assert mock_schedule.call_count >= 1
+            scheduled_func = mock_schedule.call_args_list[0][0][0]  # First call, first argument
+            scheduled_func(0)  # Call with dt=0
+            
             # After the press/release cycle, active state should have toggled
             assert self.widget.active is True
 
@@ -3428,14 +3439,18 @@ class TestMorphToggleButtonBehavior:
             mock_touch1.ud[widget1] = True
             widget1._press_duration = 0.1
 
-            with patch.object(Clock, 'schedule_once'):
+            with patch.object(Clock, 'schedule_once') as mock_schedule1:
                 widget1.on_touch_up(mock_touch1)
+            
+            # Simulate the scheduled _do_release call
+            if mock_schedule1.call_count >= 1:
+                scheduled_func = mock_schedule1.call_args_list[0][0][0]
+                scheduled_func(0)
 
         # widget1 should be active
         assert widget1.active is True
         
-        # Due to group registration bug, exclusivity doesn't work
-        # so widget2 won't automatically become inactive
+        # Group exclusivity should ensure only one widget is active
         assert widget2.active is False  # This is correct (not activated yet)
 
         # Now interact with widget2
@@ -3454,11 +3469,16 @@ class TestMorphToggleButtonBehavior:
             mock_touch2.ud[widget2] = True
             widget2._press_duration = 0.1
 
-            with patch.object(Clock, 'schedule_once'):
+            with patch.object(Clock, 'schedule_once') as mock_schedule2:
                 widget2.on_touch_up(mock_touch2)
+            
+            # Simulate the scheduled _do_release call
+            if mock_schedule2.call_count >= 1:
+                scheduled_func = mock_schedule2.call_args_list[0][0][0]
+                scheduled_func(0)
 
-        # Due to group bug, both widgets can be active
-        assert widget1.active is True  # Should be False if group worked properly
+        # Group exclusivity should work - only widget2 should be active
+        assert widget1.active is False  # Should be False when group works properly
         assert widget2.active is True
 
     def teardown_method(self):
