@@ -1513,9 +1513,11 @@ class MorphOverlayLayerBehavior(BaseLayerBehavior):
         the :attr:`overlay_edge_color` property.
         """
         overlay_edge_color = self._get_overlay_edge_color()
-        for name in self._overlay_edges_color_instructions:
-            self._overlay_edges_color_instructions[name].rgba = (
-                overlay_edge_color)
+        for name, color_instruction in self._overlay_edges_color_instructions.items():
+            if name in self.visible_edges:
+                color_instruction.rgba = overlay_edge_color
+            else:
+                color_instruction.rgba = self.theme_manager.transparent_color
     
     overlay_edge_color: List[float] = AliasProperty(
         _get_overlay_edge_color,
@@ -1524,7 +1526,8 @@ class MorphOverlayLayerBehavior(BaseLayerBehavior):
             'normal_overlay_edge_color',
             'disabled_overlay_edge_color',
             'resizing_overlay_edge_color',
-            'current_overlay_state',],)
+            'current_overlay_state',
+            'visible_edges'],)
     """Get the overlay edge color or trigger updates.
 
     The overlay edge color is determined by the current overlay state.
@@ -1574,116 +1577,6 @@ class MorphOverlayLayerBehavior(BaseLayerBehavior):
     :attr:`visible_edges ` is a
     :class:`~kivy.properties.ListProperty` and defaults to an 
     empty list.
-    """
-
-    def _get_current_overlay_color(self, *args) -> List[float]:
-        """Get the current overlay color based on state.
-        
-        Returns the overlay color as RGBA values based on the current
-        overlay state. This method is used internally by the
-        :attr:`current_overlay_color` property.
-        
-        Returns
-        -------
-        List[float]
-            RGBA color values for the current overlay state.
-        """
-        current_state = self.current_overlay_state
-        
-        if current_state == 'disabled':
-            return self.disabled_overlay_color
-        elif current_state == 'resizing':
-            return self.resizing_overlay_color
-        else:
-            return self.overlay_color
-    
-    def _set_current_overlay_color(self, *args) -> None:
-        """Update the overlay color instruction.
-        
-        This method updates the overlay color instruction based on the
-        resolved overlay color. It is used internally by the
-        :attr:`current_overlay_color` property.
-        """
-        if hasattr(self, '_overlay_color_instruction'):
-            color = self._get_current_overlay_color()
-            self._overlay_color_instruction.rgba = color
-
-    current_overlay_color: List[float] = AliasProperty(
-        _get_current_overlay_color,
-        _set_current_overlay_color,
-        bind=[
-            'current_overlay_state',
-            'overlay_color',
-            'disabled_overlay_color',
-            'resizing_overlay_color'],
-        cache=True)
-    """Get the current overlay color based on state or trigger update.
-
-    The overlay color is determined by the current overlay state.
-    Passing different values will have no effect since it is always
-    synced to the widget's state. However, it can be useful to trigger
-    updates.
-    
-    :attr:`current_overlay_color` is a
-    :class:`~kivy.properties.AliasProperty`.
-    """
-
-    def _get_current_overlay_edge_color(self, *args) -> List[float]:
-        """Get the current overlay edge color based on state.
-        
-        Returns the overlay edge color as RGBA values based on the current
-        overlay state. This method is used internally by the
-        :attr:`current_overlay_edge_color` property.
-        
-        Returns
-        -------
-        List[float]
-            RGBA color values for the current overlay edge state.
-        """
-        current_state = self.current_overlay_state
-        
-        if current_state == 'disabled':
-            return self.disabled_overlay_edge_color
-        elif current_state == 'resizing':
-            return self.resizing_overlay_edge_color
-        else:
-            return self.overlay_edge_color
-    
-    def _set_current_overlay_edge_color(self, *args) -> None:
-        """Update the overlay edge color instructions.
-        
-        This method updates the overlay edge color instructions based on the
-        resolved overlay edge color. It is used internally by the
-        :attr:`current_overlay_edge_color` property.
-        """
-        if hasattr(self, '_overlay_edges_color_instructions'):
-            edge_color = self._get_current_overlay_edge_color()
-            for name, color_instruction in self._overlay_edges_color_instructions.items():
-                if name in self.visible_edges:
-                    color_instruction.rgba = edge_color
-                else:
-                    color_instruction.rgba = self.theme_manager.transparent_color
-
-    current_overlay_edge_color: List[float] = AliasProperty(
-        _get_current_overlay_edge_color,
-        _set_current_overlay_edge_color,
-        bind=[
-            'current_overlay_state',
-            'overlay_edge_color',
-            'disabled_overlay_edge_color',
-            'resizing_overlay_edge_color',
-            'visible_edges'],
-        cache=True)
-    """Get the current overlay edge color based on state or trigger
-    update.
-
-    The overlay edge color is determined by the current overlay state.
-    Passing different values will have no effect since it is always
-    synced to the widget's state. However, it can be useful to trigger
-    updates.
-    
-    :attr:`current_overlay_edge_color` is a
-    :class:`~kivy.properties.AliasProperty`.
     """
 
     def _get_overlay_layer_pos(self, *args) -> Tuple[float, float]:
@@ -1825,7 +1718,8 @@ class MorphOverlayLayerBehavior(BaseLayerBehavior):
         _get_overlay_edges_params,
         _set_overlay_edges_params,
         bind=[
-            'pos', 'size', 
+            'pos',
+            'size', 
             'overlay_edge_width', 
             'resizing_overlay_edge_width',
             'overlay_edge_inside'],
@@ -1888,14 +1782,14 @@ class MorphOverlayLayerBehavior(BaseLayerBehavior):
             overlay_edge_width=self.setter('overlay_edges_params'),
             resizing_overlay_edge_width=self.setter('overlay_edges_params'),
             overlay_edge_inside=self.setter('overlay_edges_params'),
-            visible_edges=self.setter('current_overlay_edge_color'),
-            current_overlay_state=self.setter('current_overlay_color'),
-            overlay_color=self.setter('current_overlay_color'),
-            disabled_overlay_color=self.setter('current_overlay_color'),
-            resizing_overlay_color=self.setter('current_overlay_color'),
-            overlay_edge_color=self.setter('current_overlay_edge_color'),
-            disabled_overlay_edge_color=self.setter('current_overlay_edge_color'),
-            resizing_overlay_edge_color=self.setter('current_overlay_edge_color'),
+            visible_edges=self.setter('overlay_edge_color'),
+            current_overlay_state=self.setter('overlay_color'),
+            normal_overlay_color=self.setter('overlay_color'),
+            disabled_overlay_color=self.setter('overlay_color'),
+            resizing_overlay_color=self.setter('overlay_color'),
+            normal_overlay_edge_color=self.setter('overlay_edge_color'),
+            disabled_overlay_edge_color=self.setter('overlay_edge_color'),
+            resizing_overlay_edge_color=self.setter('overlay_edge_color'),
             overlay_layer_pos=self.on_overlay_updated,
             overlay_layer_size=self.on_overlay_updated,
             overlay_layer_radius=self.on_overlay_updated,)
@@ -1933,8 +1827,8 @@ class MorphOverlayLayerBehavior(BaseLayerBehavior):
         self.overlay_layer_pos = self.pos
         self.overlay_layer_size = self.size
         self.overlay_layer_radius = self.radius
-        self.current_overlay_color = [0, 0, 0, 0]  # Trigger update
-        self.current_overlay_edge_color = [0, 0, 0, 0]  # Trigger update
+        self.overlay_color = [0, 0, 0, 0]  # Trigger update
+        self.overlay_edge_color = [0, 0, 0, 0]  # Trigger update
         self.overlay_edges_params = {}  # Trigger update
         self.dispatch('on_overlay_updated')
     

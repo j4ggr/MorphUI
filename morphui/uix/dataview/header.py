@@ -76,7 +76,7 @@ class MorphDataViewHeaderLabel(
     default_config: Dict[str, Any] = dict(
         theme_color_bindings=dict(
             content_color='content_surface_color',
-            overlay_edge_color='outline_color',),
+            normal_overlay_edge_color='outline_color',),
         typography_role='Label',
         typography_size='medium',
         typography_weight='Regular',
