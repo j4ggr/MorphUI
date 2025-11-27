@@ -29,6 +29,7 @@ from morphui.uix.behaviors import MorphIconBehavior
 from morphui.uix.behaviors import MorphIdentificationBehavior
 from morphui.uix.behaviors import MorphContentLayerBehavior
 from morphui.uix.behaviors import MorphInteractionLayerBehavior
+from morphui.uix.behaviors import MorphOverlayLayerBehavior
 from morphui.uix.behaviors.touch import MorphButtonBehavior
 from morphui.uix.behaviors.touch import MorphToggleButtonBehavior
 
@@ -430,6 +431,249 @@ class TestMorphSurfaceLayerBehavior:
         test_border_color = [1, 0, 0, 1.]
         widget.normal_border_color = test_border_color
         assert widget.border_color == test_border_color
+
+    def test_state_based_surface_color_resolution(self):
+        """Test surface color resolution for different states."""
+        
+        class TestStateWidget(MorphSurfaceLayerBehavior, Widget):
+            error = BooleanProperty(False)
+            focus = BooleanProperty(False)
+            
+        widget = TestStateWidget()
+        
+        # Test normal state (default)
+        normal_color = [0.2, 0.2, 0.2, 1.0]
+        widget.normal_surface_color = normal_color
+        assert widget.surface_color == normal_color
+        assert widget.current_surface_state == 'normal'
+        
+        # Test disabled state
+        disabled_color = [0.1, 0.1, 0.1, 0.5]
+        widget.disabled_surface_color = disabled_color
+        widget.disabled = True
+        assert widget.surface_color == disabled_color
+        assert widget.current_surface_state == 'disabled'
+        
+        # Test error state (when disabled is False)
+        widget.disabled = False
+        error_color = [0.8, 0.1, 0.1, 1.0]
+        widget.error_surface_color = error_color
+        widget.error = True
+        assert widget.surface_color == error_color
+        assert widget.current_surface_state == 'error'
+
+    def test_state_based_border_color_resolution(self):
+        """Test border color resolution for different states."""
+        
+        class TestStateWidget(MorphSurfaceLayerBehavior, Widget):
+            focus = BooleanProperty(False)
+            
+        widget = TestStateWidget()
+        
+        # Test normal state
+        normal_border = [0.3, 0.3, 0.3, 1.0]
+        widget.normal_border_color = normal_border
+        assert widget.border_color == normal_border
+        
+        # Test focus state
+        focus_border = [0.0, 0.5, 1.0, 1.0]
+        widget.focus_border_color = focus_border
+        widget.focus = True
+        assert widget.border_color == focus_border
+        assert widget.current_surface_state == 'focus'
+
+    def test_border_path_generation_normal(self):
+        """Test border path generation for normal rectangular shape."""
+        widget = self.TestWidget()
+        widget.pos = [10, 20]
+        widget.size = [100, 50]
+        widget.radius = [5, 5, 5, 5]
+        
+        # Test normal closed border
+        path = widget.border_path
+        assert isinstance(path, list)
+        assert len(path) > 0
+        assert len(path) % 2 == 0  # Should be pairs of x,y coordinates
+        
+        # Test that border is closed by default
+        assert widget.border_closed == True
+
+    def test_border_bottom_line_only(self):
+        """Test border bottom line only mode."""
+        widget = self.TestWidget()
+        widget.pos = [10, 20]
+        widget.size = [100, 50]
+        widget.border_bottom_line_only = True
+        
+        path = widget.border_path
+        # Bottom line only should have exactly 4 coordinates (2 points)
+        assert len(path) == 4
+        assert path[0] == 10      # x start
+        assert path[1] == 20      # y start (bottom)
+        assert path[2] == 110     # x end
+        assert path[3] == 20      # y end (same as start)
+        
+        # Should not be closed when bottom line only
+        assert widget.border_closed == False
+
+    def test_border_open_functionality(self):
+        """Test border open section functionality."""
+        widget = self.TestWidget()
+        widget.pos = [0, 0]
+        widget.size = [100, 50]
+        widget.radius = [0, 0, 0, 0]  # Simple rectangle for easier testing
+        
+        # Test with open section
+        widget.border_open_x = 20
+        widget.border_open_length = 30
+        
+        path = widget.border_path
+        assert len(path) > 4  # Should have more points for open section
+        
+        # Should not be closed with open section
+        assert widget.border_closed == False
+        
+        # Test closed with no open section
+        widget.border_open_length = 0
+        assert widget.border_closed == True
+
+    def test_surface_color_aliasproperty_binding(self):
+        """Test that surface_color AliasProperty updates when dependencies change."""
+        
+        class TestStateWidget(MorphSurfaceLayerBehavior, Widget):
+            pass
+            
+        widget = TestStateWidget()
+        
+        # Set initial colors
+        normal_color = [0.5, 0.5, 0.5, 1.0]
+        disabled_color = [0.3, 0.3, 0.3, 0.5]
+        widget.normal_surface_color = normal_color
+        widget.disabled_surface_color = disabled_color
+        
+        # Initially should use normal color
+        assert widget.surface_color == normal_color
+        
+        # Change to disabled - should automatically update surface_color
+        widget.disabled = True
+        assert widget.surface_color == disabled_color
+        
+        # Change back to enabled - should return to normal color
+        widget.disabled = False
+        assert widget.surface_color == normal_color
+
+    def test_border_color_aliasproperty_binding(self):
+        """Test that border_color AliasProperty updates when dependencies change."""
+        
+        class TestStateWidget(MorphSurfaceLayerBehavior, Widget):
+            error = BooleanProperty(False)
+            
+        widget = TestStateWidget()
+        
+        # Set initial colors
+        normal_border = [0.6, 0.6, 0.6, 1.0]
+        error_border = [1.0, 0.2, 0.2, 1.0]
+        widget.normal_border_color = normal_border
+        widget.error_border_color = error_border
+        
+        # Initially should use normal border
+        assert widget.border_color == normal_border
+        
+        # Change to error state - should automatically update border_color
+        widget.error = True
+        assert widget.border_color == error_border
+
+    def test_refresh_surface_functionality(self):
+        """Test refresh_surface method."""
+        widget = self.TestWidget()
+        
+        # Set some properties
+        widget.normal_surface_color = [0.4, 0.4, 0.4, 1.0]
+        widget.border_width = 3
+        
+        # Call refresh_surface - should not raise errors
+        widget.refresh_surface()
+        
+        # Properties should remain the same
+        assert widget.surface_color == [0.4, 0.4, 0.4, 1.0]
+        assert widget.border_width == 3
+
+    def test_canvas_instructions_creation(self):
+        """Test that canvas instructions are properly created."""
+        widget = self.TestWidget()
+        
+        # Check that internal instructions exist
+        assert hasattr(widget, '_surface_color_instruction')
+        assert hasattr(widget, '_surface_instruction')
+        assert hasattr(widget, '_border_color_instruction')
+        assert hasattr(widget, '_border_instruction')
+        
+        # Instructions should have expected initial properties
+        assert widget._border_instruction.width == widget.border_width
+
+    def test_surface_updated_event(self):
+        """Test on_surface_updated event dispatching."""
+        widget = self.TestWidget()
+        
+        # Track if event was called
+        event_called = []
+        
+        def on_surface_updated_callback(*args):
+            event_called.append(True)
+        
+        widget.bind(on_surface_updated=on_surface_updated_callback)
+        
+        # Manually trigger refresh to ensure event is called
+        widget.refresh_surface()
+        
+        # Event should have been called
+        assert len(event_called) > 0
+
+    def test_border_width_constraints(self):
+        """Test border width constraints and error handling."""
+        widget = self.TestWidget()
+        
+        # Test valid border width
+        widget.border_width = 2.5
+        assert widget.border_width == 2.5
+        
+        # Test minimum constraint (should be clamped to minimum)
+        widget.border_width = 0  # Below minimum of 0.01
+        assert widget.border_width >= 0.01
+
+    def test_all_surface_state_colors(self):
+        """Test all surface state color properties."""
+        widget = self.TestWidget()
+        
+        # Test all state color properties exist and can be set
+        test_colors = {
+            'normal': [0.1, 0.1, 0.1, 1.0],
+            'disabled': [0.2, 0.2, 0.2, 0.5],
+            'error': [0.8, 0.1, 0.1, 1.0],
+            'focus': [0.1, 0.5, 0.9, 1.0],
+            'active': [0.0, 0.7, 0.3, 1.0],
+        }
+        
+        for state, color in test_colors.items():
+            setattr(widget, f'{state}_surface_color', color)
+            assert getattr(widget, f'{state}_surface_color') == color
+
+    def test_all_border_state_colors(self):
+        """Test all border state color properties."""
+        widget = self.TestWidget()
+        
+        # Test all state border color properties exist and can be set
+        test_colors = {
+            'normal': [0.1, 0.1, 0.1, 1.0],
+            'disabled': [0.2, 0.2, 0.2, 0.5],
+            'error': [0.8, 0.1, 0.1, 1.0],
+            'focus': [0.1, 0.5, 0.9, 1.0],
+            'active': [0.0, 0.7, 0.3, 1.0],
+        }
+        
+        for state, color in test_colors.items():
+            setattr(widget, f'{state}_border_color', color)
+            assert getattr(widget, f'{state}_border_color') == color
 
 
 class TestMorphSizeBoundsBehavior:
@@ -2322,6 +2566,290 @@ class TestMorphInteractionLayerBehavior:
         with patch.object(widget, '_update_interaction_layer') as mock_update_layer:
             widget.refresh_interaction()
             mock_update_layer.assert_called()
+
+
+class TestMorphOverlayLayerBehavior:
+    """Test suite for MorphOverlayLayerBehavior class."""
+    
+    class TestWidget(MorphOverlayLayerBehavior, Widget):
+        """Test widget that combines Widget with MorphOverlayLayerBehavior."""
+        pass
+
+    def test_initialization(self):
+        """Test basic initialization of MorphOverlayLayerBehavior."""
+        widget = self.TestWidget()
+        
+        # Test default overlay colors
+        assert widget.normal_overlay_color == [0, 0, 0, 0]
+        assert widget.disabled_overlay_color == [0, 0, 0, 0]
+        assert widget.resizing_overlay_color == [0, 0, 0, 0]
+        
+        # Test default edge colors
+        assert widget.normal_overlay_edge_color == [0, 0, 0, 0]
+        assert widget.disabled_overlay_edge_color == [0, 0, 0, 0]
+        assert widget.resizing_overlay_edge_color == [0, 0, 0, 0]
+        
+        # Test default edge properties
+        assert widget.overlay_edge_width == 1.0
+        assert widget.resizing_overlay_edge_width == 3.0
+        assert widget.overlay_edge_inside == True
+        assert widget.visible_edges == []
+
+    def test_overlay_color_state_resolution(self):
+        """Test overlay color resolution based on current overlay state."""
+        
+        class TestStateWidget(MorphOverlayLayerBehavior, Widget):
+            pass
+            
+        widget = TestStateWidget()
+        
+        # Set different overlay colors for different states
+        normal_overlay = [0.1, 0.1, 0.1, 0.2]
+        disabled_overlay = [0.2, 0.2, 0.2, 0.3]
+        resizing_overlay = [0.3, 0.3, 0.3, 0.4]
+        
+        widget.normal_overlay_color = normal_overlay
+        widget.disabled_overlay_color = disabled_overlay
+        widget.resizing_overlay_color = resizing_overlay
+        
+        # Test normal state (default)
+        widget.current_overlay_state = 'normal'
+        assert widget.overlay_color == normal_overlay
+        
+        # Test disabled state
+        widget.current_overlay_state = 'disabled'
+        assert widget.overlay_color == disabled_overlay
+        
+        # Test resizing state
+        widget.current_overlay_state = 'resizing'
+        assert widget.overlay_color == resizing_overlay
+
+    def test_overlay_edge_color_state_resolution(self):
+        """Test overlay edge color resolution based on current overlay state."""
+        
+        class TestStateWidget(MorphOverlayLayerBehavior, Widget):
+            pass
+            
+        widget = TestStateWidget()
+        
+        # Set different edge colors for different states
+        normal_edge = [0.5, 0.0, 0.0, 1.0]
+        disabled_edge = [0.3, 0.3, 0.3, 0.5]
+        resizing_edge = [0.0, 0.5, 1.0, 1.0]
+        
+        widget.normal_overlay_edge_color = normal_edge
+        widget.disabled_overlay_edge_color = disabled_edge
+        widget.resizing_overlay_edge_color = resizing_edge
+        
+        # Test normal state
+        widget.current_overlay_state = 'normal'
+        assert widget.overlay_edge_color == normal_edge
+        
+        # Test disabled state
+        widget.current_overlay_state = 'disabled'
+        assert widget.overlay_edge_color == disabled_edge
+        
+        # Test resizing state
+        widget.current_overlay_state = 'resizing'
+        assert widget.overlay_edge_color == resizing_edge
+
+    def test_overlay_layer_position_binding(self):
+        """Test overlay layer position binding to widget position."""
+        widget = self.TestWidget()
+        
+        # Set widget position
+        widget.pos = [50, 75]
+        
+        # Overlay layer position should match widget position
+        assert widget.overlay_layer_pos == (50, 75)
+        
+        # Change position and test binding
+        widget.pos = [100, 200]
+        assert widget.overlay_layer_pos == (100, 200)
+
+    def test_overlay_layer_size_binding(self):
+        """Test overlay layer size binding to widget size."""
+        widget = self.TestWidget()
+        
+        # Set widget size
+        widget.size = [150, 200]
+        
+        # Overlay layer size should match widget size
+        assert widget.overlay_layer_size == (150, 200)
+        
+        # Change size and test binding
+        widget.size = [300, 400]
+        assert widget.overlay_layer_size == (300, 400)
+
+    def test_overlay_layer_radius_binding(self):
+        """Test overlay layer radius binding to widget radius."""
+        widget = self.TestWidget()
+        
+        # Set widget radius
+        widget.radius = [10, 15, 20, 25]
+        
+        # Overlay layer radius should match clamped radius
+        assert widget.overlay_layer_radius == widget.clamped_radius
+
+    def test_visible_edges_functionality(self):
+        """Test visible edges functionality."""
+        widget = self.TestWidget()
+        
+        # Set some edge colors to make them visible
+        widget.normal_overlay_edge_color = [1.0, 0.0, 0.0, 1.0]
+        
+        # Test no visible edges (default)
+        assert widget.visible_edges == []
+        
+        # Test setting visible edges
+        widget.visible_edges = ['top', 'bottom']
+        assert widget.visible_edges == ['top', 'bottom']
+        
+        # Test all edges
+        widget.visible_edges = ['top', 'right', 'bottom', 'left']
+        assert widget.visible_edges == ['top', 'right', 'bottom', 'left']
+
+    def test_overlay_edges_params_calculation(self):
+        """Test overlay edge parameters calculation."""
+        widget = self.TestWidget()
+        widget.pos = [10, 20]
+        widget.size = [100, 50]
+        widget.overlay_edge_width = 2
+        widget.overlay_edge_inside = True
+        
+        edges = widget.overlay_edges_params
+        
+        # Should have all four edges
+        assert 'top' in edges
+        assert 'right' in edges
+        assert 'bottom' in edges
+        assert 'left' in edges
+        
+        # Each edge should have 4 coordinates [x1, y1, x2, y2]
+        for edge_name, coords in edges.items():
+            assert len(coords) == 4
+            assert all(isinstance(coord, (int, float)) for coord in coords)
+
+    def test_overlay_edge_inside_vs_outside(self):
+        """Test overlay edge inside vs outside positioning."""
+        widget = self.TestWidget()
+        widget.pos = [0, 0]
+        widget.size = [100, 100]
+        widget.overlay_edge_width = 2
+        
+        # Test inside positioning
+        widget.overlay_edge_inside = True
+        edges_inside = widget.overlay_edges_params
+        
+        # Test outside positioning (centered on bounds)
+        widget.overlay_edge_inside = False
+        edges_outside = widget.overlay_edges_params
+        
+        # Edge coordinates should be different for inside vs outside
+        assert edges_inside != edges_outside
+
+    def test_get_resolved_edge_width(self):
+        """Test get_resolved_edge_width method for different states."""
+        
+        class TestStateWidget(MorphOverlayLayerBehavior, Widget):
+            # Define resizable edges to enable resizing width for specific edges
+            @property
+            def resizible_edges(self):
+                return ['top', 'right', 'bottom', 'left']
+            
+        widget = TestStateWidget()
+        
+        # Set different widths
+        widget.overlay_edge_width = 1.0
+        widget.resizing_overlay_edge_width = 3.0
+        
+        # Test normal state width
+        widget.current_overlay_state = 'normal'
+        assert widget.get_resolved_edge_width('top') == 1.0
+        
+        # Test resizing state width (should use resizing width when edge is resizable)
+        widget.current_overlay_state = 'resizing'
+        assert widget.get_resolved_edge_width('top') == 3.0
+        
+        # Test disabled state should use normal width
+        widget.current_overlay_state = 'disabled'
+        assert widget.get_resolved_edge_width('left') == 1.0
+
+    def test_overlay_color_aliasproperty_binding(self):
+        """Test that overlay_color AliasProperty updates when dependencies change."""
+        
+        class TestStateWidget(MorphOverlayLayerBehavior, Widget):
+            pass
+            
+        widget = TestStateWidget()
+        
+        # Set different colors
+        normal_color = [0.1, 0.1, 0.1, 0.2]
+        disabled_color = [0.2, 0.2, 0.2, 0.3]
+        
+        widget.normal_overlay_color = normal_color
+        widget.disabled_overlay_color = disabled_color
+        
+        # Initially should use normal color
+        widget.current_overlay_state = 'normal'
+        assert widget.overlay_color == normal_color
+        
+        # Change state - should automatically update overlay_color
+        widget.current_overlay_state = 'disabled'
+        assert widget.overlay_color == disabled_color
+
+    def test_canvas_instructions_creation(self):
+        """Test that canvas instructions are properly created."""
+        widget = self.TestWidget()
+        
+        # Check that overlay instructions exist
+        assert hasattr(widget, '_overlay_color_instruction')
+        assert hasattr(widget, '_overlay_instruction')
+        assert hasattr(widget, '_overlay_edges_color_instructions')
+        assert hasattr(widget, '_overlay_edges_instruction')
+        
+        # Check that edge instructions are dictionaries
+        assert isinstance(widget._overlay_edges_color_instructions, dict)
+        assert isinstance(widget._overlay_edges_instruction, dict)
+        
+        # Should have instructions for all four edges
+        expected_edges = ['top', 'right', 'bottom', 'left']
+        for edge in expected_edges:
+            assert edge in widget._overlay_edges_color_instructions
+            assert edge in widget._overlay_edges_instruction
+
+    def test_overlay_updated_event(self):
+        """Test on_overlay_updated event dispatching."""
+        widget = self.TestWidget()
+        
+        # Track if event was called
+        event_called = []
+        
+        def on_overlay_updated_callback(*args):
+            event_called.append(True)
+        
+        widget.bind(on_overlay_updated=on_overlay_updated_callback)
+        
+        # Manually trigger refresh to ensure event is called
+        widget.refresh_overlay()
+        
+        # Event should have been called
+        assert len(event_called) > 0
+
+    def test_refresh_overlay_functionality(self):
+        """Test refresh_overlay method."""
+        widget = self.TestWidget()
+        
+        # Set some properties
+        widget.normal_overlay_color = [0.3, 0.3, 0.3, 0.4]
+        widget.overlay_edge_width = 2.5
+        
+        # Call refresh_overlay - should not raise errors
+        widget.refresh_overlay()
+        
+        # Properties should remain the same
+        assert widget.overlay_color == [0.3, 0.3, 0.3, 0.4]
+        assert widget.overlay_edge_width == 2.5
 
 
 class TestMorphButtonBehavior:
