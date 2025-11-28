@@ -141,6 +141,8 @@ class ThemeManager(MorphDynamicColorPalette):
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
+        self.register_seed_color('morphui_teal', '#00b8c2')
+        self.register_seed_color('morphui_gold', '#fbc12d')
         self.register_event_type('on_theme_changed')
         self.register_event_type('on_colors_updated')
         
