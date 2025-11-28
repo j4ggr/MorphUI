@@ -15,17 +15,10 @@ from kivy.uix.recycleview import RecycleView
 from kivy.uix.recycleview.views import RecycleDataViewBehavior
 
 from morphui.utils import clean_config
-from morphui.uix.label import MorphSimpleLabel
-from morphui.uix.behaviors import MorphResizeBehavior
-from morphui.uix.behaviors import MorphScrollSyncBehavior
-
-from morphui.uix.behaviors import MorphIconBehavior
 from morphui.uix.behaviors import MorphThemeBehavior
+from morphui.uix.behaviors import MorphScrollSyncBehavior
 from morphui.uix.behaviors import MorphAutoSizingBehavior
-from morphui.uix.behaviors import MorphRoundSidesBehavior
-from morphui.uix.behaviors import MorphSurfaceLayerBehavior
 from morphui.uix.behaviors import MorphContentLayerBehavior
-from morphui.uix.behaviors import MorphHoverEnhancedBehavior
 from morphui.uix.behaviors import MorphOverlayLayerBehavior
 from morphui.uix.recycleboxlayout import MorphRecycleBoxLayout
 
@@ -36,7 +29,7 @@ __all__ = [
     'MorphDataViewHeaderLabel',]
 
 
-class MorphDataViewHeaderLabel(
+class MorphDataViewHeaderLabel( # TODO: maybe adding HoverEnhanceBehavior and handle the resizing via RV touch?
         RecycleDataViewBehavior,
         MorphOverlayLayerBehavior,
         MorphThemeBehavior,
