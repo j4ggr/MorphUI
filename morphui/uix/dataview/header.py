@@ -7,7 +7,6 @@ from typing import Sequence
 
 from kivy.lang import Builder
 from kivy.metrics import dp
-from kivy.uix.label import Label
 from kivy.properties import AliasProperty
 from kivy.properties import ObjectProperty
 from kivy.properties import NumericProperty
@@ -15,6 +14,7 @@ from kivy.uix.recycleview import RecycleView
 from kivy.uix.recycleview.views import RecycleDataViewBehavior
 
 from morphui.utils import clean_config
+from morphui.uix.label import BaseLabel
 from morphui.uix.behaviors import MorphThemeBehavior
 from morphui.uix.behaviors import MorphScrollSyncBehavior
 from morphui.uix.behaviors import MorphAutoSizingBehavior
@@ -24,9 +24,9 @@ from morphui.uix.recycleboxlayout import MorphRecycleBoxLayout
 
 
 __all__ = [
-    'MorphDataViewHeader',
+    'MorphDataViewHeaderLabel',
     'MorphDataViewHeaderLayout',
-    'MorphDataViewHeaderLabel',]
+    'MorphDataViewHeader',]
 
 
 class MorphDataViewHeaderLabel( # TODO: maybe adding HoverEnhanceBehavior and handle the resizing via RV touch?
@@ -35,7 +35,7 @@ class MorphDataViewHeaderLabel( # TODO: maybe adding HoverEnhanceBehavior and ha
         MorphThemeBehavior,
         MorphContentLayerBehavior,
         MorphAutoSizingBehavior,
-        Label,):
+        BaseLabel,):
     """A label widget designed for use as a header in a data view.
     
     This class combines the functionalities of MorphResizeBehavior,
@@ -45,7 +45,7 @@ class MorphDataViewHeaderLabel( # TODO: maybe adding HoverEnhanceBehavior and ha
     RecycleView framework.
     """
 
-    index: int = NumericProperty(0)
+    rv_index: int = NumericProperty(0)
     """The index of this label in the RecycleView data.
 
     :attr:`index` is a :class:`~kivy.properties.NumericProperty`
@@ -53,27 +53,10 @@ class MorphDataViewHeaderLabel( # TODO: maybe adding HoverEnhanceBehavior and ha
     """
 
     rv: RecycleView = ObjectProperty(None)
-    
-    minimum_height: float = AliasProperty(
-        lambda self: self.texture_size[1] + self.padding[1] + self.padding[3],
-        bind=['texture_size', 'padding',])
-    """The minimum height required to display the label's content.
+    """The RecycleView instance managing this label.
 
-    This property calculates the minimum height based on the label's
-    texture size and padding.
-
-    :attr:`minimum_height` is a :class:`~kivy.properties.AliasProperty`
-    """
-
-    minimum_width: float = AliasProperty(
-        lambda self: self.texture_size[0] + self.padding[0] + self.padding[2],
-        bind=['texture_size', 'padding',])
-    """The minimum width required to display the label's content.
-
-    This property calculates the minimum width based on the label's
-    texture size and padding.
-
-    :attr:`minimum_width` is a :class:`~kivy.properties.AliasProperty`
+    :attr:`rv` is a :class:`~kivy.properties.ObjectProperty`
+    and defaults to `None`.
     """
     
     default_config: Dict[str, Any] = dict(
@@ -91,11 +74,6 @@ class MorphDataViewHeaderLabel( # TODO: maybe adding HoverEnhanceBehavior and ha
         auto_size_once=True,
         visible_edges=['right', 'bottom'],)
     """Default configuration for the MorphDataViewHeaderLabel."""
-
-    def __init__(self, **kwargs) -> None:
-        config = clean_config(self.default_config, kwargs)
-        super().__init__(**config)
-
 
     def refresh_view_attrs(
             self,
@@ -117,7 +95,8 @@ class MorphDataViewHeaderLabel( # TODO: maybe adding HoverEnhanceBehavior and ha
         data : List[Dict[str, Any]]
             The data dictionary for this view.
         """
-        self.index = index
+        self.rv = rv
+        self.rv_index = index
         self.refresh_auto_sizing()
         self.refresh_content()
         self.refresh_overlay()
@@ -165,8 +144,9 @@ class MorphDataViewHeaderLayout(
         labels.
         """
         for cell in cells:
-            cell.refresh_view_attrs(
-                self.parent, cell.index, self.parent.data[cell.index])
+            index = cell.rv_index
+            rv = cell.rv
+            cell.refresh_view_attrs(rv, index, rv.data[index])
 
 
 class MorphDataViewHeader(
@@ -184,24 +164,21 @@ class MorphDataViewHeader(
     --------
     ```python
     from morphui.app import MorphApp
-    from morphui.uix.recycleview import MorphRecycleView
     from morphui.uix.dataview.header import MorphDataViewHeader
-    from morphui.uix.dataview.header import MorphDataViewHeaderLabel
-    from morphui.uix.dataview.header import MorphDataViewHeaderLayout
-    from morphui.uix.label import MorphLabel
+
     class MyApp(MorphApp):
-        def build(self) -> MorphRecycleView:
-            self.theme_manager.seed_color = 'Blue'
-            header = MorphDataViewHeader(
-                column_names=['Name', 'Age', 'Occupation'],)
-            data_view = MorphRecycleView(
-                viewclass='MorphLabel',
-                data=[
-                    {'text': f'Item {i}'} for i in range(100)],)
-            # Synchronize horizontal scrolling between header and data view
-            header.sync_x_target = data_view
-            data_view.sync_x_target = header
-            return data_view
+        def build(self) -> MorphDataViewHeader:
+            self.theme_manager.theme_mode = 'Dark'
+            self.theme_manager.seed_color = 'morphui_teal'
+            header = MorphDataViewHeader()
+            header.column_names = [
+                'Name', 'Age', 'Occupation', 'Country', 'Email', 'Phone', 'Company',
+                'Position', 'Department', 'Start Date', 'End Date', 'Status',
+                'Notes', 'Salary', 'Bonus', 'Manager', 'Team', 'Location',
+                'Project', 'Task', 'Deadline', 'Priority', 'Comments', 'Feedback',
+                'Rating', 'Score', 'Level', 'Experience', 'Skills', 'Certifications',
+                'Languages', 'Hobbies', 'Interests', 'Social Media', 'Website',]
+            return header
     MyApp().run()
     ```
     """
@@ -209,8 +186,6 @@ class MorphDataViewHeader(
     Builder.load_string(dedent('''
         <MorphDataViewHeader>:
             viewclass: 'MorphDataViewHeaderLabel'
-            size_hint: (1, None)
-            height: layout.height
             layout: layout
             MorphDataViewHeaderLayout:
                 id: layout
@@ -268,10 +243,10 @@ class MorphDataViewHeader(
         do_scroll_y=False,
         size_hint=(1, None),
         bar_width=0,)
-    """Default configuration for the MorphDataViewHeader."""
+    """Default configuration for the :class:`MorphDataViewHeader`."""
 
     def __init__(self, **kwargs) -> None:
         config = clean_config(self.default_config, kwargs)
         super().__init__(**config)
         self.layout.bind(height=self.setter('height'))
-                               
+        self.height = self.layout.height
