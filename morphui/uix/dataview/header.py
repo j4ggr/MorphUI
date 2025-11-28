@@ -95,8 +95,14 @@ class MorphDataViewHeaderLabel(
         padding=[dp(8), dp(4)],
         overlay_edge_width=dp(1),
         auto_size=True,
+        auto_size_once=True,
         visible_edges=['right', 'bottom'],)
     """Default configuration for the MorphDataViewHeaderLabel."""
+
+    def __init__(self, **kwargs) -> None:
+        config = clean_config(self.default_config, kwargs)
+        super().__init__(**config)
+
 
     def refresh_view_attrs(
             self,
@@ -148,24 +154,26 @@ class MorphDataViewHeaderLayout(
         theme_color_bindings={
             'normal_surface_color': 'surface_color'},
         orientation='horizontal',
-        auto_width=True,
-        auto_height=False,
-        size_hint_y=None,)
+        auto_size=(True, False),
+        size_hint_y=None,
+        height=dp(35),)
     """Default configuration for the MorphDataViewHeaderLayout."""
 
     def __init__(self, **kwargs) -> None:
         config = clean_config(self.default_config, kwargs)
         super().__init__(**config)
     
-    def on_cells(self, instance, value) -> None:
-        height = 0
-        for cell in value:
+    def on_cells(
+            self, instance: Any, cells: List[MorphDataViewHeaderLabel]) -> None:
+        """Called when the list of header label widgets changes.
+
+        This method is triggered whenever the `cells` property changes,
+        allowing for any necessary updates or refreshes to the header
+        labels.
+        """
+        for cell in cells:
             cell.refresh_view_attrs(
                 self.parent, cell.index, self.parent.data[cell.index])
-            if cell.minimum_height > height:
-                height = cell.minimum_height # TODO: copy size hint behavior
-        self.height = height
-
 
 
 class MorphDataViewHeader(
@@ -208,6 +216,8 @@ class MorphDataViewHeader(
     Builder.load_string(dedent('''
         <MorphDataViewHeader>:
             viewclass: 'MorphDataViewHeaderLabel'
+            size_hint: (1, None)
+            height: layout.height
             layout: layout
             MorphDataViewHeaderLayout:
                 id: layout
@@ -248,8 +258,6 @@ class MorphDataViewHeader(
         self.data = [
             {'text': str(n), **MorphDataViewHeaderLabel.default_config}
             for n in names]
-        for child in self.layout.children:
-            child.refresh_overlay()
 
     column_names: List[str] = AliasProperty(
         _get_column_names,
