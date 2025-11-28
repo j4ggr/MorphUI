@@ -262,6 +262,28 @@ class MorphAutoSizingBehavior(EventDispatcher):
             super().__init__(**kwargs)
             self.auto_width = True  # Only adjust width
     ```
+    
+    One-time auto-sizing widget:
+    
+    ```python
+    from kivy.uix.label import Label
+    from morphui.uix.behaviors.sizing import MorphAutoSizingBehavior
+    
+    class OnceAutoLabel(MorphAutoSizingBehavior, Label):
+        def __init__(self, **kwargs):
+            super().__init__(**kwargs)
+            # Size both dimensions once, then maintain fixed size
+            self.auto_width = True
+            self.auto_height = True
+            self.auto_size_once = True
+    
+    class OnceAutoWidthButton(MorphAutoSizingBehavior, Button):
+        def __init__(self, **kwargs):
+            super().__init__(**kwargs)
+            # Size width once based on text, keep height flexible
+            self.auto_width = True  # Only width will be calculated once
+            self.auto_size_once = True
+    ```
     """
 
     auto_width: bool = BooleanProperty(False)
@@ -291,11 +313,32 @@ class MorphAutoSizingBehavior(EventDispatcher):
     and defaults to False.
     """
 
+    def _get_auto_size(self) -> Tuple[bool, bool]:
+        """Get combined auto size as a tuple or single bool.
+        
+        This method returns the combined auto size state. The return
+        value is a tuple of two booleans representing
+        (:attr:`auto_width`, :attr:`auto_height`). This method is used
+        by the AliasProperty.
+        """
+        return (self.auto_width, self.auto_height)
+    
+    def _set_auto_size(self, value: bool | Tuple[bool, bool]) -> None:
+        """Set combined auto size from a tuple or single bool.
+        
+        This method sets both auto_width and auto_height based on the
+        provided value. If a single boolean is given, both dimensions
+        are set to that value. If a tuple is provided, the first element
+        sets auto_width and the second sets auto_height. The method
+        is internal and used by the AliasProperty.
+        """
+        value = (value, value) if isinstance(value, bool) else value
+        assert len(value) == 2, "auto_size must be a bool or tuple of two bools"
+        self.auto_width, self.auto_height = value
+
     auto_size: bool = AliasProperty(
-        lambda self: self.auto_width and self.auto_height,
-        lambda self, value: (
-            setattr(self, 'auto_width', value),
-            setattr(self, 'auto_height', value)),
+        _get_auto_size,
+        _set_auto_size,
         bind=('auto_width', 'auto_height'))
     """Automatically adjust both width and height to minimum required 
     size.
@@ -307,11 +350,37 @@ class MorphAutoSizingBehavior(EventDispatcher):
 
     Note that setting :attr:`auto_size` to True will set both 
     :attr:`auto_width` and :attr:`auto_height` to True. Conversely,
-    setting :attr:`auto_size` to False will set both :attr:`auto_width` and 
-    :attr:`auto_height` to False.
+    setting :attr:`auto_size` to False will set both :attr:`auto_width` 
+    and :attr:`auto_height` to False. You can also set :attr:`auto_size`
+    to a tuple of two booleans to independently control width and 
+    height.
 
     :attr:`auto_size` is a :class:`~kivy.properties.AliasProperty` and 
-    defaults to False.
+    defaults to (False, False).
+    """
+
+    auto_size_once: bool = BooleanProperty(False)
+    """Automatically adjust size once during initialization based on
+    current auto_width and auto_height settings, then disable.
+    
+    When True, the widget will automatically calculate and set its size
+    based on the current values of :attr:`auto_width` and
+    :attr:`auto_height` during initialization, then disable those auto
+    sizing properties while keeping the corresponding size_hint
+    dimensions set to None. This is useful for widgets that need to be
+    sized based on their content initially but should maintain a fixed
+    size afterward.
+    
+    The behavior respects the individual settings:
+    - If :attr:`auto_width` is True, width will be calculated once then 
+      disabled
+    - If :attr:`auto_height` is True, height will be calculated once
+      then disabled
+    - If both are True, both dimensions will be calculated once then
+      disabled
+    
+    :attr:`auto_size_once` is a
+    :class:`~kivy.properties.BooleanProperty` and defaults to False.
     """
 
     _original_size_hint: Tuple[float | None, float | None] = (1.0, 1.0)
@@ -333,9 +402,15 @@ class MorphAutoSizingBehavior(EventDispatcher):
     def __init__(self, **kwargs) -> None:
         self.register_event_type('on_auto_size_updated')
         super().__init__(**kwargs)
+        
+        if self.auto_size_once:
+            self.apply_auto_sizing(self.auto_width, self.auto_width)
+            self.auto_width = False
+            self.auto_height = False
 
-        self._original_size = (self.size[0], self.size[1])
-        self._original_size_hint = (self.size_hint[0], self.size_hint[1])
+        self._original_size = self.size
+        self._original_size_hint = self.size_hint
+        
         if self.has_texture_size and hasattr(self, 'text_size'):
             self.bind(text=self._update_text_size)
             self.bind(texture_size=self._update_text_size)
