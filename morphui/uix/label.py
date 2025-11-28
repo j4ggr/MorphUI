@@ -17,10 +17,66 @@ from morphui.uix.behaviors import MorphIdentificationBehavior
 
 
 __all__ = [
+    'BaseLabel',
     'MorphSimpleLabel',
     'MorphSimpleIconLabel',
     'MorphLabel',
     'MorphIconLabel',]
+
+
+class BaseLabel(Label):
+    """Base class for MorphUI labels with auto-sizing support.
+    
+    This class extends the standard Kivy Label to include auto-sizing
+    properties for minimum width and height based on the label's content.
+    It serves as a foundation for more specialized label classes in
+    MorphUI. The auto-sizing properties calculate the minimum size
+    required to display the label's text content, taking into account
+    padding and texture size.
+
+    Notes
+    -----
+    - Inherits from Kivy's Label.
+    - Provides :attr:`minimum_height` and :attr:`minimum_width` 
+      properties for auto-sizing based on content.
+    - Designed to be extended by other MorphUI label classes.
+    - Does not include any theming or styling behaviors.
+    """
+
+    minimum_height: float = AliasProperty(
+        lambda self: self.texture_size[1] + self.padding[1] + self.padding[3],
+        bind=['texture_size', 'padding',])
+    """The minimum height required to display the label's content.
+
+    This property calculates the minimum height based on the label's
+    texture size and padding.
+
+    :attr:`minimum_height` is a :class:`~kivy.properties.AliasProperty`
+    """
+
+    minimum_width: float = AliasProperty(
+        lambda self: self.texture_size[0] + self.padding[0] + self.padding[2],
+        bind=['texture_size', 'padding',])
+    """The minimum width required to display the label's content.
+
+    This property calculates the minimum width based on the label's
+    texture size and padding.
+
+    :attr:`minimum_width` is a :class:`~kivy.properties.AliasProperty`
+    """
+
+    default_config: Dict[str, Any] = dict()
+    """Default configuration values for BaseLabel instances.
+    """
+
+    def __init__(self, **kwargs) -> None:
+        config = clean_config(self.default_config, kwargs)
+        super().__init__(**config)
+        typography = getattr(self, 'typography', None)
+        if typography is not None:
+            for prop in typography.available_style_properties:
+                if prop in kwargs and hasattr(self, prop):
+                    setattr(self, prop, kwargs[prop])
 
 
 class MorphSimpleLabel(
@@ -28,7 +84,7 @@ class MorphSimpleLabel(
         MorphThemeBehavior,
         MorphContentLayerBehavior,
         MorphAutoSizingBehavior,
-        Label,
+        BaseLabel,
         ):
     """A simplified themed label widget with only content theming.
 
@@ -61,28 +117,6 @@ class MorphSimpleLabel(
     - Lighter weight than MorphLabel for simple text display needs
     """
 
-    minimum_height: float = AliasProperty(
-        lambda self: self.texture_size[1] + self.padding[1] + self.padding[3],
-        bind=['texture_size', 'padding',])
-    """The minimum height required to display the label's content.
-
-    This property calculates the minimum height based on the label's
-    texture size and padding.
-
-    :attr:`minimum_height` is a :class:`~kivy.properties.AliasProperty`
-    """
-
-    minimum_width: float = AliasProperty(
-        lambda self: self.texture_size[0] + self.padding[0] + self.padding[2],
-        bind=['texture_size', 'padding',])
-    """The minimum width required to display the label's content.
-
-    This property calculates the minimum width based on the label's
-    texture size and padding.
-
-    :attr:`minimum_width` is a :class:`~kivy.properties.AliasProperty`
-    """
-
     default_config: Dict[str, Any] = dict(
         theme_color_bindings=dict(
             normal_content_color='content_surface_color',),
@@ -102,13 +136,6 @@ class MorphSimpleLabel(
     These values can be overridden by subclasses or during 
     instantiation.
     """
-
-    def __init__(self, **kwargs) -> None:
-        config = clean_config(self.default_config, kwargs)
-        super().__init__(**config)
-        for option in self.typography.available_style_properties:
-            if option in kwargs and hasattr(self, option):
-                setattr(self, option, kwargs[option])
 
 
 class MorphSimpleIconLabel(
