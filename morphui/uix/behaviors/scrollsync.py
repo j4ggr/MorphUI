@@ -2,6 +2,7 @@ from typing import Any
 
 from kivy.event import EventDispatcher
 from kivy.properties import ObjectProperty
+from kivy.effects.scroll import ScrollEffect
 
 
 __all__ = [
@@ -75,6 +76,17 @@ class MorphScrollSyncBehavior(EventDispatcher):
     
     :attr:`sync_y_target` is a :class:`~kivy.properties.ObjectProperty`
     and defaults to `None`.
+    """
+    
+    effect_cls = ObjectProperty(ScrollEffect)
+    """The scroll effect class to use for this widget.
+
+    This property defines the class used to create scroll effects
+    for this widget.
+    
+    By default, it is set to 
+    :class:`kivy.effects.scroll.ScrollEffect`, which does not allow
+    scroll beyond the content boundaries.
     """
 
     def __init__(self, **kwargs) -> None:
