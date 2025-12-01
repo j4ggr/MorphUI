@@ -9,9 +9,6 @@ from kivy.lang import Builder
 from kivy.metrics import dp
 from kivy.properties import AliasProperty
 from kivy.properties import ObjectProperty
-from kivy.properties import NumericProperty
-from kivy.uix.recycleview import RecycleView
-from kivy.uix.recycleview.views import RecycleDataViewBehavior
 
 from morphui.utils import clean_config
 from morphui.uix.dataview.base import BaseDataViewLabel
