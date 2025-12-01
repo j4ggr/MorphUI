@@ -20,6 +20,7 @@ from morphui.uix.behaviors import MorphScrollSyncBehavior
 from morphui.uix.behaviors import MorphAutoSizingBehavior
 from morphui.uix.behaviors import MorphContentLayerBehavior
 from morphui.uix.behaviors import MorphOverlayLayerBehavior
+from morphui.uix.behaviors import MorphIdentificationBehavior
 from morphui.uix.recycleboxlayout import MorphRecycleBoxLayout
 
 
@@ -150,6 +151,7 @@ class MorphDataViewHeaderLayout(
 
 
 class MorphDataViewHeader(
+        MorphIdentificationBehavior,
         MorphScrollSyncBehavior,
         RecycleView):
     """A scrollable header for data views, synchronized with the main

@@ -20,6 +20,7 @@ from morphui.uix.behaviors import MorphScrollSyncBehavior
 from morphui.uix.behaviors import MorphAutoSizingBehavior
 from morphui.uix.behaviors import MorphContentLayerBehavior
 from morphui.uix.behaviors import MorphOverlayLayerBehavior
+from morphui.uix.behaviors import MorphIdentificationBehavior
 from morphui.uix.recycleboxlayout import MorphRecycleBoxLayout
 
 
@@ -69,6 +70,7 @@ class MorphDataViewIndexLabel(
         valign='center',
         padding=[dp(8), dp(4)],
         overlay_edge_width=dp(1),
+        size_hint_x=1,
         auto_size=(False, True),
         auto_size_once=True,
         visible_edges=['right', 'bottom'],)
@@ -149,6 +151,7 @@ class MorphDataViewIndexLayout(
 
 
 class MorphDataViewIndex(
+        MorphIdentificationBehavior,
         MorphScrollSyncBehavior,
         RecycleView):
     """A scrollable index for data views, synchronized with the main
