@@ -69,7 +69,7 @@ class MorphDataViewIndexLabel(
         valign='center',
         padding=[dp(8), dp(4)],
         overlay_edge_width=dp(1),
-        auto_size=True,
+        auto_size=(False, True),
         auto_size_once=True,
         visible_edges=['right', 'bottom'],)
     """Default configuration for the MorphDataViewHeaderLabel."""
@@ -100,8 +100,6 @@ class MorphDataViewIndexLabel(
         self.refresh_content()
         self.refresh_overlay()
         return super().refresh_view_attrs(rv, index, data)
-
-
 
 
 class MorphDataViewIndexLayout(
@@ -150,8 +148,6 @@ class MorphDataViewIndexLayout(
             cell.refresh_view_attrs(rv, index, rv.data[index])
 
 
-
-
 class MorphDataViewIndex(
         MorphScrollSyncBehavior,
         RecycleView):
@@ -162,6 +158,22 @@ class MorphDataViewIndex(
     scroll vertically in sync with the associated data view. It uses
     a custom layout manager to arrange index labels and supports
     dynamic row naming.
+
+    Example
+    -------
+    ```python
+    from morphui.app import MorphApp
+    from morphui.uix.dataview.index import MorphDataViewIndex
+
+    class MyApp(MorphApp):
+        def build(self) -> MorphDataViewIndex:
+            self.theme_manager.theme_mode = 'Dark'
+            self.theme_manager.seed_color = 'morphui_teal'
+            index = MorphDataViewIndex()
+            index.row_names = [f'Row {i}' for i in range(1, 51)]
+            return index
+    MyApp().run()
+    ```
     """
     
     Builder.load_string(dedent('''
