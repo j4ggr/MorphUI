@@ -14,13 +14,9 @@ from kivy.uix.recycleview import RecycleView
 from kivy.uix.recycleview.views import RecycleDataViewBehavior
 
 from morphui.utils import clean_config
-from morphui.uix.label import BaseLabel
-from morphui.uix.behaviors import MorphThemeBehavior
-from morphui.uix.behaviors import MorphScrollSyncBehavior
-from morphui.uix.behaviors import MorphAutoSizingBehavior
-from morphui.uix.behaviors import MorphContentLayerBehavior
-from morphui.uix.behaviors import MorphOverlayLayerBehavior
-from morphui.uix.behaviors import MorphIdentificationBehavior
+from morphui.uix.dataview.base import BaseDataViewLabel
+from morphui.uix.dataview.base import BaseDataViewLayout
+from morphui.uix.dataview.base import BaseDataView
 from morphui.uix.recycleboxlayout import MorphRecycleBoxLayout
 
 
@@ -30,34 +26,11 @@ __all__ = [
     'MorphDataViewHeader',]
 
 
-class MorphDataViewHeaderLabel( # TODO: maybe adding HoverEnhanceBehavior and handle the resizing via RV touch?
-        RecycleDataViewBehavior,
-        MorphOverlayLayerBehavior,
-        MorphThemeBehavior,
-        MorphContentLayerBehavior,
-        MorphAutoSizingBehavior,
-        BaseLabel,):
+class MorphDataViewHeaderLabel(BaseDataViewLabel): # TODO: maybe adding HoverEnhanceBehavior and handle the resizing via RV touch?
     """A label widget designed for use as a header in a data view.
     
-    This class combines the functionalities of MorphResizeBehavior,
-    RecycleDataViewBehavior, and MorphSimpleLabel to create a label
-    suitable for displaying header information in data views. It
-    supports user-controlled resizing and integrates with Kivy's
-    RecycleView framework.
-    """
-
-    rv_index: int = NumericProperty(0)
-    """The index of this label in the RecycleView data.
-
-    :attr:`index` is a :class:`~kivy.properties.NumericProperty`
-    and defaults to `0`.
-    """
-
-    rv: RecycleView = ObjectProperty(None)
-    """The RecycleView instance managing this label.
-
-    :attr:`rv` is a :class:`~kivy.properties.ObjectProperty`
-    and defaults to `None`.
+    This class extends the base data view label to provide specific
+    styling and behavior for header labels.
     """
     
     default_config: Dict[str, Any] = dict(
@@ -76,52 +49,19 @@ class MorphDataViewHeaderLabel( # TODO: maybe adding HoverEnhanceBehavior and ha
         visible_edges=['right', 'bottom'],)
     """Default configuration for the MorphDataViewHeaderLabel."""
 
-    def refresh_view_attrs(
-            self,
-            rv: RecycleView,
-            index: int,
-            data: List[Dict[str, Any]]
-            ) -> None:
-        """Refresh the view attributes when the data changes.
-        
-        This method is called by the RecycleView framework to update
-        the view's attributes based on the provided data.
-        
-        Parameters
-        ----------
-        rv : RecycleView
-            The RecycleView instance managing this view.
-        index : int
-            The index of this view in the RecycleView data.
-        data : List[Dict[str, Any]]
-            The data dictionary for this view.
-        """
-        self.rv = rv
-        self.rv_index = index
-        self.refresh_auto_sizing()
-        self.refresh_content()
-        self.refresh_overlay()
-        return super().refresh_view_attrs(rv, index, data)
-
 
 class MorphDataViewHeaderLayout(
+        BaseDataViewLayout,
         MorphRecycleBoxLayout):
+    """A layout for arranging header labels in a data view.
 
-    cells: List[MorphDataViewHeaderLabel] = AliasProperty(
-        lambda self: [
-            child for child in self.children
-            if isinstance(child, MorphDataViewHeaderLabel)],
-        None,
-        bind=('children',))
-    """List of header label widgets managed by this layout (read-only).
-
-    This property returns a list of all child widgets that are instances
-    of :class:`MorphDataViewHeaderLabel`. It allows easy access to the
-    header labels contained within the layout.
-
-    :attr:`cells` is an :class:`~kivy.properties.AliasProperty`.
-    and is bound to changes in the `children` property.
+    This class extends the base data view layout and MorphRecycleBoxLayout
+    to provide a horizontal layout suitable for header labels.
     """
+    
+    def _get_cell_type(self) -> type:
+        """Return the type of cell label that this layout manages."""
+        return MorphDataViewHeaderLabel
     
     default_config: Dict[str, Any] = dict(
         theme_color_bindings={
@@ -135,25 +75,9 @@ class MorphDataViewHeaderLayout(
     def __init__(self, **kwargs) -> None:
         config = clean_config(self.default_config, kwargs)
         super().__init__(**config)
-    
-    def on_cells(
-            self, instance: Any, cells: List[MorphDataViewHeaderLabel]) -> None:
-        """Called when the list of header label widgets changes.
-
-        This method is triggered whenever the `cells` property changes,
-        allowing for any necessary updates or refreshes to the header
-        labels.
-        """
-        for cell in cells:
-            index = cell.rv_index
-            rv = cell.rv
-            cell.refresh_view_attrs(rv, index, rv.data[index])
 
 
-class MorphDataViewHeader(
-        MorphIdentificationBehavior,
-        MorphScrollSyncBehavior,
-        RecycleView):
+class MorphDataViewHeader(BaseDataView):
     """A scrollable header for data views, synchronized with the main
     data view.
 
