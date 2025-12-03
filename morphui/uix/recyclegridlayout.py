@@ -1,8 +1,8 @@
 from kivy.uix.recyclegridlayout import RecycleGridLayout
 
+from morphui.uix.behaviors import MorphAutoSizingBehavior
 from morphui.uix.behaviors import MorphColorThemeBehavior
 from morphui.uix.behaviors import MorphSurfaceLayerBehavior
-from morphui.uix.behaviors import MorphDeclarativeBehavior
 
 
 __all__ = [
@@ -10,7 +10,7 @@ __all__ = [
 
 
 class MorphRecycleGridLayout(
-        MorphDeclarativeBehavior,
+        MorphAutoSizingBehavior,
         MorphColorThemeBehavior,
         MorphSurfaceLayerBehavior,
         RecycleGridLayout):

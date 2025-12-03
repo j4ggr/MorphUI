@@ -41,7 +41,7 @@ class MorphDataViewIndexLabel(BaseDataViewLabel):
         valign='center',
         padding=[dp(8), dp(4)],
         overlay_edge_width=dp(1),
-        size_hint_x=1,
+        size_hint=(1, None),
         auto_size=(False, True),
         auto_size_once=True,
         visible_edges=['right', 'bottom'],)
