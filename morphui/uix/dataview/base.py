@@ -7,6 +7,7 @@ eliminating code duplication across header, index, and body components.
 from typing import Any
 from typing import Dict
 from typing import List
+from typing import Sequence
 from typing import TYPE_CHECKING
 
 from kivy.properties import AliasProperty
@@ -142,10 +143,34 @@ class BaseDataViewLayout:
         return [
             child for child in self.children # type: ignore
             if isinstance(child, cell_type)]
+    
+    def _set_cells(self, cells: Sequence[BaseDataViewLabel]) -> None:
+        """Set the cell labels managed by this layout.
 
-    cells: List[BaseDataViewLabel] = AliasProperty(
+        This method replaces the current child widgets of the layout
+        with the provided list of cell labels.
+
+        Parameters
+        ----------
+        cells : Sequence[BaseDataViewLabel]
+            A sequence of cell label widgets to be set as children
+            of this layout.
+
+        Raises
+        ------
+        AssertionError
+            If the layout does not have the required methods to
+            manage child widgets.
+        """
+        assert hasattr(self, 'clear_widgets') and hasattr(self, 'add_widget'), (
+            'The layout must have clear_widgets and add_widget methods')
+        self.clear_widgets() # type: ignore
+        for cell in cells:
+            self.add_widget(cell) # type: ignore
+
+    cells: Sequence[BaseDataViewLabel] = AliasProperty(
         _get_cells,
-        None,
+        _set_cells,
         bind=['children'],)
     """A list of all cell labels within this layout.
 
