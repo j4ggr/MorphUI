@@ -33,6 +33,28 @@ class MorphDataViewBodyLabel(BaseDataViewLabel):
     This class extends the base data view label to provide specific
     styling and behavior for body cells.
     """
+
+    header: Any = ObjectProperty(None)
+    """Reference to the header associated with this body label.
+
+    This property holds a reference to the header component of the data
+    view, allowing the body label to access header information if
+    needed.
+
+    :attr:`header` is a :class:`~kivy.properties.ObjectProperty` and
+    defaults to `None`.
+    """
+
+    index: Any = ObjectProperty(None)
+    """Reference to the index associated with this body label.
+
+    This property holds a reference to the index component of the data
+    view, allowing the body label to access index information if
+    needed.
+
+    :attr:`index` is a :class:`~kivy.properties.ObjectProperty` and
+    defaults to `None`.
+    """
     
     default_config: Dict[str, Any] = dict(
         theme_color_bindings=dict(
@@ -50,6 +72,25 @@ class MorphDataViewBodyLabel(BaseDataViewLabel):
         auto_size_once=True,
         visible_edges=['right', 'bottom'],)
     """Default configuration for the MorphDataViewBodyLabel."""
+    
+    def refresh_auto_sizing(self) -> None:
+        """Refresh the auto-sizing of the header label.
+
+        This method overrides the base implementation to ensure that
+        the auto-sizing is refreshed correctly for header labels.
+        """
+        if any((
+                self.header is None,
+                self.index is None,
+                self.auto_size[0],
+                self.auto_size[1],)):
+            return super().refresh_auto_sizing()
+        
+        idx_col = self.rv_index % len(self.header.column_names)
+        idx_row = self.rv_index // len(self.header.column_names)
+        self.width = self.header.column_widths[idx_col]
+        self.height = self.index.row_heights[idx_row]
+        
 
 
 class MorphDataViewBodyLayout(
@@ -100,25 +141,6 @@ class MorphDataViewBody(BaseDataView):
     and defaults to `None`.
     """
 
-    column_widths: List[float] = ListProperty([])
-    """List of widths for each column in the body.
-    
-    This property defines the widths of each column in the body. The
-    number of widths should correspond to the number of columns
-    displayed.
-    
-    :attr:`column_widths` is a :class:`~kivy.properties.ListProperty`
-    and defaults to an empty list."""
-
-    row_heights: List[float] = ListProperty([])
-    """List of heights for each row in the body.
-    
-    This property defines the heights of each row in the body. The
-    number of heights should correspond to the number of rows displayed.
-    
-    :attr:`row_heights` is a :class:`~kivy.properties.ListProperty`
-    and defaults to an empty list."""
-
     def _get_values(self) -> List[List[str]]:
         """Get the current values in the body as a 2D list.
 
@@ -141,24 +163,13 @@ class MorphDataViewBody(BaseDataView):
         values in that row. This method is used internally for the
         :attr:`values` property.
         """
-        n_rows = len(values)
         n_cols = max(len(row) for row in values) if values else 0
-
-        if len(self.column_widths) == n_cols:
-            widths = self.column_widths
-        else:
-            widths = [dp(100)] * n_cols
-        
-        if len(self.row_heights) == n_rows:
-            heights = self.row_heights
-        else:
-            heights = [dp(40)] * n_rows
 
         self.layout.cols = n_cols
         self.data = [
-            {'text': str(value), 'size': (w, h)} 
-            for w, row in zip(widths, values)
-            for h, value in zip(heights, row)]
+            {'text': str(value),} 
+            for row in values
+            for value in row]
         self.dispatch('on_values_updated')
 
     values: List[List[str]] = AliasProperty(
@@ -180,7 +191,7 @@ class MorphDataViewBody(BaseDataView):
         do_scroll_x=True,
         do_scroll_y=True,
         size_hint=(1, 1),
-        bar_width=dp(4),)
+        bar_width=dp(3),)
     """Default configuration for the MorphDataViewBody."""
     
     def __init__(self, **kwargs) -> None:

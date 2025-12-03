@@ -130,6 +130,16 @@ class MorphDataViewIndex(BaseDataView):
     and defaults to `None`.
     """
 
+    row_heights: List[float] = AliasProperty(
+        lambda self: [item.height for item in self.layout.children[::-1]],
+        None,)
+    """List of heights for each row in the index (read-only).
+    
+    This property defines the heights of each row in the index.
+    
+    :attr:`row_heights` is a :class:`~kivy.properties.ListProperty`
+    and defaults to an empty list."""
+
     def _get_row_names(self) -> List[str]:
         """Retrieve the list of row names from the index data.
 
@@ -155,6 +165,7 @@ class MorphDataViewIndex(BaseDataView):
         self.data = [
             {'text': str(n), **MorphDataViewIndexLabel.default_config}
             for n in names]
+        self.dispatch('on_rows_updated')
 
     row_names: List[str] = AliasProperty(
         _get_row_names,

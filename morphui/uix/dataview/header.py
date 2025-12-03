@@ -41,7 +41,7 @@ class MorphDataViewHeaderLabel(BaseDataViewLabel): # TODO: maybe adding HoverEnh
         valign='center',
         padding=[dp(8), dp(4)],
         overlay_edge_width=dp(1),
-        auto_size=True,
+        auto_size=(True, True),
         auto_size_once=True,
         visible_edges=['right', 'bottom'],)
     """Default configuration for the MorphDataViewHeaderLabel."""
@@ -134,6 +134,16 @@ class MorphDataViewHeader(BaseDataView):
     :attr:`body` is a :class:`~kivy.properties.ObjectProperty`
     and defaults to `None`.
     """
+
+    column_widths: List[float] = AliasProperty(
+        lambda self: [item.width for item in self.layout.children[::-1]],
+        None,)
+    """List of widths for each column in the header (read-only).
+    
+    This property defines the widths of each column in the header.
+    
+    :attr:`column_widths` is a :class:`~kivy.properties.ListProperty`
+    and defaults to an empty list."""
 
     def _get_column_names(self) -> List[str]:
         """Retrieve the list of column names from the header data.

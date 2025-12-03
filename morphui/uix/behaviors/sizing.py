@@ -336,7 +336,7 @@ class MorphAutoSizingBehavior(EventDispatcher):
         assert len(value) == 2, "auto_size must be a bool or tuple of two bools"
         self.auto_width, self.auto_height = value
 
-    auto_size: bool = AliasProperty(
+    auto_size: Tuple[bool, bool] = AliasProperty(
         _get_auto_size,
         _set_auto_size,
         bind=('auto_width', 'auto_height'))
