@@ -119,6 +119,17 @@ class MorphDataViewIndex(BaseDataView):
     :attr:`layout` is a :class:`~kivy.properties.ObjectProperty`.
     """
 
+    body: Any = ObjectProperty(None, allownone=True)
+    """The associated body data view to synchronize scrolling with and
+    synchronize row heights.
+
+    When set, this property establishes synchronization of vertical
+    scrolling between the index and the body data view.
+
+    :attr:`body` is a :class:`~kivy.properties.ObjectProperty`
+    and defaults to `None`.
+    """
+
     def _get_row_names(self) -> List[str]:
         """Retrieve the list of row names from the index data.
 
@@ -147,13 +158,15 @@ class MorphDataViewIndex(BaseDataView):
 
     row_names: List[str] = AliasProperty(
         _get_row_names,
-        _set_row_names)
+        _set_row_names,
+        bind=['data'])
     """List of row names displayed in the index.
 
     This property allows getting and setting the row names for the
     index. When set, it updates the index's data accordingly.
     
-    :attr:`row_names` is an :class:`~kivy.properties.AliasProperty`.
+    :attr:`row_names` is an :class:`~kivy.properties.AliasProperty` and
+    is bound to changes in the `data` property.
     """
     
     default_config: Dict[str, Any] = dict(
@@ -164,7 +177,34 @@ class MorphDataViewIndex(BaseDataView):
     """Default configuration for the :class:`MorphDataViewIndex`."""
 
     def __init__(self, **kwargs) -> None:
+        self.register_event_type('on_rows_updated')
         config = clean_config(self.default_config, kwargs)
         super().__init__(**config)
         self.layout.bind(width=self.setter('width'))
         self.width = self.layout.width
+
+    def on_body(self, instance: Any, body: Any) -> None:
+        """Handle changes to the associated body data view.
+
+        This method is called whenever the `body` property is updated.
+        It sets up synchronization of vertical scrolling between the
+        index and the body.
+
+        Parameters
+        ----------
+        instance : Any
+            The instance that triggered the change.
+        body : Any
+            The new value of the `body` property.
+        """
+        self.sync_y_target = body
+        body.sync_y_target = self
+
+    def on_rows_updated(self, *args) -> None:
+        """Event handler called when the rows are updated.
+
+        This event is dispatched whenever the row names are changed,
+        allowing for custom behavior to be implemented in response to
+        row updates.
+        """
+        pass
