@@ -124,6 +124,17 @@ class MorphDataViewHeader(BaseDataView):
     :attr:`layout` is a :class:`~kivy.properties.ObjectProperty`.
     """
 
+    body: Any = ObjectProperty(None, allownone=True)
+    """The associated body data view to synchronize scrolling with and
+    synchronize column widths.
+
+    When set, this property establishes synchronization of horizontal
+    scrolling between the header and the body data view.
+
+    :attr:`body` is a :class:`~kivy.properties.ObjectProperty`
+    and defaults to `None`.
+    """
+
     def _get_column_names(self) -> List[str]:
         """Retrieve the list of column names from the header data.
 
@@ -149,16 +160,19 @@ class MorphDataViewHeader(BaseDataView):
         self.data = [
             {'text': str(n), **MorphDataViewHeaderLabel.default_config}
             for n in names]
+        self.dispatch('on_columns_updated')
 
     column_names: List[str] = AliasProperty(
         _get_column_names,
-        _set_column_names)
+        _set_column_names,
+        bind=['data'])
     """List of column names displayed in the header.
 
     This property allows getting and setting the column names for the
     header. When set, it updates the header's data accordingly.
     
-    :attr:`column_names` is an :class:`~kivy.properties.AliasProperty`.
+    :attr:`column_names` is an :class:`~kivy.properties.AliasProperty`
+    and is bound to changes in the `data` property.
     """
     
     default_config: Dict[str, Any] = dict(
@@ -169,7 +183,34 @@ class MorphDataViewHeader(BaseDataView):
     """Default configuration for the :class:`MorphDataViewHeader`."""
 
     def __init__(self, **kwargs) -> None:
+        self.register_event_type('on_columns_updated')
         config = clean_config(self.default_config, kwargs)
         super().__init__(**config)
         self.layout.bind(height=self.setter('height'))
         self.height = self.layout.height
+
+    def on_body(self, instance: Any, body: Any) -> None:
+        """Handle changes to the associated body data view.
+
+        This method is called whenever the `body` property is updated.
+        It sets up synchronization of horizontal scrolling between the
+        header and the body.
+
+        Parameters
+        ----------
+        instance : Any
+            The instance that triggered the change.
+        body : Any
+            The new value of the `body` property.
+        """
+        self.sync_x_target = body
+        body.sync_x_target = self
+
+    def on_columns_updated(self, *args) -> None:
+        """Event handler called when the columns are updated.
+
+        This event is dispatched whenever the column names are changed,
+        allowing for custom behavior to be implemented in response to
+        column updates.
+        """
+        pass
