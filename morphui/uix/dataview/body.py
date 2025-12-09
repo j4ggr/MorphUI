@@ -9,11 +9,16 @@ from kivy.lang import Builder
 from kivy.metrics import dp
 from kivy.properties import AliasProperty
 from kivy.properties import ObjectProperty
+from kivy.uix.recycleview import RecycleView
 
 from morphui.utils import clean_config
+from morphui.uix.dataview.base import BaseDataView
 from morphui.uix.dataview.base import BaseDataViewLabel
 from morphui.uix.dataview.base import BaseDataViewLayout
-from morphui.uix.dataview.base import BaseDataView
+from morphui.uix.dataview.index import MorphDataViewIndex
+from morphui.uix.dataview.index import MorphDataViewIndexLabel
+from morphui.uix.dataview.header import MorphDataViewHeader
+from morphui.uix.dataview.header import MorphDataViewHeaderLabel
 from morphui.uix.recyclegridlayout import MorphRecycleGridLayout
 
 
@@ -23,14 +28,15 @@ __all__ = [
     'MorphDataViewBody',]
 
 
-class MorphDataViewBodyLabel(BaseDataViewLabel,):
+class MorphDataViewBodyLabel(
+        BaseDataViewLabel,):
     """A label widget designed for use as a body cell in a data view.
 
     This class extends the base data view label to provide specific
     styling and behavior for body cells.
     """
 
-    header: Any = ObjectProperty(None)
+    header: MorphDataViewHeader = ObjectProperty(None)
     """Reference to the header associated with this body label.
 
     This property holds a reference to the header component of the data
@@ -41,7 +47,7 @@ class MorphDataViewBodyLabel(BaseDataViewLabel,):
     defaults to `None`.
     """
 
-    index: Any = ObjectProperty(None)
+    index: MorphDataViewIndex = ObjectProperty(None)
     """Reference to the index associated with this body label.
 
     This property holds a reference to the index component of the data
@@ -59,32 +65,50 @@ class MorphDataViewBodyLabel(BaseDataViewLabel,):
         typography_role='Label',
         typography_size='medium',
         typography_weight='Regular',
-        halign='left',
+        halign='center',
         valign='center',
+        shorten=True,
         padding=[dp(8), dp(4)],
-        overlay_edge_width=dp(1),
+        overlay_edge_width=dp(0.5),
+        auto_size=(False, False),
         size_hint=(None, None),
-        auto_size=(True, True),
-        auto_size_once=True,
-        visible_edges=['right', 'bottom'],)
+        size=(
+            MorphDataViewHeaderLabel.default_config.get('width', dp(120)),
+            MorphDataViewIndexLabel.default_config.get('height', dp(30)),),
+        text_size=(
+            MorphDataViewHeaderLabel.default_config.get('width', dp(120)) - dp(16),
+            MorphDataViewIndexLabel.default_config.get('height', dp(30)) - dp(8),),
+        visible_edges=['bottom'],)
     """Default configuration for the MorphDataViewBodyLabel."""
     
-    def refresh_auto_sizing(self) -> None:
-        """Refresh the auto-sizing of the header label.
-
-        This method overrides the base implementation to ensure that
-        the auto-sizing is refreshed correctly for header labels.
-        """
-        if any(self.auto_size):
-            return super().refresh_auto_sizing()
+    def refresh_view_attrs(
+            self,
+            rv: RecycleView,
+            index: int,
+            data: List[Dict[str, Any]]
+            ) -> None:
+        """Refresh the view attributes when the data changes.
         
-        if self.header is not None:
-            idx_col = self.rv_index % len(self.header.column_names)
-            self.width = self.header.data[idx_col].get('width', self.width)
-
-        if self.index is not None:
-            idx_row = self.rv_index // len(self.header.column_names)
-            self.height = self.index.data[idx_row].get('height', self.height)
+        This method is called by the RecycleView framework to update
+        the view's attributes based on the provided data.
+        
+        Parameters
+        ----------
+        rv : RecycleView
+            The RecycleView instance managing this view.
+        index : int
+            The index of this view in the RecycleView data.
+        data : List[Dict[str, Any]]
+            The data dictionary for this view.
+        """
+        super().refresh_view_attrs(rv, index, data)
+        
+        self.rv = rv
+        self.rv_index = index
+        self.refresh_content()
+        self.refresh_overlay()
+        rv.data[index]['width'] = self.width
+        rv.data[index]['height'] = self.height
 
 
 class MorphDataViewBodyLayout(
@@ -97,7 +121,7 @@ class MorphDataViewBodyLayout(
     for body cells.
     """
 
-    header: Any = ObjectProperty(None)
+    header: MorphDataViewHeader = ObjectProperty(None)
     """Reference to the header associated with this body label.
 
     This property holds a reference to the header component of the data
@@ -108,7 +132,7 @@ class MorphDataViewBodyLayout(
     defaults to `None`.
     """
 
-    index: Any = ObjectProperty(None)
+    index: MorphDataViewIndex = ObjectProperty(None)
     """Reference to the index associated with this body label.
 
     This property holds a reference to the index component of the data
@@ -125,7 +149,7 @@ class MorphDataViewBodyLayout(
 
     default_config: Dict[str, Any] = dict(
         theme_color_bindings={
-            'normal_surface_color': 'surface_color'},
+            'normal_surface_color': 'surface_container_low_color'},
         auto_size=(True, True),)
     """Default configuration for the MorphDataViewBodyLayout."""
 
@@ -158,7 +182,7 @@ class MorphDataViewBody(BaseDataView):
     and defaults to `None`.
     """
 
-    header: Any = ObjectProperty(None)
+    header: MorphDataViewHeader = ObjectProperty(None)
     """Reference to the header associated with this body label.
 
     This property holds a reference to the header component of the data
@@ -169,7 +193,7 @@ class MorphDataViewBody(BaseDataView):
     defaults to `None`.
     """
 
-    index: Any = ObjectProperty(None)
+    index: MorphDataViewIndex = ObjectProperty(None)
     """Reference to the index associated with this body label.
 
     This property holds a reference to the index component of the data
@@ -206,7 +230,11 @@ class MorphDataViewBody(BaseDataView):
 
         self.layout.cols = n_cols
         self.data = [
-            {'text': str(value), 'header': self.header, 'index': self.index} 
+            {
+                'text': str(value),
+                'header': self.header,
+                'index': self.index,
+                **MorphDataViewBodyLabel.default_config,} 
             for row in values
             for value in row]
         self.dispatch('on_values_updated')

@@ -10,12 +10,14 @@ from typing import List
 from typing import Sequence
 from typing import TYPE_CHECKING
 
+from kivy.metrics import dp
 from kivy.properties import AliasProperty
 from kivy.properties import ObjectProperty
 from kivy.properties import NumericProperty
 from kivy.uix.recycleview import RecycleView
 from kivy.uix.recycleview.views import RecycleDataViewBehavior
 
+from morphui.utils import clean_config
 from morphui.uix.label import BaseLabel
 from morphui.uix.behaviors import MorphThemeBehavior
 from morphui.uix.behaviors import MorphScrollSyncBehavior
@@ -88,6 +90,8 @@ class BaseDataViewLabel(
         data : List[Dict[str, Any]]
             The data dictionary for this view.
         """
+        super().refresh_view_attrs(rv, index, data)
+
         self.rv = rv
         self.rv_index = index
         self.refresh_auto_sizing()
@@ -95,7 +99,6 @@ class BaseDataViewLabel(
         self.refresh_overlay()
         rv.data[index]['width'] = self.width
         rv.data[index]['height'] = self.height
-        return super().refresh_view_attrs(rv, index, data)
 
 
 class BaseDataViewLayout:
@@ -222,4 +225,20 @@ class BaseDataView(
     Subclasses should override the `default_config` class attribute
     to provide specific scroll behavior and sizing for their use case.
     """
-    pass
+
+    default_config: Dict[str, Any] = dict(
+        scroll_distance=dp(120),)
+    
+    def __init__(self, **kwargs) -> None:
+        """Initialize the data view component.
+
+        This constructor applies the default configuration and
+        initializes the base RecycleView functionality.
+        
+        Parameters
+        ----------
+        **kwargs : dict
+            Additional keyword arguments for configuration.
+        """
+        config = clean_config(self.default_config, kwargs)
+        super().__init__(**config)

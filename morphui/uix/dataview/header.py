@@ -40,9 +40,10 @@ class MorphDataViewHeaderLabel(BaseDataViewLabel): # TODO: maybe adding HoverEnh
         halign='left',
         valign='center',
         padding=[dp(8), dp(4)],
-        overlay_edge_width=dp(1),
-        auto_size=(True, True),
-        auto_size_once=True,
+        overlay_edge_width=dp(0.5),
+        size_hint=(None, 1),
+        auto_size=(False, False),
+        width=dp(150),
         visible_edges=['right', 'bottom'],)
     """Default configuration for the MorphDataViewHeaderLabel."""
 
@@ -62,7 +63,7 @@ class MorphDataViewHeaderLayout(
     
     default_config: Dict[str, Any] = dict(
         theme_color_bindings={
-            'normal_surface_color': 'surface_color'},
+            'normal_surface_color': 'surface_container_high_color'},
         orientation='horizontal',
         auto_size=(True, False),
         size_hint_y=None,

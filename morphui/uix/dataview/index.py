@@ -40,10 +40,11 @@ class MorphDataViewIndexLabel(BaseDataViewLabel):
         halign='right',
         valign='center',
         padding=[dp(8), dp(4)],
-        overlay_edge_width=dp(1),
+        overlay_edge_width=dp(0.5),
         size_hint=(1, None),
-        auto_size=(False, True),
-        auto_size_once=True,
+        auto_size=(False, False),
+        height=dp(30),
+        text_size=(dp(85) - dp(16), dp(30) - dp(8),),
         visible_edges=['right', 'bottom'],)
     """Default configuration for the MorphDataViewIndexLabel."""
 
@@ -63,7 +64,7 @@ class MorphDataViewIndexLayout(
     
     default_config: Dict[str, Any] = dict(
         theme_color_bindings={
-            'normal_surface_color': 'surface_color'},
+            'normal_surface_color': 'surface_container_high_color'},
         orientation='vertical',
         auto_size=(False, True),
         size_hint_x=None,
@@ -108,7 +109,7 @@ class MorphDataViewIndex(BaseDataView):
             MorphDataViewIndexLayout:
                 id: layout
         '''))
-    
+
     layout: MorphDataViewIndexLayout = ObjectProperty()
     """The layout manager for the index, responsible for arranging
     the index labels.
