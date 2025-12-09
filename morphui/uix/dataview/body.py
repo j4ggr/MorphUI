@@ -12,13 +12,13 @@ from kivy.properties import ObjectProperty
 from kivy.uix.recycleview import RecycleView
 
 from morphui.utils import clean_config
-from morphui.uix.dataview.base import BaseDataView
-from morphui.uix.dataview.base import BaseDataViewLabel
-from morphui.uix.dataview.base import BaseDataViewLayout
-from morphui.uix.dataview.index import MorphDataViewIndex
-from morphui.uix.dataview.index import MorphDataViewIndexLabel
-from morphui.uix.dataview.header import MorphDataViewHeader
-from morphui.uix.dataview.header import MorphDataViewHeaderLabel
+from morphui.uix.dataview import BaseDataView
+from morphui.uix.dataview import BaseDataViewLabel
+from morphui.uix.dataview import BaseDataViewLayout
+from morphui.uix.dataview import MorphDataViewIndex
+from morphui.uix.dataview import MorphDataViewHeader
+from morphui.uix.dataview import MorphDataViewIndexLabel
+from morphui.uix.dataview import MorphDataViewHeaderLabel
 from morphui.uix.recyclegridlayout import MorphRecycleGridLayout
 
 
