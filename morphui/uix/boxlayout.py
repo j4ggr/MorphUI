@@ -68,6 +68,6 @@ class MorphBoxLayout(
             normal_surface_color='transparent_color',))
     """Initialize the MorphBoxLayout with the provided configuration."""
     
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *widgets, **kwargs) -> None:
         config = clean_config(self.default_config, kwargs)
-        super().__init__(*args, **config)
+        super().__init__(*widgets, **config)

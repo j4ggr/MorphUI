@@ -273,7 +273,7 @@ class MorphDeclarativeBehavior(MorphIdentificationBehavior):
     ```
     """
 
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *widgets, **kwargs) -> None:
         """Initialize the declarative behavior.
         
         This constructor allows widgets to be passed as positional
@@ -283,7 +283,7 @@ class MorphDeclarativeBehavior(MorphIdentificationBehavior):
         
         Parameters
         ----------
-        *args : Widget
+        *widgets : Widget
             Child widgets to add to :attr:`declarative_children`.
             These will be automatically added to the widget tree.
         **kwargs : Any
@@ -301,7 +301,7 @@ class MorphDeclarativeBehavior(MorphIdentificationBehavior):
         ```
         """
         super().__init__(**kwargs)
-        self.declarative_children = list(args)
+        self.declarative_children = list(widgets)
     
     def add_widget(self, widget: Widget, *args, **kwargs) -> None:
         """Add a widget as a child and register it declaratively.
