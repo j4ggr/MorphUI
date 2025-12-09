@@ -124,27 +124,6 @@ class MorphDataViewHeader(BaseDataView):
     :attr:`layout` is a :class:`~kivy.properties.ObjectProperty`.
     """
 
-    body: Any = ObjectProperty(None, allownone=True)
-    """The associated body data view to synchronize scrolling with and
-    synchronize column widths.
-
-    When set, this property establishes synchronization of horizontal
-    scrolling between the header and the body data view.
-
-    :attr:`body` is a :class:`~kivy.properties.ObjectProperty`
-    and defaults to `None`.
-    """
-
-    column_widths: List[float] = AliasProperty(
-        lambda self: [item.width for item in self.layout.children[::-1]],
-        None,)
-    """List of widths for each column in the header (read-only).
-    
-    This property defines the widths of each column in the header.
-    
-    :attr:`column_widths` is a :class:`~kivy.properties.ListProperty`
-    and defaults to an empty list."""
-
     def _get_column_names(self) -> List[str]:
         """Retrieve the list of column names from the header data.
 
@@ -198,23 +177,6 @@ class MorphDataViewHeader(BaseDataView):
         super().__init__(**config)
         self.layout.bind(height=self.setter('height'))
         self.height = self.layout.height
-
-    def on_body(self, instance: Any, body: Any) -> None:
-        """Handle changes to the associated body data view.
-
-        This method is called whenever the `body` property is updated.
-        It sets up synchronization of horizontal scrolling between the
-        header and the body.
-
-        Parameters
-        ----------
-        instance : Any
-            The instance that triggered the change.
-        body : Any
-            The new value of the `body` property.
-        """
-        self.sync_x_target = body
-        body.sync_x_target = self
 
     def on_columns_updated(self, *args) -> None:
         """Event handler called when the columns are updated.

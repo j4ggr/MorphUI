@@ -119,27 +119,6 @@ class MorphDataViewIndex(BaseDataView):
     :attr:`layout` is a :class:`~kivy.properties.ObjectProperty`.
     """
 
-    body: Any = ObjectProperty(None, allownone=True)
-    """The associated body data view to synchronize scrolling with and
-    synchronize row heights.
-
-    When set, this property establishes synchronization of vertical
-    scrolling between the index and the body data view.
-
-    :attr:`body` is a :class:`~kivy.properties.ObjectProperty`
-    and defaults to `None`.
-    """
-
-    row_heights: List[float] = AliasProperty(
-        lambda self: [item.height for item in self.layout.children[::-1]],
-        None,)
-    """List of heights for each row in the index (read-only).
-    
-    This property defines the heights of each row in the index.
-    
-    :attr:`row_heights` is a :class:`~kivy.properties.ListProperty`
-    and defaults to an empty list."""
-
     def _get_row_names(self) -> List[str]:
         """Retrieve the list of row names from the index data.
 
@@ -193,23 +172,6 @@ class MorphDataViewIndex(BaseDataView):
         super().__init__(**config)
         self.layout.bind(width=self.setter('width'))
         self.width = self.layout.width
-
-    def on_body(self, instance: Any, body: Any) -> None:
-        """Handle changes to the associated body data view.
-
-        This method is called whenever the `body` property is updated.
-        It sets up synchronization of vertical scrolling between the
-        index and the body.
-
-        Parameters
-        ----------
-        instance : Any
-            The instance that triggered the change.
-        body : Any
-            The new value of the `body` property.
-        """
-        self.sync_y_target = body
-        body.sync_y_target = self
 
     def on_rows_updated(self, *args) -> None:
         """Event handler called when the rows are updated.
