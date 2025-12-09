@@ -9,15 +9,11 @@ from kivy.lang import Builder
 from kivy.metrics import dp
 from kivy.properties import AliasProperty
 from kivy.properties import ObjectProperty
-from kivy.properties import ListProperty
-from kivy.uix.recycleview import RecycleView
-from kivy.uix.recycleview.views import RecycleDataViewBehavior
 
 from morphui.utils import clean_config
 from morphui.uix.dataview.base import BaseDataViewLabel
 from morphui.uix.dataview.base import BaseDataViewLayout
 from morphui.uix.dataview.base import BaseDataView
-from morphui.uix.recycleboxlayout import MorphRecycleBoxLayout
 from morphui.uix.recyclegridlayout import MorphRecycleGridLayout
 
 
@@ -27,7 +23,7 @@ __all__ = [
     'MorphDataViewBody',]
 
 
-class MorphDataViewBodyLabel(BaseDataViewLabel):
+class MorphDataViewBodyLabel(BaseDataViewLabel,):
     """A label widget designed for use as a body cell in a data view.
 
     This class extends the base data view label to provide specific
@@ -79,18 +75,16 @@ class MorphDataViewBodyLabel(BaseDataViewLabel):
         This method overrides the base implementation to ensure that
         the auto-sizing is refreshed correctly for header labels.
         """
-        if any((
-                self.header is None,
-                self.index is None,
-                self.auto_size[0],
-                self.auto_size[1],)):
+        if any(self.auto_size):
             return super().refresh_auto_sizing()
         
-        idx_col = self.rv_index % len(self.header.column_names)
-        idx_row = self.rv_index // len(self.header.column_names)
-        self.width = self.header.column_widths[idx_col]
-        self.height = self.index.row_heights[idx_row]
-        
+        if self.header is not None:
+            idx_col = self.rv_index % len(self.header.column_names)
+            self.width = self.header.data[idx_col].get('width', self.width)
+
+        if self.index is not None:
+            idx_row = self.rv_index // len(self.header.column_names)
+            self.height = self.index.data[idx_row].get('height', self.height)
 
 
 class MorphDataViewBodyLayout(
@@ -98,8 +92,31 @@ class MorphDataViewBodyLayout(
         MorphRecycleGridLayout):
     """A layout for arranging body cells in a data view.
 
-    This class extends the base data view layout and MorphRecycleGridLayout
-    to provide a grid layout suitable for body cells.
+    This class extends the base data view layout and 
+    :class:`MorphRecycleGridLayout` to provide a grid layout suitable
+    for body cells.
+    """
+
+    header: Any = ObjectProperty(None)
+    """Reference to the header associated with this body label.
+
+    This property holds a reference to the header component of the data
+    view, allowing the body label to access header information if
+    needed.
+
+    :attr:`header` is a :class:`~kivy.properties.ObjectProperty` and
+    defaults to `None`.
+    """
+
+    index: Any = ObjectProperty(None)
+    """Reference to the index associated with this body label.
+
+    This property holds a reference to the index component of the data
+    view, allowing the body label to access index information if
+    needed.
+
+    :attr:`index` is a :class:`~kivy.properties.ObjectProperty` and
+    defaults to `None`.
     """
     
     def _get_cell_type(self) -> type:
@@ -141,6 +158,28 @@ class MorphDataViewBody(BaseDataView):
     and defaults to `None`.
     """
 
+    header: Any = ObjectProperty(None)
+    """Reference to the header associated with this body label.
+
+    This property holds a reference to the header component of the data
+    view, allowing the body label to access header information if
+    needed.
+
+    :attr:`header` is a :class:`~kivy.properties.ObjectProperty` and
+    defaults to `None`.
+    """
+
+    index: Any = ObjectProperty(None)
+    """Reference to the index associated with this body label.
+
+    This property holds a reference to the index component of the data
+    view, allowing the body label to access index information if
+    needed.
+
+    :attr:`index` is a :class:`~kivy.properties.ObjectProperty` and
+    defaults to `None`.
+    """
+
     def _get_values(self) -> List[List[str]]:
         """Get the current values in the body as a 2D list.
 
@@ -167,7 +206,7 @@ class MorphDataViewBody(BaseDataView):
 
         self.layout.cols = n_cols
         self.data = [
-            {'text': str(value),} 
+            {'text': str(value), 'header': self.header, 'index': self.index} 
             for row in values
             for value in row]
         self.dispatch('on_values_updated')
@@ -198,6 +237,40 @@ class MorphDataViewBody(BaseDataView):
         self.register_event_type('on_values_updated')
         config = clean_config(self.default_config, kwargs)
         super().__init__(**config)
+    
+    def on_header(self, instance: Any, header: Any) -> None:
+        """Handle changes to the associated header data view.
+
+        This method is called whenever the `header` property is set
+        and synchronizes the horizontal scrolling between the body and
+        header.
+        """
+        self.sync_x_target = header
+        header.sync_x_target = self
+        if self.layout is not None:
+            self.layout.header = header
+
+    def on_index(self, instance: Any, index: Any) -> None:
+        """Handle changes to the associated index data view.
+
+        This method is called whenever the `index` property is set
+        and synchronizes the vertical scrolling between the body and
+        index.
+        """
+        self.sync_y_target = index
+        index.sync_y_target = self
+        if self.layout is not None:
+            self.layout.index = index
+
+    def on_layout(self, instance: Any, layout: Any) -> None:
+        """Handle changes to the associated layout.
+
+        This method is called whenever the `layout` property is set
+        and configures the layout to reference the associated header
+        and index.
+        """
+        layout.header = self.header
+        layout.index = self.index
 
     def on_values_updated(self, *args) -> None:
         """Event handler called when the values in the body are updated.
