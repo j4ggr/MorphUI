@@ -481,6 +481,30 @@ class MorphAutoSizingBehavior(EventDispatcher):
             self, instance: Any, texture_size: Tuple[float, float]) -> None:
         """Update text_size to match current width when auto_width is 
         enabled. Only applies if the widget has a text_size attribute.
+
+        This method adjusts the text_size property of the widget to
+        ensure that the height is calculated correctly when auto_height
+        is enabled. It sets the text_size to (current width, None) to
+        allow the height to adjust based on the text content.
+
+        The method is triggered whenever the texture_size property
+        changes, ensuring that the text_size remains consistent with
+        the current width of the widget.
+
+        Parameters
+        ----------
+        instance : Any
+            The widget instance that triggered the event.
+        texture_size : Tuple[float, float]
+            The current texture size of the widget.
+
+        Notes
+        -----
+        This method is only relevant for widgets that have a text_size
+        attribute, such as Label. It is triggered whenever the
+        `texture_size` property changes. It must also provide a 
+        `texture_update()` method to refresh the texture size after
+        changing text_size.
         """
         if not self.auto_width and not self.auto_height:
             return None
@@ -490,7 +514,7 @@ class MorphAutoSizingBehavior(EventDispatcher):
         if self.auto_height:
             h_text = self.texture_size[1]
             self.text_size = (None, h_text) # update height first and let width adjust
-            self.texture_update() # ensure texture_size is updated
+            self.texture_update() # ensure texture_size is updated coming from kivy.uix.label.Label class
 
         if self.auto_width:
             w_text = self.texture_size[0]
