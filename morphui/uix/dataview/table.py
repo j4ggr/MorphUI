@@ -265,7 +265,7 @@ class MorphDataViewTable(MorphGridLayout):
         self.header.bind(height=top_left.setter('height'))
         self.navigation.bind(
             height=bottom_left.setter('height'),
-            current_page=self.setter('current_page'),)
+            current_page=self._update_view,)
         top_left.size = (self.index.width, self.header.height)
         bottom_left.size = (self.index.width, self.navigation.height)
         self.update_chunked_values()
