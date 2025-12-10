@@ -26,3 +26,6 @@ test = [
 visualization = [
     "matplotlib>=3.10.7",
 ]
+profiling = [
+    "py-spy>=0.4.1",
+]
