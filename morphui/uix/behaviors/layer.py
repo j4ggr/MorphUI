@@ -1805,6 +1805,7 @@ class MorphOverlayLayerBehavior(BaseLayerBehavior):
             overlay_edge_width=self.setter('overlay_edges_params'),
             resizing_overlay_edge_width=self.setter('overlay_edges_params'),
             overlay_edge_inside=self.setter('overlay_edges_params'),
+            overlay_edges_params=self.setter('overlay_edges_params'),
             visible_edges=self.setter('overlay_edge_color'),
             current_overlay_state=self.setter('overlay_color'),
             normal_overlay_color=self.setter('overlay_color'),
