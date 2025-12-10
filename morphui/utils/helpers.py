@@ -1,12 +1,14 @@
 """
 Helper utilities for MorphUI components
 """
+import time
 from typing import Any
 from typing import Dict
 from typing import List
 from typing import Tuple
 
 from functools import lru_cache
+from functools import wraps
 
 from dataclasses import dataclass
 from kivy.core.text import Label as CoreLabel
@@ -19,7 +21,49 @@ __all__ = [
     'get_effective_pos',
     'calculate_widget_local_pos',
     'get_edges_params',
-    'FrozenGeometry',]
+    'FrozenGeometry',
+    'timeit',]
+
+
+def timeit(func):
+    """Decorator to measure and print execution time of a function.
+    
+    This decorator wraps a function to measure its execution time and
+    prints the time taken if it exceeds 1 millisecond. Useful for
+    profiling performance-critical code.
+    
+    Parameters
+    ----------
+    func : callable
+        The function to be timed.
+    
+    Returns
+    -------
+    callable
+        The wrapped function with timing capability.
+    
+    Examples
+    --------
+    ```python
+    from morphui.utils import timeit
+    
+    @timeit
+    def slow_function():
+        time.sleep(0.1)
+        return "done"
+    
+    slow_function()  # Prints: slow_function: 100.00ms
+    ```
+    """
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        start = time.perf_counter()
+        result = func(*args, **kwargs)
+        elapsed = (time.perf_counter() - start) * 1000
+        if elapsed > 1:  # Only log if > 1ms
+            print(f"{func.__qualname__}: {elapsed:.2f}ms")
+        return result
+    return wrapper
 
 
 def clean_config(
