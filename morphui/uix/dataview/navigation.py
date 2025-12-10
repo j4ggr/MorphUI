@@ -9,6 +9,7 @@ from morphui.utils import clean_config
 from morphui.uix.label import MorphSimpleLabel
 from morphui.uix.button import MorphSimpleIconButton
 from morphui.uix.boxlayout import MorphBoxLayout
+from morphui.uix.behaviors import MorphIdentificationBehavior
 
 
 __all__ = [
@@ -18,6 +19,7 @@ __all__ = [
 
 
 class MorphDataViewNavigationButton(
+        MorphIdentificationBehavior,
         MorphSimpleIconButton):
     """A button used in the data view navigation component."""
 
@@ -110,7 +112,7 @@ class MorphDataViewNavigation(
 
     default_config = dict(
         orientation='horizontal',
-        size_hint=(None, 1),
+        size_hint=(1, None),
         auto_size=(False, True),
         spacing=0,
         padding=0,
