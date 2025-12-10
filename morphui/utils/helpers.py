@@ -6,6 +6,8 @@ from typing import Dict
 from typing import List
 from typing import Tuple
 
+from functools import lru_cache
+
 from dataclasses import dataclass
 from kivy.core.text import Label as CoreLabel
 from kivy.uix.relativelayout import RelativeLayout
@@ -16,6 +18,7 @@ __all__ = [
     'clamp',
     'get_effective_pos',
     'calculate_widget_local_pos',
+    'get_edges_params',
     'FrozenGeometry',]
 
 
@@ -286,6 +289,47 @@ def calculate_widget_local_pos(
     x_offset = widget.x - x_absolute
     y_offset = widget.y - y_absolute
     return (x_coord + x_offset, y_coord + y_offset)
+
+@lru_cache(maxsize=128)
+def get_edges_params(
+            left: float,
+            right: float,
+            bottom: float,
+            top: float,
+            offset: float,
+            ) -> Dict[str, List[float]]:
+    """Get parameters for creating edge lines around a rectangle.
+
+    This function calculates the start and end points for lines
+    representing the edges of a rectangle, with an optional offset
+    to adjust the position of the edges inward or outward.
+
+    Parameters
+    ----------
+    left : float
+        The x-coordinate of the left edge.
+    right : float
+        The x-coordinate of the right edge.
+    bottom : float
+        The y-coordinate of the bottom edge.
+    top : float
+        The y-coordinate of the top edge.
+    offset : float
+        The offset to apply to each edge. Positive values move edges
+        outward, negative values move them inward.
+    
+    Returns
+    -------
+    Dict[str, List[float]]
+        A dictionary with keys 'left', 'right', 'bottom', 'top', each
+        containing a list of two floats representing the start and end
+        points of the corresponding edge line.
+    """
+    return {
+        'top': [left, top - offset, right, top - offset],
+        'right': [right - offset, top, right - offset, bottom],
+        'bottom': [right, bottom + offset, left, bottom + offset],
+        'left': [left + offset, bottom, left + offset, top],}
 
 
 @dataclass(frozen=True)

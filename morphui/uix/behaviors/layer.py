@@ -26,6 +26,7 @@ from kivy.graphics.tesselator import Tesselator
 from morphui._typing import InteractionState
 from morphui.constants import NAME
 from morphui.utils.helpers import get_effective_pos
+from morphui.utils.helpers import get_edges_params
 
 from .appreference import MorphAppReferenceBehavior
 from .states import MorphStateBehavior
@@ -1717,12 +1718,7 @@ class MorphOverlayLayerBehavior(BaseLayerBehavior):
         top = bottom + self.height
         offset = self.overlay_edge_width if self.overlay_edge_inside else 0
 
-        edges = {
-            'top': [left, top-offset, right, top-offset],
-            'right': [right-offset, top, right-offset, bottom],
-            'bottom': [right, bottom+offset, left, bottom+offset],
-            'left': [left+offset, bottom, left+offset, top],}
-        return edges
+        return get_edges_params(left, right, bottom, top, offset)
     
     def _set_overlay_edges_params(self, *args) -> None:
         """Update the overlay edge line parameters.
