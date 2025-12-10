@@ -102,7 +102,6 @@ class MorphDataViewBodyLabel(
             The data dictionary for this view.
         """
         super().refresh_view_attrs(rv, index, data)
-        
         self.rv = rv
         self.rv_index = index
         self.refresh_content()
@@ -213,9 +212,13 @@ class MorphDataViewBody(BaseDataView):
         that row. This method is used internally for the 
         :attr:`values` property.
         """
-        if not self.layout:
+        if not self.layout or not self.layout.children:
             return []
-        return [c.values for c in self.layout.children[::-1]]
+        children = self.layout.children[::-1]
+        n_cols = self.layout.cols
+        return [
+            [children[i + j * n_cols].text for i in range(n_cols)]
+            for j in range(len(children) // n_cols)]
 
     def _set_values(self, values: Sequence[Sequence[Any]]) -> None:
         """Set the values of the body from a 2D list.
