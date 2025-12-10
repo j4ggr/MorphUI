@@ -1,6 +1,7 @@
 from typing import Any
 from typing import Dict
 
+from kivy.metrics import dp
 from kivy.properties import AliasProperty
 from kivy.properties import NumericProperty
 from kivy.uix.widget import Widget
@@ -10,6 +11,7 @@ from morphui.uix.label import MorphSimpleLabel
 from morphui.uix.button import MorphSimpleIconButton
 from morphui.uix.boxlayout import MorphBoxLayout
 from morphui.uix.behaviors import MorphIdentificationBehavior
+from morphui.uix.behaviors import MorphRoundSidesBehavior
 
 
 __all__ = [
@@ -20,6 +22,7 @@ __all__ = [
 
 class MorphDataViewNavigationButton(
         MorphIdentificationBehavior,
+        MorphRoundSidesBehavior,
         MorphSimpleIconButton):
     """A button used in the data view navigation component."""
 
@@ -36,6 +39,16 @@ class MorphDataViewNavigationButton(
     :attr:`page_offset` is a :class:`~kivy.properties.NumericProperty`
     and defaults to `0`.
     """
+
+    default_config: Dict[str, Any] = (
+        MorphSimpleIconButton.default_config.copy() | dict(
+        theme_color_bindings={
+            'normal_surface_color':'transparent_color',
+            'disabled_border_color':'transparent_color',
+            'normal_content_color':'content_surface_color',
+            'hovered_content_color':'content_surface_variant_color'},
+        disabled_state_opacity=0.0,
+        round_sides=True,))
 
 
 class MorphDataViewNavigationPageLabel(MorphSimpleLabel):
@@ -54,7 +67,7 @@ class MorphDataViewNavigationPageLabel(MorphSimpleLabel):
     :attr:`total_pages` is a :class:`~kivy.properties.NumericProperty`
     and defaults to `0`.
     """
-
+    
     format_string: str = AliasProperty(
         lambda self: f'{self.current_page} / {self.total_pages}',
         None,
@@ -74,10 +87,18 @@ class MorphDataViewNavigationPageLabel(MorphSimpleLabel):
         typography_role='Label',
         typography_size='medium',
         typography_weight='Regular',
+        pos_hint={'center_y': 0.5},
         halign='left',
         valign='center',
-        auto_size=True,)
+        auto_size=True,
+        padding=[dp(2), dp(0)],)
     """Default configuration for the MorphDataViewNavigationPageLabel."""
+
+    def __init__(self, **kwargs) -> None:
+        """Initialize the page label with default configuration."""
+        super().__init__(**kwargs)
+        self.bind(format_string=self.setter('text'))
+        self.text = self.format_string
 
 
 class MorphDataViewNavigation(
@@ -114,8 +135,8 @@ class MorphDataViewNavigation(
         orientation='horizontal',
         size_hint=(1, None),
         auto_size=(False, True),
-        spacing=0,
-        padding=0,
+        spacing=dp(0),
+        padding=dp(0),
         theme_color_bindings={
             'normal_surface_color': 'transparent_color',  
         },)
