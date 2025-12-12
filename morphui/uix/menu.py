@@ -11,10 +11,15 @@ from morphui.uix.behaviors import MorphAutoSizingBehavior
 from morphui.uix.behaviors import MorphColorThemeBehavior
 from morphui.uix.behaviors import MorphDeclarativeBehavior
 from morphui.uix.behaviors import MorphSurfaceLayerBehavior
+from morphui.uix.behaviors import MorphInteractionLayerBehavior
 from morphui.uix.container import LeadingTextTrailingContainer
 
 
-class MorphMenuItem(LeadingTextTrailingContainer):
+class MorphMenuItem(
+        MorphColorThemeBehavior,
+        MorphInteractionLayerBehavior,
+        MorphSurfaceLayerBehavior,
+        LeadingTextTrailingContainer):
     """A single item within the MorphMenu widget.
     
     This widget represents a menu item with support for leading icon,

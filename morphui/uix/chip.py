@@ -1,33 +1,24 @@
-from typing import Any, List
+from typing import Any
 from typing import Dict
 
 from kivy.metrics import dp
-from kivy.properties import ObjectProperty
-from kivy.properties import StringProperty
-from kivy.properties import BooleanProperty
-from kivy.uix.boxlayout import BoxLayout
-
-from morphui.utils import clean_config
-from morphui.constants import NAME
 
 from morphui.uix.behaviors import MorphIconBehavior
 from morphui.uix.behaviors import MorphHoverBehavior
-from morphui.uix.behaviors import MorphScaleBehavior
 from morphui.uix.behaviors import MorphRippleBehavior
 from morphui.uix.behaviors import MorphButtonBehavior
 from morphui.uix.behaviors import MorphElevationBehavior
-from morphui.uix.behaviors import MorphAutoSizingBehavior
-from morphui.uix.behaviors import MorphColorThemeBehavior
 from morphui.uix.behaviors import MorphRoundSidesBehavior
-from morphui.uix.behaviors import MorphToggleButtonBehavior
+from morphui.uix.behaviors import MorphColorThemeBehavior
 from morphui.uix.behaviors import MorphSurfaceLayerBehavior
+from morphui.uix.behaviors import MorphToggleButtonBehavior
 from morphui.uix.behaviors import MorphContentLayerBehavior
-from morphui.uix.behaviors import MorphIdentificationBehavior
 from morphui.uix.behaviors import MorphInteractionLayerBehavior
 
-from morphui.uix.label import MorphSimpleLabel
-from morphui.uix.label import MorphSimpleIconLabel
-from morphui.uix.button import MorphSimpleIconButton
+from morphui.uix.container import TextLabel
+from morphui.uix.container import LeadingIconLabel
+from morphui.uix.container import TrailingIconButton
+from morphui.uix.container import LeadingTextTrailingContainer
 
 
 __all__ = [
@@ -39,38 +30,31 @@ __all__ = [
     'MorphInputChip',]
 
 
-class ChipLeadingIconLabel(
-        MorphScaleBehavior,
-        MorphSimpleIconLabel):
+class ChipLeadingIconLabel(LeadingIconLabel):
+    """Leading icon label for chips.
     
-    default_config: Dict[str, Any] = (
-        MorphSimpleIconLabel.default_config.copy() | dict(
-        padding=dp(0),
-        pos_hint={'center_y': 0.5},))
+    Inherits from :class:`~morphui.uix.container.LeadingIconLabel`.
+    """
+    pass
 
 
-class ChipTextLabel(MorphSimpleLabel):
+class ChipTextLabel(TextLabel):
+    """Text label for chips.
+    
+    Inherits from :class:`~morphui.uix.container.TextLabel`.
+    """
+    pass
 
-    default_config: Dict[str, Any] = (
-        MorphSimpleLabel.default_config.copy() | dict(
-        auto_size=True,
-        padding=dp(0),
-        pos_hint={'center_y': 0.5},))
 
-
-class ChipTrailingIconButton(
-        MorphScaleBehavior,
-        MorphSimpleIconButton):
-
-    default_config: Dict[str, Any] = (
-        MorphSimpleIconButton.default_config.copy() | dict(
-        padding=dp(0),
-        pos_hint={'center_y': 0.5},))
+class ChipTrailingIconButton(TrailingIconButton):
+    """Trailing icon button for chips.
+    
+    Inherits from :class:`~morphui.uix.container.TrailingIconButton`.
+    """
+    pass
 
 
 class MorphChip(
-        MorphIdentificationBehavior,
-        MorphAutoSizingBehavior,
         MorphHoverBehavior,
         MorphRippleBehavior,
         MorphButtonBehavior,
@@ -80,7 +64,7 @@ class MorphChip(
         MorphInteractionLayerBehavior,
         MorphSurfaceLayerBehavior,
         MorphElevationBehavior,
-        BoxLayout,):
+        LeadingTextTrailingContainer,):
     """Morph Chip component.
 
     A chip is a compact element that represents an input, attribute, 
@@ -89,8 +73,11 @@ class MorphChip(
     suggestions.
 
     Use the `leading_icon` and `trailing_icon` properties to add
-    icons to the chip. The `text` property is used to set the text
+    icons to the chip. The `label_text` property is used to set the text
     of the chip.
+    
+    Inherits from :class:`~morphui.uix.container.LeadingTextTrailingContainer`
+    which provides the base layout structure and child widget management.
 
     Example
     -------
@@ -112,77 +99,13 @@ class MorphChip(
         MyApp().run()
     """
 
-    leading_icon: str = StringProperty('')
-    """The name of the leading icon displayed to the left of the chip 
-    text.
+    _default_child_widgets = {
+        'leading_widget': ChipLeadingIconLabel,
+        'label_widget': ChipTextLabel,
+        'trailing_widget': ChipTrailingIconButton,}
+    """Default child widgets for the chip.
 
-    This property represents the leading icon of the chip. If set,
-    the `leading_widget` will display the specified icon.
-
-    :attr:`leading_icon` is a :class:`~kivy.properties.StringProperty`
-    and defaults to an empty string.
-    """
-
-    label_text: str = StringProperty('')
-    """The text displayed in the center of the chip.
-
-    This property represents the text label of the chip.
-
-    :attr:`label_text` is a :class:`~kivy.properties.StringProperty`
-    and defaults to an empty string.
-    """
-
-    trailing_icon: str = StringProperty('')
-    """The name of the trailing icon displayed to the right of the chip
-    text.
-
-    This property represents the trailing icon of the chip. If set,
-    the `trailing_widget` will display the specified icon.
-
-    :attr:`trailing_icon` is a :class:`~kivy.properties.StringProperty`
-    and defaults to an empty string.
-    """
-
-    leading_widget: ChipLeadingIconLabel = ObjectProperty()
-    """The leading icon widget displayed to the left of the chip text.
-    
-    This widget represents the leading icon of the chip. If not
-    provided, it is automatically created based on the `leading_icon`
-    property.
-
-    :attr:`leading_widget` is by default an instance of
-    :class:`~morphui.uix.chip.ChipLeadingIconLabel`."""
-
-    label_widget: ChipTextLabel = ObjectProperty(None)
-    """The text label widget displayed in the center of the chip.
-
-    This widget represents the text label of the chip. If not
-    provided, it is automatically created.
-
-    :attr:`label_widget` is by default an instance of
-    :class:`~morphui.uix.chip.ChipTextLabel`."""
-
-    trailing_widget: ChipTrailingIconButton = ObjectProperty(None)
-    """The trailing icon button widget displayed to the right of the
-    chip text.
-
-    This widget represents the trailing icon button of the chip. If not
-    provided, it is automatically created based on the `trailing_icon`
-    property.
-
-    :attr:`trailing_widget` is by default an instance of
-    :class:`~morphui.uix.chip.ChipTrailingIconButton`."""
-
-    delegate_content_color: bool = BooleanProperty(True)
-    """Whether to delegate content color application to child widgets.
-
-    If set to `True`, the chip will delegate the application of content
-    color to its child widgets (leading icon, label, trailing icon).
-    If set to `False`, the chip will not delegate content color
-    application.
-
-    :attr:`delegate_content_color` is a
-    :class:`~kivy.properties.BooleanProperty` and defaults to `True`.
+    This dictionary maps widget identities to their default classes.
     """
 
     default_config: Dict[str, Any] = dict(
@@ -198,111 +121,16 @@ class MorphChip(
     """Default configuration for the :class:`MorphChip` component."""
     
     def __init__(self, **kwargs) -> None:
-        child_classes = dict(
-            leading_widget=ChipLeadingIconLabel,
-            label_widget=ChipTextLabel,
-            trailing_widget=ChipTrailingIconButton,)
+        super().__init__(**kwargs)
         
-        config = clean_config(self.default_config, kwargs)
-        for attr, cls in child_classes.items():
-            if attr not in config:
-                config[attr] = cls()
-
-        super().__init__(**config)
-        self.add_widget(self.leading_widget)
-        self.add_widget(self.label_widget)
-        self.add_widget(self.trailing_widget)
-
         self.bind(
             pos=self._update_layout,
             size=self._update_layout,
             spacing=self._update_layout,
             padding=self._update_layout,
             radius=self._update_layout,)
-
-        self.fbind(
-            'leading_icon',
-            self._update_child_widget,
-            identity=NAME.LEADING_WIDGET)
-        self.fbind(
-            'label_text',
-            self._update_child_widget,
-            identity=NAME.LABEL_WIDGET)
-        self.fbind(
-            'trailing_icon',
-            self._update_child_widget,
-            identity=NAME.TRAILING_WIDGET)
-        
-        self.refresh_chip_content()
-
-    def _update_child_widget(
-            self, instance: Any, text: str, identity: str) -> None:
-        """Update the child widget based on the provided text and identity.
-
-        This method is responsible for updating the content of the
-        child widget identified by the `identity` parameter with the
-        new `text` value.
-
-        Parameters
-        ----------
-        instance : Any
-            The instance of the child widget to update.
-        text : str
-            The new text content to set for the child widget.
-        identity : str
-            The identity of the child widget to update (e.g., "label",
-            "leading_icon", "trailing_icon").
-        """
-        match identity:
-            case NAME.LABEL_WIDGET:
-                widget = self.label_widget
-            case NAME.LEADING_WIDGET:
-                widget = self.leading_widget
-            case NAME.TRAILING_WIDGET:
-                widget = self.trailing_widget
-            case _:
-                raise ValueError(
-                    f'Widget not found for identity: {identity!r}')
-
-        if hasattr(widget, 'icon'):
-            def set_icon(*args):
-                widget.icon = text
-
-            if issubclass(type(widget), MorphScaleBehavior):
-                if bool(widget.icon) == bool(text):
-                    pass
-                elif text:
-                    set_icon()
-                    widget.animate_scale_in()
-                else:
-                    widget.animate_scale_out(callback=set_icon)
-            else:
-                set_icon()
-        else:
-            widget.text = text
         self._update_layout()
     
-    def _remove_child_content_bindings(self, *args) -> None:
-        """Remove content color bindings from child widgets.
-
-        This method removes any content color bindings from the
-        leading, label, and trailing widgets to prevent them from
-        being affected by changes in the chip's content color.
-        """
-        if not self.delegate_content_color:
-            return None
-        
-        def new_bindings(original: Dict[str, str]) -> Dict[str, str]:
-            return dict(
-                (k, v) for k, v in original.items()
-                if 'content' not in k)
-        self.leading_widget.theme_color_bindings = new_bindings(
-            self.leading_widget.theme_color_bindings)
-        self.label_widget.theme_color_bindings = new_bindings(
-            self.label_widget.theme_color_bindings)
-        self.trailing_widget.theme_color_bindings = new_bindings(
-            self.trailing_widget.theme_color_bindings)
-
     def _update_layout(self, *args) -> None:
         """Update the layout of the chip and its child widgets.
         
@@ -318,44 +146,6 @@ class MorphChip(
             expansion = [0, 0, 0, 0]
         self.trailing_widget.radius = trailing_radius
         self.trailing_widget.interaction_layer_expansion = expansion
-    
-    def apply_content(self, color: List[float]) -> None:
-        """Apply content color based on the current state.
-
-        This method overrides the base method to delegate content
-        color application to the leading and label widgets.
-        """
-        if not self.delegate_content_color:
-            return super().apply_content(color)
-
-        for widget in (
-                self.leading_widget,
-                self.label_widget,
-                self.trailing_widget,):
-            if hasattr(widget, 'apply_content'):
-                widget.apply_content(color)
-
-    def refresh_chip_content(self, *args) -> None:
-        """Refresh the content of the chip.
-
-        This method updates the leading icon, label text, and
-        trailing icon of the chip based on their respective properties.
-        It ensures that the displayed content is in sync with the
-        current property values.
-        """
-        self._update_child_widget(
-            self,
-            self.leading_icon,
-            identity=NAME.LEADING_WIDGET)
-        self._update_child_widget(
-            self,
-            self.label_text,
-            identity=NAME.LABEL_WIDGET)
-        self._update_child_widget(
-            self,
-            self.trailing_icon,
-            identity=NAME.TRAILING_WIDGET)
-        self._remove_child_content_bindings()
 
 
 class MorphFilterChip(
@@ -416,8 +206,7 @@ class MorphFilterChip(
         self.leading_icon = icon
 
 
-class MorphInputChip(
-        MorphChip):
+class MorphInputChip(MorphChip):
     """Morph Input Chip component.
 
     An input chip represents a user input or selection that can be
