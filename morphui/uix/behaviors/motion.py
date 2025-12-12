@@ -1,11 +1,14 @@
 from typing import Any
+from typing import Literal
 
 from kivy.properties import AliasProperty
 from kivy.properties import ObjectProperty
 from kivy.properties import StringProperty
+from kivy.properties import OptionProperty
 from kivy.properties import NumericProperty
 from kivy.core.window import Window
 
+from morphui.utils import clamp
 from morphui.uix.behaviors import MorphScaleBehavior
 
 
@@ -19,6 +22,12 @@ class MorphMenuMotionBehavior(MorphScaleBehavior,):
     This behavior provides properties and methods to manage a menu
     associated with a widget, including tools, open/close state, and
     animation settings.
+    
+    Notes
+    -----
+    If the widget also inherits from :class:`MorphSizeBoundsBehavior`,
+    this behavior will automatically set the `size_upper_bound` property
+    to constrain the menu size within the window bounds when opened.
     """
 
     caller: Any = ObjectProperty(None)
@@ -41,6 +50,32 @@ class MorphMenuMotionBehavior(MorphScaleBehavior,):
 
     :attr:`is_open` is a :class:`~kivy.properties.AliasProperty` and is
     read-only."""
+
+
+    menu_anchor_position: Literal['left', 'center', 'right'] = OptionProperty(
+        'center', options=['left', 'center', 'right'])
+    """Position of the menu relative to the caller widget.
+
+    This property defines the horizontal alignment of the menu relative
+    to the caller button. Options are:
+    - 'left': Align the menu's left edge with the caller's left edge
+    - 'center': Center the menu horizontally with the caller
+    - 'right': Align the menu's right edge with the caller's right edge
+
+    :attr:`menu_anchor_position` is a
+    :class:`~kivy.properties.OptionProperty` and defaults to `'center'`.
+    """
+
+    menu_opening_direction: Literal['up', 'down'] = OptionProperty(
+        'down', options=['up', 'down'])
+    """Direction in which the menu opens.
+
+    This property defines the direction in which the menu will open
+    relative to the caller button. It can be either 'up' or 'down'.
+
+    :attr:`menu_opening_direction` is a
+    :class:`~kivy.properties.OptionProperty` and defaults to `'down'`.
+    """
 
     menu_opening_duration: float = NumericProperty(0.15)
     """Duration of the menu opening animation in seconds.
@@ -80,6 +115,16 @@ class MorphMenuMotionBehavior(MorphScaleBehavior,):
     :class:`~kivy.properties.StringProperty` and defaults to 
     `'in_sine'`."""
 
+    menu_window_margin: float = NumericProperty(8)
+    """Margin from the window edges in pixels.
+
+    This property defines the minimum distance (in pixels) that the menu
+    should maintain from the edges of the window. This ensures the menu
+    remains fully visible and doesn't extend beyond the window bounds.
+
+    :attr:`menu_window_margin` is a
+    :class:`~kivy.properties.NumericProperty` and defaults to `8`."""
+
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self.bind(size=self._update_position)
@@ -91,32 +136,104 @@ class MorphMenuMotionBehavior(MorphScaleBehavior,):
             size=self._update_position,)
 
     def _resolve_caller_pos(self) -> tuple[float, float]:
-        """Get the caller button position in window coordinates."""
+        """Get the caller button position in window coordinates.
+        
+        This method returns the position of the caller button in window
+        coordinates. If the caller is not set, it returns (0, 0)."""
         if self.caller is None:
             return (0, 0)
         
         return self.caller.to_window(*self.caller.pos)
     
+    def _resolve_caller_size(self) -> tuple[float, float]:
+        """Get the caller button size.
+        
+        This method returns the size of the caller button. If the caller
+        is not set, it returns (0, 0).
+        """
+        if self.caller is None:
+            return (0, 0)
+        
+        return self.caller.size
+    
     def _resolve_pos(self) -> tuple[float, float]:
-        """Get the menu position relative to the caller button."""
-        caller_pos = self._resolve_caller_pos()
-        pos = (caller_pos[0], caller_pos[1] - self.height)
-        return pos
+        """Get the menu position relative to the caller button.
+        
+        This method calculates the position of the menu based on the
+        position and size of the caller button, as well as the specified
+        anchor position and opening direction. The position is clamped
+        to ensure the menu stays within window bounds with the specified
+        margin.
+        """
+        caller_x, caller_y = self._resolve_caller_pos()
+        caller_width, caller_height = self._resolve_caller_size()
+        
+        match self.menu_anchor_position:
+            case 'left':
+                x = caller_x - self.width
+                match self.menu_opening_direction:
+                    case 'down':
+                        y = caller_y - self.height + caller_height
+                    case 'up':
+                        y = caller_y
 
+            case 'center':
+                x = caller_x + (caller_width - self.width) / 2
+                match self.menu_opening_direction:
+                    case 'down':
+                        y = caller_y - self.height
+                    case 'up':
+                        y = caller_y + caller_height
+
+            case 'right':
+                x = caller_x + caller_width
+                match self.menu_opening_direction:
+                    case 'down':
+                        y = caller_y - self.height + caller_height
+                    case 'up':
+                        y = caller_y
+        
+        margin = self.menu_window_margin
+        x = clamp(x, margin, Window.width - self.width - margin)
+        y = clamp(y, margin, Window.height - self.height - margin)
+        
+        return (x, y)
+    
     def set_scale_origin(self, *args) -> None:
-        """Set the scale origin based on the caller button position."""
-        caller_pos = self._resolve_caller_pos()
-        x_offset = self.caller.width / 2 if self.caller else 0
-        self.scale_origin = [caller_pos[0] + x_offset, caller_pos[1]]
+        """Set the scale origin based on the caller button position and 
+        anchor.
+        
+        This method calculates the scale origin point for the menu
+        based on the position and size of the caller button, ensuring 
+        that the menu scales from the appropriate point when opened or
+        closed.
+        """
+        caller_x, caller_y = self._resolve_caller_pos()
+        caller_width, caller_height = self._resolve_caller_size()
+
+        self.scale_origin = [
+            caller_x + caller_width / 2,
+            caller_y + caller_height / 2]
 
     def _update_position(self, *args) -> None:
         """Update the menu position relative to the caller button."""
         self.pos = self._resolve_pos()
 
     def _add_to_window(self, *args) -> None:
-        """Add the menu to the window and update its position."""
+        """Add the menu to the window and update its position.
+        
+        This method adds the menu widget to the window and updates its
+        position based on the caller button. If the widget also inherits
+        from :class:`MorphSizeBoundsBehavior`, it will set the
+        `size_upper_bound` property to ensure the menu fits within the
+        window bounds, respecting the :attr:`menu_window_margin`.
+        """
         Window.add_widget(self)
         self._update_position()
+        if hasattr(self, 'size_upper_bound'):
+            self.size_upper_bound = (
+                Window.width - self.x - self.menu_window_margin,
+                Window.height - self.y - self.menu_window_margin)
 
     def _remove_from_window(self, *args) -> None:
         """Remove the menu from the window."""
