@@ -2,33 +2,29 @@ from typing import Any
 from typing import Dict
 
 from kivy.properties import ObjectProperty
-from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.recycleview import RecycleView
 from kivy.uix.recycleboxlayout import RecycleBoxLayout
 
 from morphui.utils import clean_config
 from morphui.uix.behaviors import MorphElevationBehavior
-from morphui.uix.behaviors import MorphInteractionLayerBehavior
 from morphui.uix.behaviors import MorphAutoSizingBehavior
 from morphui.uix.behaviors import MorphColorThemeBehavior
 from morphui.uix.behaviors import MorphDeclarativeBehavior
 from morphui.uix.behaviors import MorphSurfaceLayerBehavior
+from morphui.uix.container import LeadingTextTrailingContainer
 
 
-class MorphMenuItem( # TODO: create basic LeadingTextTrailingContainer and inherit from it. Use the implementation of Chip as reference.
-        MorphDeclarativeBehavior,
-        MorphAutoSizingBehavior,
-        MorphColorThemeBehavior,
-        MorphInteractionLayerBehavior,
-        MorphSurfaceLayerBehavior,
-        BoxLayout):
-    """A single item within the MorphMenu widget. Inherits from multiple
-    behaviors to provide a rich set of features including elevation,
-    color theming, and auto-sizing.
+class MorphMenuItem(LeadingTextTrailingContainer):
+    """A single item within the MorphMenu widget.
+    
+    This widget represents a menu item with support for leading icon,
+    text label, and trailing icon. It inherits from
+    :class:`~morphui.uix.container.LeadingTextTrailingContainer` which
+    provides the layout structure and child widget management.
     """
 
-    default_config: Dict[str, Any] = dict(
-        )
+    default_config: Dict[str, Any] = (
+        LeadingTextTrailingContainer.default_config.copy() | dict())
 
     def __init__(self, **kwargs) -> None:
         config = clean_config(self.default_config, kwargs)
