@@ -15,20 +15,19 @@ from kivy.uix.boxlayout import BoxLayout
 
 from morphui.utils import clean_config
 from morphui.constants import NAME
-from morphui.uix.behaviors import MorphAutoSizingBehavior
-from morphui.uix.behaviors import MorphColorThemeBehavior
-from morphui.uix.behaviors import MorphDeclarativeBehavior
-from morphui.uix.behaviors import MorphSurfaceLayerBehavior
-from morphui.uix.behaviors import MorphInteractionLayerBehavior
-from morphui.uix.behaviors import MorphScaleBehavior
 from morphui.uix.label import MorphSimpleLabel
 from morphui.uix.label import MorphSimpleIconLabel
+from morphui.uix.button import MorphSimpleIconButton
+from morphui.uix.behaviors import MorphScaleBehavior
+from morphui.uix.behaviors import MorphAutoSizingBehavior
+from morphui.uix.behaviors import MorphIdentificationBehavior
 
 
 __all__ = [
     'LeadingIconLabel',
     'TextLabel',
     'TrailingIconLabel',
+    'TrailingIconButton',
     'LeadingTextTrailingContainer',]
 
 
@@ -76,20 +75,37 @@ class TrailingIconLabel(
         pos_hint={'center_y': 0.5},))
 
 
+class TrailingIconButton(
+        MorphScaleBehavior,
+        MorphSimpleIconButton):
+    """Trailing icon button for containers.
+    
+    This widget displays an interactive icon button on the right side
+    of a container, with support for scale animations. Used primarily
+    for chips where the trailing icon needs button behavior.
+    """
+    
+    default_config: Dict[str, Any] = (
+        MorphSimpleIconLabel.default_config.copy() | dict(
+        padding=dp(0),
+        pos_hint={'center_y': 0.5},))
+
+
 class LeadingTextTrailingContainer(
-        MorphDeclarativeBehavior,
+        MorphIdentificationBehavior,
         MorphAutoSizingBehavior,
-        MorphColorThemeBehavior,
-        MorphInteractionLayerBehavior,
-        MorphSurfaceLayerBehavior,
         BoxLayout):
     """Base container with leading icon, text label, and trailing icon.
     
-    This is a base class that provides a horizontal layout structure
+    This is a minimal base class that provides a horizontal layout structure
     with three child widgets: a leading icon, a text label, and a
     trailing icon. It is designed to be inherited by other components
     that need this layout pattern, such as menu items, list items,
     chips, etc.
+    
+    This class only provides the core layout and widget management.
+    Subclasses should add additional behaviors like MorphColorThemeBehavior,
+    MorphInteractionLayerBehavior, MorphSurfaceLayerBehavior as needed.
     
     The container automatically manages the visibility and animation of
     child widgets based on their content. When icons are set or cleared,
@@ -170,23 +186,28 @@ class LeadingTextTrailingContainer(
     :class:`~kivy.properties.BooleanProperty` and defaults to `True`.
     """
 
+    _default_child_widgets = {
+        'leading_widget': LeadingIconLabel,
+        'label_widget': TextLabel,
+        'trailing_widget': TrailingIconLabel,}
+    """Default child widgets for the container.
+    
+    This dictionary maps widget identities to their default classes.
+    Override in subclasses to change default child widgets.
+    """
+
     default_config: Dict[str, Any] = dict(
         orientation='horizontal',
         auto_size=True,
-        padding=dp(12),
-        spacing=dp(12),)
+        padding=dp(8),
+        spacing=dp(8),)
 
     def __init__(self, **kwargs) -> None:
-        child_classes = dict(
-            leading_widget=LeadingIconLabel,
-            label_widget=TextLabel,
-            trailing_widget=TrailingIconLabel,)
-        
         config = clean_config(self.default_config, kwargs)
-        for attr, cls in child_classes.items():
-            if attr not in config:
-                config[attr] = cls()
-
+        print(self._default_child_widgets)
+        for key, widget_cls in self._default_child_widgets.items():
+            if key not in config:
+                config[key] = widget_cls()
         super().__init__(**config)
         self.add_widget(self.leading_widget)
         self.add_widget(self.label_widget)
@@ -204,8 +225,7 @@ class LeadingTextTrailingContainer(
             'trailing_icon',
             self._update_child_widget,
             identity=NAME.TRAILING_WIDGET)
-        
-        self.refresh_content()
+        self.refresh_container_content()
 
     def _update_child_widget(
             self, instance: Any, text: str, identity: str) -> None:
@@ -295,7 +315,7 @@ class LeadingTextTrailingContainer(
             if hasattr(widget, 'apply_content'):
                 widget.apply_content(color)
 
-    def refresh_content(self, *args) -> None:
+    def refresh_container_content(self, *args) -> None:
         """Refresh the content of the container.
 
         This method updates the leading icon, label text, and trailing
