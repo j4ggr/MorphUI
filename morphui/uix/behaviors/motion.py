@@ -126,6 +126,10 @@ class MorphMenuMotionBehavior(MorphScaleBehavior,):
     :class:`~kivy.properties.NumericProperty` and defaults to `8`."""
 
     def __init__(self, **kwargs) -> None:
+        self.register_event_type('on_pre_open')
+        self.register_event_type('on_pre_dismiss')
+        self.register_event_type('on_open')
+        self.register_event_type('on_dismiss')
         super().__init__(**kwargs)
         self.bind(size=self._update_position)
         
@@ -245,21 +249,25 @@ class MorphMenuMotionBehavior(MorphScaleBehavior,):
         if self.is_open:
             return
         
+        self.dispatch('on_pre_open')
         self._add_to_window()
         self.scale_animation_duration = self.menu_opening_duration
         self.scale_animation_transition = self.menu_opening_transition
         self.set_scale_origin()
         self.animate_scale_in()
+        self.dispatch('on_open')
 
     def dismiss(self, *args) -> None:
         """Dismiss the menu with animation."""
         if not self.is_open:
             return
         
+        self.dispatch('on_pre_dismiss')
         self.scale_animation_duration = self.menu_dismissing_duration
         self.scale_animation_transition = self.menu_dismissing_transition
         self.set_scale_origin()
         self.animate_scale_out(callback=self._remove_from_window)
+        self.dispatch('on_dismiss')
 
     def toggle(self, *args) -> None:
         """Toggle the menu open/closed state with animation."""
@@ -267,3 +275,19 @@ class MorphMenuMotionBehavior(MorphScaleBehavior,):
             self.dismiss()
         else:
             self.open()
+
+    def on_pre_open(self, *args) -> None:
+        """Event fired before the menu is opened."""
+        pass
+
+    def on_pre_dismiss(self, *args) -> None:
+        """Event fired before the menu is dismissed."""
+        pass
+
+    def on_open(self, *args) -> None:
+        """Event fired when the menu is opened."""
+        pass
+
+    def on_dismiss(self, *args) -> None:
+        """Event fired when the menu is dismissed."""
+        pass

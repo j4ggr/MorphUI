@@ -204,7 +204,6 @@ class LeadingTextTrailingContainer(
 
     def __init__(self, **kwargs) -> None:
         config = clean_config(self.default_config, kwargs)
-        print(self._default_child_widgets)
         for key, widget_cls in self._default_child_widgets.items():
             if key not in config:
                 config[key] = widget_cls()
