@@ -89,10 +89,6 @@ with open(PATH.ICON_FONTS/'material_icons.toml', 'rb') as f:
 
 @dataclass(frozen=True)
 class _Icon_:
-    DD_MENU_CLOSED: Literal['chevron-up'] = 'chevron-up'
-    """Icon for the closed dropdown menu."""
-    DD_MENU_OPEN: Literal['chevron-down'] = 'chevron-down'
-    """Icon for the open dropdown menu."""
     @property
     def MAP(self) -> Dict[str, str]:
         """Mapping of icon names to their actual Unicode characters.

@@ -48,19 +48,6 @@ class MorphIconBehavior(MorphAppReferenceBehavior):
     and defaults to ''.
     """
 
-    active_icon = StringProperty('')
-    """Icon name for the 'active' state of the widget.
-
-    The icon is displayed when the widget is in the 'active' state
-    (i.e., checked). The icon name should correspond to a valid icon in
-    the Material Design Icons library. To automatically switch icons
-    based on the `active` property, bind the :meth:`_update_icon` method
-    to the `active` property of the widget.
-
-    :attr:`active_icon` is a :class:`~kivy.properties.StringProperty` 
-    and defaults to `""`.
-    """
-
     normal_icon = StringProperty('')
     """Icon name for the 'normal' state of the widget.
 
@@ -72,6 +59,19 @@ class MorphIconBehavior(MorphAppReferenceBehavior):
 
     :attr:`normal_icon` is a :class:`~kivy.properties.StringProperty` and
     defaults to `""`.
+    """
+
+    active_icon = StringProperty('')
+    """Icon name for the 'active' state of the widget.
+
+    The icon is displayed when the widget is in the 'active' state
+    (i.e., checked). The icon name should correspond to a valid icon in
+    the Material Design Icons library. To automatically switch icons
+    based on the `active` property, bind the :meth:`_update_icon` method
+    to the `active` property of the widget.
+
+    :attr:`active_icon` is a :class:`~kivy.properties.StringProperty` 
+    and defaults to `""`.
     """
 
     def __init__(self, **kwargs) -> None:

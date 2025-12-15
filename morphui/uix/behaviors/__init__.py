@@ -25,8 +25,6 @@ from .keypress import MorphKeyPressBehavior
 
 from .elevation import MorphElevationBehavior
 
-from .dropdown import MorphDropdownBehavior
-
 from .declarative import MorphDeclarativeBehavior
 from .declarative import MorphIdentificationBehavior
 
@@ -65,7 +63,6 @@ __all__ = [
     'MorphThemeBehavior',               # Combined theme integration (compatibility)
     'MorphKeyPressBehavior',            # Key press handling
     'MorphElevationBehavior',           # Elevation and shadow effects
-    'MorphDropdownBehavior',            # Dropdown functionality
     'MorphDeclarativeBehavior',         # Declarative property binding
     'MorphIdentificationBehavior',      # Identity management
     'MorphAutoSizingBehavior',          # Automatic sizing
