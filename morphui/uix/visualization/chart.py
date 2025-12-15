@@ -154,34 +154,35 @@ class MorphChartToolbar(MorphChartNavigationButton):
             icon='menu',))
 
     def __init__(self, **kwargs) -> None:
-        self.menu = kwargs.pop('menu', MorphChartToolbarMenu(
-            MorphChartNavigationButton(
-                identity='chart_toolbar_home_button',
-                icon='home-outline',),
-            MorphChartNavigationButton(
-                identity='chart_toolbar_undo_button',
-                icon='undo-variant',),
-            MorphChartNavigationButton(
-                identity='chart_toolbar_redo_button',
-                icon='redo-variant',),
-            MorphChartNavigationToggleButton(
-                identity='chart_toolbar_coordinate_button',
-                group='chart_toolbar_navigation_tools',
-                icon='map-marker-radius-outline',
-                on_release=self.show_coordinates,),
-            MorphChartNavigationToggleButton(
-                identity='chart_toolbar_pan_button',
-                group='chart_toolbar_navigation_tools',
-                icon='arrow-all',),
-            MorphChartNavigationToggleButton(
-                identity='chart_toolbar_zoom_button',
-                group='chart_toolbar_navigation_tools',
-                icon='selection-drag',),
-            MorphChartNavigationButton(
-                identity='chart_toolbar_save_button',
-                icon='content-save-outline',),
-            identity='chart_toolbar_menu',
-            caller=self))
+        self.menu = kwargs.pop('menu', 
+            MorphChartToolbarMenu(
+                MorphChartNavigationButton(
+                    identity='chart_toolbar_home_button',
+                    icon='home-outline',),
+                MorphChartNavigationButton(
+                    identity='chart_toolbar_undo_button',
+                    icon='undo-variant',),
+                MorphChartNavigationButton(
+                    identity='chart_toolbar_redo_button',
+                    icon='redo-variant',),
+                MorphChartNavigationToggleButton(
+                    identity='chart_toolbar_coordinate_button',
+                    group='chart_toolbar_navigation_tools',
+                    icon='map-marker-radius-outline',
+                    on_release=self.show_coordinates,),
+                MorphChartNavigationToggleButton(
+                    identity='chart_toolbar_pan_button',
+                    group='chart_toolbar_navigation_tools',
+                    icon='arrow-all',),
+                MorphChartNavigationToggleButton(
+                    identity='chart_toolbar_zoom_button',
+                    group='chart_toolbar_navigation_tools',
+                    icon='selection-drag',),
+                MorphChartNavigationButton(
+                    identity='chart_toolbar_save_button',
+                    icon='content-save-outline',),
+                identity='chart_toolbar_menu',
+                caller=self))
         super().__init__(
             on_release=kwargs.pop('on_release', self.menu.toggle),
             **kwargs)

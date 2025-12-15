@@ -27,7 +27,7 @@ from morphui.uix.floatlayout import MorphFloatLayout
 
 class MyApp(MorphApp):
     def build(self) -> MorphFloatLayout:
-        self.theme_manager.seed_color = 'Purple'
+        self.theme_manager.seed_color = 'morphui_teal'
         self.theme_manager.switch_to_dark()
         self.layout = MorphFloatLayout(
             MorphChip(
@@ -54,8 +54,6 @@ class MyApp(MorphApp):
     def re_add_chip(self, dt: float) -> None:
         if not self.input_chip.parent:
             self.layout.add_widget(self.input_chip)
-        
-
 
 if __name__ == '__main__':
     MyApp().run()
