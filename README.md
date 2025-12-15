@@ -104,7 +104,7 @@ Modern text input with focus states:
 from morphui.uix.textinput import MorphTextInput
 
 text_input = MorphTextInput(
-    hint_text="Enter text here",
+    label_text="Enter text here",
     corner_radius=8
 )
 
