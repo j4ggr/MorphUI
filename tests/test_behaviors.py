@@ -18,7 +18,6 @@ from morphui.uix.behaviors import MorphColorThemeBehavior
 from morphui.uix.behaviors import MorphTypographyBehavior
 from morphui.uix.behaviors import MorphThemeBehavior
 from morphui.uix.behaviors import MorphKeyPressBehavior
-from morphui.uix.behaviors import MorphDropdownBehavior
 from morphui.uix.behaviors import MorphSurfaceLayerBehavior
 from morphui.uix.behaviors import MorphDeclarativeBehavior
 from morphui.uix.behaviors import MorphAppReferenceBehavior
@@ -1265,72 +1264,6 @@ class TestMorphKeyPressBehavior:
         assert widget.key_text == 'b'
         assert widget.keycode == 98
         assert widget.keyboard == 9
-
-
-class TestMorphDropdownBehavior:
-    """Test suite for MorphDropdownBehavior class."""
-
-    class TestWidget(Widget, MorphDropdownBehavior):
-        """Test widget that combines Widget with MorphDropdownBehavior."""
-        pass
-
-    def test_initialization(self):
-        """Test basic initialization of MorphDropdownBehavior."""
-        widget = self.TestWidget()
-        assert widget.items == []
-        assert widget.menu is None
-        assert widget.dropdown_position == 'bottom'
-        assert widget.menu_open_delay == 0.1
-        assert widget.item_viewclass == 'OneLineListItem'
-
-    def test_items_property(self):
-        """Test the items property."""
-        widget = self.TestWidget()
-        test_items = ['Item 1', 'Item 2', 'Item 3']
-        
-        widget.items = test_items
-        assert widget.items == test_items
-        assert len(widget.items) == 3
-
-    def test_dropdown_position_property(self):
-        """Test the dropdown_position property."""
-        widget = self.TestWidget()
-        
-        for position in ['top', 'bottom', 'center', 'auto']:
-            widget.dropdown_position = position
-            assert widget.dropdown_position == position
-
-    def test_menu_open_delay_property(self):
-        """Test the menu_open_delay property."""
-        widget = self.TestWidget()
-        
-        widget.menu_open_delay = 0.5
-        assert widget.menu_open_delay == 0.5
-
-    def test_item_viewclass_property(self):
-        """Test the item_viewclass property."""
-        widget = self.TestWidget()
-        
-        widget.item_viewclass = 'TwoLineListItem'
-        assert widget.item_viewclass == 'TwoLineListItem'
-
-    def test_current_icon_property(self):
-        """Test the current_icon property."""
-        widget = self.TestWidget()
-        
-        # Test that current_icon has a default value from constants
-        assert widget.current_icon is not None
-        
-        widget.current_icon = 'custom-icon'
-        assert widget.current_icon == 'custom-icon'
-
-    def test_menu_state_icon_mapping(self):
-        """Test the internal menu state icon mapping."""
-        widget = self.TestWidget()
-        
-        # Test that the mapping exists and is a dictionary
-        assert hasattr(widget, '_menu_state_icon')
-        assert isinstance(widget._menu_state_icon, dict)
 
 
 class TestMorphAppReferenceBehavior:
