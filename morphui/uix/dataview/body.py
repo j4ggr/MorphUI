@@ -84,7 +84,7 @@ class MorphDataViewBodyLabel(
             self,
             rv: RecycleView,
             index: int,
-            data: List[Dict[str, Any]]
+            data: Dict[str, Any]
             ) -> None:
         """Refresh the view attributes when the data changes.
         
@@ -97,7 +97,7 @@ class MorphDataViewBodyLabel(
             The RecycleView instance managing this view.
         index : int
             The index of this view in the RecycleView data.
-        data : List[Dict[str, Any]]
+        data : Dict[str, Any]
             The data dictionary for this view.
         """
         super().refresh_view_attrs(rv, index, data)
