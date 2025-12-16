@@ -138,10 +138,6 @@ class MorphDataViewBodyLayout(MorphRecycleGridLayout):
     :attr:`index` is a :class:`~kivy.properties.ObjectProperty` and
     defaults to `None`.
     """
-    
-    def _get_cell_type(self) -> type:
-        """Return the type of cell label that this layout manages."""
-        return MorphDataViewBodyLabel
 
     default_config: Dict[str, Any] = dict(
         theme_color_bindings={

@@ -55,10 +55,6 @@ class MorphDataViewIndexLayout(MorphRecycleBoxLayout):
     to provide a vertical layout suitable for index labels.
     """
     
-    def _get_cell_type(self) -> type:
-        """Return the type of cell label that this layout manages."""
-        return MorphDataViewIndexLabel
-    
     default_config: Dict[str, Any] = dict(
         theme_color_bindings={
             'normal_surface_color': 'surface_container_high_color'},

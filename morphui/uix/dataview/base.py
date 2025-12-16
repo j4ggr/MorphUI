@@ -96,8 +96,6 @@ class BaseDataViewLabel(
         self.refresh_auto_sizing()
         self.refresh_content()
         self.refresh_overlay()
-        rv.data[index]['width'] = self.width
-        rv.data[index]['height'] = self.height
 
 
 class BaseDataView(
