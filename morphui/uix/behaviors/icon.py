@@ -81,6 +81,9 @@ class MorphIconBehavior(MorphAppReferenceBehavior):
             active_icon=self._update_icon,
             icon=self._apply_icon)
         
+        if hasattr(self, 'active'):
+            self.bind(active=self._update_icon) # type: ignore
+        
         if self.icon:
             self._apply_icon(self, self.icon)
         elif self.normal_icon or self.active_icon:

@@ -6,18 +6,39 @@ from typing import Tuple
 from kivy.properties import ListProperty
 from kivy.properties import ObjectProperty
 
-from morphui.uix.menu import MorphDropdownMenu
+from morphui.uix.list import MorphFlatItemListView
+from morphui.uix.behaviors import MorphMenuMotionBehavior
+from morphui.uix.behaviors import MorphElevationBehavior
 from morphui.uix.textfield import MorphTextField
 from morphui.uix.textfield import MorphTextFieldOutlined
 from morphui.uix.textfield import MorphTextFieldRounded
 from morphui.uix.textfield import MorphTextFieldFilled
 
 
+class MorphDropdownList(
+        MorphElevationBehavior,
+        MorphMenuMotionBehavior,
+        MorphFlatItemListView):
+    """A dropdown list widget that combines list view with menu motion.
+    
+    This widget extends MorphFlatItemListView with dropdown menu
+    capabilities, including open/dismiss animations and elevation
+    effects. It's designed to work seamlessly with 
+    :class:`~morphui.uix.dropdown.MorphDropdownFilterField`.
+    """
+    
+    default_config: Dict[str, Any] = (
+        MorphFlatItemListView.default_config.copy() | dict(
+            size_hint=(None, None),
+            elevation=2,))
+    """Default configuration for the MorphDropdownList widget."""
+
+
 class MorphDropdownFilterField(MorphTextField):
-    """A text field used for filtering items in a dropdown menu.
+    """A text field used for filtering items in a dropdown list.
 
     Inherits from :class:`~morphui.uix.textfield.MorphTextField` and
-    is designed to be used within dropdown menus to provide
+    is designed to be used within dropdown lists to provide
     filtering capabilities.
 
     Examples
@@ -28,25 +49,20 @@ class MorphDropdownFilterField(MorphTextField):
     from morphui.app import MorphApp
     from morphui.uix.boxlayout import MorphBoxLayout
     from morphui.uix.dropdown import MorphDropdownFilterField
-    from morphui.uix.menu import MorphDropdownMenu
 
     class MyApp(MorphApp):
         def build(self):
             layout = MorphBoxLayout(orientation='vertical')
             
-            # Create the dropdown menu
-            menu = MorphDropdownMenu(
+            # Create the filter field with items
+            filter_field = MorphDropdownFilterField(
                 items=[
                     {'text': 'Apple'},
                     {'text': 'Banana'},
                     {'text': 'Cherry'},
                     {'text': 'Date'},
                     {'text': 'Elderberry'},
-                ])
-            
-            # Create the filter field linked to the menu
-            filter_field = MorphDropdownFilterField(
-                menu=menu,
+                ],
                 label_text='Select a fruit',
                 trailing_icon='chevron-down')
             
@@ -63,7 +79,6 @@ class MorphDropdownFilterField(MorphTextField):
     from morphui.app import MorphApp
     from morphui.uix.boxlayout import MorphBoxLayout
     from morphui.uix.dropdown import MorphDropdownFilterField
-    from morphui.uix.menu import MorphDropdownMenu
 
     class IconPickerApp(MorphApp):
         def build(self):
@@ -78,20 +93,16 @@ class MorphDropdownFilterField(MorphTextField):
                 for icon_name in sorted(self.typography.icon_map.keys())
             ]
             
-            # Create the dropdown menu with icon items
-            menu = MorphDropdownMenu(items=icon_items)
-            
             # Set up callback to handle icon selection
             def on_icon_selected(item, index):
                 filter_field.text = item.text
                 filter_field.leading_icon = item.text
-                menu.dismiss()
+                filter_field.dropdown.dismiss()
             
-            menu.item_release_callback = on_icon_selected
-            
-            # Create the filter field with icon preview
+            # Create the filter field with icon items
             filter_field = MorphDropdownFilterField(
-                menu=menu,
+                items=icon_items,
+                item_release_callback=on_icon_selected,
                 label_text='Search icons...',
                 trailing_icon='magnify')
             
@@ -107,22 +118,22 @@ class MorphDropdownFilterField(MorphTextField):
         ['chevron-down', 'chevron-up'])
     """Icons for the dropdown filter field.
 
-    This property holds a tuple of two strings representing the icons
+    This property holds a list of two strings representing the icons
     used for the dropdown filter field. The first icon is typically used
     to indicate the closed state, while the second icon indicates the
     open state.
 
-    :attr:`icons` is a :class:`~kivy.properties.ListProperty` and
+    :attr:`menu_state_icons` is a :class:`~kivy.properties.ListProperty` and
     defaults to `['chevron-down', 'chevron-up']`.
     """
 
-    menu: MorphDropdownMenu = ObjectProperty(None)
-    """The dropdown menu associated with this filter field.
+    dropdown: MorphDropdownList = ObjectProperty(None)
+    """The dropdown list associated with this filter field.
 
-    This property holds a reference to the :class:`MorphDropdownMenu`
+    This property holds a reference to the :class:`MorphDropdownList`
     instance that is linked to this filter field.
 
-    :attr:`menu` is a :class:`~kivy.properties.ObjectProperty` and
+    :attr:`dropdown` is a :class:`~kivy.properties.ObjectProperty` and
     defaults to `None`.
     """
 
@@ -131,15 +142,16 @@ class MorphDropdownFilterField(MorphTextField):
     """Default configuration for the MorphDropdownFilterField."""
 
     def __init__(self, **kwargs) -> None:
-        menu = kwargs.pop('menu', 
-            MorphDropdownMenu(
-                caller=self,
-                items=kwargs.pop('items', [])))
-        super().__init__(menu=menu, **kwargs)
+        dropdown = MorphDropdownList(
+            caller=self,
+            items=kwargs.pop('items', []),
+            item_release_callback=kwargs.pop('item_release_callback', None))
+        super().__init__(dropdown=dropdown, **kwargs)
         self.bind(
             menu_state_icons=self._update_menu_state_icons,
             text=self._on_text_changed,
-            focus=self._on_focus_changed,)
+            focus=self._on_focus_changed,
+            width=self.dropdown.setter('width'))
         self._update_menu_state_icons(self, self.menu_state_icons)
         self._on_text_changed(self, self.text)
         self._on_focus_changed(self, self.focus)
@@ -178,7 +190,7 @@ class MorphDropdownFilterField(MorphTextField):
         """Handle changes to the text property.
 
         This method is called whenever the text in the filter field
-        changes. It updates the associated dropdown menu's filter value
+        changes. It updates the associated dropdown list's filter value
         accordingly.
 
         Parameters
@@ -188,7 +200,8 @@ class MorphDropdownFilterField(MorphTextField):
         text : str
             The new text value of the filter field.
         """
-        self.menu.filter_value = text
+        full_texts = [item['label_text'] for item in self.dropdown._source_items]    
+        self.dropdown.filter_value = '' if text in full_texts else text
     
     def _on_focus_changed(
             self,
@@ -197,7 +210,7 @@ class MorphDropdownFilterField(MorphTextField):
         """Handle changes to the focus property.
 
         This method is called whenever the focus state of the filter
-        field changes. It opens or closes the associated dropdown menu
+        field changes. It opens or closes the associated dropdown list
         based on the focus state.
 
         Parameters
@@ -209,9 +222,9 @@ class MorphDropdownFilterField(MorphTextField):
         """
         self.trailing_widget.active = focused
         if focused:
-            self.menu.open()
+            self.dropdown.open()
         else:
-            self.menu.dismiss()
+            self.dropdown.dismiss()
 
 
 class MorphDropdownFilterFieldOutlined(
