@@ -8,7 +8,6 @@ from typing import Sequence
 from kivy.lang import Builder
 from kivy.metrics import dp
 from kivy.properties import AliasProperty
-from kivy.properties import ObjectProperty
 
 from morphui.utils import clean_config
 from morphui.uix.dataview.base import BaseDataViewLabel
@@ -103,20 +102,8 @@ class MorphDataViewHeader(BaseDataView):
     Builder.load_string(dedent('''
         <MorphDataViewHeader>:
             viewclass: 'MorphDataViewHeaderLabel'
-            layout: layout
             MorphDataViewHeaderLayout:
-                id: layout
         '''))
-    
-    layout: MorphDataViewHeaderLayout = ObjectProperty()
-    """The layout manager for the header, responsible for arranging
-    the header labels.
-
-    This property is automatically set to an instance of
-    :class:`MorphDataViewHeaderLayout` defined in the KV string.
-
-    :attr:`layout` is a :class:`~kivy.properties.ObjectProperty`.
-    """
 
     def _get_column_names(self) -> List[str]:
         """Retrieve the list of column names from the header data.
@@ -169,8 +156,8 @@ class MorphDataViewHeader(BaseDataView):
         self.register_event_type('on_columns_updated')
         config = clean_config(self.default_config, kwargs)
         super().__init__(**config)
-        self.layout.bind(height=self.setter('height'))
-        self.height = self.layout.height
+        self.layout_manager.bind(height=self.setter('height'))
+        self.height = self.layout_manager.height
 
     def on_columns_updated(self, *args) -> None:
         """Event handler called when the columns are updated.

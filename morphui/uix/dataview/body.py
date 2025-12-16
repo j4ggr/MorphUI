@@ -160,19 +160,8 @@ class MorphDataViewBody(BaseDataView):
     Builder.load_string(dedent('''
         <MorphDataViewBody>:
             viewclass: 'MorphDataViewBodyLabel'
-            layout: layout
             MorphDataViewBodyLayout:
-                id: layout
         '''))
-    
-    layout: MorphDataViewBodyLayout = ObjectProperty(None)
-    """The layout managing the body cells, responsible for their 
-    arrangement and sizing.
-
-    This property is automatically set to the internal layout instance.
-    :attr:`layout` is a :class:`~kivy.properties.ObjectProperty`
-    and defaults to `None`.
-    """
 
     header: MorphDataViewHeader = ObjectProperty(None)
     """Reference to the header associated with this body label.
@@ -205,10 +194,10 @@ class MorphDataViewBody(BaseDataView):
         that row. This method is used internally for the 
         :attr:`values` property.
         """
-        if not self.layout or not self.layout.children:
+        if not self.layout_manager or not self.layout_manager.children:
             return []
-        children = self.layout.children[::-1]
-        n_cols = self.layout.cols
+        children = self.layout_manager.children[::-1]
+        n_cols = self.layout_manager.cols
         return [
             [children[i + j * n_cols].text for i in range(n_cols)]
             for j in range(len(children) // n_cols)]
@@ -224,7 +213,7 @@ class MorphDataViewBody(BaseDataView):
         """
         n_cols = max(len(row) for row in values) if values else 0
 
-        self.layout.cols = n_cols
+        self.layout_manager.cols = n_cols
         self.data = [
             {
                 'text': str(value),
@@ -271,8 +260,8 @@ class MorphDataViewBody(BaseDataView):
         """
         self.sync_x_target = header
         header.sync_x_target = self
-        if self.layout is not None:
-            self.layout.header = header
+        if self.layout_manager is not None:
+            self.layout_manager.header = header
 
     def on_index(self, instance: Any, index: Any) -> None:
         """Handle changes to the associated index data view.
@@ -283,18 +272,18 @@ class MorphDataViewBody(BaseDataView):
         """
         self.sync_y_target = index
         index.sync_y_target = self
-        if self.layout is not None:
-            self.layout.index = index
+        if self.layout_manager is not None:
+            self.layout_manager.index = index
 
-    def on_layout(self, instance: Any, layout: Any) -> None:
+    def on_layout_manager(self, instance: Any, layout_manager: Any) -> None:
         """Handle changes to the associated layout.
 
-        This method is called whenever the `layout` property is set
+        This method is called whenever the `layout_manager` property is set
         and configures the layout to reference the associated header
         and index.
         """
-        layout.header = self.header
-        layout.index = self.index
+        layout_manager.header = self.header
+        layout_manager.index = self.index
 
     def on_values_updated(self, *args) -> None:
         """Event handler called when the values in the body are updated.

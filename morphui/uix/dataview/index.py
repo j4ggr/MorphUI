@@ -8,7 +8,6 @@ from typing import Sequence
 from kivy.lang import Builder
 from kivy.metrics import dp
 from kivy.properties import AliasProperty
-from kivy.properties import ObjectProperty
 
 from morphui.utils import clean_config
 from morphui.uix.dataview.base import BaseDataViewLabel
@@ -98,20 +97,8 @@ class MorphDataViewIndex(BaseDataView):
     Builder.load_string(dedent('''
         <MorphDataViewIndex>:
             viewclass: 'MorphDataViewIndexLabel'
-            layout: layout
             MorphDataViewIndexLayout:
-                id: layout
         '''))
-
-    layout: MorphDataViewIndexLayout = ObjectProperty()
-    """The layout manager for the index, responsible for arranging
-    the index labels.
-
-    This property is automatically set to an instance of
-    :class:`MorphDataViewIndexLayout` defined in the KV string.
-
-    :attr:`layout` is a :class:`~kivy.properties.ObjectProperty`.
-    """
 
     def _get_row_names(self) -> List[str]:
         """Retrieve the list of row names from the index data.
@@ -164,8 +151,8 @@ class MorphDataViewIndex(BaseDataView):
         self.register_event_type('on_rows_updated')
         config = clean_config(self.default_config, kwargs)
         super().__init__(**config)
-        self.layout.bind(width=self.setter('width'))
-        self.width = self.layout.width
+        self.layout_manager.bind(width=self.setter('width'))
+        self.width = self.layout_manager.width
 
     def on_rows_updated(self, *args) -> None:
         """Event handler called when the rows are updated.
