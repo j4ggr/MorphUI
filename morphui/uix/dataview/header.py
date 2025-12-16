@@ -12,7 +12,6 @@ from kivy.properties import ObjectProperty
 
 from morphui.utils import clean_config
 from morphui.uix.dataview.base import BaseDataViewLabel
-from morphui.uix.dataview.base import BaseDataViewLayout
 from morphui.uix.dataview.base import BaseDataView
 from morphui.uix.recycleboxlayout import MorphRecycleBoxLayout
 
@@ -48,9 +47,7 @@ class MorphDataViewHeaderLabel(BaseDataViewLabel): # TODO: maybe adding HoverEnh
     """Default configuration for the MorphDataViewHeaderLabel."""
 
 
-class MorphDataViewHeaderLayout(
-        BaseDataViewLayout,
-        MorphRecycleBoxLayout):
+class MorphDataViewHeaderLayout(MorphRecycleBoxLayout):
     """A layout for arranging header labels in a data view.
 
     This class extends the base data view layout and MorphRecycleBoxLayout

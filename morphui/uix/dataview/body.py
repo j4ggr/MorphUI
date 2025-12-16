@@ -14,7 +14,6 @@ from kivy.uix.recycleview import RecycleView
 from morphui.utils import clean_config
 from morphui.uix.dataview import BaseDataView
 from morphui.uix.dataview import BaseDataViewLabel
-from morphui.uix.dataview import BaseDataViewLayout
 from morphui.uix.dataview import MorphDataViewIndex
 from morphui.uix.dataview import MorphDataViewHeader
 from morphui.uix.dataview import MorphDataViewIndexLabel
@@ -110,9 +109,7 @@ class MorphDataViewBodyLabel(
         rv.data[index]['height'] = self.height
 
 
-class MorphDataViewBodyLayout(
-        BaseDataViewLayout,
-        MorphRecycleGridLayout):
+class MorphDataViewBodyLayout(MorphRecycleGridLayout):
     """A layout for arranging body cells in a data view.
 
     This class extends the base data view layout and 

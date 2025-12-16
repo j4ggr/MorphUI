@@ -6,7 +6,6 @@ duplication across different data view components.
 """
 
 from morphui.uix.dataview.base import BaseDataViewLabel
-from morphui.uix.dataview.base import BaseDataViewLayout
 from morphui.uix.dataview.base import BaseDataView
 
 from morphui.uix.dataview.header import MorphDataViewHeaderLabel
@@ -29,7 +28,6 @@ from morphui.uix.dataview.table import MorphDataViewTable
 
 __all__ = [
     'BaseDataViewLabel',
-    'BaseDataViewLayout', 
     'BaseDataView',
     'MorphDataViewHeaderLabel',
     'MorphDataViewHeaderLayout',

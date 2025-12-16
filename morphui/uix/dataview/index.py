@@ -12,7 +12,6 @@ from kivy.properties import ObjectProperty
 
 from morphui.utils import clean_config
 from morphui.uix.dataview.base import BaseDataViewLabel
-from morphui.uix.dataview.base import BaseDataViewLayout
 from morphui.uix.dataview.base import BaseDataView
 from morphui.uix.recycleboxlayout import MorphRecycleBoxLayout
 
@@ -49,9 +48,7 @@ class MorphDataViewIndexLabel(BaseDataViewLabel):
     """Default configuration for the MorphDataViewIndexLabel."""
 
 
-class MorphDataViewIndexLayout(
-        BaseDataViewLayout,
-        MorphRecycleBoxLayout):
+class MorphDataViewIndexLayout(MorphRecycleBoxLayout):
     """A layout for arranging index labels in a data view.
 
     This class extends the base data view layout and MorphRecycleBoxLayout
