@@ -35,7 +35,7 @@ class ChipLeadingIconLabel(LeadingIconLabel):
     
     Inherits from :class:`~morphui.uix.container.LeadingIconLabel`.
     """
-    pass
+    
 
 
 class ChipTextLabel(TextLabel):
@@ -43,7 +43,9 @@ class ChipTextLabel(TextLabel):
     
     Inherits from :class:`~morphui.uix.container.TextLabel`.
     """
-    pass
+    default_config: Dict[str, Any] = (
+        TextLabel.default_config.copy() | dict(
+            auto_size=(True, True),))
 
 
 class ChipTrailingIconButton(TrailingIconButton):

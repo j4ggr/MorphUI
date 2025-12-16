@@ -87,7 +87,7 @@ class MorphDropdownFilterField(MorphTextField):
                 filter_field.leading_icon = item.text
                 menu.dismiss()
             
-            menu.on_item_release = on_icon_selected
+            menu.item_release_callback = on_icon_selected
             
             # Create the filter field with icon preview
             filter_field = MorphDropdownFilterField(

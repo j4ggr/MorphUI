@@ -127,26 +127,13 @@ class MorphDropdownMenu(
     Builder.load_string(dedent('''
         <MorphDropdownMenu>:
             viewclass: 'MorphDropdownMenuItem'
-            layout: layout
             MenuRecycleBoxLayout:
-                id: layout
                 default_size: None, dp(48)
                 default_size_hint: 1, None
                 size_hint_y: None
                 height: self.minimum_height
                 orientation: "vertical"
         '''))
-
-    layout: MenuRecycleBoxLayout = ObjectProperty(None)
-    """The layout manager for the menu items, specifically a
-    MenuRecycleBoxLayout instance.
-
-    This property is used to organize and display the menu items
-    in a vertical list format.
-
-    :attr:`layout` is an :class:`~kivy.properties.ObjectProperty`
-    and defaults to `None`.
-    """
 
     filter_value: Any = ObjectProperty('')
     """The current filter value used to filter menu items.
@@ -159,7 +146,7 @@ class MorphDropdownMenu(
     :attr:`filter_value` is an :class:`~kivy.properties.ObjectProperty`
     and defaults to an empty string."""
 
-    on_item_release: Optional[Callable[[Any, int], None]] = ObjectProperty(None)
+    item_release_callback: Optional[Callable[[Any, int], None]] = ObjectProperty(None)
     """Callback function called when a menu item is released.
 
     This callback is triggered when a user releases a menu item after
@@ -171,14 +158,14 @@ class MorphDropdownMenu(
     ```python
     def handle_item_release(item, index):
         print(f"Item {index} released: {item.text}")
-    menu.on_item_release = handle_item_release
+    menu.item_release_callback = handle_item_release
     ```
 
-    :attr:`on_item_release` is an :class:`~kivy.properties.ObjectProperty`
+    :attr:`item_release_callback` is an :class:`~kivy.properties.ObjectProperty`
     and defaults to `None`."""
 
-    _items: List[Dict[str, Any]] = ListProperty([])
-    """Internal storage for the list of menu items."""
+    _all_items: List[Dict[str, Any]] = ListProperty([])
+    """Internal storage for all menu items before filtering."""
 
     def _get_items(self) -> List[Dict[str, Any]]:
         """Get the list of menu items, filtered based on the current
@@ -192,7 +179,7 @@ class MorphDropdownMenu(
         """
         return list(filter(
             lambda item: not self.should_filter_item(item),
-            self._items))
+            self._all_items))
 
     def _set_items(self, items: List[Dict[str, Any]]) -> None:
         """Set the menu items for the dropdown menu.
@@ -200,7 +187,7 @@ class MorphDropdownMenu(
         This method updates the RecycleView's data to reflect the
         provided list of menu items. Each item dictionary is
         augmented with an `on_release` callback that points to the
-        menu's :meth:`on_item_release` method if it is not already
+        menu's :attr:`item_release_callback` if it is not already
         provided.
 
         Parameters
@@ -210,17 +197,17 @@ class MorphDropdownMenu(
             dictionary should contain the properties for a single
             MorphDropdownMenuItem.
         """
-        if self.on_item_release is None:
-            self._items = items
+        if self.item_release_callback is None:
+            self._all_items = items
         else:
-            self._items = [
-                {'on_release': self.on_item_release, **item} for item in items]
+            self._all_items = [
+                {'on_release': self.item_release_callback, **item} for item in items]
 
     items: List[Dict[str, Any]] = AliasProperty(
         _get_items,
         _set_items,
         bind=[
-            '_items',
+            '_all_items',
             'filter_value'])
     """List of menu items available for the dropdown menu.
 
@@ -231,7 +218,7 @@ class MorphDropdownMenu(
     :meth:`should_filter_item` method to customize filtering behavior.
 
     :attr:`items` is an :class:`~kivy.properties.AliasProperty` and
-    is bound to changes in the `_items` and `filter_value` properties.
+    is bound to changes in the `_all_items` and `filter_value` properties.
     """
 
     default_config: Dict[str, Any] = dict(
