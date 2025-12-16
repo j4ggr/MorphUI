@@ -55,7 +55,8 @@ class TextLabel(MorphSimpleLabel):
     
     default_config: Dict[str, Any] = (
         MorphSimpleLabel.default_config.copy() | dict(
-        auto_size=True,
+        auto_size=(False, True),
+        size_hint=(1, None),
         padding=dp(0),
         pos_hint={'center_y': 0.5},))
 
@@ -259,7 +260,7 @@ class LeadingTextTrailingContainer(
                 widget.icon = text
 
             if issubclass(type(widget), MorphScaleBehavior):
-                if bool(widget.icon) == bool(text):
+                if widget.icon == text:
                     pass
                 elif text:
                     set_icon()
