@@ -8,6 +8,7 @@ from typing import Any
 from typing import Dict
 
 from kivy.metrics import dp
+from kivy.metrics import AliasProperty
 from kivy.properties import ObjectProperty
 from kivy.properties import StringProperty
 from kivy.properties import BooleanProperty
@@ -137,26 +138,123 @@ class LeadingTextTrailingContainer(
         trailing_icon='chevron-right')
     ```
     """
+    @staticmethod
+    def _get_icon(widget: Any) -> str:
+        """Get the icon name from a widget.
+        
+        This method retrieves the icon name from the provided widget.
+        If the widget is None or does not have an icon attribute,
+        it returns an empty string.
 
-    leading_icon: str = StringProperty('')
+        Parameters
+        ----------
+        widget : Any
+            The widget to get the icon from
+
+        Returns
+        -------
+        str
+            The name of the icon, or an empty string if not available
+        """
+        if widget is None or not hasattr(widget, 'icon'):
+            return ''
+        
+        return widget.icon
+
+    @staticmethod
+    def _set_icon(widget: Any, icon_name: str) -> None:
+        """Set the icon of a widget with scale animation if applicable.
+        
+        This method sets the icon of the provided widget. If the widget
+        supports scale animations (i.e., is a subclass of 
+        :class:`~morphui.uix.behaviors.MorphScaleBehavior`), it will 
+        animate the icon change smoothly.
+
+        Parameters
+        ----------
+        widget : Any
+            The widget to set the icon on
+        icon_name : str
+            The name of the icon to set
+        """
+        if widget is None or not hasattr(widget, 'icon'):
+            return None
+        
+        def set_widget_icon(*args) -> None:
+            widget.icon = icon_name
+
+        if issubclass(type(widget), MorphScaleBehavior):
+            if widget.icon == icon_name:
+                pass
+            elif icon_name:
+                set_widget_icon()
+                widget.animate_scale_in()
+            else:
+                widget.animate_scale_out(callback=set_widget_icon)
+        else:
+            set_widget_icon()
+
+    leading_icon: str = AliasProperty(
+        lambda self: self._get_icon(self.leading_widget),
+        lambda self, icon_name: self._set_icon(self.leading_widget, icon_name),
+        bind=['leading_widget',])
     """The name of the leading icon displayed to the left.
 
-    :attr:`leading_icon` is a :class:`~kivy.properties.StringProperty`
-    and defaults to an empty string.
+    This property gets/sets the `icon` property of the `leading_widget`.
+    If the `leading_widget` supports scale animations, the icon change
+    will be animated smoothly.
+
+    :attr:`leading_icon` is a :class:`~kivy.properties.AliasProperty`
+    and is bound to changes in the `leading_widget`.
     """
 
-    label_text: str = StringProperty('')
+    def _get_label_text(self) -> str:
+        if self.label_widget is None:
+            return ''
+        
+        return self.label_widget.text
+    
+    def _set_label_text(self, text: str) -> None:
+        if self.label_widget is not None:
+            self.label_widget.text = text
+
+    label_text: str = AliasProperty(
+        _get_label_text,
+        _set_label_text,
+        bind=['label_widget',])
     """The text displayed in the center.
 
-    :attr:`label_text` is a :class:`~kivy.properties.StringProperty`
-    and defaults to an empty string.
+    This property gets/sets the `text` property of the `label_widget`.
+
+    :attr:`label_text` is a :class:`~kivy.properties.AliasProperty`
+    and is bound to changes in the `label_widget`.
     """
 
-    trailing_icon: str = StringProperty('')
+    text: str = AliasProperty(
+        _get_label_text,
+        _set_label_text,
+        bind=['label_text',])
+    """Alias for label_text for convenience.
+
+    This property is an alias for `label_text`, allowing direct access
+    to the text content of the label widget.
+
+    :attr:`text` is a :class:`~kivy.properties.AliasProperty`
+    and is bound to changes in the `label_text`.
+    """
+
+    trailing_icon: str = AliasProperty(
+        lambda self: self._get_icon(self.trailing_widget),
+        lambda self, icon_name: self._set_icon(self.trailing_widget, icon_name),
+        bind=['trailing_widget',])
     """The name of the trailing icon displayed to the right.
 
-    :attr:`trailing_icon` is a :class:`~kivy.properties.StringProperty`
-    and defaults to an empty string.
+    This property gets/sets the `icon` property of the `trailing_widget`.
+    If the `trailing_widget` supports scale animations, the icon change
+    will be animated smoothly.
+
+    :attr:`trailing_icon` is a :class:`~kivy.properties.AliasProperty`
+    and is bound to changes in the `trailing_widget`.
     """
 
     leading_widget: LeadingIconLabel = ObjectProperty()
@@ -208,91 +306,79 @@ class LeadingTextTrailingContainer(
         for key, widget_cls in self._default_child_widgets.items():
             if key not in config:
                 config[key] = widget_cls()
+
         super().__init__(**config)
         self.add_widget(self.leading_widget)
         self.add_widget(self.label_widget)
         self.add_widget(self.trailing_widget)
 
-        self.fbind(
-            'leading_icon',
-            self._update_child_widget,
-            identity=NAME.LEADING_WIDGET)
-        self.fbind(
-            'label_text',
-            self._update_child_widget,
-            identity=NAME.LABEL_WIDGET)
-        self.fbind(
-            'trailing_icon',
-            self._update_child_widget,
-            identity=NAME.TRAILING_WIDGET)
-        self.refresh_container_content()
+    def on_leading_widget(
+            self,
+            instance: Any,
+            widget: LeadingIconLabel) -> None:
+        """Callback when the leading widget changes.
 
-    def _update_child_widget(
-            self, instance: Any, text: str, identity: str) -> None:
-        """Update the child widget based on the provided text and identity.
-        
-        This method handles updating the content of child widgets with
-        smooth scale animations when icons are added or removed.
-        
         Parameters
         ----------
         instance : Any
-            The instance that triggered the update
-        text : str
-            The new text or icon name
-        identity : str
-            The identity of the widget to update (LEADING_WIDGET,
-            LABEL_WIDGET, or TRAILING_WIDGET)
+            The instance that triggered the change
+        widget : LeadingIconLabel
+            The new leading widget
         """
-        match identity:
-            case NAME.LABEL_WIDGET:
-                widget = self.label_widget
-            case NAME.LEADING_WIDGET:
-                widget = self.leading_widget
-            case NAME.TRAILING_WIDGET:
-                widget = self.trailing_widget
-            case _:
-                raise ValueError(
-                    f'Widget not found for identity: {identity!r}')
+        if widget is None or not hasattr(widget, 'icon'):
+            return
+        self.leading_widget.bind(icon=self.setter('leading_icon'))
+        self._remove_child_content_bindings(self.leading_widget)
 
-        if hasattr(widget, 'icon'):
-            def set_icon(*args):
-                widget.icon = text
+    def on_label_widget(
+            self,
+            instance: Any,
+            widget: TextLabel) -> None:
+        """Callback when the label widget changes.
 
-            if issubclass(type(widget), MorphScaleBehavior):
-                if widget.icon == text:
-                    pass
-                elif text:
-                    set_icon()
-                    widget.animate_scale_in()
-                else:
-                    widget.animate_scale_out(callback=set_icon)
-            else:
-                set_icon()
-        else:
-            widget.text = text
+        Parameters
+        ----------
+        instance : Any
+            The instance that triggered the change
+        widget : TextLabel
+            The new label widget
+        """
+        if widget is None:
+            return
+        self.label_widget.bind(text=self.setter('label_text'))
+        self._remove_child_content_bindings(self.label_widget)
 
-    def _remove_child_content_bindings(self, *args) -> None:
-        """Remove content color bindings from child widgets.
+    def on_trailing_widget(
+            self,
+            instance: Any,
+            widget: TrailingIconLabel) -> None:
+        """Callback when the trailing widget changes.
+
+        Parameters
+        ----------
+        instance : Any
+            The instance that triggered the change
+        widget : TrailingIconLabel
+            The new trailing widget
+        """
+        if widget is None or not hasattr(widget, 'icon'):
+            return
+        self.trailing_widget.bind(icon=self.setter('trailing_icon'))
+        self._remove_child_content_bindings(self.trailing_widget)
+
+    def _remove_child_content_bindings(self, widget: Any) -> None:
+        """Remove content color bindings from child widget.
         
-        This method removes content color bindings from child widgets
-        when delegate_content_color is True, allowing the container
-        to manage the content color of its children.
+        This method removes content color bindings from child widget
+        when :attr:`delegate_content_color` is `True`, allowing the
+        container to manage the content color of its children.
         """
         if not self.delegate_content_color:
             return None
         
-        def new_bindings(original: Dict[str, str]) -> Dict[str, str]:
-            return dict(
-                (k, v) for k, v in original.items()
-                if 'content' not in k)
-        
-        self.leading_widget.theme_color_bindings = new_bindings(
-            self.leading_widget.theme_color_bindings)
-        self.label_widget.theme_color_bindings = new_bindings(
-            self.label_widget.theme_color_bindings)
-        self.trailing_widget.theme_color_bindings = new_bindings(
-            self.trailing_widget.theme_color_bindings)
+        widget.theme_color_bindings = dict(
+            (k, v) for k, v in widget.theme_color_bindings.items()
+            if 'content' not in k)
     
     def apply_content(self, color: list[float]) -> None:
         """Apply content color based on the current state.
@@ -314,24 +400,3 @@ class LeadingTextTrailingContainer(
                 self.trailing_widget,):
             if hasattr(widget, 'apply_content'):
                 widget.apply_content(color)
-
-    def refresh_container_content(self, *args) -> None:
-        """Refresh the content of the container.
-
-        This method updates the leading icon, label text, and trailing
-        icon based on their respective properties. It ensures that all
-        child widgets are in sync with the current property values.
-        """
-        self._update_child_widget(
-            self,
-            self.leading_icon,
-            identity=NAME.LEADING_WIDGET)
-        self._update_child_widget(
-            self,
-            self.label_text,
-            identity=NAME.LABEL_WIDGET)
-        self._update_child_widget(
-            self,
-            self.trailing_icon,
-            identity=NAME.TRAILING_WIDGET)
-        self._remove_child_content_bindings()
