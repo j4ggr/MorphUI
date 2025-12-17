@@ -26,10 +26,10 @@ from morphui.utils import clean_config
 
 from morphui.uix.behaviors import MorphThemeBehavior
 from morphui.uix.behaviors import MorphHoverBehavior
-from morphui.uix.behaviors import MorphTextLayerBehavior
 from morphui.uix.behaviors import MorphAutoSizingBehavior
 from morphui.uix.behaviors import MorphTypographyBehavior
 from morphui.uix.behaviors import MorphRoundSidesBehavior
+from morphui.uix.behaviors import MorphSurfaceLayerBehavior
 from morphui.uix.behaviors import MorphContentLayerBehavior
 from morphui.uix.behaviors import MorphIdentificationBehavior
 from morphui.uix.behaviors import MorphInteractionLayerBehavior
@@ -417,7 +417,8 @@ class TextValidator(EventDispatcher):
 class MorphTextInput(
         MorphIdentificationBehavior,
         MorphThemeBehavior,
-        MorphTextLayerBehavior,
+        MorphContentLayerBehavior,
+        MorphSurfaceLayerBehavior,
         MorphAutoSizingBehavior,
         TextInput):
 
@@ -456,10 +457,15 @@ class MorphTextInput(
 
     minimum_height: int = AliasProperty(
         _get_min_height,
+        cache=True,
         bind=[
-            '_lines', 'line_height', 'line_spacing', 'padding', 'multiline',
-            'password', 'maximum_height'],
-        cache=True)
+            '_lines',
+            'line_height',
+            'line_spacing',
+            'padding',
+            'multiline',
+            'password',
+            'maximum_height'],)
     """The minimum height of the TextInput based on content (read-only).
 
     This property calculates the minimum height required to display
@@ -485,8 +491,10 @@ class MorphTextInput(
             *self.cursor_pos,
             self.cursor_pos[0],
             self.cursor_pos[1] - self.line_height],
-        bind=['cursor_pos', 'line_height'],
-        cache=True)
+        cache=True,
+        bind=[
+            'cursor_pos',
+            'line_height'],)
     """The path points for the cursor line (read-only).
 
     This property defines the points for drawing the cursor line based
@@ -533,8 +541,7 @@ class MorphTextInput(
             cursor_path=self.update_cursor,
             cursor_color=self.update_cursor,
             cursor_width=self.update_cursor,
-            focus=self.update_cursor,
-            normal_content_color=self.setter('cursor_color'),)
+            focus=self.update_cursor,)
 
     def update_cursor(self, *args) -> None:
         """Update the cursor appearance based on focus and blink state.
@@ -920,10 +927,14 @@ class MorphTextField(
                 config[attr] = cls()
 
         super().__init__(**config)
-
+        text_input_color_bindings = {
+            prop: color 
+            for prop, color in config.get('theme_color_bindings', {}).items()
+            if 'content' in prop}
         self._text_input = MorphTextInput(
             theme_color_bindings=dict(
-                normal_surface_color='transparent_color',),
+                normal_surface_color='transparent_color',
+                **text_input_color_bindings),
             identity=NAME.INPUT,
             size_hint=(None, None),
             padding=dp(0),
@@ -963,7 +974,6 @@ class MorphTextField(
             selected_text_color_opacity=self._update_selection_color,
             error_type=self._update_supporting_error_text,
             supporting_error_texts=self._update_supporting_error_text,
-            normal_content_color=self._text_input.setter('content_color'),
             minimum_height=self.setter('height'),
             maximum_height=self._text_input.setter('maximum_height'),)
         self.fbind(
@@ -1150,6 +1160,7 @@ class MorphTextField(
         self._update_layout()
         self.on_current_content_state(self, self.current_content_state)
         self.validate(self.text)
+        self._text_input.refresh_content()
 
     def on_current_content_state(self, instance: Any, state: str) -> None:
         """Handle changes to the current content state of the text field.
