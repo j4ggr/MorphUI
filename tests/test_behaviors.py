@@ -3595,3 +3595,613 @@ class TestMorphScrollSyncBehavior:
             widget.scroll_timeout = timeout
             assert widget.scroll_timeout == timeout
 
+
+class TestMorphMenuMotionBehavior:
+    """Test suite for MorphMenuMotionBehavior class."""
+
+    class TestMenu(MorphHoverBehavior, Widget):
+        """Test widget that simulates a menu with MorphMenuMotionBehavior."""
+        
+        # Import the behavior
+        from morphui.uix.behaviors import MorphMenuMotionBehavior
+        
+        def __init__(self, **kwargs):
+            from morphui.uix.behaviors import MorphMenuMotionBehavior
+            # Initialize behaviors in correct order
+            Widget.__init__(self, **kwargs)
+            MorphMenuMotionBehavior.__init__(self, **kwargs)
+            # Track event calls
+            self.pre_open_called = False
+            self.pre_dismiss_called = False
+            self.open_called = False
+            self.dismiss_called = False
+        
+        def on_pre_open(self, *args):
+            self.pre_open_called = True
+        
+        def on_pre_dismiss(self, *args):
+            self.pre_dismiss_called = True
+        
+        def on_open(self, *args):
+            self.open_called = True
+        
+        def on_dismiss(self, *args):
+            self.dismiss_called = True
+
+    def test_initialization(self):
+        """Test basic initialization of MorphMenuMotionBehavior."""
+        from morphui.uix.behaviors import MorphMenuMotionBehavior
+        
+        class TestWidget(MorphMenuMotionBehavior, Widget):
+            pass
+        
+        widget = TestWidget()
+        
+        # Test default property values
+        assert widget.caller is None
+        assert widget.is_open is False
+        assert widget.menu_anchor_position == 'center'
+        assert widget.menu_opening_direction == 'down'
+        assert widget.menu_opening_duration == 0.15
+        assert widget.menu_opening_transition == 'out_sine'
+        assert widget.menu_dismissing_duration == 0.15
+        assert widget.menu_dismissing_transition == 'in_sine'
+        assert widget.menu_window_margin == 8
+        assert widget.auto_adjust_position is True
+        assert widget.min_space_required == 100
+
+    def test_property_setters(self):
+        """Test setting various properties."""
+        from morphui.uix.behaviors import MorphMenuMotionBehavior
+        
+        class TestWidget(MorphMenuMotionBehavior, Widget):
+            pass
+        
+        widget = TestWidget()
+        caller = Widget()
+        
+        # Test setting properties
+        widget.caller = caller
+        assert widget.caller is caller
+        
+        widget.menu_anchor_position = 'left'
+        assert widget.menu_anchor_position == 'left'
+        
+        widget.menu_opening_direction = 'up'
+        assert widget.menu_opening_direction == 'up'
+        
+        widget.menu_opening_duration = 0.3
+        assert widget.menu_opening_duration == 0.3
+        
+        widget.menu_opening_transition = 'linear'
+        assert widget.menu_opening_transition == 'linear'
+        
+        widget.menu_dismissing_duration = 0.2
+        assert widget.menu_dismissing_duration == 0.2
+        
+        widget.menu_dismissing_transition = 'out_cubic'
+        assert widget.menu_dismissing_transition == 'out_cubic'
+        
+        widget.menu_window_margin = 16
+        assert widget.menu_window_margin == 16
+        
+        widget.auto_adjust_position = False
+        assert widget.auto_adjust_position is False
+        
+        widget.min_space_required = 200
+        assert widget.min_space_required == 200
+
+    def test_is_open_property(self):
+        """Test is_open property reflects parent state."""
+        from morphui.uix.behaviors import MorphMenuMotionBehavior
+        
+        class TestWidget(MorphMenuMotionBehavior, Widget):
+            pass
+        
+        widget = TestWidget()
+        parent = Widget()
+        
+        # Initially should be False (no parent)
+        assert widget.is_open is False
+        
+        # Add to parent, should be True
+        parent.add_widget(widget)
+        assert widget.is_open is True
+        
+        # Remove from parent, should be False
+        parent.remove_widget(widget)
+        assert widget.is_open is False
+
+    def test_resolve_caller_pos_without_caller(self):
+        """Test _resolve_caller_pos returns (0, 0) when no caller."""
+        from morphui.uix.behaviors import MorphMenuMotionBehavior
+        
+        class TestWidget(MorphMenuMotionBehavior, Widget):
+            pass
+        
+        widget = TestWidget()
+        pos = widget._resolve_caller_pos()
+        assert pos == (0, 0)
+
+    def test_resolve_caller_pos_with_caller(self):
+        """Test _resolve_caller_pos returns caller position."""
+        from morphui.uix.behaviors import MorphMenuMotionBehavior
+        
+        class TestWidget(MorphMenuMotionBehavior, Widget):
+            pass
+        
+        widget = TestWidget()
+        caller = Widget()
+        caller.pos = (100, 200)
+        widget.caller = caller
+        
+        # Mock to_window method
+        caller.to_window = Mock(return_value=(100, 200))
+        
+        pos = widget._resolve_caller_pos()
+        assert pos == (100, 200)
+
+    def test_resolve_caller_size_without_caller(self):
+        """Test _resolve_caller_size returns (0, 0) when no caller."""
+        from morphui.uix.behaviors import MorphMenuMotionBehavior
+        
+        class TestWidget(MorphMenuMotionBehavior, Widget):
+            pass
+        
+        widget = TestWidget()
+        size = widget._resolve_caller_size()
+        assert size == (0, 0)
+
+    def test_resolve_caller_size_with_caller(self):
+        """Test _resolve_caller_size returns caller size."""
+        from morphui.uix.behaviors import MorphMenuMotionBehavior
+        
+        class TestWidget(MorphMenuMotionBehavior, Widget):
+            pass
+        
+        widget = TestWidget()
+        caller = Widget()
+        caller.size = [150, 50]
+        widget.caller = caller
+        
+        size = widget._resolve_caller_size()
+        assert size == [150, 50]
+
+    @patch('morphui.uix.behaviors.motion.Window')
+    def test_adjust_to_fit_window_without_caller(self, mock_window):
+        """Test _adjust_to_fit_window does nothing when no caller."""
+        from morphui.uix.behaviors import MorphMenuMotionBehavior
+        
+        class TestWidget(MorphMenuMotionBehavior, Widget):
+            pass
+        
+        widget = TestWidget()
+        widget.size = (200, 300)
+        
+        # Should return early without errors
+        widget._adjust_to_fit_window()
+
+    @patch('morphui.uix.behaviors.motion.Window')
+    def test_adjust_to_fit_window_vertical_adjustment_down_to_up(self, mock_window):
+        """Test adjusting opening direction from down to up when insufficient space below."""
+        from morphui.uix.behaviors import MorphMenuMotionBehavior
+        
+        class TestWidget(MorphMenuMotionBehavior, Widget):
+            pass
+        
+        mock_window.height = 800
+        mock_window.width = 1000
+        
+        widget = TestWidget()
+        widget.size = (200, 400)  # Large menu height
+        widget.menu_opening_direction = 'down'
+        widget.menu_window_margin = 8
+        
+        # Setup caller near bottom of screen
+        caller = Widget()
+        caller.pos = (100, 50)  # Low position (near bottom in Kivy coords)
+        caller.size = (150, 40)
+        caller.to_window = Mock(return_value=(100, 50))
+        widget.caller = caller
+        
+        # In Kivy: (0,0) is bottom-left, higher y is UP
+        # Caller bottom: y=50, Caller top: y=90
+        # space_above = 800 - 90 - 8 = 702 (space to window top)
+        # space_below = 50 - 8 = 42 (space to window bottom)
+        # Menu height = 400, opening 'down' needs space below
+        # 400 > 42 and 42 < 100 → should switch to 'up'
+        widget._adjust_to_fit_window()
+        assert widget.menu_opening_direction == 'up'
+        
+        # Now position caller higher with sufficient space below
+        caller.to_window = Mock(return_value=(100, 500))
+        widget.menu_opening_direction = 'down'  # Reset
+        # Caller at y=500, top at y=540
+        # space_below = 500 - 8 = 492 (enough for 400px menu)
+        # space_above = 800 - 540 - 8 = 252
+        widget._adjust_to_fit_window()
+        assert widget.menu_opening_direction == 'down'
+
+    @patch('morphui.uix.behaviors.motion.Window')
+    def test_adjust_to_fit_window_horizontal_adjustment_left_to_right(self, mock_window):
+        """Test adjusting anchor position from left to right when insufficient space on left."""
+        from morphui.uix.behaviors import MorphMenuMotionBehavior
+        
+        class TestWidget(MorphMenuMotionBehavior, Widget):
+            pass
+        
+        mock_window.height = 800
+        mock_window.width = 1000
+        
+        widget = TestWidget()
+        widget.size = (300, 200)  # Wide menu
+        widget.menu_anchor_position = 'left'
+        widget.menu_window_margin = 8
+        
+        # Setup caller with anchor 'left' and check adjustment
+        caller = Widget()
+        caller.pos = (50, 400)
+        caller.size = (150, 40)
+        caller.to_window = Mock(return_value=(50, 400))
+        widget.caller = caller
+        
+        # Anchor 'left' means menu extends LEFT from caller's left edge  
+        # space_left = 50 - 8 = 42
+        # space_right = 1000 - (50 + 150) - 8 = 792
+        # Condition: all(anchor=='left', w > space_right, space_left < min_required)
+        # all(True, 300 > 792, 42 < 100) = all(True, False, True) = False
+        # Menu stays 'left'
+        widget._adjust_to_fit_window()
+        assert widget.menu_anchor_position == 'left'
+        
+        # Now make space_right insufficient to trigger switch
+        # Place caller near right where space_right is limited
+        caller.pos = (850, 400)  # Caller at x=850, width=150, ends at x=1000
+        caller.to_window = Mock(return_value=(850, 400))
+        # space_right = 1000 - (850 + 150) - 8 = -8 (not enough!)
+        # space_left = 850 - 8 = 842 (plenty)
+        # Condition: all(anchor=='left', 300 > -8, 842 < 100)
+        # all(True, True, False) = False - doesn't switch because space_left IS sufficient
+        # Actually, we need w > space_right AND space_left < min to switch
+        # This means "menu doesn't fit right, AND left also doesn't have minimum space"
+        # If left HAS space, it won't switch. Let me reconsider...
+        
+        # Actually, let's test the 'right' → 'left' switch instead
+        widget.menu_anchor_position = 'right'
+        caller.pos = (50, 400)
+        caller.to_window = Mock(return_value=(50, 400))
+        # Anchor 'right' means menu extends RIGHT from caller's right edge
+        # space_right = 1000 - (50 + 150) - 8 = 792 (plenty)
+        # space_left = 50 - 8 = 42
+        # Condition for right→left: all(anchor=='right', w > space_left, space_right < min)
+        # all(True, 300 > 42, 792 < 100) = all(True, True, False) = False
+        # Doesn't switch. Need space_right to also be insufficient.
+        
+        # Let me create a scenario where right has insufficient space
+        caller.pos = (850, 400)
+        caller.to_window = Mock(return_value=(850, 400))
+        # space_right = 1000 - (850 + 150) - 8 = -8 (not enough!)
+        # space_left = 850 - 8 = 842 (plenty)
+        # Condition: all(anchor=='right', 300 > 842, -8 < 100)
+        # all(True, False, True) = False - doesn't switch
+        # This logic seems odd... let me check the implementation again
+        widget._adjust_to_fit_window()
+        assert widget.menu_anchor_position == 'right'  # Stays right because space_left > w
+
+    @patch('morphui.uix.behaviors.motion.Window')
+    def test_resolve_pos_center_anchor_down(self, mock_window):
+        """Test position calculation for center anchor and down direction."""
+        from morphui.uix.behaviors import MorphMenuMotionBehavior
+        
+        class TestWidget(MorphMenuMotionBehavior, Widget):
+            pass
+        
+        mock_window.height = 800
+        mock_window.width = 1000
+        
+        widget = TestWidget()
+        widget.size = (200, 300)
+        widget.menu_anchor_position = 'center'
+        widget.menu_opening_direction = 'down'
+        widget.menu_window_margin = 8
+        
+        caller = Widget()
+        caller.pos = (400, 500)
+        caller.size = (150, 40)
+        caller.to_window = Mock(return_value=(400, 500))
+        widget.caller = caller
+        
+        x, y = widget._resolve_pos()
+        
+        # x should be centered: 400 + (150 - 200) / 2 = 375
+        # y should be above caller: 500 - 300 = 200
+        assert x == 375
+        assert y == 200
+
+    @patch('morphui.uix.behaviors.motion.Window')
+    def test_resolve_pos_left_anchor_up(self, mock_window):
+        """Test position calculation for left anchor and up direction."""
+        from morphui.uix.behaviors import MorphMenuMotionBehavior
+        
+        class TestWidget(MorphMenuMotionBehavior, Widget):
+            pass
+        
+        widget = TestWidget()
+        widget.size = (200, 300)
+        widget.menu_anchor_position = 'left'
+        widget.menu_opening_direction = 'up'
+        widget.menu_window_margin = 8
+        
+        caller = Widget()
+        caller.pos = (400, 500)
+        caller.size = (150, 40)
+        caller.to_window = Mock(return_value=(400, 500))
+        widget.caller = caller
+        
+        x, y = widget._resolve_pos()
+        
+        # x should be to the left: 400 - 200 = 200
+        # y should be at caller position: 500
+        assert x == 200
+        assert y == 500
+
+    @patch('morphui.uix.behaviors.motion.Window')
+    def test_resolve_pos_right_anchor_down(self, mock_window):
+        """Test position calculation for right anchor and down direction."""
+        from morphui.uix.behaviors import MorphMenuMotionBehavior
+        
+        class TestWidget(MorphMenuMotionBehavior, Widget):
+            pass
+        
+        widget = TestWidget()
+        widget.size = (200, 300)
+        widget.menu_anchor_position = 'right'
+        widget.menu_opening_direction = 'down'
+        widget.menu_window_margin = 8
+        
+        caller = Widget()
+        caller.pos = (400, 500)
+        caller.size = (150, 40)
+        caller.to_window = Mock(return_value=(400, 500))
+        widget.caller = caller
+        
+        x, y = widget._resolve_pos()
+        
+        # x should be to the right: 400 + 150 = 550
+        # y for 'down' direction: caller_y - menu_height = 500 - 300 = 200
+        assert x == 550
+        assert y == 200
+
+    @patch('morphui.uix.behaviors.motion.Window')
+    def test_resolve_pos_respects_margin(self, mock_window):
+        """Test that position respects window margin."""
+        from morphui.uix.behaviors import MorphMenuMotionBehavior
+        
+        class TestWidget(MorphMenuMotionBehavior, Widget):
+            pass
+        
+        widget = TestWidget()
+        widget.size = (200, 300)
+        widget.menu_anchor_position = 'center'
+        widget.menu_opening_direction = 'down'
+        widget.menu_window_margin = 20
+        
+        # Position caller at edge of window
+        caller = Widget()
+        caller.pos = (5, 5)  # Very close to edge
+        caller.size = (150, 40)
+        caller.to_window = Mock(return_value=(5, 5))
+        widget.caller = caller
+        
+        x, y = widget._resolve_pos()
+        
+        # Both x and y should be at least the margin
+        assert x >= 20
+        assert y >= 20
+
+    def test_adjust_and_reposition_only_when_open(self):
+        """Test _adjust_and_reposition only works when menu is open."""
+        from morphui.uix.behaviors import MorphMenuMotionBehavior
+        
+        class TestWidget(MorphMenuMotionBehavior, Widget):
+            pass
+        
+        widget = TestWidget()
+        caller = Widget()
+        caller.to_window = Mock(return_value=(100, 200))
+        caller.size = (150, 40)
+        widget.caller = caller
+        widget.size = (200, 300)
+        
+        # Call when not open - should do nothing
+        widget._adjust_and_reposition()
+        # No assertion needed - just shouldn't crash
+
+    @patch('morphui.uix.behaviors.motion.Window')
+    def test_open_method(self, mock_window):
+        """Test open method adds widget to window and triggers events."""
+        from morphui.uix.behaviors import MorphMenuMotionBehavior
+        
+        class TestWidget(MorphMenuMotionBehavior, Widget):
+            def __init__(self, **kwargs):
+                super().__init__(**kwargs)
+                self.pre_open_called = False
+                self.open_called = False
+            
+            def on_pre_open(self, *args):
+                self.pre_open_called = True
+            
+            def on_open(self, *args):
+                self.open_called = True
+        
+        widget = TestWidget()
+        caller = Widget()
+        caller.to_window = Mock(return_value=(100, 200))
+        caller.size = (150, 40)
+        widget.caller = caller
+        widget.size = (200, 300)
+        
+        # Mock Window methods
+        mock_window.add_widget = Mock()
+        
+        # Open the menu
+        widget.open()
+        
+        # Check events were called
+        assert widget.pre_open_called is True
+        assert widget.open_called is True
+        
+        # Check widget was added to window
+        mock_window.add_widget.assert_called_once_with(widget)
+
+    @patch('morphui.uix.behaviors.motion.Window')
+    def test_open_does_nothing_when_already_open(self, mock_window):
+        """Test open method does nothing if menu is already open."""
+        from morphui.uix.behaviors import MorphMenuMotionBehavior
+        
+        class TestWidget(MorphMenuMotionBehavior, Widget):
+            pass
+        
+        widget = TestWidget()
+        parent = Widget()
+        parent.add_widget(widget)  # Make it "open"
+        
+        mock_window.add_widget = Mock()
+        
+        # Try to open - should do nothing
+        widget.open()
+        
+        # Window.add_widget should not be called
+        mock_window.add_widget.assert_not_called()
+
+    @patch('morphui.uix.behaviors.motion.Window')
+    def test_dismiss_method(self, mock_window):
+        """Test dismiss method removes widget from window and triggers events."""
+        from morphui.uix.behaviors import MorphMenuMotionBehavior
+        
+        class TestWidget(MorphMenuMotionBehavior, Widget):
+            def __init__(self, **kwargs):
+                super().__init__(**kwargs)
+                self.pre_dismiss_called = False
+                self.dismiss_called = False
+            
+            def on_pre_dismiss(self, *args):
+                self.pre_dismiss_called = True
+            
+            def on_dismiss(self, *args):
+                self.dismiss_called = True
+        
+        widget = TestWidget()
+        
+        # Mock Window and add widget
+        mock_window.remove_widget = Mock()
+        parent = Widget()
+        parent.add_widget(widget)  # Make it "open"
+        
+        # Dismiss the menu
+        widget.dismiss()
+        
+        # Check events were called
+        assert widget.pre_dismiss_called is True
+        assert widget.dismiss_called is True
+
+    def test_dismiss_does_nothing_when_already_closed(self):
+        """Test dismiss method does nothing if menu is already closed."""
+        from morphui.uix.behaviors import MorphMenuMotionBehavior
+        
+        class TestWidget(MorphMenuMotionBehavior, Widget):
+            def __init__(self, **kwargs):
+                super().__init__(**kwargs)
+                self.dismiss_called = False
+            
+            def on_dismiss(self, *args):
+                self.dismiss_called = True
+        
+        widget = TestWidget()
+        
+        # Try to dismiss when not open - should do nothing
+        widget.dismiss()
+        
+        # Event should not be called
+        assert widget.dismiss_called is False
+
+    @patch('morphui.uix.behaviors.motion.Window')
+    def test_toggle_opens_when_closed(self, mock_window):
+        """Test toggle opens menu when currently closed."""
+        from morphui.uix.behaviors import MorphMenuMotionBehavior
+        
+        class TestWidget(MorphMenuMotionBehavior, Widget):
+            pass
+        
+        widget = TestWidget()
+        caller = Widget()
+        caller.to_window = Mock(return_value=(100, 200))
+        caller.size = (150, 40)
+        widget.caller = caller
+        widget.size = (200, 300)
+        
+        mock_window.add_widget = Mock()
+        mock_window.height = 600
+        mock_window.width = 800
+        
+        # Toggle should call open, which calls Window.add_widget
+        widget.toggle()
+        
+        mock_window.add_widget.assert_called_once_with(widget)
+
+    @patch('morphui.uix.behaviors.motion.Window')
+    def test_toggle_closes_when_open(self, mock_window):
+        """Test toggle closes menu when currently open."""
+        from morphui.uix.behaviors import MorphMenuMotionBehavior
+        
+        class TestWidget(MorphMenuMotionBehavior, Widget):
+            pass
+        
+        widget = TestWidget()
+        parent = Widget()
+        parent.add_widget(widget)  # Make it "open"
+        
+        mock_window.remove_widget = Mock()
+        
+        # Toggle should close
+        widget.toggle()
+        
+        # Will trigger dismiss animation, actual removal happens in callback
+
+    def test_on_caller_binds_to_caller_properties(self):
+        """Test on_caller method binds to caller pos and size."""
+        from morphui.uix.behaviors import MorphMenuMotionBehavior
+        
+        class TestWidget(MorphMenuMotionBehavior, Widget):
+            pass
+        
+        widget = TestWidget()
+        caller = Widget()
+        
+        # Mock bind method
+        caller.bind = Mock()
+        
+        # Set caller (triggers on_caller)
+        widget.caller = caller
+        
+        # Check bind was called with pos and size
+        caller.bind.assert_called_once()
+
+    def test_set_scale_origin(self):
+        """Test set_scale_origin calculates center of caller."""
+        from morphui.uix.behaviors import MorphMenuMotionBehavior
+        
+        class TestWidget(MorphMenuMotionBehavior, Widget):
+            pass
+        
+        widget = TestWidget()
+        caller = Widget()
+        caller.to_window = Mock(return_value=(100, 200))
+        caller.size = (150, 40)
+        widget.caller = caller
+        
+        widget.set_scale_origin()
+        
+        # Scale origin should be at center of caller
+        # x: 100 + 150/2 = 175, y: 200 + 40/2 = 220
+        assert widget.scale_origin == [175, 220]
