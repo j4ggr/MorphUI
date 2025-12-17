@@ -308,7 +308,7 @@ class BaseListView(
             return False
         
         filter_val = str(self.filter_value).lower()
-        item_text = str(item.get('text', '')).lower()
+        item_text = str(item.get('text', item.get('label_text', ''))).lower()
         return filter_val not in item_text
     
     def refresh_data(self, *args) -> None:

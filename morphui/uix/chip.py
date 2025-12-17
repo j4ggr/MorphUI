@@ -35,7 +35,7 @@ class ChipLeadingIconLabel(LeadingIconLabel):
     
     Inherits from :class:`~morphui.uix.container.LeadingIconLabel`.
     """
-    
+    pass
 
 
 class ChipTextLabel(TextLabel):

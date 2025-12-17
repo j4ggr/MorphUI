@@ -3,7 +3,6 @@ from textwrap import dedent
 from typing import Any
 from typing import Dict
 from typing import List
-from typing import Tuple
 
 from kivy.lang import Builder
 from kivy.properties import ListProperty
@@ -11,7 +10,7 @@ from kivy.properties import DictProperty
 from kivy.properties import ObjectProperty
 
 from morphui.uix.list import BaseListView
-from morphui.uix.list import MorphListLayout
+from morphui.uix.list import MorphListLayout # noqa F401
 from morphui.uix.list import MorphListItemFlat
 from morphui.uix.behaviors import MorphElevationBehavior
 from morphui.uix.behaviors import MorphMenuMotionBehavior
