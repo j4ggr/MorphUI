@@ -112,12 +112,27 @@ class MorphSizeBoundsBehavior:
     and defaults to [-1, -1].
     """
 
+    def _resolve_size_lower_bound(self) -> tuple[float, float]:
+        """Compute the effective lower bound size considering minimums.
+        
+        This method calculates the resolved lower bound size by
+        combining :attr:`size_lower_bound` with the widget's inherent
+        minimum dimensions (`minimum_width` and `minimum_height`). If a
+        dimension in :attr:`size_lower_bound` is negative, the widget's
+        corresponding minimum dimension is used instead.
+        
+        Returns
+        -------
+        Tuple[float, float]
+            The resolved lower bound size (width, height)
+        """
+        bound_w, bound_h = self.size_lower_bound
+        w = (bound_w if bound_w >= 0 else getattr(self, 'minimum_width', 0))
+        h = (bound_h if bound_h >= 0 else getattr(self, 'minimum_height', 0))
+        return (w, h)
+
     _resolved_size_lower_bound = AliasProperty(
-        lambda self: (
-            (self.size_lower_bound[0] if self.size_lower_bound[0] >= 0 else
-                getattr(self, 'minimum_width', 0)),
-            (self.size_lower_bound[1] if self.size_lower_bound[1] >= 0 else
-                getattr(self, 'minimum_height', 0))),
+        _resolve_size_lower_bound,
         bind=['size_lower_bound'],
         cache=True)
     """Resolved lower bound size considering widget's minimum dimensions.
@@ -142,12 +157,30 @@ class MorphSizeBoundsBehavior:
     and defaults to [-1, -1].
     """
 
+    def _resolve_size_upper_bound(self) -> tuple[float, float]:
+        """Compute the effective upper bound size considering maximums.
+        
+        This method calculates the resolved upper bound size by
+        combining :attr:`size_upper_bound` with the widget's inherent
+        maximum dimensions (`maximum_width` and `maximum_height`). If a
+        dimension in :attr:`size_upper_bound` is negative, infinity is
+        used for that dimension, effectively disabling the constraint.
+        
+        Returns
+        -------
+        Tuple[float, float]
+            The resolved upper bound size (width, height)
+        """
+        bound_w, bound_h = self.size_upper_bound
+        w = (bound_w if bound_w >= 0 else float('inf'))
+        h = (bound_h if bound_h >= 0 else float('inf'))
+        lower_w, lower_h = self._resolved_size_lower_bound
+        w = max(w, lower_w)
+        h = max(h, lower_h)
+        return (w, h)
+
     _resolved_size_upper_bound = AliasProperty(
-        lambda self: (
-            (self.size_upper_bound[0] if self.size_upper_bound[0] >= 0 else
-                float('inf')),
-            (self.size_upper_bound[1] if self.size_upper_bound[1] >= 0 else
-                float('inf'))),
+        _resolve_size_upper_bound,
         bind=['size_upper_bound'],
         cache=True)
     """Resolved upper bound size considering widget's maximum dimensions.
@@ -204,16 +237,12 @@ class MorphSizeBoundsBehavior:
         # Returns (100, 300) if bounds are [100, 50] to [500, 300]
         ```
         """
-        width = clamp(
-            size[0], 
-            self._resolved_size_lower_bound[0],
-            self._resolved_size_upper_bound[0])
-        height = clamp(
-            size[1],
-            self._resolved_size_lower_bound[1], 
-            self._resolved_size_upper_bound[1])
+        lower_w, lower_h = self._resolved_size_lower_bound
+        upper_w, upper_h = self._resolved_size_upper_bound
+        width = clamp(size[0], lower_w, upper_w)
+        height = clamp(size[1], lower_h, upper_h)
         return (width, height)
-
+    
 
 class MorphAutoSizingBehavior(EventDispatcher):
     """Behavior for automatic widget sizing based on content.
