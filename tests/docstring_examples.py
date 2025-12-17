@@ -17,16 +17,12 @@ sys.path.append(str(Path(__file__).parents[1].resolve()))
 import sys
 from pathlib import Path
 sys.path.append(str(Path(__file__).parents[1].resolve()))
-
-
 from morphui.app import MorphApp
 from morphui.uix.floatlayout import MorphFloatLayout
 from morphui.uix.dropdown import MorphDropdownFilterField
 
-class IconPickerApp(MorphApp):
+class MyApp(MorphApp):
     def build(self) -> MorphFloatLayout:
-        self.theme_manager.theme_mode = 'Dark'
-        self.theme_manager.theme_mode = 'Light'
         self.theme_manager.theme_mode = 'Dark'
         self.theme_manager.seed_color = 'morphui_teal'
         icon_items = [
@@ -52,4 +48,4 @@ class IconPickerApp(MorphApp):
         self.icon_picker.dropdown.dismiss()
 
 if __name__ == '__main__':
-    IconPickerApp().run()
+    MyApp().run()

@@ -7,15 +7,17 @@ from kivy.properties import ListProperty
 from kivy.properties import ObjectProperty
 
 from morphui.uix.list import MorphFlatItemListView
-from morphui.uix.behaviors import MorphMenuMotionBehavior
 from morphui.uix.behaviors import MorphElevationBehavior
+from morphui.uix.behaviors import MorphMenuMotionBehavior
+from morphui.uix.behaviors import MorphSizeBoundsBehavior
 from morphui.uix.textfield import MorphTextField
-from morphui.uix.textfield import MorphTextFieldOutlined
-from morphui.uix.textfield import MorphTextFieldRounded
 from morphui.uix.textfield import MorphTextFieldFilled
+from morphui.uix.textfield import MorphTextFieldRounded
+from morphui.uix.textfield import MorphTextFieldOutlined
 
 
 class MorphDropdownList(
+        MorphSizeBoundsBehavior,
         MorphElevationBehavior,
         MorphMenuMotionBehavior,
         MorphFlatItemListView):
@@ -29,6 +31,7 @@ class MorphDropdownList(
     
     default_config: Dict[str, Any] = (
         MorphFlatItemListView.default_config.copy() | dict(
+            size_lower_bound=(150, 100),
             size_hint=(None, None),
             elevation=2,))
     """Default configuration for the MorphDropdownList widget."""
@@ -47,26 +50,28 @@ class MorphDropdownFilterField(MorphTextField):
 
     ```python
     from morphui.app import MorphApp
-    from morphui.uix.boxlayout import MorphBoxLayout
+    from morphui.uix.floatlayout import MorphFloatLayout
     from morphui.uix.dropdown import MorphDropdownFilterField
 
     class MyApp(MorphApp):
-        def build(self):
-            layout = MorphBoxLayout(orientation='vertical')
+
+        def build(self) -> MorphFloatLayout:
+            self.theme_manager.theme_mode = 'Dark'
+            self.theme_manager.seed_color = 'morphui_teal'
             
-            # Create the filter field with items
-            filter_field = MorphDropdownFilterField(
-                items=[
-                    {'text': 'Apple'},
-                    {'text': 'Banana'},
-                    {'text': 'Cherry'},
-                    {'text': 'Date'},
-                    {'text': 'Elderberry'},
-                ],
-                label_text='Select a fruit',
-                trailing_icon='chevron-down')
+            layout = MorphFloatLayout(
+                MorphDropdownFilterField(
+                    items=[
+                        {'label_text': 'Apple'},
+                        {'label_text': 'Banana'},
+                        {'label_text': 'Cherry'},
+                        {'label_text': 'Date'},
+                        {'label_text': 'Elderberry'},],
+                    label_text='Select a fruit',
+                    trailing_icon='chevron-down',
+                    pos_hint={'center_x': 0.5, 'center_y': 0.9},
+                    size_hint=(0.5, None),))
             
-            layout.add_widget(filter_field)
             return layout
 
     if __name__ == '__main__':
@@ -77,40 +82,37 @@ class MorphDropdownFilterField(MorphTextField):
 
     ```python
     from morphui.app import MorphApp
-    from morphui.uix.boxlayout import MorphBoxLayout
+    from morphui.uix.floatlayout import MorphFloatLayout
     from morphui.uix.dropdown import MorphDropdownFilterField
 
-    class IconPickerApp(MorphApp):
-        def build(self):
-            layout = MorphBoxLayout(orientation='vertical', padding=20, spacing=10)
-            
-            # Get all available icons from Typography
+    class MyApp(MorphApp):
+        def build(self) -> MorphFloatLayout:
+            self.theme_manager.theme_mode = 'Dark'
+            self.theme_manager.seed_color = 'morphui_teal'
             icon_items = [
                 {
-                    'text': icon_name,
-                    'leading_icon': icon_name,
-                }
-                for icon_name in sorted(self.typography.icon_map.keys())
-            ]
-            
-            # Set up callback to handle icon selection
-            def on_icon_selected(item, index):
-                filter_field.text = item.text
-                filter_field.leading_icon = item.text
-                filter_field.dropdown.dismiss()
-            
-            # Create the filter field with icon items
-            filter_field = MorphDropdownFilterField(
-                items=icon_items,
-                item_release_callback=on_icon_selected,
-                label_text='Search icons...',
-                trailing_icon='magnify')
-            
-            layout.add_widget(filter_field)
+                    'label_text': icon_name,
+                    'leading_icon': icon_name,}
+                for icon_name in sorted(self.typography.icon_map.keys())]
+            layout = MorphFloatLayout(
+                MorphDropdownFilterField(
+                    identity='icon_picker',
+                    items=icon_items,
+                    item_release_callback=self.icon_selected_callback,
+                    label_text='Search icons...',
+                    trailing_icon='magnify',
+                    pos_hint={'center_x': 0.5, 'center_y': 0.9},
+                    size_hint=(0.8, None),))
+            self.icon_picker = layout.identities.icon_picker
             return layout
 
+        def icon_selected_callback(self, item, index):
+            self.icon_picker.text = item.label_text
+            self.icon_picker.leading_icon = item.label_text
+            self.icon_picker.dropdown.dismiss()
+
     if __name__ == '__main__':
-        IconPickerApp().run()
+        MyApp().run()
     ```
     """
 
