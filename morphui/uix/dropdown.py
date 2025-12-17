@@ -1,12 +1,18 @@
+from textwrap import dedent
+
 from typing import Any
 from typing import Dict
 from typing import List
 from typing import Tuple
 
+from kivy.lang import Builder
 from kivy.properties import ListProperty
+from kivy.properties import DictProperty
 from kivy.properties import ObjectProperty
 
-from morphui.uix.list import MorphFlatItemListView
+from morphui.uix.list import BaseListView
+from morphui.uix.list import MorphListLayout
+from morphui.uix.list import MorphListItemFlat
 from morphui.uix.behaviors import MorphElevationBehavior
 from morphui.uix.behaviors import MorphMenuMotionBehavior
 from morphui.uix.behaviors import MorphSizeBoundsBehavior
@@ -20,17 +26,30 @@ class MorphDropdownList(
         MorphSizeBoundsBehavior,
         MorphElevationBehavior,
         MorphMenuMotionBehavior,
-        MorphFlatItemListView):
+        BaseListView):
     """A dropdown list widget that combines list view with menu motion.
     
-    This widget extends MorphFlatItemListView with dropdown menu
-    capabilities, including open/dismiss animations and elevation
-    effects. It's designed to work seamlessly with 
+    This widget extends :class:`~morphui.uix.list.BaseListView` with
+    dropdown menu capabilities, including open/dismiss animations and
+    elevation effects. It's designed to work seamlessly with 
     :class:`~morphui.uix.dropdown.MorphDropdownFilterField`.
     """
     
+    Builder.load_string(dedent('''
+        <MorphDropdownList>:
+            viewclass: 'MorphListItemFlat'
+            MorphListLayout:
+        '''))
+
+    default_data: Dict[str, Any] = DictProperty(
+        MorphListItemFlat.default_config.copy() | {
+        'leading_icon': '',
+        'trailing_icon': '',
+        'label_text': '',
+        })
+    
     default_config: Dict[str, Any] = (
-        MorphFlatItemListView.default_config.copy() | dict(
+        BaseListView.default_config.copy() | dict(
             size_lower_bound=(150, 100),
             size_hint=(None, None),
             elevation=2,))
@@ -202,7 +221,8 @@ class MorphDropdownFilterField(MorphTextField):
         text : str
             The new text value of the filter field.
         """
-        full_texts = [item['label_text'] for item in self.dropdown._source_items]    
+        full_texts = [
+            item['label_text'] for item in self.dropdown._source_items]    
         self.dropdown.filter_value = '' if text in full_texts else text
     
     def _on_focus_changed(
@@ -214,7 +234,7 @@ class MorphDropdownFilterField(MorphTextField):
         This method is called whenever the focus state of the filter
         field changes. It opens or closes the associated dropdown list
         based on the focus state.
-
+-
         Parameters
         ----------
         instance : MorphDropdownFilterField

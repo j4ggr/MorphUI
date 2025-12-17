@@ -1,11 +1,8 @@
-from textwrap import dedent
-
 from typing import Any
 from typing import Dict
 from typing import List
 from typing import Callable
 
-from kivy.lang import Builder
 from kivy.metrics import dp
 from kivy.properties import ListProperty
 from kivy.properties import DictProperty
@@ -31,7 +28,6 @@ __all__ = [
     'MorphListItemFlat',
     'MorphListLayout',
     'BaseListView',
-    'MorphFlatItemListView',
     ]
 
 
@@ -115,7 +111,6 @@ class MorphListItemFlat(
         self.rv_index = index
         self.refresh_auto_sizing()
         self.refresh_overlay()
-        self.refresh_container_content()
 
     def on_release(self) -> None:
         """Handle the release event for this list item.
@@ -326,77 +321,3 @@ class BaseListView(
         """
         self._set_items(self._source_items)
         self.data = self.items
-
-
-class MorphFlatItemListView(BaseListView):
-    """A RecycleView subclass for displaying a list of items.
-
-    This class serves as a foundation for list views used in various
-    MorphUI components.
-
-    Examles
-    -------
-    Basic usage:
-    ```python
-    list_view = MorphFlatItemListView(
-        items=[
-            {'label_text': 'Item 1'},
-            {'label_text': 'Item 2'},
-            {'label_text': 'Item 3'},])
-    ```
-
-    With item release callback:
-    ```python
-    from morphui.app import MorphApp
-    from morphui.uix.list import MorphFlatItemListView
-
-    class MyApp(MorphApp):
-
-        leading_icons = ('circle-outline', 'check-circle-outline')
-
-        def build(self) -> MorphFlatItemListView:
-            self.theme_manager.seed_color = 'morphui_teal'
-            list_view = MorphFlatItemListView(
-                items=[
-                    {
-                        'label_text': icon_name,
-                        'leading_icon': self.leading_icons[0],
-                        'trailing_icon': icon_name}
-                    for icon_name in self.typography.icon_map.keys()],
-                item_release_callback=self.on_item_released)
-            return list_view
-        
-        def get_leading_icon(self, item, index) -> str:
-            current_icon = item.rv.data[index].get(
-                'leading_icon', item.leading_icon)
-            if current_icon == self.leading_icons[0]:
-                return self.leading_icons[1]
-            else:
-                return self.leading_icons[0]
-
-        def on_item_released(self, item, index) -> None:
-            leading_icon = self.get_leading_icon(item, index)
-            item.rv.data[index]['leading_icon'] = leading_icon
-            item.refresh_view_attrs(
-                rv=item.rv,
-                index=index,
-                data={**item.rv.data[index], 'leading_icon': leading_icon})
-
-    if __name__ == '__main__':
-        MyApp().run()
-    """
-    default_data: Dict[str, Any] = DictProperty(
-        MorphListItemFlat.default_config.copy() | {
-        'leading_icon': '',
-        'trailing_icon': '',
-        'label_text': '',
-        })
-    
-    Builder.load_string(dedent('''
-        <MorphFlatItemListView>:
-            viewclass: 'MorphListItemFlat'
-            MorphListLayout:
-        '''))
-    
-
-
