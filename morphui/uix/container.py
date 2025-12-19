@@ -137,61 +137,6 @@ class LeadingTextTrailingContainer(
         trailing_icon='chevron-right')
     ```
     """
-    @staticmethod
-    def _get_icon(widget: Any) -> str:
-        """Get the icon name from a widget.
-        
-        This method retrieves the icon name from the provided widget.
-        If the widget is None or does not have an icon attribute,
-        it returns an empty string.
-
-        Parameters
-        ----------
-        widget : Any
-            The widget to get the icon from
-
-        Returns
-        -------
-        str
-            The name of the icon, or an empty string if not available
-        """
-        if widget is None or not hasattr(widget, 'icon'):
-            return ''
-        
-        return widget.icon
-
-    @staticmethod
-    def _set_icon(widget: Any, icon_name: str) -> None:
-        """Set the icon of a widget with scale animation if applicable.
-        
-        This method sets the icon of the provided widget. If the widget
-        supports scale animations (i.e., is a subclass of 
-        :class:`~morphui.uix.behaviors.MorphScaleBehavior`), it will 
-        animate the icon change smoothly.
-
-        Parameters
-        ----------
-        widget : Any
-            The widget to set the icon on
-        icon_name : str
-            The name of the icon to set
-        """
-        if widget is None or not hasattr(widget, 'icon'):
-            return None
-        
-        def set_widget_icon(*args) -> None:
-            widget.icon = icon_name
-
-        if issubclass(type(widget), MorphScaleBehavior):
-            if widget.icon == icon_name:
-                pass
-            elif icon_name:
-                set_widget_icon()
-                widget.animate_scale_in()
-            else:
-                widget.animate_scale_out(callback=set_widget_icon)
-        else:
-            set_widget_icon()
 
     def _get_leading_icon(self) -> str:
         """Get the leading icon name from the leading widget.
@@ -205,7 +150,9 @@ class LeadingTextTrailingContainer(
         str
             The name of the leading icon
         """
-        return self._get_icon(self.leading_widget) or self._leading_icon
+        if self.leading_widget is None:
+            return ''
+        return self.leading_widget.icon or self._leading_icon
     
     def _set_leading_icon(self, icon_name: str) -> None:
         """Set the leading icon name on the leading widget.
@@ -219,7 +166,8 @@ class LeadingTextTrailingContainer(
             The name of the leading icon to set
         """
         self._leading_icon = icon_name
-        self._set_icon(self.leading_widget, icon_name)
+        if self.leading_widget is not None:
+            self.leading_widget.icon = icon_name
 
     _leading_icon: str = StringProperty('')
     """Internal stored name of the leading icon displayed to the left."""
@@ -266,8 +214,8 @@ class LeadingTextTrailingContainer(
         text : str
             The text to set on the label
         """
+        self._label_text = text
         if self.label_widget is not None:
-            self._label_text = text
             self.label_widget.text = text
 
     _label_text: str = StringProperty('')
@@ -297,7 +245,9 @@ class LeadingTextTrailingContainer(
         str
             The name of the trailing icon
         """
-        return self._get_icon(self.trailing_widget) or self._trailing_icon
+        if self.trailing_widget is None:
+            return ''
+        return self.trailing_widget.icon or self._trailing_icon
     
     def _set_trailing_icon(self, icon_name: str) -> None:
         """Set the trailing icon name on the trailing widget.
@@ -311,14 +261,15 @@ class LeadingTextTrailingContainer(
             The name of the trailing icon to set
         """
         self._trailing_icon = icon_name
-        self._set_icon(self.trailing_widget, icon_name)
+        if self.trailing_widget is not None:
+            self.trailing_widget.icon = icon_name
 
     _trailing_icon: str = StringProperty('')
     """Internal stored name of the trailing icon displayed to the right."""
 
     trailing_icon: str = AliasProperty(
-        lambda self: self._get_icon(self.trailing_widget),
-        lambda self, icon_name: self._set_icon(self.trailing_widget, icon_name),
+        _get_trailing_icon,
+        _set_trailing_icon,
         bind=['trailing_widget',])
     """The name of the trailing icon displayed to the right.
 
