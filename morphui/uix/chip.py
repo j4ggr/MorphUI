@@ -220,16 +220,15 @@ class MorphFilterChip(
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
-        self.bind(active=self._update_icon)
     
-    def _apply_icon(self, instance: Any, icon: str) -> None:
-        """Apply the icon to the leading widget based on the current 
-        state.
+    def _update_icon(self, *args) -> None:
+        """Update the leading icon based on the toggle state.
 
-        This method overrides the base method to delegate icon
-        application to the leading widget.
+        This method switches the leading icon between `normal_icon` and
+        `active_icon` depending on whether the chip is active or not.
         """
-        self.leading_icon = icon
+        print(self.active, self.icon)
+        self.leading_icon = self.icon
 
 
 class MorphInputChip(MorphChip):
