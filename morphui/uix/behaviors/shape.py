@@ -345,7 +345,27 @@ class MorphScaleBehavior(EventDispatcher):
     See Kivy's Animation documentation for all available transitions.
     
     :attr:`scale_animation_transition` is a 
-    :class:`~kivy.properties.StringProperty` and defaults to `'out_quart'`."""
+    :class:`~kivy.properties.StringProperty` and defaults to `'out_quart'`.
+    """
+
+    scale_enabled: bool = BooleanProperty(True)
+    """Enable or disable scaling effects.
+
+    When True, scaling transformations are applied to the widget based
+    on the scaling factors. When False, no scaling is applied.
+
+    :attr:`scale_enabled` is a :class:`~kivy.properties.BooleanProperty`
+    and defaults to True.
+    
+    Note
+    ----
+    This property is supported by this behavior but the actual logic to
+    respect this flag must be implemented in subclasses. The behavior
+    itself does not check this flag before applying scale 
+    transformations. Subclasses should check :attr:`scale_enabled`
+    before calling scale-related methods like :meth:`animate_scale_in`
+    or :meth:`animate_scale_out`.
+    """
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
