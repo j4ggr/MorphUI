@@ -1,15 +1,19 @@
-from typing import Any
-
+from kivy.event import EventDispatcher
+from kivy.properties import AliasProperty
 from kivy.properties import StringProperty
+from kivy.properties import BooleanProperty
 
-from .appreference import MorphAppReferenceBehavior
+from morphui.uix.behaviors import MorphScaleBehavior
+from morphui.uix.behaviors import MorphAppReferenceBehavior
 
 
 __all__ = [
     'MorphIconBehavior',]
 
 
-class MorphIconBehavior(MorphAppReferenceBehavior):
+class MorphIconBehavior(
+        EventDispatcher,
+        MorphAppReferenceBehavior,):
     """A behavior that provides icon functionality to widgets.
 
     This behavior adds icon property and automatic text updating based
@@ -36,19 +40,88 @@ class MorphIconBehavior(MorphAppReferenceBehavior):
     - Automatically updates text when icon property changes
     """
 
-    icon: str = StringProperty('')
-    """The name of the icon to display, corresponding to the icon font 
-    mapping.
-    
-    This property should match a key in the typography's icon map.
-    Changing this property will update the widget's text to show the
-    corresponding icon character.
-    
-    :attr:`icon` is a :class:`~kivy.properties.StringProperty`
-    and defaults to ''.
+    active: bool = BooleanProperty(False)
+    """Indicates whether the widget is in an active state.
+
+    This property is used to determine if the widget should apply the
+    `active_icon` or `normal_icon`. For example, in toggle buttons or
+    checkboxes, this property reflects whether the widget is checked or
+    not.
+
+    :attr:`active` is a :class:`~kivy.properties.BooleanProperty` and
+    defaults to `False`.
     """
 
-    normal_icon = StringProperty('')
+    def _get_icon(self) -> str:
+        """Get the current icon based on the active state.
+
+        Returns
+        -------
+        str
+            The icon name corresponding to the current state.
+            Returns `active_icon` if the widget is active, otherwise
+            returns `normal_icon`.
+        """
+        if self.active and self.active_icon is not None:
+            return self.active_icon
+        return self.normal_icon
+    
+    def _set_icon(self, icon: str) -> None:
+        """Set the icon and update the widget's text accordingly.
+
+        The method looks up the icon name in the typography's icon map
+        and sets the widget's text to the corresponding character.
+
+        Parameters
+        ----------
+        icon : str
+            The icon name to set.
+        """
+        if not hasattr(self, 'text'):
+            return
+        
+        if icon and not (self.normal_icon or self.active_icon):
+            self.normal_icon = icon
+        
+        def _set_text(self, text: str) -> None:
+            self.text = text
+
+        if getattr(self, 'typography', None) is None:
+            text = icon
+        elif icon == '':
+            text = ''
+        else:
+            text = self.typography.get_icon_character(icon)
+
+        if issubclass(type(self), MorphScaleBehavior) and self.scale_enabled:
+            if self.text == text:
+                pass
+            elif text:
+                _set_text(self, text)
+                self.animate_scale_in()
+            else:
+                self.animate_scale_out(callback=lambda *a: _set_text(self, text))
+        else:
+            _set_text(self, text)
+
+    icon: str = AliasProperty(
+        _get_icon,
+        _set_icon,
+        bind=[
+            'normal_icon',
+            'active_icon'],)
+    """Gets or sets the icon name for the widget.
+    
+    The `icon` property represents the name of the icon to be displayed
+    on the widget. Setting this property will automatically update the
+    widget's `text` property to the corresponding icon character based
+    on the typography's icon mapping.
+
+    :attr:`icon` is an :class:`~kivy.properties.AliasProperty` that
+    gets and sets the icon name.
+    """
+
+    normal_icon: str = StringProperty('')
     """Icon name for the 'normal' state of the widget.
 
     The icon is displayed when the widget is in the 'normal' state
@@ -61,7 +134,7 @@ class MorphIconBehavior(MorphAppReferenceBehavior):
     defaults to `""`.
     """
 
-    active_icon = StringProperty('')
+    active_icon: str | None = StringProperty(None, allownone=True)
     """Icon name for the 'active' state of the widget.
 
     The icon is displayed when the widget is in the 'active' state
@@ -71,43 +144,20 @@ class MorphIconBehavior(MorphAppReferenceBehavior):
     to the `active` property of the widget.
 
     :attr:`active_icon` is a :class:`~kivy.properties.StringProperty` 
-    and defaults to `""`.
+    and defaults to `None`.
     """
 
     def __init__(self, **kwargs) -> None:
+        icon = kwargs.pop('icon', '')
         super().__init__(**kwargs)
-        self.bind(# type: ignore
+        self.bind(
+            active=self._update_icon,
             normal_icon=self._update_icon,
-            active_icon=self._update_icon,
-            icon=self._apply_icon)
-        
-        if hasattr(self, 'active'):
-            self.bind(active=self._update_icon) # type: ignore
-        
-        if self.icon:
-            self._apply_icon(self, self.icon)
-        elif self.normal_icon or self.active_icon:
+            active_icon=self._update_icon,)
+        if icon:
+            self.icon = icon
+        else:
             self._update_icon()
-
-    def _apply_icon(self, instance: Any, icon: str) -> None:
-        """Update the widget's text when the icon property changes.
-        
-        This method looks up the icon name in the typography's icon map
-        and sets the widget's text to the corresponding character.
-
-        Parameters
-        ----------
-        instance : Any
-            The widget instance (typically self).
-        icon : str
-            The icon name to apply.
-        """
-        if icon == '':
-            self.text = ''
-            return
-        
-        if hasattr(self, 'text') and hasattr(self, 'typography'):
-            self.text = self.typography.get_icon_character(icon)
     
     def _update_icon(self, *args) -> None:
         """Update the displayed icon based on the `active` state.
@@ -118,5 +168,4 @@ class MorphIconBehavior(MorphAppReferenceBehavior):
         Bind this method to the `active` property to automatically
         update the icon when the state changes.
         """
-        active = getattr(self, 'active', False)
-        self.icon = self.active_icon if active else self.normal_icon
+        self.icon = self._get_icon()
