@@ -55,10 +55,6 @@ class MorphCheckbox(
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
 
-        self.bind(active=self._update_icon,)
-        
-        self._update_icon()
-
     def on_active(self, instance: Any, active: bool) -> None:
         """Handle the `active` property change. 
         
