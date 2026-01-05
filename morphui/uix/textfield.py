@@ -967,14 +967,14 @@ class MorphTextField(
         
         self.bind(
             pos=self._update_layout,
-            width=self._update_layout,
-            height=self._update_layout, # TODO: check if just size works
+            size=self._update_layout,
             declarative_children=self._update_layout,
             focus=self._animate_on_focus,
             selected_text_color=self._update_selection_color,
             selected_text_color_opacity=self._update_selection_color,
             error_type=self._update_supporting_error_text,
             supporting_error_texts=self._update_supporting_error_text,
+            current_content_state=self._update_children_states,
             minimum_height=self.setter('height'),
             maximum_height=self._text_input.setter('maximum_height'),)
         self.fbind(
@@ -1159,11 +1159,10 @@ class MorphTextField(
             self, self.trailing_icon, NAME.TRAILING_WIDGET)
     
         self._update_layout()
-        self.on_current_content_state(self, self.current_content_state)
         self.validate(self.text)
         self._text_input.refresh_content()
 
-    def on_current_content_state(self, instance: Any, state: str) -> None:
+    def _update_children_states(self, *args) -> None:
         """Handle changes to the current content state of the text field.
 
         This method updates the appearance of the text field and its
@@ -1176,13 +1175,13 @@ class MorphTextField(
             The new content state of the text field.
         """
         for child in self.declarative_children:
-            for state in self.possible_states:
-                if not hasattr(child, state):
-                    continue
-
-                value = getattr(self, state, None)
-                if value is not None:
-                    setattr(child, state, value)
+            for state in self.available_states:
+                if hasattr(child, state):
+                    child.setter(state)(self, getattr(self, state, False))
+            
+            # TODO: find a better solution.
+            # The approach above does not trigger the event, so we have to call the refresh manually
+            child.refresh_content()
 
     def _resolve_label_position(self) -> Tuple[float, float]:
         """Get the position of the main label widget.
