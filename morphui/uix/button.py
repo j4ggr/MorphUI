@@ -3,6 +3,7 @@ from typing import Dict
 
 from kivy.metrics import dp
 from kivy.uix.label import Label
+from kivy.properties import BooleanProperty
 
 from morphui.uix.behaviors import MorphIconBehavior
 from morphui.uix.behaviors import MorphScaleBehavior
@@ -27,7 +28,8 @@ __all__ = [
     'MorphButton',
     'MorphIconButton',
     'MorphTrailingIconButton',
-    'MorphChipTrailingIconButton',]
+    'MorphChipTrailingIconButton',
+    'MorphTextFieldTrailingIconButton',]
 
 
 class MorphSimpleIconButton(
@@ -198,3 +200,57 @@ class MorphChipTrailingIconButton(
     Inherits from :class:`~morphui.uix.button.MorphTrailingIconButton`.
     """
     pass
+
+
+class MorphTextFieldTrailingIconButton(MorphIconButton):
+    """Trailing icon button for text fields.
+
+    Used primarily in text fields where the trailing icon needs button
+    behavior (e.g., clear text button).
+    """
+
+    disabled: bool = BooleanProperty(False)
+    """Indicates whether the button is disabled.
+
+    When True, the label is rendered in a disabled state, typically with
+    a different color or style to indicate it is not interactive.
+
+    :attr:`disabled` is a :class:`kivy.properties.BooleanProperty` and
+    defaults to False.
+    """
+
+    focus: bool = BooleanProperty(False)
+    """Indicates whether the button is focused.
+
+    When set to True, the button is considered focused, which may
+    affect its visual appearance and behavior.
+    
+    :attr:`focus` is a :class:`kivy.properties.BooleanProperty` and
+    defaults to False."""
+
+    error: bool = BooleanProperty(False)
+    """Indicates whether the button is in an error state.
+
+    When set to True, the button is considered to be in an error state,
+    which may affect its visual appearance and behavior.
+
+    :attr:`error` is a :class:`kivy.properties.BooleanProperty` and
+    defaults to False.
+    """
+
+    default_config: Dict[str, Any] = dict(
+        theme_color_bindings=dict(
+            normal_content_color='primary_color',
+            normal_surface_color='transparent_color',
+            hovered_content_color='content_surface_variant_color',),
+        font_name=MorphIconButton.default_config['font_name'],
+        typography_role=MorphIconButton.default_config['typography_role'],
+        typography_size=MorphIconButton.default_config['typography_size'],
+        focus_state_opacity=0.0,
+        halign='center',
+        valign='center',
+        round_sides=True,
+        ripple_enabled=False,
+        size_hint=(None, None),
+        size=(dp(24), dp(24)),
+        padding=dp(0),)

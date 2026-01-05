@@ -36,21 +36,19 @@ from morphui.uix.behaviors import MorphInteractionLayerBehavior
 
 from morphui.uix.floatlayout import MorphFloatLayout
 
-from morphui.uix.label import MorphSimpleLabel
-from morphui.uix.label import MorphSimpleIconLabel
+from morphui.uix.label import MorphTextFieldLabel
+from morphui.uix.label import MorphTextFieldSupportingLabel
+from morphui.uix.label import MorphTextFieldTextLengthLabel
+from morphui.uix.label import MorphTextFieldLeadingIconLabel
 
-from morphui.uix.button import MorphIconButton
+from morphui.uix.button import MorphTextFieldTrailingIconButton
 
 from morphui.constants import NAME
 from morphui.constants import REGEX
 
 
 __all__ = [
-    'TextFieldLabel',
-    'TextFieldSupportingLabel',
-    'TextFieldLeadingIconLabel',
-    'TextFieldTrailingIconButton',
-    'TextValidator',
+    'MorphTextValidator',
     'MorphTextInput',
     'MorphTextField',
     'MorphTextFieldOutlined',
@@ -62,118 +60,7 @@ NO_ERROR = 'none'
 """Constant representing no error state."""
 
 
-class TextFieldLabel(MorphSimpleLabel):
-
-    disabled: bool = BooleanProperty(False)
-
-    focus: bool = BooleanProperty(False)
-    
-    error: bool = BooleanProperty(False)
-    
-    default_config: Dict[str, Any] = dict(
-        theme_color_bindings=dict(
-            normal_content_color='content_surface_color',
-            focus_content_color='primary_color',
-            error_content_color='error_color',),
-        typography_role='Label',
-        typography_size='medium',
-        typography_weight='Regular',
-        halign='left',
-        valign='center',
-        padding=[4, 0],
-        auto_size=True,)
-
-
-class TextFieldSupportingLabel(MorphSimpleLabel):
-
-    disabled: bool = BooleanProperty(False)
-
-    focus: bool = BooleanProperty(False)
-    
-    error: bool = BooleanProperty(False)
-
-    maximum_width: int = NumericProperty(dp(200))
-    
-    default_config: Dict[str, Any] = dict(
-        theme_color_bindings=dict(
-            normal_content_color='content_surface_color',
-            error_content_color='error_color',),
-        typography_role='Label',
-        typography_size='small',
-        typography_weight='Regular',
-        halign='left',
-        valign='center',
-        auto_size=True,)
-
-
-class TextFieldTextLengthLabel(MorphSimpleLabel):
-
-    disabled: bool = BooleanProperty(False)
-    
-    error: bool = BooleanProperty(False)
-    
-    default_config: Dict[str, Any] = dict(
-        theme_color_bindings=dict(
-            normal_content_color='content_surface_color',
-            error_content_color='error_color',),
-        typography_role='Label',
-        typography_size='small',
-        typography_weight='Regular',
-        halign='right',
-        valign='center',
-        auto_size=True,)
-
-
-class TextFieldLeadingIconLabel(MorphSimpleIconLabel):
-
-    disabled: bool = BooleanProperty(False)
-
-    focus: bool = BooleanProperty(False)
-    
-    error: bool = BooleanProperty(False)
-    
-    default_config: Dict[str, Any] = dict(
-        theme_color_bindings=dict(
-            normal_content_color='content_surface_color',
-            focus_content_color='primary_color',
-            error_content_color='error_color',),
-        font_name=MorphSimpleIconLabel.default_config['font_name'],
-        typography_role=MorphSimpleIconLabel.default_config['typography_role'],
-        typography_size=MorphSimpleIconLabel.default_config['typography_size'],
-        halign='center',
-        valign='center',
-        size_hint=(None, None),
-        size=(dp(24), dp(24)),
-        padding=dp(0),)
-
-
-class TextFieldTrailingIconButton(MorphIconButton):
-
-    disabled: bool = BooleanProperty(False)
-
-    focus: bool = BooleanProperty(False)
-
-    error: bool = BooleanProperty(False)
-
-    default_config: Dict[str, Any] = dict(
-        theme_color_bindings=dict(
-            normal_content_color='primary_color',
-            normal_surface_color='transparent_color',
-            hovered_content_color='content_surface_variant_color',),
-        font_name=MorphIconButton.default_config['font_name'],
-        typography_role=MorphIconButton.default_config['typography_role'],
-        typography_size=MorphIconButton.default_config['typography_size'],
-        focus_state_opacity=0.0,
-        halign='center',
-        valign='center',
-        round_sides=True,
-        ripple_enabled=False,
-        size_hint=(None, None),
-        size=(dp(24), dp(24)),
-        padding=dp(0),)
-
-
-class TextValidator(EventDispatcher):
+class MorphTextValidator(EventDispatcher):
 
     error: bool = BooleanProperty(False)
     """Indicates whether the text widget is in an error state.
@@ -562,7 +449,7 @@ class MorphTextInput(
 
 
 class MorphTextField(
-        TextValidator,
+        MorphTextValidator,
         MorphHoverBehavior,
         MorphTypographyBehavior,
         MorphContentLayerBehavior,
@@ -698,16 +585,16 @@ class MorphTextField(
     :attr:`trailing_icon` is a :class:`~kivy.properties.StringProperty`
     and defaults to ''."""
 
-    label_widget: TextFieldLabel = ObjectProperty()
+    label_widget: MorphTextFieldLabel = ObjectProperty()
     """The main label widget displayed above the text input area.
 
     This widget represents the label associated with the text field.
     It is automatically created and managed by the MorphTextField class.
 
     :attr:`label_widget` is by default an instance of
-    :class:`~morphui.uix.textfield.TextFieldLabel`."""
+    :class:`~morphui.uix.label.MorphTextFieldLabel`."""
 
-    supporting_widget: TextFieldSupportingLabel = ObjectProperty()
+    supporting_widget: MorphTextFieldSupportingLabel = ObjectProperty()
     """The supporting label widget displayed below the text input area.
 
     This widget represents the supporting text associated with the text
@@ -715,9 +602,9 @@ class MorphTextField(
     class.
 
     :attr:`supporting_widget` is by default an instance of
-    :class:`~morphui.uix.textfield.TextFieldSupportingLabel`."""
+    :class:`~morphui.uix.label.MorphTextFieldSupportingLabel`."""
 
-    text_length_widget: TextFieldTextLengthLabel = ObjectProperty()
+    text_length_widget: MorphTextFieldTextLengthLabel = ObjectProperty()
     """The text length label widget displayed to the right of the
     supporting text area.
 
@@ -727,9 +614,9 @@ class MorphTextField(
 
     :attr:`text_length_widget` is a 
     :class:`~kivy.properties.ObjectProperty` and defaults to a
-    TextFieldTextLengthLabel instance."""
+    MorphTextFieldTextLengthLabel instance."""
 
-    leading_widget: TextFieldLeadingIconLabel = ObjectProperty()
+    leading_widget: MorphTextFieldLeadingIconLabel = ObjectProperty()
     """The leading icon widget displayed to the left of the text input
     area.
 
@@ -738,9 +625,9 @@ class MorphTextField(
     class.
 
     :attr:`leading_widget` is by default an instance of
-    :class:`~morphui.uix.textfield.TextFieldLeadingIconLabel`."""
+    :class:`~morphui.uix.label.MorphTextFieldLeadingIconLabel`."""
 
-    trailing_widget: TextFieldTrailingIconButton = ObjectProperty()
+    trailing_widget: MorphTextFieldTrailingIconButton = ObjectProperty()
     """The trailing icon button widget displayed to the right of the text input
     area.
 
@@ -749,7 +636,7 @@ class MorphTextField(
     class.
 
     :attr:`trailing_widget` is by default an instance of
-    :class:`~morphui.uix.textfield.TextFieldTrailingIconButton`."""
+    :class:`~morphui.uix.button.MorphTextFieldTrailingIconButton`."""
 
     maximum_height: float = NumericProperty(dp(100))
     """The maximum height of the text field. 
@@ -917,11 +804,11 @@ class MorphTextField(
     def __init__(self, **kwargs) -> None:
 
         child_classes = dict(
-            label_widget=TextFieldLabel,
-            supporting_widget=TextFieldSupportingLabel,
-            text_length_widget=TextFieldTextLengthLabel,
-            leading_widget=TextFieldLeadingIconLabel,
-            trailing_widget=TextFieldTrailingIconButton,)
+            label_widget=MorphTextFieldLabel,
+            supporting_widget=MorphTextFieldSupportingLabel,
+            text_length_widget=MorphTextFieldTextLengthLabel,
+            leading_widget=MorphTextFieldLeadingIconLabel,
+            trailing_widget=MorphTextFieldTrailingIconButton,)
         config = clean_config(self.default_config, kwargs)
         for attr, cls in child_classes.items():
             if attr not in config:

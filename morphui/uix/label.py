@@ -4,6 +4,8 @@ from typing import Dict
 from kivy.metrics import dp
 from kivy.uix.label import Label
 from kivy.properties import AliasProperty
+from kivy.properties import BooleanProperty
+from kivy.properties import NumericProperty
 
 from morphui.utils import clean_config
 
@@ -27,7 +29,11 @@ __all__ = [
     'MorphTextLabel',
     'MorphTrailingIconLabel',
     'MorphChipLeadingIconLabel',
-    'MorphChipTextLabel',]
+    'MorphChipTextLabel',
+    'MorphTextFieldLabel',
+    'MorphTextFieldSupportingLabel',
+    'MorphTextFieldTextLengthLabel',
+    'MorphTextFieldLeadingIconLabel',]
 
 
 class BaseLabel(Label):
@@ -346,7 +352,6 @@ class MorphIconLabel(
     """
 
 
-
 class MorphLeadingIconLabel(
         MorphScaleBehavior,
         MorphSimpleIconLabel):
@@ -411,3 +416,215 @@ class MorphChipTextLabel(
     default_config: Dict[str, Any] = (
         MorphTextLabel.default_config.copy() | dict(
             auto_size=(True, True),))
+
+
+class MorphTextFieldLabel(MorphSimpleLabel):
+    """Label for text fields with state properties.
+
+    This label is specifically designed for use within text field
+    components. It includes properties to indicate whether the label
+    is disabled, focused, or in an error state, allowing for dynamic
+    styling based on the text field's status.
+    """
+
+    disabled: bool = BooleanProperty(False)
+    """Indicates whether the text field label is disabled.
+
+    When True, the label is rendered in a disabled state, typically with
+    a different color or style to indicate it is not interactive.
+
+    :attr:`disabled` is a :class:`~kivy.properties.BooleanProperty`
+    and defaults to False.
+    """
+
+    focus: bool = BooleanProperty(False)
+    """Indicates whether the text field label is focused.
+
+    When True, the label is rendered in a focused state, typically with
+    a different color or style to indicate it is active.
+
+    :attr:`focus` is a :class:`~kivy.properties.BooleanProperty`
+    and defaults to False.
+    """
+    
+    error: bool = BooleanProperty(False)
+    """Indicates whether the text field label is in an error state.
+
+    When True, the label is rendered in an error state, typically with a
+    different color or style to indicate a validation issue.
+
+    :attr:`error` is a :class:`~kivy.properties.BooleanProperty`
+    and defaults to False.
+    """
+    
+    default_config: Dict[str, Any] = dict(
+        theme_color_bindings=dict(
+            normal_content_color='content_surface_color',
+            focus_content_color='primary_color',
+            error_content_color='error_color',),
+        typography_role='Label',
+        typography_size='medium',
+        typography_weight='Regular',
+        halign='left',
+        valign='center',
+        padding=[4, 0],
+        auto_size=True,)
+
+
+class MorphTextFieldSupportingLabel(MorphSimpleLabel):
+    """Supporting label for text fields with state properties.
+
+    This label is specifically designed for use within text field
+    components. It includes properties to indicate whether the label
+    is disabled, focused, or in an error state, allowing for dynamic
+    styling based on the text field's status.
+    """
+
+    disabled: bool = BooleanProperty(False)
+    """Indicates whether the supporting label is disabled.
+
+    When True, the label is rendered in a disabled state, typically with
+    a different color or style to indicate it is not interactive.
+    
+    :attr:`disabled` is a :class:`~kivy.properties.BooleanProperty`
+    and defaults to False.
+    """
+
+    focus: bool = BooleanProperty(False)
+    """Indicates whether the supporting label is focused.
+
+    When True, the label is rendered in a focused state,typically with a
+    different color or style to indicate it is active.
+
+    :attr:`focus` is a :class:`~kivy.properties.BooleanProperty`
+    and defaults to False.
+    """
+    
+    error: bool = BooleanProperty(False)
+    """Indicates whether the supporting label is in an error state.
+    
+    When True, the label is rendered in an error state, typically with a
+    different color or style to indicate a validation issue.
+
+    :attr:`error` is a :class:`~kivy.properties.BooleanProperty`
+    and defaults to False.
+    """
+
+    maximum_width: int = NumericProperty(dp(200))
+    """The maximum width for the supporting label.
+
+    This property defines the maximum width that the supporting label
+    can occupy. It helps in constraining the label's size within the
+    text field layout.
+
+    :attr:`maximum_width` is a :class:`~kivy.properties.NumericProperty`
+    and defaults to dp(200).
+    """
+    
+    default_config: Dict[str, Any] = dict(
+        theme_color_bindings=dict(
+            normal_content_color='content_surface_color',
+            error_content_color='error_color',),
+        typography_role='Label',
+        typography_size='small',
+        typography_weight='Regular',
+        halign='left',
+        valign='center',
+        auto_size=True,)
+
+
+class MorphTextFieldTextLengthLabel(MorphSimpleLabel):
+    """Text length label for text fields with state properties.
+
+    This label is specifically designed for use within text field
+    components to display the current text length. It includes
+    properties to indicate whether the label is disabled or in an
+    error state, allowing for dynamic styling based on the text field's
+    status.
+    """
+
+    disabled: bool = BooleanProperty(False)
+    """Indicates whether the text length label is disabled.
+
+    When True, the label is rendered in a disabled state, typically with
+    a different color or style to indicate it is not interactive.
+
+    :attr:`disabled` is a :class:`~kivy.properties.BooleanProperty`
+    and defaults to False.
+    """
+    
+    error: bool = BooleanProperty(False)
+    """Indicates whether the text length label is in an error state.
+
+    When True, the label is rendered in an error state, typically with a
+    different color or style to indicate a validation issue.
+
+    :attr:`error` is a :class:`~kivy.properties.BooleanProperty`
+    and defaults to False.
+    """
+    
+    default_config: Dict[str, Any] = dict(
+        theme_color_bindings=dict(
+            normal_content_color='content_surface_color',
+            error_content_color='error_color',),
+        typography_role='Label',
+        typography_size='small',
+        typography_weight='Regular',
+        halign='right',
+        valign='center',
+        auto_size=True,)
+
+
+class MorphTextFieldLeadingIconLabel(MorphSimpleIconLabel):
+    """Leading icon label for text fields with state properties.
+
+    This label is specifically designed for use within text field
+    components to display a leading icon. It includes properties to
+    indicate whether the label is disabled, focused, or in an error
+    state, allowing for dynamic styling based on the text field's
+    status.
+    """
+
+    disabled: bool = BooleanProperty(False)
+    """Indicates whether the leading icon label is disabled.
+
+    When True, the label is rendered in a disabled state, typically with
+    a different color or style to indicate it is not interactive.
+
+    :attr:`disabled` is a :class:`~kivy.properties.BooleanProperty`
+    and defaults to False.
+    """
+
+    focus: bool = BooleanProperty(False)
+    """Indicates whether the leading icon label is focused.
+
+    When True, the label is rendered in a focused state,typically with a
+    different color or style to indicate it is active.
+
+    :attr:`focus` is a :class:`~kivy.properties.BooleanProperty`
+    and defaults to False.
+    """
+    
+    error: bool = BooleanProperty(False)
+    """Indicates whether the leading icon label is in an error state.
+
+    When True, the label is rendered in an error state, typically with a
+    different color or style to indicate a validation issue.
+
+    :attr:`error` is a :class:`~kivy.properties.BooleanProperty`
+    and defaults to False.
+    """
+    
+    default_config: Dict[str, Any] = dict(
+        theme_color_bindings=dict(
+            normal_content_color='content_surface_color',
+            focus_content_color='primary_color',
+            error_content_color='error_color',),
+        font_name=MorphSimpleIconLabel.default_config['font_name'],
+        typography_role=MorphSimpleIconLabel.default_config['typography_role'],
+        typography_size=MorphSimpleIconLabel.default_config['typography_size'],
+        halign='center',
+        valign='center',
+        size_hint=(None, None),
+        size=(dp(24), dp(24)),
+        padding=dp(0),)

@@ -1,7 +1,7 @@
 """
 Tests for MorphUI textfield components.
 
-This module contains comprehensive tests for the TextValidator class
+This module contains comprehensive tests for the MorphTextValidator class
 and related textfield functionality.
 """
 import sys
@@ -11,24 +11,24 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).parent.resolve()))
 
 from kivy.event import EventDispatcher
-from morphui.uix.textfield import TextValidator
+from morphui.uix.textfield import MorphTextValidator
 
 
 @pytest.fixture
 def validator():
-    """Create a TextValidator instance for testing."""
-    return TextValidator()
+    """Create a MorphTextValidator instance for testing."""
+    return MorphTextValidator()
 
 
 def test_init_default_values(validator):
-    """Test that TextValidator initializes with correct default values."""
+    """Test that MorphTextValidator initializes with correct default values."""
     assert not validator.error
     assert not validator.required
     assert validator.validator is None
 
 
 def test_inheritance(validator):
-    """Test that TextValidator inherits from EventDispatcher."""
+    """Test that MorphTextValidator inherits from EventDispatcher."""
     assert isinstance(validator, EventDispatcher)
 
 
