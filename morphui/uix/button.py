@@ -83,7 +83,6 @@ class MorphSimpleIconButton(
         super().__init__(**config)
 
 
-
 class MorphButton(
         MorphRoundSidesBehavior,
         MorphIdentificationBehavior,
