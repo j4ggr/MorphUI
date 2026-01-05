@@ -547,6 +547,7 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
         bind=[
             'contour',
             'border_bottom_line_only',
+            'border_open_x',
             'border_open_length',
             'border_closed'],)
     """Get the border path points (read-only).
@@ -621,7 +622,7 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
             current_surface_state=self._update_surface_layer,
             contour=self._update_surface_layer,
             border_width=self._update_surface_layer,
-            border_closed=self._update_surface_layer,
+            border_path=self._update_surface_layer,
             surface_color=self.on_surface_updated,
             border_color=self.on_surface_updated,)
         
