@@ -8,6 +8,7 @@ from kivy.properties import AliasProperty
 from morphui.utils import clean_config
 
 from morphui.uix.behaviors import MorphIconBehavior
+from morphui.uix.behaviors import MorphScaleBehavior
 from morphui.uix.behaviors import MorphThemeBehavior
 from morphui.uix.behaviors import MorphAutoSizingBehavior
 from morphui.uix.behaviors import MorphRoundSidesBehavior
@@ -21,7 +22,12 @@ __all__ = [
     'MorphSimpleLabel',
     'MorphSimpleIconLabel',
     'MorphLabel',
-    'MorphIconLabel',]
+    'MorphIconLabel',
+    'MorphLeadingIconLabel',
+    'MorphTextLabel',
+    'MorphTrailingIconLabel',
+    'MorphChipLeadingIconLabel',
+    'MorphChipTextLabel',]
 
 
 class BaseLabel(Label):
@@ -338,3 +344,70 @@ class MorphIconLabel(
     These values can be overridden by subclasses or during 
     instantiation.
     """
+
+
+
+class MorphLeadingIconLabel(
+        MorphScaleBehavior,
+        MorphSimpleIconLabel):
+    """Leading icon label for containers.
+    
+    This widget displays an icon on the left side of a container,
+    with support for scale animations.
+    """
+    
+    default_config: Dict[str, Any] = (
+        MorphSimpleIconLabel.default_config.copy() | dict(
+        padding=dp(0),
+        pos_hint={'center_y': 0.5},))
+
+
+class MorphTextLabel(
+        MorphSimpleLabel):
+    """Text label for containers.
+    
+    This widget displays text mostly used in between leading and 
+    trailing icons or other widgets.
+    """
+    
+    default_config: Dict[str, Any] = (
+        MorphSimpleLabel.default_config.copy() | dict(
+        auto_size=(False, True),
+        size_hint=(1, None),
+        padding=dp(0),
+        pos_hint={'center_y': 0.5},))
+
+
+class MorphTrailingIconLabel(
+        MorphScaleBehavior,
+        MorphSimpleIconLabel):
+    """Trailing icon label for containers.
+    
+    This widget displays an icon on the right side of a container,
+    with support for scale animations.
+    """
+    
+    default_config: Dict[str, Any] = (
+        MorphSimpleIconLabel.default_config.copy() | dict(
+        padding=dp(0),
+        pos_hint={'center_y': 0.5},))
+    
+
+class MorphChipLeadingIconLabel(
+        MorphLeadingIconLabel):
+    """Leading icon label for chips.
+    
+    Inherits from :class:`~morphui.uix.label.MorphLeadingIconLabel`.
+    """
+    pass
+
+
+class MorphChipTextLabel(
+        MorphTextLabel):
+    """Text label for chips.
+    
+    Inherits from :class:`~morphui.uix.label.MorphTextLabel`.
+    """
+    default_config: Dict[str, Any] = (
+        MorphTextLabel.default_config.copy() | dict(
+            auto_size=(True, True),))

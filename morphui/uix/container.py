@@ -15,81 +15,15 @@ from kivy.properties import BooleanProperty
 from kivy.uix.boxlayout import BoxLayout
 
 from morphui.utils import clean_config
-from morphui.uix.label import MorphSimpleLabel
-from morphui.uix.label import MorphSimpleIconLabel
-from morphui.uix.button import MorphSimpleIconButton
-from morphui.uix.behaviors import MorphScaleBehavior
+from morphui.uix.label import MorphTextLabel
+from morphui.uix.label import MorphLeadingIconLabel
+from morphui.uix.label import MorphTrailingIconLabel
 from morphui.uix.behaviors import MorphAutoSizingBehavior
 from morphui.uix.behaviors import MorphIdentificationBehavior
 
 
 __all__ = [
-    'LeadingIconLabel',
-    'TextLabel',
-    'TrailingIconLabel',
-    'TrailingIconButton',
     'LeadingTextTrailingContainer',]
-
-
-class LeadingIconLabel( # TODO: move to Labels module?
-        MorphScaleBehavior,
-        MorphSimpleIconLabel):
-    """Leading icon label for containers.
-    
-    This widget displays an icon on the left side of a container,
-    with support for scale animations.
-    """
-    
-    default_config: Dict[str, Any] = (
-        MorphSimpleIconLabel.default_config.copy() | dict(
-        padding=dp(0),
-        pos_hint={'center_y': 0.5},))
-
-
-class TextLabel(MorphSimpleLabel): # TODO: move to Labels module?
-    """Text label for containers.
-    
-    This widget displays text mostly used in between leading and 
-    trailing icons or other widgets.
-    """
-    
-    default_config: Dict[str, Any] = (
-        MorphSimpleLabel.default_config.copy() | dict(
-        auto_size=(False, True),
-        size_hint=(1, None),
-        padding=dp(0),
-        pos_hint={'center_y': 0.5},))
-
-
-class TrailingIconLabel( # TODO: move to Labels module?
-        MorphScaleBehavior,
-        MorphSimpleIconLabel):
-    """Trailing icon label for containers.
-    
-    This widget displays an icon on the right side of a container,
-    with support for scale animations.
-    """
-    
-    default_config: Dict[str, Any] = (
-        MorphSimpleIconLabel.default_config.copy() | dict(
-        padding=dp(0),
-        pos_hint={'center_y': 0.5},))
-
-
-class TrailingIconButton( # TODO: move to Buttons module?
-        MorphScaleBehavior,
-        MorphSimpleIconButton):
-    """Trailing icon button for containers.
-    
-    This widget displays an interactive icon button on the right side
-    of a container, with support for scale animations. Used primarily
-    for chips where the trailing icon needs button behavior.
-    """
-    
-    default_config: Dict[str, Any] = (
-        MorphSimpleIconLabel.default_config.copy() | dict(
-        padding=dp(0),
-        pos_hint={'center_y': 0.5},))
 
 
 class LeadingTextTrailingContainer(
@@ -281,25 +215,25 @@ class LeadingTextTrailingContainer(
     and is bound to changes in the `trailing_widget`.
     """
 
-    leading_widget: LeadingIconLabel = ObjectProperty()
+    leading_widget: MorphLeadingIconLabel = ObjectProperty()
     """The leading icon widget displayed to the left.
 
     :attr:`leading_widget` is by default an instance of
-    :class:`~morphui.uix.container.LeadingIconLabel`.
+    :class:`~morphui.uix.label.MorphLeadingIconLabel`.
     """
 
-    label_widget: TextLabel = ObjectProperty(None)
+    label_widget: MorphTextLabel = ObjectProperty(None)
     """The text label widget displayed in the center.
 
     :attr:`label_widget` is by default an instance of
-    :class:`~morphui.uix.container.TextLabel`.
+    :class:`~morphui.uix.label.MorphTextLabel`.
     """
 
-    trailing_widget: TrailingIconLabel = ObjectProperty(None)
+    trailing_widget: MorphTrailingIconLabel = ObjectProperty(None)
     """The trailing icon widget displayed to the right.
 
     :attr:`trailing_widget` is by default an instance of
-    :class:`~morphui.uix.container.TrailingIconLabel`.
+    :class:`~morphui.uix.label.MorphTrailingIconLabel`.
     """
 
     delegate_content_color: bool = BooleanProperty(True)
@@ -310,9 +244,9 @@ class LeadingTextTrailingContainer(
     """
 
     _default_child_widgets = {
-        'leading_widget': LeadingIconLabel,
-        'label_widget': TextLabel,
-        'trailing_widget': TrailingIconLabel,}
+        'leading_widget': MorphLeadingIconLabel,
+        'label_widget': MorphTextLabel,
+        'trailing_widget': MorphTrailingIconLabel,}
     """Default child widgets for the container.
     
     This dictionary maps widget identities to their default classes.
@@ -347,14 +281,14 @@ class LeadingTextTrailingContainer(
     def on_leading_widget(
             self,
             instance: Any,
-            widget: LeadingIconLabel) -> None:
+            widget: MorphLeadingIconLabel) -> None:
         """Callback when the leading widget changes.
 
         Parameters
         ----------
         instance : Any
             The instance that triggered the change
-        widget : LeadingIconLabel
+        widget : MorphLeadingIconLabel
             The new leading widget
         """
         if widget is None or not hasattr(widget, 'icon'):
@@ -364,14 +298,15 @@ class LeadingTextTrailingContainer(
     def on_label_widget(
             self,
             instance: Any,
-            widget: TextLabel) -> None:
+            widget: MorphTextLabel
+            ) -> None:
         """Callback when the label widget changes.
 
         Parameters
         ----------
         instance : Any
             The instance that triggered the change
-        widget : TextLabel
+        widget : MorphTextLabel
             The new label widget
         """
         if widget is None:
@@ -381,14 +316,15 @@ class LeadingTextTrailingContainer(
     def on_trailing_widget(
             self,
             instance: Any,
-            widget: TrailingIconLabel) -> None:
+            widget: MorphTrailingIconLabel
+            ) -> None:
         """Callback when the trailing widget changes.
 
         Parameters
         ----------
         instance : Any
             The instance that triggered the change
-        widget : TrailingIconLabel
+        widget : MorphTrailingIconLabel
             The new trailing widget
         """
         if widget is None or not hasattr(widget, 'icon'):

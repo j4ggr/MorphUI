@@ -15,45 +15,18 @@ from morphui.uix.behaviors import MorphToggleButtonBehavior
 from morphui.uix.behaviors import MorphContentLayerBehavior
 from morphui.uix.behaviors import MorphInteractionLayerBehavior
 
-from morphui.uix.container import TextLabel
-from morphui.uix.container import LeadingIconLabel
-from morphui.uix.container import TrailingIconButton
 from morphui.uix.container import LeadingTextTrailingContainer
+
+from morphui.uix.label import MorphChipTextLabel
+from morphui.uix.label import MorphChipLeadingIconLabel
+
+from morphui.uix.button import MorphChipTrailingIconButton
 
 
 __all__ = [
-    'ChipLeadingIconLabel',
-    'ChipTextLabel',
-    'ChipTrailingIconButton',
     'MorphChip',
     'MorphFilterChip',
     'MorphInputChip',]
-
-
-class ChipLeadingIconLabel(LeadingIconLabel):
-    """Leading icon label for chips.
-    
-    Inherits from :class:`~morphui.uix.container.LeadingIconLabel`.
-    """
-    pass
-
-
-class ChipTextLabel(TextLabel):
-    """Text label for chips.
-    
-    Inherits from :class:`~morphui.uix.container.TextLabel`.
-    """
-    default_config: Dict[str, Any] = (
-        TextLabel.default_config.copy() | dict(
-            auto_size=(True, True),))
-
-
-class ChipTrailingIconButton(TrailingIconButton):
-    """Trailing icon button for chips.
-    
-    Inherits from :class:`~morphui.uix.container.TrailingIconButton`.
-    """
-    pass
 
 
 class MorphChip(
@@ -126,9 +99,9 @@ class MorphChip(
     """
 
     _default_child_widgets = {
-        'leading_widget': ChipLeadingIconLabel,
-        'label_widget': ChipTextLabel,
-        'trailing_widget': ChipTrailingIconButton,}
+        'leading_widget': MorphChipLeadingIconLabel,
+        'label_widget': MorphChipTextLabel,
+        'trailing_widget': MorphChipTrailingIconButton,}
     """Default child widgets for the chip.
 
     This dictionary maps widget identities to their default classes.

@@ -5,6 +5,7 @@ from kivy.metrics import dp
 from kivy.uix.label import Label
 
 from morphui.uix.behaviors import MorphIconBehavior
+from morphui.uix.behaviors import MorphScaleBehavior
 from morphui.uix.behaviors import MorphHoverBehavior
 from morphui.uix.behaviors import MorphThemeBehavior
 from morphui.uix.behaviors import MorphButtonBehavior
@@ -19,11 +20,14 @@ from morphui.uix.behaviors import MorphInteractionLayerBehavior
 from morphui.utils import clean_config
 
 from morphui.uix.label import MorphIconLabel
+from morphui.uix.label import MorphSimpleIconLabel
 
 __all__ = [
     'MorphSimpleIconButton',
     'MorphButton',
-    'MorphIconButton']
+    'MorphIconButton',
+    'MorphTrailingIconButton',
+    'MorphChipTrailingIconButton',]
 
 
 class MorphSimpleIconButton(
@@ -168,3 +172,29 @@ class MorphIconButton(
     These values can be overridden by subclasses or during 
     instantiation.
     """
+
+
+class MorphTrailingIconButton(
+        MorphScaleBehavior,
+        MorphSimpleIconButton):
+    """Trailing icon button for containers.
+    
+    This widget displays an interactive icon button on the right side
+    of a container, with support for scale animations. Used primarily
+    for chips where the trailing icon needs button behavior.
+    """
+    
+    default_config: Dict[str, Any] = (
+        MorphSimpleIconLabel.default_config.copy() | dict(
+        padding=dp(0),
+        pos_hint={'center_y': 0.5},))
+
+
+
+class MorphChipTrailingIconButton(
+        MorphTrailingIconButton):
+    """Trailing icon button for chips.
+    
+    Inherits from :class:`~morphui.uix.button.MorphTrailingIconButton`.
+    """
+    pass
