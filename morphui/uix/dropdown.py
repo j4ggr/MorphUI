@@ -166,12 +166,17 @@ class MorphDropdownFilterField(MorphTextField):
             caller=self,
             items=kwargs.pop('items', []),
             item_release_callback=kwargs.pop('item_release_callback', None))
+        kwargs['trailing_icon'] = kwargs.get(
+            'trailing_icon', 
+            self.menu_state_icons[0])
         super().__init__(dropdown=dropdown, **kwargs)
         self.bind(
             menu_state_icons=self._update_menu_state_icons,
             text=self._on_text_changed,
             focus=self._on_focus_changed,
             width=self.dropdown.setter('width'))
+        self.trailing_widget.bind(
+            on_release=self._on_trailing_release)
         self._update_menu_state_icons(self, self.menu_state_icons)
         self._on_text_changed(self, self.text)
         self._on_focus_changed(self, self.focus)
@@ -227,7 +232,7 @@ class MorphDropdownFilterField(MorphTextField):
     def _on_focus_changed(
             self,
             instance: 'MorphDropdownFilterField',
-            focused: bool) -> None:
+            focus: bool) -> None:
         """Handle changes to the focus property.
 
         This method is called whenever the focus state of the filter
@@ -238,14 +243,25 @@ class MorphDropdownFilterField(MorphTextField):
         ----------
         instance : MorphDropdownFilterField
             The instance of the filter field where the change occurred.
-        focused : bool
+        focus : bool
             The new focus state of the filter field.
         """
-        self.trailing_widget.active = focused
-        if focused:
+        self.trailing_widget.active = focus
+        if focus:
             self.dropdown.open()
         else:
             self.dropdown.dismiss()
+    
+    def _on_trailing_release(self, *args) -> None:
+        """Handle the release event of the trailing widget.
+
+        This method is called when the trailing widget (typically an
+        icon button) is released. If the dropdown is not open, it sets
+        focus to the filter field, thereby opening the dropdown.
+        Otherwise, it does nothing.
+        """
+        if not self.dropdown.is_open:
+            self.focus = True
 
 
 class MorphDropdownFilterFieldOutlined(
