@@ -163,6 +163,7 @@ class TextFieldTrailingIconButton(MorphIconButton):
         font_name=MorphIconButton.default_config['font_name'],
         typography_role=MorphIconButton.default_config['typography_role'],
         typography_size=MorphIconButton.default_config['typography_size'],
+        focus_state_opacity=0.0,
         halign='center',
         valign='center',
         round_sides=True,
@@ -1197,20 +1198,22 @@ class MorphTextField(
         if not self.focus and not self.text:
             return (x, y)
         
-        if self.label_focus_behavior == 'hide':
-            pass
-        elif self.label_focus_behavior == 'move_above':
-            x = self._text_input.x
-            y = (
+        match self.label_focus_behavior:
+            case 'hide':
+                pass
+            case 'move_above':
+                x = self._text_input.x
+                y = (
                 self.y
                 + self.height
                 - padding[1]
                 + dp(2))
-        elif self.label_focus_behavior == 'float_to_border':
-            x = max(
-                self.x + self._horizontal_padding,
-                self.x + self.clamped_radius[0])
-            y = self.y + self.height - dp(8)
+            case 'float_to_border':
+                x = max(
+                    self.x + self._horizontal_padding,
+                    self.x + self.clamped_radius[0])
+                y = self.y + self.height - dp(8)
+            
         return (x, y)
     
     def _resolve_label_font_size(self) -> float:
