@@ -2,7 +2,9 @@ from typing import List
 from typing import Dict
 
 from kivy.event import EventDispatcher
+from kivy.properties import DictProperty
 from kivy.properties import ColorProperty
+from kivy.properties import AliasProperty
 
 
 __all__ = [
@@ -141,54 +143,45 @@ class MorphDynamicColorPalette(EventDispatcher):
     across different UI components and states.
     """
 
-    _material_color_map: Dict[str, str] = create_color_property_mapping()
+    _material_color_map: Dict[str, str] = DictProperty(
+        create_color_property_mapping())
     """Mapping of MorphUI color property names to DynamicScheme property 
     names."""
 
-    def __init__(self, **kwargs) -> None:
-        super().__init__(**kwargs)
+    material_color_map: Dict[str, str] = AliasProperty(
+        lambda self: self._material_color_map,
+        bind=['_material_color_map'],)
+    """Get the mapping of color property names to DynamicScheme 
+    properties (read-only).
 
-    @property
-    def material_color_map(self) -> Dict[str, str]:
-        """Get the mapping of color property names to DynamicScheme properties (read-only).
-        
-        Returns a dictionary where:
+    This mapping is used internally to apply color schemes to all 
+    available color properties. Returns a dictionary where:
         - Keys are MorphUI color property names (e.g., 'primary_color', 
-          'content_surface_color')
+        'content_surface_color')
         - Values are the corresponding DynamicScheme property names
-          (e.g., 'primary', 'on_surface')
-        
-        This mapping is used internally to apply color schemes to all 
-        available color properties.
-        """
-        return self._material_color_map
-    
-    @property
-    def dynamic_color_properties(self) -> List[str]:
-        """List of all dynamic color property names in the palette.
-        
-        This property returns a list of strings representing the names
-        of all dynamic color properties defined in the palette. These
-        names correspond to the attributes that hold dynamic color
-        values, allowing for easy iteration and management of colors.
-        
-        Returns
-        -------
-        list of str
-            List of dynamic color property names.
-            
-        Examples
-        --------
-        ```python
-        # Iterate over all dynamic color properties
-        for color_prop in theme_manager.dynamic_color_properties:
-            print(color_prop)
-        ```
-        """
-        return list(self._material_color_map.keys())
-    
-    @property
-    def colors_initialized(self) -> bool:
+        (e.g., 'primary', 'on_surface')
+
+    :attr:`material_color_map` is a 
+    :class:`~kivy.properties.AliasProperty` that provides read-only
+    access to the internal color property mapping.
+    """
+
+    dynamic_color_properties: List[str] = AliasProperty(
+        lambda self: list(self._material_color_map.keys()),
+        bind=['_material_color_map'],)
+    """List of all dynamic color property names in the palette.
+
+    This property returns a list of strings representing the names of
+    all dynamic color properties defined in the palette. These names
+    correspond to the attributes that hold dynamic color values,
+    allowing for easy iteration and management of colors.
+
+    :attr:`dynamic_color_properties` is a
+    :class:`~kivy.properties.AliasProperty` that provides read-only
+    access to the list of dynamic color property names.
+    """
+
+    def _get_colors_initialized(self) -> bool:
         """Check if dynamic colors have been initialized.
         
         Returns True if at least one color property has been set with
@@ -199,30 +192,35 @@ class MorphDynamicColorPalette(EventDispatcher):
         -------
         bool
             True if colors are initialized, False otherwise.
-            
-        Examples
-        --------
-        ```python
-        # Check if colors are set before using them
-        if theme_manager.colors_initialized:
-            widget.background_color = theme_manager.background_color
-        else:
-            # Use fallback colors or initialize the theme
-            theme_manager.update_colors()
-        ```
         """
-        # Check a few key color properties to determine if colors are set
-        
         key_colors = [
             getattr(self, 'primary_color', None),
             getattr(self, 'background_color', None), 
             getattr(self, 'surface_color', None),
-            getattr(self, 'on_surface_color', None)
+            getattr(self, 'content_surface_color', None)
         ]
         return any(color is not None for color in key_colors)
     
-    @property
-    def all_colors_set(self) -> bool:
+    colors_initialized: bool = AliasProperty(
+        _get_colors_initialized,
+        cache=True,
+        bind=[
+            'primary_color',
+            'background_color',
+            'surface_color',
+            'content_surface_color',],)
+    """Check if dynamic colors have been initialized.
+
+    Returns True if at least one color property has been set with
+    a non-None value, indicating that the color scheme has been applied.
+    Returns False if all color properties are None.
+
+    :attr:`colors_initialized` is a
+    :class:`~kivy.properties.AliasProperty` that provides read-only
+    access to the color initialization status.
+    """
+
+    def _get_all_colors_set(self) -> bool:
         """Check if all color properties have been initialized.
         
         Returns True only if all color properties in the palette have
@@ -239,6 +237,22 @@ class MorphDynamicColorPalette(EventDispatcher):
             if color_value is None:
                 return False
         return True
+    
+    all_colors_set: bool = AliasProperty(
+        _get_all_colors_set,)
+    """Check if all color properties have been initialized.
+        
+    Returns True only if all color properties in the palette have been
+    set with non-None values. This is a more strict check than
+    :attr:`colors_initialized`.
+
+    :attr:`all_colors_set` is a
+    :class:`~kivy.properties.AliasProperty` that provides read-only
+    access to the all colors set status.
+    """
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
 
     transparent_color: List[float] = ColorProperty([0, 0, 0, 0])
     """Transparent color. This property is always [0, 0, 0, 0] and 
