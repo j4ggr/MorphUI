@@ -1064,10 +1064,6 @@ class MorphTextField(
             for state in self.available_states:
                 if hasattr(child, state):
                     child.setter(state)(self, getattr(self, state, False))
-            
-            # TODO: find a better solution.
-            # The approach above does not trigger the event, so we have to call the refresh manually
-            child.refresh_content()
 
     def _resolve_label_position(self) -> Tuple[float, float]:
         """Get the position of the main label widget.

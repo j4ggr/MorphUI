@@ -1303,7 +1303,7 @@ class MorphContentLayerBehavior(BaseLayerBehavior):
                 self.disabled_content_color or self.disabled_foreground_color)
             
         self.bind(
-            content_color=self.on_content_updated,)
+            content_color=self._update_content_layer,)
 
         for state in self.content_state_precedence:
             self.fbind(
