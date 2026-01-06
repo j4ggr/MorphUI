@@ -294,15 +294,17 @@ class MorphSwitch(
         diameter = self._resolve_thumb_diameter()
         self.thumb.size = (diameter, diameter)
         self.thumb.pos = self._resolve_thumb_position()
-        self._update_icon()
         self.thumb.active = self.active
+        self._update_icon()
 
-    def _apply_icon(self, instance: Any, icon: str) -> None:
-        """Apply the icon to the thumb based on the current state.
+    def _update_icon(self, *args) -> None:
+        """Update the icon displayed on the thumb based on the current
+        state.
 
-        This method overrides the base method to delegate icon
-        application to the thumb."""
-        return self.thumb._apply_icon(instance, icon)
+        This method sets the thumb's icon to either the `active_icon`
+        or `normal_icon` depending on whether the switch is active.
+        """
+        self.thumb.icon = self._get_icon()
 
     def _toggle_active(self, *args) -> None:
         """Toggle the `active` state of the switch."""

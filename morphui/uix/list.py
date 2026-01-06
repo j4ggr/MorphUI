@@ -8,7 +8,6 @@ from kivy.properties import ListProperty
 from kivy.properties import DictProperty
 from kivy.properties import AliasProperty
 from kivy.properties import ObjectProperty
-from kivy.properties import BooleanProperty
 from kivy.properties import NumericProperty
 from kivy.uix.recycleview import RecycleView
 from kivy.uix.recycleview.views import RecycleDataViewBehavior

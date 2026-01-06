@@ -80,11 +80,11 @@ class MorphIconBehavior(
         if not hasattr(self, 'text'):
             return
         
-        if icon and not (self.normal_icon or self.active_icon):
-            self.normal_icon = icon
-        
         def _set_text(self, text: str) -> None:
             self.text = text
+        
+        if icon and not (self.normal_icon or self.active_icon):
+            self.normal_icon = icon
 
         if getattr(self, 'typography', None) is None:
             text = icon
