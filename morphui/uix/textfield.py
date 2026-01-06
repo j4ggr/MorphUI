@@ -972,6 +972,7 @@ class MorphTextField(
         Animation.stop_all(self.label_widget)
         Animation.stop_all(self._text_input)
         Animation.stop_all(self)
+        
         spacing = dp(4)
         x_input, y_input = self.pos
         w_input, h_input = self.size
@@ -1018,10 +1019,8 @@ class MorphTextField(
         if NAME.LABEL_WIDGET in self.identities:
             self.label_widget.font_size = self._resolve_label_font_size()
             self.label_widget.pos = self._resolve_label_position()
-            border_open_x, border_open_length = (
+            self.border_open_x, self.border_open_length = (
                 self._resolve_border_open_params())
-            self.border_open_length = border_open_length
-            self.border_open_x = border_open_x
         
     def refresh_textfield_content(self, *args) -> None:
         """Refresh the content of the text field and its child widgets.

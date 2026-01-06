@@ -52,7 +52,7 @@ class AutoSizeIcon(MorphIconLabel):
 
     def switch_auto_size(self, *args) -> None:
         new_state = not self.auto_size
-        self.auto_size = new_state
+        self.auto_size = new_state, new_state
         self.icon = 'language-java' if new_state else 'language-python'
 
 class MyApp(MorphApp):
