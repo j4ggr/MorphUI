@@ -313,11 +313,11 @@ class MorphMenuMotionBehavior(MorphScaleBehavior,):
         
         match self.menu_anchor_position:
             case 'left':
-                x = caller_x - self.width
+                x = caller_x - self.width - self.menu_caller_spacing
             case 'center':
                 x = caller_x + (caller_width - self.width) / 2
             case 'right':
-                x = caller_x + caller_width
+                x = caller_x + caller_width + self.menu_caller_spacing
         
         x = max(x, self.menu_window_margin)
         y = max(y, self.menu_window_margin)
