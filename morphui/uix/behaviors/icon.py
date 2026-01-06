@@ -93,10 +93,11 @@ class MorphIconBehavior(
         else:
             text = self.typography.get_icon_character(icon)
 
+        if self.text == text:
+            return
+
         if issubclass(type(self), MorphScaleBehavior) and self.scale_enabled:
-            if self.text == text:
-                pass
-            elif text:
+            if text:
                 _set_text(self, text)
                 self.animate_scale_in()
             else:

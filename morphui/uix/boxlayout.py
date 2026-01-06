@@ -1,3 +1,6 @@
+from typing import Any
+from typing import Dict
+
 from kivy.uix.boxlayout import BoxLayout
 
 from morphui.uix.behaviors import MorphAutoSizingBehavior
@@ -62,7 +65,7 @@ class MorphBoxLayout(
     MyApp().run()
     """
     
-    default_config = dict(
+    default_config: Dict[str, Any] = dict(
         orientation='horizontal',
         theme_color_bindings=dict(
             normal_surface_color='transparent_color',))

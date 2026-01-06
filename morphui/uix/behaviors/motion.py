@@ -69,12 +69,13 @@ class MorphMenuMotionBehavior(MorphScaleBehavior,):
     :class:`~kivy.properties.OptionProperty` and defaults to `'center'`.
     """
 
-    menu_opening_direction: Literal['up', 'down'] = OptionProperty(
-        'down', options=['up', 'down'])
+    menu_opening_direction: Literal['up', 'center', 'down'] = OptionProperty(
+        'down', options=['up', 'center', 'down'])
     """Direction in which the menu opens.
 
     This property defines the direction in which the menu will open
-    relative to the caller button. It can be either 'up' or 'down'.
+    relative to the caller button. It can be either 'up', 'center' or 
+    'down'.
 
     :attr:`menu_opening_direction` is a
     :class:`~kivy.properties.OptionProperty` and defaults to `'down'`.
@@ -118,7 +119,7 @@ class MorphMenuMotionBehavior(MorphScaleBehavior,):
     :class:`~kivy.properties.StringProperty` and defaults to 
     `'in_sine'`."""
 
-    menu_window_margin: float = NumericProperty(8)
+    menu_window_margin: float = NumericProperty(dp(8))
     """Margin from the window edges in pixels.
 
     This property defines the minimum distance (in pixels) that the menu
@@ -127,6 +128,15 @@ class MorphMenuMotionBehavior(MorphScaleBehavior,):
 
     :attr:`menu_window_margin` is a
     :class:`~kivy.properties.NumericProperty` and defaults to `8`."""
+
+    menu_caller_spacing: float = NumericProperty(dp(2))
+    """Spacing between the menu and the caller button in pixels.
+
+    This property defines the vertical spacing (in pixels) between the
+    menu and the caller button when the menu is opened.
+
+    :attr:`menu_caller_spacing` is a
+    :class:`~kivy.properties.NumericProperty` and defaults to `2`."""
 
     auto_adjust_position: bool = BooleanProperty(True)
     """Whether to automatically adjust menu position to fit within window bounds.
@@ -158,12 +168,24 @@ class MorphMenuMotionBehavior(MorphScaleBehavior,):
         self.register_event_type('on_open')
         self.register_event_type('on_dismiss')
         super().__init__(**kwargs)
+        self.bind(
+            caller=self._update_caller_bindings)
+        self._update_caller_bindings()
         
-    def on_caller(self, instance: Any, caller: Any) -> None:
-        """Update the menu position when the caller button changes."""
+    def _update_caller_bindings(self, *args) -> None:
+        """Update bindings to the caller button's position and size.
+        
+        This method binds to the caller button's `pos` and `size`
+        properties to adjust the menu position whenever the caller
+        changes. If there is no caller set, it does nothing.
+        """
+        if self.caller is None:
+            return
+        
         self.caller.bind(
             pos=self._adjust_and_reposition,
             size=self._adjust_and_reposition,)
+        self._adjust_and_reposition()
 
     def _adjust_and_reposition(self, *args) -> None:
         """Adjust the menu position and size to fit within the window.
@@ -279,9 +301,15 @@ class MorphMenuMotionBehavior(MorphScaleBehavior,):
             case 'up':
                 y = caller_y
                 if self.menu_anchor_position == 'center':
-                    y += caller_height
+                    y += caller_height + self.menu_caller_spacing
+            case 'center':
+                y = caller_y + (caller_height - self.height) / 2
             case 'down':
                 y = caller_y - self.height
+                if self.menu_anchor_position == 'center':
+                    y -= self.menu_caller_spacing
+                else:
+                    y += caller_height
         
         match self.menu_anchor_position:
             case 'left':
@@ -324,6 +352,8 @@ class MorphMenuMotionBehavior(MorphScaleBehavior,):
         match self.menu_opening_direction:
             case 'up':
                 max_height = Window.height - self.y - margin
+            case 'center':
+                max_height = Window.height - 2 * margin
             case 'down':
                 max_height = caller_y - self.y
                 if self.menu_anchor_position in ('left', 'right'):
@@ -394,10 +424,11 @@ class MorphMenuMotionBehavior(MorphScaleBehavior,):
         self.dispatch('on_pre_open')
         self._add_to_window()
         self._adjust_and_reposition()
-        self.scale_animation_duration = self.menu_opening_duration
-        self.scale_animation_transition = self.menu_opening_transition
-        self.set_scale_origin()
-        self.animate_scale_in()
+        if self.scale_enabled:
+            self.scale_animation_duration = self.menu_opening_duration
+            self.scale_animation_transition = self.menu_opening_transition
+            self.set_scale_origin()
+            self.animate_scale_in()
         self.dispatch('on_open')
 
     def dismiss(self, *args) -> None:
@@ -406,10 +437,13 @@ class MorphMenuMotionBehavior(MorphScaleBehavior,):
             return
         
         self.dispatch('on_pre_dismiss')
-        self.scale_animation_duration = self.menu_dismissing_duration
-        self.scale_animation_transition = self.menu_dismissing_transition
-        self.set_scale_origin()
-        self.animate_scale_out(callback=self._remove_from_window)
+        if self.scale_enabled:
+            self.scale_animation_duration = self.menu_dismissing_duration
+            self.scale_animation_transition = self.menu_dismissing_transition
+            self.set_scale_origin()
+            self.animate_scale_out(callback=self._remove_from_window)
+        else:
+            self._remove_from_window()
         self.dispatch('on_dismiss')
 
     def toggle(self, *args) -> None:
