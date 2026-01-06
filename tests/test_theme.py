@@ -24,8 +24,8 @@ class TestThemeManager:
         assert theme_manager.color_scheme_contrast == 0.0
         assert theme_manager.color_quality == 1
         assert theme_manager.theme_mode == THEME.LIGHT
-        assert theme_manager.mode_transition is True
-        assert theme_manager.mode_transition_duration == 0.3
+        assert theme_manager.mode_animation is True
+        assert theme_manager.mode_animation_duration == 0.3
 
     @patch.object(ThemeManager, 'dispatch', return_value=None)
     def test_init_custom_properties(self, mock_dispatch):
@@ -36,16 +36,16 @@ class TestThemeManager:
             color_scheme='VIBRANT',
             color_scheme_contrast=0.5,
             theme_mode=THEME.DARK,
-            mode_transition=False,
-            mode_transition_duration=0.8)
+            mode_animation=False,
+            mode_animation_duration=0.8)
         
         assert theme_manager.auto_theme is False
         assert theme_manager.seed_color == 'Red'
         assert theme_manager.color_scheme == 'VIBRANT'
         assert theme_manager.color_scheme_contrast == 0.5
         assert theme_manager.theme_mode == THEME.DARK
-        assert theme_manager.mode_transition is False
-        assert theme_manager.mode_transition_duration == 0.8
+        assert theme_manager.mode_animation is False
+        assert theme_manager.mode_animation_duration == 0.8
         
         # Verify that dispatch was called during initialization
         mock_dispatch.assert_called_with('on_colors_updated')

@@ -11,6 +11,7 @@ from typing import Literal
 from kivy.utils import colormap
 from kivy.utils import hex_colormap
 from kivy.utils import get_color_from_hex
+from kivy.animation import Animation
 from kivy.properties import StringProperty
 from kivy.properties import OptionProperty
 from kivy.properties import BooleanProperty
@@ -111,26 +112,38 @@ class ThemeManager(MorphDynamicColorPalette):
     and defaults to THEME.LIGHT.
     """
     
-    # TODO: Implement smooth transitions when switching modes at layers, but i think we need a flag when switching mode was triggered by user or programatically
-    mode_transition: bool = BooleanProperty(True)
+    mode_animation: bool = BooleanProperty(True)
     """Enable smooth transitions when switching between theme modes.
 
     When True, theme mode changes (light/dark) will be animated with
     smooth color transitions. When False, theme changes happen instantly.
 
-    :attr:`mode_transition` is a :class:`~kivy.properties.BooleanProperty`
+    :attr:`mode_animation` is a :class:`~kivy.properties.BooleanProperty`
     and defaults to True.
     """
 
-    mode_transition_duration: float = BoundedNumericProperty(0.3, min=0.0)
+    mode_animation_duration: float = BoundedNumericProperty(0.3, min=0.0)
     """Duration of theme mode transition animations in seconds.
 
     This property controls how long the transition animation takes when
     switching between light and dark modes. Only applies when
-    `mode_transition` is True.
+    :attr:`mode_animation` is True.
 
-    :attr:`mode_transition_duration` is a 
-    :class:`~kivy.properties.BoundedNumericProperty` and defaults to 0.3.
+    :attr:`mode_animation_duration` is a 
+    :class:`~kivy.properties.BoundedNumericProperty` and defaults to 0.15.
+    """
+
+    mode_animation_transition: str = StringProperty('out_sine')
+    """Transition type for theme mode animations.
+
+    This property defines the type of transition used for animating
+    the switch between light and dark modes. Only applies when
+    `mode_animation` is True. For a list of supported transitions, refer
+    to the 
+    [Kivy documentation](https://kivy.org/doc/stable/api-kivy.animation.html)
+
+    :attr:`mode_animation_transition` is a 
+    :class:`~kivy.properties.StringProperty` and defaults to 'out_sine'.
     """
 
     _available_seed_colors: Tuple[str, ...] = get_available_seed_colors()
@@ -213,7 +226,7 @@ class ThemeManager(MorphDynamicColorPalette):
         
         Switches the current theme_mode to its inverse. If currently 
         'Light', switches to 'Dark', and vice versa. The transition will
-        be animated if `mode_transition` is enabled.
+        be animated if `mode_animation` is enabled.
         
         Examples
         --------
@@ -222,8 +235,8 @@ class ThemeManager(MorphDynamicColorPalette):
         theme_manager.toggle_theme_mode()
         
         # Toggle with custom animation settings
-        theme_manager.mode_transition = True
-        theme_manager.mode_transition_duration = 0.5
+        theme_manager.mode_animation = True
+        theme_manager.mode_animation_duration = 0.5
         theme_manager.toggle_theme_mode()
         ```
         """
@@ -234,7 +247,7 @@ class ThemeManager(MorphDynamicColorPalette):
         
         Sets the theme_mode to 'Light'. If already in light mode,
         this method has no effect. The transition will be animated
-        if `mode_transition` is enabled.
+        if `mode_animation` is enabled.
         """
         self.theme_mode = THEME.LIGHT
 
@@ -243,7 +256,7 @@ class ThemeManager(MorphDynamicColorPalette):
         
         Sets the theme_mode to 'Dark'. If already in dark mode,
         this method has no effect. The transition will be animated
-        if `mode_transition` is enabled.
+        if `mode_animation` is enabled.
         """
         self.theme_mode = THEME.DARK
 
@@ -368,15 +381,30 @@ class ThemeManager(MorphDynamicColorPalette):
         accordingly."""
         if self._cached_theme is None:
             return
-
+        
+        def auto_theme_callback(*args) -> None:
+            if self.auto_theme:
+                self.dispatch('on_colors_updated')
+        
+        Animation.cancel_all(self)
         for attr_name, scheme_property in self.material_color_map.items():
             if hasattr(self.current_scheme, scheme_property):
                 hex_color = getattr(self.current_scheme, scheme_property)
                 rgba = list(get_color_from_hex(hex_color))
-                setattr(self, attr_name, rgba)
+                if (rgba is None
+                        or getattr(self, attr_name) == rgba
+                        or getattr(self, attr_name) is None
+                        or not self.mode_animation):
+                    setattr(self, attr_name, rgba)
+                else:
+                    anim = Animation(
+                        **{attr_name: rgba},
+                        t=self.mode_animation_transition,
+                        d=self.mode_animation_duration)
+                    anim.bind(on_progress=auto_theme_callback)
+                    anim.start(self)
 
-        if self.auto_theme:
-            self.dispatch('on_colors_updated')
+        auto_theme_callback()
     
     def refresh_theme_colors(self) -> None:
         """Manually refresh and apply the current theme colors.
