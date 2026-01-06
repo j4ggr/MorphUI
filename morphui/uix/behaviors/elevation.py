@@ -6,6 +6,7 @@ from kivy.graphics import Color
 from kivy.graphics import BoxShadow
 from kivy.properties import ListProperty
 from kivy.properties import ColorProperty
+from kivy.properties import AliasProperty
 from kivy.properties import BooleanProperty
 from kivy.properties import BoundedNumericProperty
 
@@ -82,6 +83,21 @@ class MorphElevationBehavior(EventDispatcher):
     :class:`~kivy.properties.BoundedNumericProperty` and defaults to `4`.
     """
 
+    shadow_blur_radius: float = AliasProperty(
+        lambda self: dp(self.elevation * self.shadow_blur_factor),
+        None,
+        bind=[
+            'elevation',
+            'shadow_blur_factor'])
+    """Calculate blur radius based on elevation (read-only).
+
+    The blur radius is determined by multiplying the :attr:`elevation` 
+    by the :attr:`shadow_blur_factor`. 
+    
+    :attr:`shadow_blur_radius` is a
+    :class:`~kivy.properties.AliasProperty` and is read-only.
+    """
+
     shadow_color: List[float] = ColorProperty([0, 0, 0, 0.65])
     """Color of the shadow.
 
@@ -124,33 +140,22 @@ class MorphElevationBehavior(EventDispatcher):
         self.bind(
             pos=self._update_elevation,
             size=self._update_elevation,
-            elevation=self._update_elevation,
             shadow_color=self._update_elevation,
             shadow_offset=self._update_elevation,
             shadow_inset=self._update_elevation,
-            shadow_blur_factor=self._update_elevation,
+            shadow_blur_radius=self._update_elevation,
             shadow_border_radius=self._update_elevation,)
         if hasattr(self, 'radius'):
             self.bind(radius=self.setter('shadow_border_radius'))
             self.shadow_border_radius = self.radius
         self.refresh_elevation()
 
-    @property
-    def shadow_blur_radius(self) -> float:
-        """Calculate blur radius based on elevation (read-only).
-        
-        The blur radius is determined by multiplying the 
-        :attr:`elevation` by the :attr:`shadow_blur_factor`.
-        """
-        return dp(self.elevation * self.shadow_blur_factor)
-
     def _update_elevation(self, *args) -> None:
         """Update the shadow based on current elevation and properties."""
         rgba = [0, 0, 0, 0] if self.elevation < 1 else self.shadow_color
         self._shadow_color_instruction.rgba = rgba
         for key, value in self.shadow_params.items():
-            setattr(self._shadow_instruction, key, value)
-                    
+            setattr(self._shadow_instruction, key, value)   
     
     def refresh_elevation(self) -> None:
         """Manually refresh the elevation and shadow effect.
