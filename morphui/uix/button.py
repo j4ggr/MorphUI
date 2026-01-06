@@ -11,6 +11,7 @@ from morphui.uix.behaviors import MorphHoverBehavior
 from morphui.uix.behaviors import MorphThemeBehavior
 from morphui.uix.behaviors import MorphButtonBehavior
 from morphui.uix.behaviors import MorphRippleBehavior
+from morphui.uix.behaviors import MorphTooltipBehavior
 from morphui.uix.behaviors import MorphElevationBehavior
 from morphui.uix.behaviors import MorphAutoSizingBehavior
 from morphui.uix.behaviors import MorphRoundSidesBehavior
@@ -40,6 +41,7 @@ class MorphSimpleIconButton(
         MorphRippleBehavior,
         MorphInteractionLayerBehavior,
         MorphButtonBehavior,
+        MorphTooltipBehavior,
         Label):
     """A simple icon button widget with ripple effect and MorphUI
     theming.
@@ -84,6 +86,7 @@ class MorphSimpleIconButton(
 
 
 class MorphButton(
+        MorphTooltipBehavior,
         MorphRoundSidesBehavior,
         MorphIdentificationBehavior,
         MorphHoverBehavior,

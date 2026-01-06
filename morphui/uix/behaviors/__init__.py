@@ -41,6 +41,8 @@ from .icon import MorphIconBehavior
 
 from .scrollsync import MorphScrollSyncBehavior
 
+from .tooltip import MorphTooltipBehavior
+
 
 __all__ = [
     'MorphAppReferenceBehavior',        # App reference handling
@@ -73,4 +75,5 @@ __all__ = [
     'MorphMenuMotionBehavior',          # Menu motion behavior
     'MorphIconBehavior',                # Icon functionality
     'MorphScrollSyncBehavior',          # Scroll synchronization behavior
+    'MorphTooltipBehavior',             # Tooltip functionality
 ]
