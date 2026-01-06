@@ -1000,13 +1000,19 @@ class MorphToggleButtonBehavior(MorphButtonBehavior):
         """Handle the release action for the toggle button.
         
         This method toggles the active state of the button and manages
-        group exclusivity.
+        group exclusivity. The behavior depends on the current state:
+        
+        - If the button is not active, it will be activated and all other
+          buttons in the same group will be deactivated.
+        - If the button is active and either not in a group or 
+          `allow_no_selection` is True, it will be deactivated.
+        - If the button is active, in a group, and `allow_no_selection` 
+          is False, it will remain active to ensure at least one button 
+          in the group stays active.
         """
-        if any((
-                not self.active,
-                self.group is None,
-                self.allow_no_selection,)):
+        if not self.active:
             self._release_group(self)
-
-        self.active = not self.active
+            self.active = True
+        elif self.group is None or self.allow_no_selection:
+            self.active = False
 
