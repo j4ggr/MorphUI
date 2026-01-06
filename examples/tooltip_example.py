@@ -1,18 +1,5 @@
-"""
-This file is used to test the docstring examples in the code.py file.
-Just copy the code examples from the docstrings and paste them here.
-Then run this file to see if there are any errors.
-You can also use this file to test code snippets that are not in the
-docstrings.
-
-leave the first three lines as they are. They are used to set up the
-path so that the imports work correctly. We add the
-parent directory to the path so that we can import the morphui module.
-In case the lines are missing, here they are again:
-
-import sys
-from pathlib import Path
-sys.path.append(str(Path(__file__).parents[1].resolve()))
+"""Example application demonstrating the MorphTooltip widget with various
+anchor positions and opening directions.
 """
 import sys
 from pathlib import Path
