@@ -236,11 +236,26 @@ class LeadingTextTrailingContainer(
     :class:`~morphui.uix.label.MorphTrailingIconLabel`.
     """
 
-    delegate_content_color: bool = BooleanProperty(True)
+    delegate_content_color: bool = BooleanProperty(False)
     """Whether to delegate content color application to child widgets.
 
+    This property controls whether the container manages the content
+    color of its child widgets. When set to `True`, the container will
+    remove content color bindings from child widgets, allowing the
+    container to apply content colors directly.
+
     :attr:`delegate_content_color` is a
-    :class:`~kivy.properties.BooleanProperty` and defaults to `True`.
+    :class:`~kivy.properties.BooleanProperty` and defaults to `False`.
+
+    Notes
+    -----
+    When `delegate_content_color` is `True`, the subclass should inherit
+    from :class:`~morphui.uix.behaviors.MorphContentLayerBehavior` to
+    manage content colors properly. And the methods
+    :meth:`apply_content` and :meth:`refresh_content` should be
+    overridden to delegate content color changes to child widgets.
+    As an example, see the implementation in
+    :class:`~morphui.uix.list.MorphListItemFlat`.
     """
 
     _default_child_widgets = {
@@ -344,24 +359,3 @@ class LeadingTextTrailingContainer(
         widget.theme_color_bindings = dict(
             (k, v) for k, v in widget.theme_color_bindings.items()
             if 'content' not in k)
-    
-    def apply_content(self, color: list[float]) -> None:
-        """Apply content color based on the current state.
-
-        This method delegates content color application to child widgets
-        when delegate_content_color is True.
-        
-        Parameters
-        ----------
-        color : list[float]
-            RGBA color values to apply
-        """
-        if not self.delegate_content_color:
-            return super().apply_content(color)
-
-        for widget in (
-                self.leading_widget,
-                self.label_widget,
-                self.trailing_widget,):
-            if hasattr(widget, 'apply_content'):
-                widget.apply_content(color)

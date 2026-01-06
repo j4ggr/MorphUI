@@ -1,5 +1,6 @@
 from typing import Any
 from typing import Dict
+from typing import List
 
 from kivy.metrics import dp
 
@@ -83,7 +84,8 @@ class MorphChip(
                     identity='input_chip',
                     label_text='Input Chip',
                     pos_hint={'center_x': 0.5, 'center_y': 0.4},),
-                normal_surface_color=self.theme_manager.surface_color,)
+                theme_color_bindings={
+                    'normal_surface_color': 'surface_container_low_color',})
             self.input_chip = self.layout.identities.input_chip
             return self.layout
         
@@ -109,6 +111,7 @@ class MorphChip(
 
     default_config: Dict[str, Any] = dict(
         theme_color_bindings=dict(
+            normal_content_color='content_surface_color',
             normal_surface_color='transparent_color',
             normal_border_color='outline_variant_color',),
         orientation='horizontal',
@@ -116,7 +119,8 @@ class MorphChip(
         padding=dp(8),
         spacing=dp(8),
         radius=dp(8),
-        round_sides=False,)
+        round_sides=False,
+        delegate_content_color=False,)
     """Default configuration for the :class:`MorphChip` component."""
     
     def __init__(self, **kwargs) -> None:
@@ -145,6 +149,27 @@ class MorphChip(
             expansion = [0, 0, 0, 0]
         self.trailing_widget.radius = trailing_radius
         self.trailing_widget.interaction_layer_expansion = expansion
+    
+    def apply_content(self, color: List[float]) -> None:
+        """Apply content color based on the current state.
+
+        This method delegates content color application to child widgets
+        when delegate_content_color is True.
+        
+        Parameters
+        ----------
+        color : list[float]
+            RGBA color values to apply
+        """
+        if not self.delegate_content_color:
+            return super().apply_content(color)
+
+        for widget in (
+                self.leading_widget,
+                self.label_widget,
+                self.trailing_widget,):
+            if hasattr(widget, 'apply_content'):
+                widget.apply_content(color)
 
 
 class MorphFilterChip(
@@ -200,7 +225,6 @@ class MorphFilterChip(
         This method switches the leading icon between `normal_icon` and
         `active_icon` depending on whether the chip is active or not.
         """
-        print(self.active, self.icon)
         self.leading_icon = self.icon
 
 
