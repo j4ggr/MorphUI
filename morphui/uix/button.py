@@ -15,6 +15,7 @@ from morphui.uix.behaviors import MorphTooltipBehavior
 from morphui.uix.behaviors import MorphElevationBehavior
 from morphui.uix.behaviors import MorphAutoSizingBehavior
 from morphui.uix.behaviors import MorphRoundSidesBehavior
+from morphui.uix.behaviors import MorphContentLayerBehavior
 from morphui.uix.behaviors import MorphCompleteLayerBehavior
 from morphui.uix.behaviors import MorphIdentificationBehavior
 from morphui.uix.behaviors import MorphInteractionLayerBehavior
@@ -40,6 +41,7 @@ class MorphSimpleIconButton(
         MorphHoverBehavior,
         MorphRippleBehavior,
         MorphInteractionLayerBehavior,
+        MorphContentLayerBehavior,
         MorphButtonBehavior,
         MorphTooltipBehavior,
         Label):
