@@ -2,6 +2,7 @@ import warnings
 
 from typing import Any
 from typing import Dict
+from typing import List
 from typing import Literal
 
 from kivy.event import EventDispatcher
@@ -9,6 +10,7 @@ from kivy.properties import DictProperty
 from kivy.properties import StringProperty
 from kivy.properties import OptionProperty
 from kivy.properties import BooleanProperty
+from kivy.properties import ListProperty
 
 from .appreference import MorphAppReferenceBehavior
 
@@ -18,7 +20,8 @@ from morphui.constants import THEME
 __all__ = [
     'MorphColorThemeBehavior',
     'MorphTypographyBehavior', 
-    'MorphThemeBehavior']
+    'MorphThemeBehavior',
+    'MorphDelegatedThemeBehavior',]
 
 
 class BaseThemeBehavior(EventDispatcher, MorphAppReferenceBehavior):
@@ -772,3 +775,166 @@ class MorphThemeBehavior(
     MorphTypographyBehavior : Provides typography integration only
     """
     pass
+
+
+class MorphDelegatedThemeBehavior(EventDispatcher):
+    """Behavior that allows a container widget to delegate theme
+    properties to its child widgets.
+    
+    This behavior is designed for container widgets that hold other
+    themed widgets. It enables the container to manage and propagate
+    theme colors to its children, ensuring consistent theming across
+    all contained widgets.
+
+    Examples
+    --------
+    Using the delegated theme behavior in a container:
+    
+    ```python
+    from morphui.uix.behaviors.theming import MorphDelegatedThemeBehavior
+    from morphui.uix.boxlayout import MorphBoxLayout
+    class ThemedContainer(
+            MorphDelegatedThemeBehavior,
+            MorphBoxLayout):
+        def __init__(self, **kwargs):
+            super().__init__(**kwargs)
+            # Child widgets will inherit theme properties from this container
+    ```
+
+    Notes
+    -----
+    This behavior is intended to be used in conjunction with container
+    widgets that hold other themed widgets. It ensures that all child
+    widgets receive consistent theming based on the container's theme
+    settings. Ensure that the subclassed container widget also 
+    implements the necessary behaviors:
+    - :class:`MorphColorThemeBehavior` for color theming
+    - :class:`MorphContentLayerBehavior` for content color theming
+    """
+
+    delegate_content_color: bool = BooleanProperty(True)
+    """Whether to delegate content color theming to child widgets.
+
+    When True, the container will manage the content color of its
+    children, ensuring consistent text and icon colors. When False,
+    children will manage their own content colors independently.
+
+    :attr:`delegate_content_color` is a
+    :class:`~kivy.properties.BooleanProperty` and defaults to True.
+    """
+
+    delegate_to_children: list = ListProperty([])
+    """List of child widgets to which theme delegation should be applied.
+
+    This property allows you to specify which child widgets should
+    have their theme properties delegated by the container. If the list
+    is empty (default), delegation applies to all children. If the list
+    contains specific widget instances, only those widgets will have
+    their theme properties managed by the container.
+
+    :attr:`delegate_to_children` is a
+    :class:`~kivy.properties.ListProperty` and defaults to [] 
+    (all children).
+    
+    Examples
+    --------
+    Delegate to all children (default):
+    
+    ```python
+    container.delegate_to_children = []
+    ```
+    
+    Delegate to specific children only:
+    
+    ```python
+    label1 = Label()
+    label2 = Label()
+    button = Button()
+    container.add_widget(label1)
+    container.add_widget(label2)
+    container.add_widget(button)
+    
+    # Only delegate to label1 and label2, not button
+    container.delegate_to_children = [label1, label2]
+    ```
+    """
+
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
+        self.bind(
+            delegate_to_children=self._update_delegated_children)
+        self._update_delegated_children(self, self.delegate_to_children)
+
+    def _update_delegated_children(
+            self,
+            instance: Any,
+            children: list) -> None:
+        """Event handler fired when :attr:`delegate_to_children` property
+        changes.
+
+        This method is automatically called when the
+        :attr:`delegate_to_children` property is modified. It updates
+        the theme bindings for all child widgets based on the new list.
+
+        Parameters
+        ----------
+        instance : Any
+            The widget instance that triggered the property change.
+        children : list
+            The new list of child widgets to which theme delegation
+            should be applied.
+        """
+        for child in children:
+            self._remove_child_content_bindings(child)
+
+    def _remove_child_content_bindings(self, widget: Any) -> None:
+        """Remove content color bindings from a child widget.
+
+        This method is called when a child widget is added to the
+        container. It removes any existing content color bindings
+        from the child widget if :attr:`delegate_content_color` is True
+        and the widget is in the :attr:`delegate_to_children` list (or
+        if the list is empty, meaning delegation applies to all 
+        children).
+
+        Parameters
+        ----------
+        widget : Any
+            The child widget from which to remove content color
+            bindings.
+        """
+        delegate_to_children = self.delegate_to_children or self.children
+        if (not self.delegate_content_color
+                or widget is None
+                or not hasattr(widget, 'theme_color_bindings')
+                or widget not in delegate_to_children):
+            return None
+        
+        widget.theme_color_bindings = dict(
+            (k, v) for k, v in widget.theme_color_bindings.items()
+            if 'content' not in k)
+    
+    def apply_content(self, color: List[float]) -> None:
+        """Apply content color to delegated child widgets.
+
+        This method overrides the default content color application
+        of the :class:`MorphContentLayerBehavior`. Instead of applying
+        the content color to itself, it propagates the color to all
+        child widgets listed in :attr:`delegate_to_children` (or all
+        children if the list is empty).
+
+        Parameters
+        ----------
+        color : List[float]
+            The RGBA color value to apply to child widgets.
+        """
+        if not self.delegate_content_color:
+            try:
+                super().apply_content(color)
+            except AttributeError:
+                pass
+            return None
+        
+        for child in self.delegate_to_children or self.children:
+            if hasattr(child, 'apply_content'):
+                child.apply_content(color)

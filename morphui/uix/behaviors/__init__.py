@@ -20,6 +20,7 @@ from .sizing import MorphResizeBehavior
 from .theming import MorphColorThemeBehavior
 from .theming import MorphTypographyBehavior
 from .theming import MorphThemeBehavior
+from .theming import MorphDelegatedThemeBehavior
 
 from .keypress import MorphKeyPressBehavior
 
@@ -63,6 +64,7 @@ __all__ = [
     'MorphColorThemeBehavior',          # Color theme integration only
     'MorphTypographyBehavior',          # Typography integration only
     'MorphThemeBehavior',               # Combined theme integration (compatibility)
+    'MorphDelegatedThemeBehavior',      # Delegated theming to child widgets
     'MorphKeyPressBehavior',            # Key press handling
     'MorphElevationBehavior',           # Elevation and shadow effects
     'MorphDeclarativeBehavior',         # Declarative property binding
