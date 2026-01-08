@@ -14,6 +14,7 @@ from morphui.uix.behaviors import MorphColorThemeBehavior
 from morphui.uix.behaviors import MorphSurfaceLayerBehavior
 from morphui.uix.behaviors import MorphToggleButtonBehavior
 from morphui.uix.behaviors import MorphContentLayerBehavior
+from morphui.uix.behaviors import MorphDelegatedThemeBehavior
 from morphui.uix.behaviors import MorphInteractionLayerBehavior
 
 from morphui.uix.container import LeadingTextTrailingContainer
@@ -36,6 +37,7 @@ class MorphChip(
         MorphButtonBehavior,
         MorphColorThemeBehavior,
         MorphRoundSidesBehavior,
+        MorphDelegatedThemeBehavior,
         MorphContentLayerBehavior,
         MorphInteractionLayerBehavior,
         MorphSurfaceLayerBehavior,
@@ -119,12 +121,15 @@ class MorphChip(
         padding=dp(8),
         spacing=dp(8),
         radius=dp(8),
-        round_sides=False,
-        delegate_content_color=False,)
+        round_sides=False,)
     """Default configuration for the :class:`MorphChip` component."""
     
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
+        self.delegate_to_children = [
+            self.leading_widget,
+            self.label_widget,
+            self.trailing_widget,]
         
         self.bind(
             pos=self._update_layout,
@@ -133,6 +138,7 @@ class MorphChip(
             padding=self._update_layout,
             radius=self._update_layout,)
         self._update_layout()
+        self.refresh_content()
     
     def _update_layout(self, *args) -> None:
         """Update the layout of the chip and its child widgets.
@@ -149,27 +155,6 @@ class MorphChip(
             expansion = [0, 0, 0, 0]
         self.trailing_widget.radius = trailing_radius
         self.trailing_widget.interaction_layer_expansion = expansion
-    
-    def apply_content(self, color: List[float]) -> None:
-        """Apply content color based on the current state.
-
-        This method delegates content color application to child widgets
-        when delegate_content_color is True.
-        
-        Parameters
-        ----------
-        color : list[float]
-            RGBA color values to apply
-        """
-        if not self.delegate_content_color:
-            return super().apply_content(color)
-
-        for widget in (
-                self.leading_widget,
-                self.label_widget,
-                self.trailing_widget,):
-            if hasattr(widget, 'apply_content'):
-                widget.apply_content(color)
 
 
 class MorphFilterChip(

@@ -18,56 +18,47 @@ import sys
 from pathlib import Path
 sys.path.append(str(Path(__file__).parents[1].resolve()))
 
+from kivy.clock import Clock
 from morphui.app import MorphApp
-from morphui.uix.label import MorphSimpleLabel
-from morphui.uix.button import MorphIconButton
-from morphui.uix.tooltip import MorphTooltip
+from morphui.uix.chip import MorphChip
+from morphui.uix.chip import MorphInputChip
+from morphui.uix.chip import MorphFilterChip
 from morphui.uix.floatlayout import MorphFloatLayout
-from morphui.uix.gridlayout import MorphGridLayout
 
 class MyApp(MorphApp):
-
     def build(self) -> MorphFloatLayout:
-        self.theme_manager.theme_mode = 'Dark'
         self.theme_manager.seed_color = 'morphui_teal'
-
-        icons=iter((
-            'arrow-top-left-thick',
-            'arrow-up-bold',
-            'arrow-top-right-thick',
-            'arrow-left-bold',
-            'arrow-decision',
-            'arrow-right-bold',
-            'arrow-bottom-left-thick',
-            'arrow-down-bold',
-            'arrow-bottom-right-thick',))
-
-        buttons = []
-        for direction in ['up', 'center', 'down']:
-            for anchor in ['left', 'center', 'right']:
-                buttons.append(
-                    MorphIconButton(
-                        icon=next(icons),
-                        tooltip=MorphTooltip(
-                            MorphSimpleLabel(
-                                text=f"Anchor pos: {anchor!r}",
-                                auto_size=True),
-                            MorphSimpleLabel(
-                                text=f"Opening dir: {direction!r}",
-                                auto_size=True),
-                            menu_anchor_position=anchor,
-                            menu_opening_direction=direction,),),)
-        
-        layout = MorphFloatLayout(
-            MorphGridLayout(
-                *buttons,
-                cols=3,
-                spacing=5,
-                auto_size=(True, True),
-                pos_hint={'center_x': 0.5, 'center_y': 0.5},),
+        self.theme_manager.switch_to_dark()
+        self.layout = MorphFloatLayout(
+            MorphChip(
+                identity='chip',
+                leading_icon='language-python',
+                trailing_icon='close',
+                label_text='Python Chip',
+                pos_hint={'center_x': 0.5, 'center_y': 0.6},
+                theme_color_bindings=dict(
+                    normal_content_color='primary_color',
+                    normal_surface_color='transparent_color',
+                    normal_border_color='outline_variant_color',),),
+            MorphFilterChip(
+                identity='filter',
+                label_text='Filter Chip',
+                pos_hint={'center_x': 0.5, 'center_y': 0.5}),
+            MorphInputChip(
+                identity='input_chip',
+                label_text='Input Chip',
+                pos_hint={'center_x': 0.5, 'center_y': 0.4},),
             theme_color_bindings={
-                'normal_surface_color': 'surface_color',},)
-        return layout
+                'normal_surface_color': 'surface_container_low_color',})
+        self.input_chip = self.layout.identities.input_chip
+        return self.layout
+    
+    def on_start(self) -> None:
+        Clock.schedule_interval(self.re_add_chip, 2)
+
+    def re_add_chip(self, dt: float) -> None:
+        if not self.input_chip.parent:
+            self.layout.add_widget(self.input_chip)
 
 if __name__ == '__main__':
     MyApp().run()

@@ -20,6 +20,7 @@ from morphui.uix.behaviors import MorphColorThemeBehavior
 from morphui.uix.behaviors import MorphOverlayLayerBehavior
 from morphui.uix.behaviors import MorphContentLayerBehavior
 from morphui.uix.behaviors import MorphIdentificationBehavior
+from morphui.uix.behaviors import MorphDelegatedThemeBehavior
 from morphui.uix.behaviors import MorphInteractionLayerBehavior
 from morphui.uix.container import LeadingTextTrailingContainer
 from morphui.uix.recycleboxlayout import MorphRecycleBoxLayout
@@ -37,6 +38,7 @@ class MorphListItemFlat(
         MorphHoverBehavior,
         MorphRippleBehavior,
         MorphButtonBehavior,
+        MorphDelegatedThemeBehavior,
         MorphColorThemeBehavior,
         MorphOverlayLayerBehavior,
         MorphInteractionLayerBehavior,
@@ -92,6 +94,10 @@ class MorphListItemFlat(
     def __init__(self, **kwargs) -> None:
         config = clean_config(self.default_config, kwargs)
         super().__init__(**config)
+        self.delegate_to_children = [
+            self.leading_widget,
+            self.label_widget,
+            self.trailing_widget,]
 
     def refresh_view_attrs(
             self,
@@ -126,40 +132,6 @@ class MorphListItemFlat(
         """
         if self.release_callback is not None:
             self.release_callback(self, self.rv_index)
-    
-    def apply_content(self, color: List[float]) -> None:
-        """Apply content color based on the current state.
-
-        This method delegates content color application to child widgets
-        when delegate_content_color is True.
-        
-        Parameters
-        ----------
-        color : list[float]
-            RGBA color values to apply
-        """
-        if not self.delegate_content_color:
-            return super().apply_content(color)
-
-        for widget in (
-                self.leading_widget,
-                self.label_widget,
-                self.trailing_widget,):
-            if hasattr(widget, 'apply_content'):
-                widget.apply_content(color)
-    
-    def refresh_content(self) -> None:
-        """Refresh content color on child widgets.
-
-        This method delegates content color refresh to child widgets
-        when delegate_content_color is True.
-        """
-        if not self.delegate_content_color:
-            return super().refresh_content()
-
-        color = self._get_content_color()
-        if color is not None:
-            self.apply_content(color)
 
 
 class MorphListLayout(

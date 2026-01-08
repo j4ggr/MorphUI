@@ -236,28 +236,6 @@ class LeadingTextTrailingContainer(
     :class:`~morphui.uix.label.MorphTrailingIconLabel`.
     """
 
-    delegate_content_color: bool = BooleanProperty(False)
-    """Whether to delegate content color application to child widgets.
-
-    This property controls whether the container manages the content
-    color of its child widgets. When set to `True`, the container will
-    remove content color bindings from child widgets, allowing the
-    container to apply content colors directly.
-
-    :attr:`delegate_content_color` is a
-    :class:`~kivy.properties.BooleanProperty` and defaults to `False`.
-
-    Notes
-    -----
-    When `delegate_content_color` is `True`, the subclass should inherit
-    from :class:`~morphui.uix.behaviors.MorphContentLayerBehavior` to
-    manage content colors properly. And the methods
-    :meth:`apply_content` and :meth:`refresh_content` should be
-    overridden to delegate content color changes to child widgets.
-    As an example, see the implementation in
-    :class:`~morphui.uix.list.MorphListItemFlat`.
-    """
-
     _default_child_widgets = {
         'leading_widget': MorphLeadingIconLabel,
         'label_widget': MorphTextLabel,
@@ -292,70 +270,3 @@ class LeadingTextTrailingContainer(
         if self.trailing_widget is not None:
             self.add_widget(self.trailing_widget)
             self.trailing_widget.icon = config.get('trailing_icon', '')
-
-    def on_leading_widget(
-            self,
-            instance: Any,
-            widget: MorphLeadingIconLabel) -> None:
-        """Callback when the leading widget changes.
-
-        Parameters
-        ----------
-        instance : Any
-            The instance that triggered the change
-        widget : MorphLeadingIconLabel
-            The new leading widget
-        """
-        if widget is None or not hasattr(widget, 'icon'):
-            return
-        self._remove_child_content_bindings(self.leading_widget)
-
-    def on_label_widget(
-            self,
-            instance: Any,
-            widget: MorphTextLabel
-            ) -> None:
-        """Callback when the label widget changes.
-
-        Parameters
-        ----------
-        instance : Any
-            The instance that triggered the change
-        widget : MorphTextLabel
-            The new label widget
-        """
-        if widget is None:
-            return
-        self._remove_child_content_bindings(self.label_widget)
-
-    def on_trailing_widget(
-            self,
-            instance: Any,
-            widget: MorphTrailingIconLabel
-            ) -> None:
-        """Callback when the trailing widget changes.
-
-        Parameters
-        ----------
-        instance : Any
-            The instance that triggered the change
-        widget : MorphTrailingIconLabel
-            The new trailing widget
-        """
-        if widget is None or not hasattr(widget, 'icon'):
-            return
-        self._remove_child_content_bindings(self.trailing_widget)
-
-    def _remove_child_content_bindings(self, widget: Any) -> None:
-        """Remove content color bindings from child widget.
-        
-        This method removes content color bindings from child widget
-        when :attr:`delegate_content_color` is `True`, allowing the
-        container to manage the content color of its children.
-        """
-        if not self.delegate_content_color:
-            return None
-        
-        widget.theme_color_bindings = dict(
-            (k, v) for k, v in widget.theme_color_bindings.items()
-            if 'content' not in k)
