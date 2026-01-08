@@ -1,6 +1,5 @@
 from typing import Any
 from typing import Dict
-from typing import List
 
 from kivy.metrics import dp
 
@@ -238,16 +237,31 @@ class MorphInputChip(MorphChip):
     if __name__ == '__main__':
         MyApp().run()
     """
+
     default_config: Dict[str, Any] = (
         MorphChip.default_config.copy() | dict(
             trailing_icon='close',))
     """Default configuration for the :class:`MorphInputChip` component."""
 
     def __init__(self, **kwargs) -> None:
+        self.register_event_type('on_trailing_widget_press')
+        self.register_event_type('on_trailing_widget_release')
         super().__init__(**kwargs)
         self.trailing_widget.bind(
-            on_press=self.on_trailing_widget_release,
-            on_release=self.on_trailing_widget_release)
+            on_press=lambda *_: self._on_trailing_widget_touch(release=False),
+            on_release=lambda *_: self._on_trailing_widget_touch(release=True),)
+    
+    def _on_trailing_widget_touch(self, release: bool) -> None:
+        """Handle touch events on the trailing icon button.
+
+        This method is called when the trailing icon button is
+        touched. It dispatches the appropriate event based on whether
+        it is a press or release action.
+        """
+        if release:
+            self.dispatch('on_trailing_widget_release')
+        else:
+            self.dispatch('on_trailing_widget_press')
     
     def on_trailing_widget_press(self, *args) -> None:
         """Handle the press event of the trailing icon button.
