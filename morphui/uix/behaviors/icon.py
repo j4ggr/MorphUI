@@ -1,8 +1,12 @@
+from typing import Tuple
+from typing import get_args
+
 from kivy.event import EventDispatcher
 from kivy.properties import AliasProperty
 from kivy.properties import StringProperty
 from kivy.properties import BooleanProperty
 
+from morphui._typing import IconState
 from morphui.uix.behaviors import MorphScaleBehavior
 from morphui.uix.behaviors import MorphAppReferenceBehavior
 
@@ -40,6 +44,26 @@ class MorphIconBehavior(
     - Automatically updates text when icon property changes
     """
 
+    disabled: bool = BooleanProperty(False)
+    """Indicates whether the widget is disabled.
+
+    This property can be used to change the icon based on disabled
+    state, if desired.
+
+    :attr:`disabled` is a :class:`~kivy.properties.BooleanProperty` and
+    defaults to `False`.
+    """
+
+    focus: bool = BooleanProperty(False)
+    """Indicates whether the widget is focused.
+
+    This property can be used to change the icon based on focus state,
+    if desired.
+
+    :attr:`focus` is a :class:`~kivy.properties.BooleanProperty` and
+    defaults to `False`.
+    """
+
     active: bool = BooleanProperty(False)
     """Indicates whether the widget is in an active state.
 
@@ -52,18 +76,37 @@ class MorphIconBehavior(
     defaults to `False`.
     """
 
+    icon_state_precedence: Tuple[str, ...] = get_args(IconState)
+    """Defines the precedence order for icon states.
+
+    This tuple specifies the order in which icon states are checked to
+    determine which icon to display. The available states are:
+    - 'disabled': When the widget is disabled (i.e., `disabled` is
+      `True`)
+    - 'focus': When the widget is focused (i.e., `focus` is `True`)
+    - 'active': When the widget is active (i.e., `active` is `True`)
+    - 'normal': The default state when none of the above states apply.
+
+    Default order is ('disabled', 'focus', 'active', 'normal').
+    """
+
     def _get_icon(self) -> str:
-        """Get the current icon based on the active state.
+        """Get the current icon based on the current state.
+
+        This method checks the widget's state in the order defined by
+        `icon_state_precedence` and returns the corresponding icon name.
+        If no specific state icon is set, it returns the `normal_icon`.
 
         Returns
         -------
         str
             The icon name corresponding to the current state.
-            Returns `active_icon` if the widget is active, otherwise
-            returns `normal_icon`.
         """
-        if self.active and self.active_icon is not None:
-            return self.active_icon
+        for state in self.icon_state_precedence:
+            value = getattr(self, state, False)
+            icon = getattr(self, f'{state}_icon', None)
+            if value and icon:
+                return icon
         return self.normal_icon
     
     def _set_icon(self, icon: str) -> None:
@@ -135,6 +178,32 @@ class MorphIconBehavior(
     defaults to `""`.
     """
 
+    disabled_icon: str | None = StringProperty(None, allownone=True)
+    """Icon name for the 'disabled' state of the widget.
+
+    The icon is displayed when the widget is in the 'disabled' state
+    (i.e., disabled). The icon name should correspond to a valid icon in
+    the Material Design Icons library. To automatically switch icons
+    based on the `disabled` property, bind the :meth:`_update_icon`
+    method to the `disabled` property of the widget.
+
+    :attr:`disabled_icon` is a :class:`~kivy.properties.StringProperty` 
+    and defaults to `None`.
+    """
+
+    focus_icon: str | None = StringProperty(None, allownone=True)
+    """Icon name for the 'focus' state of the widget.
+
+    The icon is displayed when the widget is in the 'focus' state
+    (i.e., focused). The icon name should correspond to a valid icon in
+    the Material Design Icons library. To automatically switch icons
+    based on the `focus` property, bind the :meth:`_update_icon` method
+    to the `focus` property of the widget.
+
+    :attr:`focus_icon` is a :class:`~kivy.properties.StringProperty` 
+    and defaults to `None`.
+    """
+
     active_icon: str | None = StringProperty(None, allownone=True)
     """Icon name for the 'active' state of the widget.
 
@@ -152,9 +221,13 @@ class MorphIconBehavior(
         icon = kwargs.pop('icon', '')
         super().__init__(**kwargs)
         self.bind(
+            disabled=self._update_icon,
             active=self._update_icon,
-            normal_icon=self._update_icon,
-            active_icon=self._update_icon,)
+            focus=self._update_icon,
+            disabled_icon=self._update_icon,
+            focus_icon=self._update_icon,
+            active_icon=self._update_icon,
+            normal_icon=self._update_icon,)
         if icon:
             self.icon = icon
         else:

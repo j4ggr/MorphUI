@@ -2,11 +2,10 @@ from textwrap import dedent
 
 from typing import Any
 from typing import Dict
-from typing import List
 
 from kivy.lang import Builder
-from kivy.properties import ListProperty
 from kivy.properties import DictProperty
+from kivy.properties import StringProperty
 from kivy.properties import ObjectProperty
 
 from morphui.uix.list import BaseListView
@@ -138,17 +137,26 @@ class MorphDropdownFilterField(MorphTextField):
     ```
     """
 
-    menu_state_icons: List[str] = ListProperty(
-        ['chevron-down', 'chevron-up'])
-    """Icons for the dropdown filter field.
+    normal_trailing_icon: str = StringProperty('chevron-down')
+    """Icon for the normal (closed) state of the dropdown filter field.
 
-    This property holds a list of two strings representing the icons
-    used for the dropdown filter field. The first icon is typically used
-    to indicate the closed state, while the second icon indicates the
-    open state.
+    This property holds the icon name used when the dropdown is in its
+    normal (closed) state.
 
-    :attr:`menu_state_icons` is a :class:`~kivy.properties.ListProperty` and
-    defaults to `['chevron-down', 'chevron-up']`.
+    :attr:`normal_trailing_icon` is a
+    :class:`~kivy.properties.StringProperty` and defaults to
+    `'chevron-down'`.
+    """
+
+    focus_trailing_icon: str = StringProperty('chevron-up')
+    """Icon for the focused (open) state of the dropdown filter field.
+
+    This property holds the icon name used when the dropdown is in its
+    focused (open) state.
+
+    :attr:`focus_trailing_icon` is a
+    :class:`~kivy.properties.StringProperty` and defaults to
+    `'chevron-up'`.
     """
 
     dropdown: MorphDropdownList = ObjectProperty(None)
@@ -171,46 +179,20 @@ class MorphDropdownFilterField(MorphTextField):
             items=kwargs.pop('items', []),
             item_release_callback=kwargs.pop('item_release_callback', None))
         kwargs['trailing_icon'] = kwargs.get(
-            'trailing_icon', 
-            self.menu_state_icons[0])
+            'trailing_icon', self.normal_trailing_icon)
         super().__init__(dropdown=dropdown, **kwargs)
         self.bind(
-            menu_state_icons=self._update_menu_state_icons,
             text=self._on_text_changed,
             focus=self._on_focus_changed,
-            width=self.dropdown.setter('width'))
+            width=self.dropdown.setter('width'),
+            normal_trailing_icon=self.trailing_widget.setter('normal_icon'),
+            focus_trailing_icon=self.trailing_widget.setter('focus_icon'),)
+        self.trailing_widget.normal_icon = self.normal_trailing_icon
+        self.trailing_widget.focus_icon = self.focus_trailing_icon
         self.trailing_widget.bind(
             on_release=self._on_trailing_release)
-        self._update_menu_state_icons(self, self.menu_state_icons)
         self._on_text_changed(self, self.text)
         self._on_focus_changed(self, self.focus)
-    
-    def _update_menu_state_icons(
-            self,
-            instance: 'MorphDropdownFilterField',
-            icons: List[str]) -> None:
-        """Handle changes to the menu_state_icons property.
-
-        This method is called whenever the menu_state_icons property
-        changes. It updates the trailing widget's icons accordingly.
-
-        Parameters
-        ----------
-        instance : MorphDropdownFilterField
-            The instance of the filter field where the change occurred.
-        icons : Tuple[str, str]
-            The new tuple of icons for the filter field.
-        
-        Raises
-        ------
-        AssertionError
-            If the provided icons list does not contain exactly two
-            icon names.
-        """
-        assert len(icons) == 2, (
-            "menu_state_icons must be a list of two icon names.")
-        self.trailing_widget.normal_icon = icons[0]
-        self.trailing_widget.active_icon = icons[1]
         
     def _on_text_changed(
             self,
@@ -250,7 +232,7 @@ class MorphDropdownFilterField(MorphTextField):
         focus : bool
             The new focus state of the filter field.
         """
-        self.trailing_widget.active = focus
+        self.trailing_widget.focus = focus
         if focus:
             self.dropdown.open()
         else:
