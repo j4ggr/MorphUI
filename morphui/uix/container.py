@@ -11,7 +11,6 @@ from kivy.metrics import dp
 from kivy.properties import AliasProperty
 from kivy.properties import StringProperty
 from kivy.properties import ObjectProperty
-from kivy.properties import BooleanProperty
 from kivy.uix.boxlayout import BoxLayout
 
 from morphui.utils import clean_config
@@ -23,24 +22,27 @@ from morphui.uix.behaviors import MorphIdentificationBehavior
 
 
 __all__ = [
-    'LeadingTextTrailingContainer',]
+    'MorphLeadingTextContainer',
+    'MorphLeadingTextTrailingContainer',]
 
 
-class LeadingTextTrailingContainer(
+class MorphLeadingTextContainer(
         MorphIdentificationBehavior,
         MorphAutoSizingBehavior,
         BoxLayout):
-    """Base container with leading icon, text label, and trailing icon.
+    """Base container with leading icon and text label.
     
-    This is a minimal base class that provides a horizontal layout structure
-    with three child widgets: a leading icon, a text label, and a
-    trailing icon. It is designed to be inherited by other components
-    that need this layout pattern, such as menu items, list items,
-    chips, etc.
+    This is a minimal base class that provides a horizontal layout 
+    structure with two child widgets: a leading icon and a text label.
+    It is designed to be inherited by other components that need this
+    layout pattern e.g. button with leading icon, list item with
+    leading icon, etc.
     
     This class only provides the core layout and widget management.
-    Subclasses should add additional behaviors like MorphColorThemeBehavior,
-    MorphInteractionLayerBehavior, MorphSurfaceLayerBehavior as needed.
+    Subclasses should add additional behaviors like:
+    - :class:`~morphui.uix.behaviors.MorphColorThemeBehavior`,
+    - :class:`~morphui.uix.behaviors.MorphInteractionLayerBehavior`,
+    - :class:`~morphui.uix.behaviors.MorphSurfaceLayerBehavior`.
     
     The container automatically manages the visibility and animation of
     child widgets based on their content. When icons are set or cleared,
@@ -52,23 +54,18 @@ class LeadingTextTrailingContainer(
         Icon name for the leading widget
     label_text : str
         Text content for the label widget
-    trailing_icon : str
-        Icon name for the trailing widget
-    delegate_content_color : bool
-        Whether to delegate content color to child widgets
         
     Examples
     --------
     ```python
-    from morphui.uix.container import LeadingTextTrailingContainer
+    from morphui.uix.container import MorphLeadingTextTrailingContainer
     
-    class MyMenuItem(LeadingTextTrailingContainer):
-        default_config = LeadingTextTrailingContainer.default_config.copy()
+    class MyMenuItem(MorphLeadingTextTrailingContainer):
+        default_config = MorphLeadingTextTrailingContainer.default_config.copy()
         
     item = MyMenuItem(
         leading_icon='home',
-        label_text='Home',
-        trailing_icon='chevron-right')
+        label_text='Home',)
     ```
     """
 
@@ -167,6 +164,95 @@ class LeadingTextTrailingContainer(
     and is bound to changes in the `label_widget`.
     """
 
+    leading_widget: MorphLeadingIconLabel = ObjectProperty()
+    """The leading icon widget displayed to the left.
+
+    :attr:`leading_widget` is by default an instance of
+    :class:`~morphui.uix.label.MorphLeadingIconLabel`.
+    """
+
+    label_widget: MorphTextLabel = ObjectProperty(None)
+    """The text label widget displayed in the center.
+
+    :attr:`label_widget` is by default an instance of
+    :class:`~morphui.uix.label.MorphTextLabel`.
+    """
+
+    _default_child_widgets = {
+        'leading_widget': MorphLeadingIconLabel,
+        'label_widget': MorphTextLabel,}
+    """Default child widgets for the container.
+    
+    This dictionary maps widget identities to their default classes.
+    Override in subclasses to change default child widgets.
+    """
+
+    default_config: Dict[str, Any] = dict(
+        orientation='horizontal',
+        auto_size=True,
+        padding=dp(8),
+        spacing=dp(8),)
+
+    def __init__(self, **kwargs) -> None:
+        config = clean_config(self.default_config, kwargs)
+        for key, widget_cls in self._default_child_widgets.items():
+            if key not in config:
+                config[key] = widget_cls()
+        super().__init__(**config)
+        
+        if self.leading_widget is not None:
+            self.add_widget(self.leading_widget)
+            self.leading_widget.icon = self._leading_icon
+
+        if self.label_widget is not None:
+            self.add_widget(self.label_widget)
+            self.label_widget.text = self._label_text
+
+
+class MorphLeadingTextTrailingContainer(
+        MorphLeadingTextContainer):
+    """Base container with leading icon, text label, and trailing icon.
+    
+    This is a minimal base class that provides a horizontal layout 
+    structure with three child widgets: a leading icon, a text label,
+    and a trailing icon. It is designed to be inherited by other 
+    components that need this layout pattern, such as menu items, list
+    items, chips, etc.
+    
+    This class only provides the core layout and widget management.
+    Subclasses should add additional behaviors like:
+    - :class:`~morphui.uix.behaviors.MorphColorThemeBehavior`
+    - :class:`~morphui.uix.behaviors.MorphInteractionLayerBehavior`
+    - :class:`~morphui.uix.behaviors.MorphSurfaceLayerBehavior`
+    
+    The container automatically manages the visibility and animation of
+    child widgets based on their content. When icons are set or cleared,
+    the widgets smoothly animate in or out using scale animations.
+    
+    Attributes
+    ----------
+    leading_icon : str
+        Icon name for the leading widget
+    label_text : str
+        Text content for the label widget
+    trailing_icon : str
+        Icon name for the trailing widget
+        
+    Examples
+    --------
+    ```python
+    from morphui.uix.container import MorphLeadingTextTrailingContainer
+    
+    class MyMenuItem(MorphLeadingTextTrailingContainer):
+        default_config = MorphLeadingTextTrailingContainer.default_config.copy()
+        
+    item = MyMenuItem(
+        leading_icon='home',
+        label_text='Home',
+        trailing_icon='chevron-right')
+    ```
+    """
+
     def _get_trailing_icon(self) -> str:
         """Get the trailing icon name from the trailing widget.
 
@@ -215,20 +301,6 @@ class LeadingTextTrailingContainer(
     and is bound to changes in the `trailing_widget`.
     """
 
-    leading_widget: MorphLeadingIconLabel = ObjectProperty()
-    """The leading icon widget displayed to the left.
-
-    :attr:`leading_widget` is by default an instance of
-    :class:`~morphui.uix.label.MorphLeadingIconLabel`.
-    """
-
-    label_widget: MorphTextLabel = ObjectProperty(None)
-    """The text label widget displayed in the center.
-
-    :attr:`label_widget` is by default an instance of
-    :class:`~morphui.uix.label.MorphTextLabel`.
-    """
-
     trailing_widget: MorphTrailingIconLabel = ObjectProperty(None)
     """The trailing icon widget displayed to the right.
 
@@ -246,27 +318,9 @@ class LeadingTextTrailingContainer(
     Override in subclasses to change default child widgets.
     """
 
-    default_config: Dict[str, Any] = dict(
-        orientation='horizontal',
-        auto_size=True,
-        padding=dp(8),
-        spacing=dp(8),)
-
     def __init__(self, **kwargs) -> None:
-        config = clean_config(self.default_config, kwargs)
-        for key, widget_cls in self._default_child_widgets.items():
-            if key not in config:
-                config[key] = widget_cls()
-        super().__init__(**config)
-        
-        if self.leading_widget is not None:
-            self.add_widget(self.leading_widget)
-            self.leading_widget.icon = config.get('leading_icon', '')
-
-        if self.label_widget is not None:
-            self.add_widget(self.label_widget)
-            self.label_widget.text = config.get('label_text', '')
+        super().__init__(**kwargs)
 
         if self.trailing_widget is not None:
             self.add_widget(self.trailing_widget)
-            self.trailing_widget.icon = config.get('trailing_icon', '')
+            self.trailing_widget.icon = self._trailing_icon

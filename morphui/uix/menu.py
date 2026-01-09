@@ -25,7 +25,7 @@ from morphui.uix.behaviors import MorphColorThemeBehavior
 from morphui.uix.behaviors import MorphDeclarativeBehavior
 from morphui.uix.behaviors import MorphSurfaceLayerBehavior
 from morphui.uix.behaviors import MorphInteractionLayerBehavior
-from morphui.uix.container import LeadingTextTrailingContainer
+from morphui.uix.container import MorphLeadingTextTrailingContainer
 
 
 __all__ = [
@@ -41,12 +41,12 @@ class MorphDropdownMenuItem(
         MorphButtonBehavior,
         MorphColorThemeBehavior,
         MorphInteractionLayerBehavior,
-        LeadingTextTrailingContainer,):
+        MorphLeadingTextTrailingContainer,):
     """A single item within the MorphDropdownMenu widget.
     
     This widget represents a menu item with support for leading icon,
     text label, and trailing icon. It inherits from
-    :class:`~morphui.uix.container.LeadingTextTrailingContainer` which
+    :class:`~morphui.uix.container.MorphLeadingTextTrailingContainer` which
     provides the layout structure and child widget management.
     """
 
@@ -65,7 +65,7 @@ class MorphDropdownMenuItem(
     """
 
     default_config: Dict[str, Any] = (
-        LeadingTextTrailingContainer.default_config.copy() | dict())
+        MorphLeadingTextTrailingContainer.default_config.copy() | dict())
 
     def __init__(self, **kwargs) -> None:
         config = clean_config(self.default_config, kwargs)

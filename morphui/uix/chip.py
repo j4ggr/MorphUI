@@ -16,7 +16,7 @@ from morphui.uix.behaviors import MorphContentLayerBehavior
 from morphui.uix.behaviors import MorphDelegatedThemeBehavior
 from morphui.uix.behaviors import MorphInteractionLayerBehavior
 
-from morphui.uix.container import LeadingTextTrailingContainer
+from morphui.uix.container import MorphLeadingTextTrailingContainer
 
 from morphui.uix.label import MorphChipTextLabel
 from morphui.uix.label import MorphChipLeadingIconLabel
@@ -41,7 +41,7 @@ class MorphChip(
         MorphInteractionLayerBehavior,
         MorphSurfaceLayerBehavior,
         MorphElevationBehavior,
-        LeadingTextTrailingContainer,):
+        MorphLeadingTextTrailingContainer,):
     """Morph Chip component.
 
     A chip is a compact element that represents an input, attribute, 
@@ -53,7 +53,7 @@ class MorphChip(
     icons to the chip. The `label_text` property is used to set the text
     of the chip.
     
-    Inherits from :class:`~morphui.uix.container.LeadingTextTrailingContainer`
+    Inherits from :class:`~morphui.uix.container.MorphLeadingTextTrailingContainer`
     which provides the base layout structure and child widget management.
 
     Example
@@ -76,7 +76,11 @@ class MorphChip(
                     leading_icon='language-python',
                     trailing_icon='close',
                     label_text='Python Chip',
-                    pos_hint={'center_x': 0.5, 'center_y': 0.6},),
+                    pos_hint={'center_x': 0.5, 'center_y': 0.6},
+                    theme_color_bindings=dict(
+                        normal_content_color='primary_color',
+                        normal_surface_color='transparent_color',
+                        normal_border_color='outline_variant_color',),),
                 MorphFilterChip(
                     identity='filter',
                     label_text='Filter Chip',
@@ -88,14 +92,14 @@ class MorphChip(
                 theme_color_bindings={
                     'normal_surface_color': 'surface_container_low_color',})
             self.input_chip = self.layout.identities.input_chip
+            self.input_chip.bind(on_trailing_widget_release=self.re_add_chip)
             return self.layout
-        
-        def on_start(self) -> None:
-            Clock.schedule_interval(self.re_add_chip, 2)
-
+            
         def re_add_chip(self, dt: float) -> None:
-            if not self.input_chip.parent:
-                self.layout.add_widget(self.input_chip)
+            def _re_add(dt):
+                if not self.input_chip.parent:
+                    self.layout.add_widget(self.input_chip)
+            Clock.schedule_once(_re_add, 2)
 
     if __name__ == '__main__':
         MyApp().run()
