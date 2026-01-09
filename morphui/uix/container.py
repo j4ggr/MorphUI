@@ -192,6 +192,12 @@ class MorphLeadingTextContainer(
         auto_size=True,
         padding=dp(8),
         spacing=dp(8),)
+    """Default configuration for the container.
+
+    This dictionary contains default property values for the
+    :class:`MorphLeadingTextContainer`. These defaults can be overridden
+    by subclasses or during instantiation.
+    """
 
     def __init__(self, **kwargs) -> None:
         config = clean_config(self.default_config, kwargs)

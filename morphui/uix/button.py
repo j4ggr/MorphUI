@@ -1,10 +1,16 @@
 from typing import Any
 from typing import Dict
+from warnings import warn
 
 from kivy.metrics import dp
 from kivy.uix.label import Label
 from kivy.properties import BooleanProperty
 
+from morphui.utils import clean_config
+from morphui.uix.label import MorphIconLabel
+from morphui.uix.label import MorphSimpleIconLabel
+from morphui.uix.label import MorphButtonTextLabel
+from morphui.uix.label import MorphButtonLeadingIconLabel
 from morphui.uix.behaviors import MorphIconBehavior
 from morphui.uix.behaviors import MorphScaleBehavior
 from morphui.uix.behaviors import MorphHoverBehavior
@@ -17,13 +23,11 @@ from morphui.uix.behaviors import MorphAutoSizingBehavior
 from morphui.uix.behaviors import MorphRoundSidesBehavior
 from morphui.uix.behaviors import MorphContentLayerBehavior
 from morphui.uix.behaviors import MorphCompleteLayerBehavior
+from morphui.uix.behaviors import MorphDelegatedThemeBehavior
 from morphui.uix.behaviors import MorphIdentificationBehavior
 from morphui.uix.behaviors import MorphInteractionLayerBehavior
+from morphui.uix.container import MorphLeadingTextContainer
 
-from morphui.utils import clean_config
-
-from morphui.uix.label import MorphIconLabel
-from morphui.uix.label import MorphSimpleIconLabel
 
 __all__ = [
     'MorphSimpleIconButton',
@@ -117,7 +121,7 @@ class MorphButton(
         ripple_enabled=True,
         ripple_color=None,
         ripple_layer='interaction',
-        padding=10,
+        padding=dp(8),
         auto_size=True,)
     """Default configuration values for MorphButton.
 
@@ -195,6 +199,136 @@ class MorphTrailingIconButton(
         padding=dp(0),
         pos_hint={'center_y': 0.5},))
 
+
+class MorphIconTextButton(
+        MorphIconBehavior,
+        MorphTooltipBehavior,
+        MorphRoundSidesBehavior,
+        MorphDelegatedThemeBehavior,
+        MorphHoverBehavior,
+        MorphThemeBehavior,
+        MorphRippleBehavior,
+        MorphCompleteLayerBehavior,
+        MorphButtonBehavior,
+        MorphElevationBehavior,
+        MorphLeadingTextContainer,):
+    """A button widget that combines icon and text display with ripple
+    effect and MorphUI theming.
+
+    This class extends MorphLeadingTextContainer to create a button
+    that supports both icon and text content, along with ripple effects
+    and theming.
+
+    Examples
+    --------
+    Simple usage of MorphIconTextButton in a MorphApp:
+    ```python
+    from morphui.app import MorphApp
+    from morphui.uix.button import MorphIconTextButton
+    from morphui.uix.floatlayout import MorphFloatLayout
+
+    class MyApp(MorphApp):
+        def build(self) -> MorphFloatLayout:
+            self.theme_manager.seed_color = 'morphui_teal'
+            self.theme_manager.switch_to_dark()
+            return MorphFloatLayout(
+                MorphIconTextButton(
+                    identity='icon_text_button',
+                    normal_icon='language-python',
+                    label_text='Icon Text Button',
+                    pos_hint={'center_x': 0.5, 'center_y': 0.5},),)
+    
+    if __name__ == '__main__':
+        MyApp().run()
+    ```
+
+    Toggle behavior with MorphToggleButtonBehavior:
+    ```python
+    from morphui.app import MorphApp
+    from morphui.uix.button import MorphIconTextButton
+    from morphui.uix.floatlayout import MorphFloatLayout
+    from morphui.uix.behaviors import MorphToggleButtonBehavior
+
+    class ToggleIconTextButton(
+            MorphIconTextButton,
+            MorphToggleButtonBehavior):
+        pass
+
+    class MyApp(MorphApp):
+        def build(self) -> MorphFloatLayout:
+            self.theme_manager.seed_color = 'morphui_teal'
+            self.theme_manager.switch_to_dark()
+            return MorphFloatLayout(
+                ToggleIconTextButton(
+                    identity='icon_text_button',
+                    normal_icon='language-python',
+                    active_icon='language-java',
+                    label_text='Icon Text Button',
+                    pos_hint={'center_x': 0.5, 'center_y': 0.5},),)
+        
+    if __name__ == '__main__':
+        MyApp().run()
+    """ 
+
+    _default_child_widgets = {
+        'leading_widget': MorphButtonLeadingIconLabel,
+        'label_widget': MorphButtonTextLabel,}
+    """Default child widgets for MorphIconTextButton.
+
+    - `leading_widget`: An instance of :class:`~morphui.uix.label.
+      MorphButtonLeadingIconLabel` for displaying the leading icon.
+    - `label_widget`: An instance of :class:`~morphui.uix.label.
+      MorphButtonTextLabel` for displaying the button text.
+    """
+
+    default_config: Dict[str, Any] = dict(
+        theme_color_bindings={
+            'normal_surface_color': 'surface_container_color',
+            'normal_border_color': 'outline_color',
+            'disabled_border_color': 'outline_variant_color',
+            'normal_content_color': 'content_surface_color',
+            'hovered_content_color': 'content_surface_variant_color',},
+        orientation='horizontal',
+        ripple_enabled=True,
+        ripple_color=None,
+        ripple_layer='interaction',
+        padding=dp(8),
+        spacing=dp(4),
+        radius=dp(4),
+        auto_size=True,
+        delegate_content_color=True,)
+    """Default configuration values for MorphIconTextButton.
+
+    Provides standard button appearance and behavior settings:
+    - Bounded colors for theme integration
+    - Ripple effect for touch feedback
+    - Auto-sizing to fit content
+    - Delegation of content color theming to child widgets
+    These values can be overridden by subclasses or during 
+    instantiation.
+    """
+
+    def __init__(self, **kwargs) -> None:
+        config = clean_config(self.default_config, kwargs)
+        if 'leading_icon' in kwargs:
+            warn(
+                "`leading_icon` is not supported. Use `normal_icon` instead.",
+                UserWarning,)
+            config['normal_icon'] = kwargs.pop('leading_icon')
+
+        super().__init__(**config)
+        self.delegate_to_children = [
+            self.leading_widget,
+            self.label_widget,]
+
+    
+    def _update_icon(self, *args) -> None:
+        """Update the leading icon based on the toggle state.
+
+        This method switches the leading icon between `normal_icon` and
+        `active_icon` depending on whether the chip is active or not.
+        """
+        self.leading_icon = self.icon
 
 
 class MorphChipTrailingIconButton(

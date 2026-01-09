@@ -28,6 +28,8 @@ __all__ = [
     'MorphLeadingIconLabel',
     'MorphTextLabel',
     'MorphTrailingIconLabel',
+    'MorphButtonLeadingIconLabel',
+    'MorphButtonTextLabel',
     'MorphChipLeadingIconLabel',
     'MorphChipTextLabel',
     'MorphTextFieldLabel',
@@ -396,6 +398,26 @@ class MorphTrailingIconLabel(
         MorphSimpleIconLabel.default_config.copy() | dict(
         padding=dp(0),
         pos_hint={'center_y': 0.5},))
+    
+
+class MorphButtonLeadingIconLabel(
+        MorphLeadingIconLabel):
+    """Leading icon label for icon text buttons.
+    
+    Inherits from :class:`~morphui.uix.label.MorphLeadingIconLabel`.
+    """
+    pass
+
+
+class MorphButtonTextLabel(
+        MorphTextLabel):
+    """Text label for icon text buttons.
+    
+    Inherits from :class:`~morphui.uix.label.MorphTextLabel`.
+    """
+    default_config: Dict[str, Any] = (
+        MorphTextLabel.default_config.copy() | dict(
+        auto_size=(True, True),))
     
 
 class MorphChipLeadingIconLabel(
