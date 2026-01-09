@@ -885,17 +885,15 @@ class MorphDelegatedThemeBehavior(EventDispatcher):
             should be applied.
         """
         for child in children:
-            self._remove_child_content_bindings(child)
+            self._delegate_content_color_to_child(child)
 
-    def _remove_child_content_bindings(self, widget: Any) -> None:
-        """Remove content color bindings from a child widget.
+    def _delegate_content_color_to_child(self, widget: Any) -> None:
+        """Delegate content color theming to a specific child widget.
 
-        This method is called when a child widget is added to the
-        container. It removes any existing content color bindings
-        from the child widget if :attr:`delegate_content_color` is True
-        and the widget is in the :attr:`delegate_to_children` list (or
-        if the list is empty, meaning delegation applies to all 
-        children).
+        This method sets up the necessary bindings on the specified
+        child widget to allow it to receive content color updates from
+        the container. If :attr:`delegate_content_color` is False, or if
+        the widget is not a child of the container, no action is taken.
 
         Parameters
         ----------
@@ -906,35 +904,7 @@ class MorphDelegatedThemeBehavior(EventDispatcher):
         delegate_to_children = self.delegate_to_children or self.children
         if (not self.delegate_content_color
                 or widget is None
-                or not hasattr(widget, 'theme_color_bindings')
                 or widget not in delegate_to_children):
             return None
         
-        widget.theme_color_bindings = dict(
-            (k, v) for k, v in widget.theme_color_bindings.items()
-            if 'content' not in k)
-    
-    def apply_content(self, color: List[float]) -> None:
-        """Apply content color to delegated child widgets.
-
-        This method overrides the default content color application
-        of the :class:`MorphContentLayerBehavior`. Instead of applying
-        the content color to itself, it propagates the color to all
-        child widgets listed in :attr:`delegate_to_children` (or all
-        children if the list is empty).
-
-        Parameters
-        ----------
-        color : List[float]
-            The RGBA color value to apply to child widgets.
-        """
-        if not self.delegate_content_color:
-            try:
-                super().apply_content(color)
-            except AttributeError:
-                pass
-            return None
-        
-        for child in self.delegate_to_children or self.children:
-            if hasattr(child, 'apply_content'):
-                child.apply_content(color)
+        widget._get_content_color = self._get_content_color
