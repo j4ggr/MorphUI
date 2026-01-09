@@ -137,7 +137,7 @@ class MorphDropdownFilterField(MorphTextField):
     ```
     """
 
-    normal_trailing_icon: str = StringProperty('chevron-down')
+    normal_trailing_icon: str = StringProperty('menu-down')
     """Icon for the normal (closed) state of the dropdown filter field.
 
     This property holds the icon name used when the dropdown is in its
@@ -145,10 +145,10 @@ class MorphDropdownFilterField(MorphTextField):
 
     :attr:`normal_trailing_icon` is a
     :class:`~kivy.properties.StringProperty` and defaults to
-    `'chevron-down'`.
+    `'menu-down'`.
     """
 
-    focus_trailing_icon: str = StringProperty('chevron-up')
+    focus_trailing_icon: str = StringProperty('menu-up')
     """Icon for the focused (open) state of the dropdown filter field.
 
     This property holds the icon name used when the dropdown is in its
@@ -156,7 +156,7 @@ class MorphDropdownFilterField(MorphTextField):
 
     :attr:`focus_trailing_icon` is a
     :class:`~kivy.properties.StringProperty` and defaults to
-    `'chevron-up'`.
+    `'menu-up'`.
     """
 
     dropdown: MorphDropdownList = ObjectProperty(None)
