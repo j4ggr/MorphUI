@@ -16,6 +16,7 @@ from morphui.uix.label import MorphIconLabel
 from morphui.uix.label import MorphSimpleIconLabel
 from morphui.uix.label import MorphButtonTextLabel
 from morphui.uix.label import MorphButtonLeadingIconLabel
+from morphui.uix.label import MorphButtonTrailingIconLabel
 from morphui.uix.behaviors import MorphIconBehavior
 from morphui.uix.behaviors import MorphScaleBehavior
 from morphui.uix.behaviors import MorphHoverBehavior
@@ -35,6 +36,7 @@ from morphui.uix.behaviors import MorphDelegatedThemeBehavior
 from morphui.uix.behaviors import MorphIdentificationBehavior
 from morphui.uix.behaviors import MorphInteractionLayerBehavior
 from morphui.uix.container import MorphIconLabelContainer
+from morphui.uix.container import MorphLabelIconContainer
 
 
 __all__ = [
@@ -328,7 +330,6 @@ class MorphIconTextButton(
         self.delegate_to_children = [
             self.leading_widget,
             self.label_widget,]
-
     
     def _update_icon(self, *args) -> None:
         """Update the leading icon based on the toggle state.
@@ -337,6 +338,73 @@ class MorphIconTextButton(
         `active_icon` depending on whether the chip is active or not.
         """
         self.leading_icon = self.icon
+
+
+class MorphTextIconButton(
+        MorphIconBehavior,
+        MorphTooltipBehavior,
+        MorphRoundSidesBehavior,
+        MorphDelegatedThemeBehavior,
+        MorphHoverBehavior,
+        MorphThemeBehavior,
+        MorphRippleBehavior,
+        MorphCompleteLayerBehavior,
+        MorphButtonBehavior,
+        MorphElevationBehavior,
+        MorphLabelIconContainer,):
+    """A button widget that combines text and icon display with ripple
+    effect and MorphUI theming.
+
+    This class extends MorphIconTextButton to create a button that
+    primarily displays text with an optional trailing icon, along with
+    ripple effects and theming.
+    """
+
+    _default_child_widgets = {
+        'label_widget': MorphButtonTextLabel,
+        'trailing_widget': MorphButtonTrailingIconLabel,}
+    """Default child widgets for MorphTextIconButton.
+
+    - `label_widget`: An instance of :class:`~morphui.uix.label.
+      MorphButtonTextLabel` for displaying the button text.
+    - `trailing_widget`: An instance of :class:`~morphui.uix.label.
+      MorphButtonTrailingIconLabel` for displaying the trailing icon.
+    """
+
+    default_config: Dict[str, Any] = dict(
+        theme_color_bindings={
+            'normal_surface_color': 'transparent_color',
+            'normal_content_color': 'content_surface_color',
+            'disabled_content_color': 'content_surface_variant_color',},
+        orientation='horizontal',
+        ripple_enabled=True,
+        ripple_color=None,
+        ripple_layer='interaction',
+        padding=dp(8),
+        spacing=dp(4),
+        radius=dp(4),
+        auto_size=True,
+        delegate_content_color=True,)
+
+    def __init__(self, **kwargs) -> None:
+        config = clean_config(self.default_config, kwargs)
+        if 'trailing_icon' in kwargs:
+            warn(
+                "`trailing_icon` is not supported. Use `normal_icon` instead.",
+                UserWarning,)
+            config['normal_icon'] = kwargs.pop('trailing_icon')
+        super().__init__(**config)
+        self.delegate_to_children = [
+            self.label_widget,
+            self.trailing_widget,]
+        
+    def _update_icon(self, *args) -> None:
+        """Update the leading icon based on the toggle state.
+
+        This method switches the leading icon between `normal_icon` and
+        `active_icon` depending on whether the chip is active or not.
+        """
+        self.trailing_icon = self.icon
 
 
 class MorphChipTrailingIconButton(
@@ -582,3 +650,4 @@ class MorphDatePickerDayButton(
         if self.is_today:
             return self.today_border_color
         return super()._get_border_color()
+
