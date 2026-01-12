@@ -1,9 +1,14 @@
 from typing import Any
 from typing import Dict
+from typing import List
+from typing import Tuple
+from datetime import date
 from warnings import warn
 
 from kivy.metrics import dp
 from kivy.uix.label import Label
+from kivy.properties import ColorProperty
+from kivy.properties import ObjectProperty
 from kivy.properties import BooleanProperty
 
 from morphui.utils import clean_config
@@ -21,8 +26,11 @@ from morphui.uix.behaviors import MorphTooltipBehavior
 from morphui.uix.behaviors import MorphElevationBehavior
 from morphui.uix.behaviors import MorphAutoSizingBehavior
 from morphui.uix.behaviors import MorphRoundSidesBehavior
+from morphui.uix.behaviors import MorphToggleButtonBehavior
+from morphui.uix.behaviors import MorphSurfaceLayerBehavior
 from morphui.uix.behaviors import MorphContentLayerBehavior
 from morphui.uix.behaviors import MorphCompleteLayerBehavior
+from morphui.uix.behaviors import MorphHighlightLayerBehavior
 from morphui.uix.behaviors import MorphDelegatedThemeBehavior
 from morphui.uix.behaviors import MorphIdentificationBehavior
 from morphui.uix.behaviors import MorphInteractionLayerBehavior
@@ -392,3 +400,185 @@ class MorphTextFieldTrailingIconButton(MorphIconButton):
         size_hint=(None, None),
         size=(dp(24), dp(24)),
         padding=dp(0),)
+
+
+class MorphDatePickerDayButton(
+        MorphRoundSidesBehavior,
+        MorphIdentificationBehavior,
+        MorphToggleButtonBehavior,
+        MorphThemeBehavior,
+        MorphContentLayerBehavior,
+        MorphSurfaceLayerBehavior,
+        MorphHighlightLayerBehavior,
+        Label):
+    """A button widget representing a day in a date picker.
+
+    This class combines various MorphUI behaviors to create a button
+    that represents a day in a date picker, with support for ripple
+    effects, theming, and toggle behavior.
+    """
+
+    date_value: date = ObjectProperty(None)
+    """The date value represented by the button.
+
+    This property holds the date value that the button represents.
+
+    :attr:`date_value` is a :class:`kivy.properties.ObjectProperty` and
+    defaults to None.
+    """
+
+    is_start_day: bool = BooleanProperty(False)
+    """Indicates whether the button represents the start day of a
+    selected date range.
+
+    When True, the button is styled to indicate it is the start day of a
+    selected date range.
+
+    :attr:`is_start_day` is a :class:`kivy.properties.BooleanProperty`
+    and defaults to False.
+    """
+
+    is_end_day: bool = BooleanProperty(False)
+    """Indicates whether the button represents the end day of a
+    selected date range.
+
+    When True, the button is styled to indicate it is the end day of a
+    selected date range.
+
+    :attr:`is_end_day` is a :class:`kivy.properties.BooleanProperty` and
+    defaults to False.
+    """
+
+    is_in_range: bool = BooleanProperty(False)
+    """Indicates whether the button is between the start and end days of
+    a selected date range.
+
+    When True, the button is styled to indicate it is between the start
+    and end days of a selected date range.
+
+    :attr:`is_in_range` is a :class:`kivy.properties.BooleanProperty`
+    and defaults to False.
+    """
+
+    is_today: bool = BooleanProperty(False)
+    """Indicates whether the button represents today's date.
+
+    When True, the button is styled to indicate it represents today's
+    date.
+
+    :attr:`is_today` is a :class:`kivy.properties.BooleanProperty` and
+    defaults to False.
+    """
+
+    today_border_color: List[float] = ColorProperty([0, 0, 0, 0])
+    """Border color for today's date button.
+
+    This property holds the RGBA color value used for the border of
+    the button when it represents today's date.
+
+    :attr:`today_border_color` is a
+    :class:`~kivy.properties.ColorProperty` and defaults to
+    `[0, 0, 0, 0]`.
+    """
+
+    default_config: Dict[str, Any] = dict(
+        halign='center',
+        valign='center',
+        theme_color_bindings={
+            'normal_surface_color': 'transparent_color',
+            'active_surface_color': 'primary_container_color',
+            'normal_content_color': 'content_surface_color',
+            'active_content_color': 'on_primary_container_color',
+            'normal_border_color': 'transparent_color',
+            'today_border_color': 'tertiary_color',
+            'normal_highlight_color': 'primary_container_color',},
+        highlight_opacity=0.3,
+        size_hint=(None, None),
+        size=(dp(42), dp(42)),
+        round_sides=True,)
+
+    def __init__(self, **kwargs) -> None:
+        config = clean_config(self.default_config, kwargs)
+        super().__init__(**config)
+            
+        self.bind(
+            is_today=self._set_border_color,
+            is_in_range=self._update_highlight_flag,
+            is_start_day=self._update_highlight_flag,
+            is_end_day=self._update_highlight_flag,)
+        self._update_highlight_flag()
+        self._set_border_color()
+
+    def on_date_value(self, instance: Any, date_value: date) -> None:
+        """Handle changes to the date_value property.
+
+        This method is called whenever the date_value property changes.
+        It can be used to update the button's appearance or behavior
+        based on the new date value.
+        """
+        self.text = str(date_value.day) if date_value else ''
+
+    def _update_highlight_flag(self, *args) -> None:
+        """Update the highlight layer based on range flags.
+
+        This method updates the highlight layer whenever the
+        `is_in_range`, `is_start_day`, or `is_end_day` properties
+        change.
+        """
+        self.highlight = any([
+            self.is_in_range,
+            self.is_start_day,
+            self.is_end_day,])
+
+    def _get_highlight_layer_pos(self) -> Tuple[float, float]:
+        """Get the position of the highlight layer.
+
+        This method returns the position of the highlight layer based
+        on the button's position and whether it is a start or end day.
+
+        Returns
+        -------
+        List[float]
+            The (x, y) position of the highlight layer.
+        """
+        x, y = super()._get_highlight_layer_pos()
+        y = y + dp(4)
+
+        if self.is_start_day:
+            x += self.width / 2
+
+        return x, y
+
+    def _get_highlight_layer_size(self) -> Tuple[float, float]:
+        """Get the size of the highlight layer.
+
+        This method returns the size of the highlight layer based on
+        the button's size and whether it is a start or end day.
+
+        Returns
+        -------
+        List[float]
+            The (width, height) size of the highlight layer.
+        """
+        width, height = super()._get_highlight_layer_size()
+        height = height - dp(8)
+
+        if self.is_start_day or self.is_end_day:
+            width = width / 2
+
+        return width, height
+
+    def _get_border_color(self, *args) -> List[float]:
+        """Get the border color based on the button state.
+
+        This method returns the appropriate border color depending on
+        whether the button represents today's date or is focused.
+
+        Returns
+        -------
+        List[float]
+            The RGBA color value for the border.
+        """
+        if self.is_today:
+            return self.today_border_color
+        return super()._get_border_color()

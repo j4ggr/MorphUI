@@ -143,6 +143,9 @@ class _Name_:
     SHADOW: Literal['shadow'] = 'shadow'
     """Canvas instruction group for shadow rendering."""
 
+    HIGHLIGHT: Literal['highlight'] = 'highlight'
+    """Canvas instruction group for highlight effects."""
+
     SURFACE: Literal['surface'] = 'surface'
     """Canvas instruction group for surface backgrounds."""
 
