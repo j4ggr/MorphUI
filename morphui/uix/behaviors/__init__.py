@@ -2,6 +2,7 @@ from .appreference import MorphAppReferenceBehavior
 
 from .states import MorphStateBehavior
 
+from .layer import MorphHighlightLayerBehavior
 from .layer import MorphSurfaceLayerBehavior
 from .layer import MorphInteractionLayerBehavior
 from .layer import MorphContentLayerBehavior
@@ -48,7 +49,7 @@ from .tooltip import MorphTooltipBehavior
 __all__ = [
     'MorphAppReferenceBehavior',        # App reference handling
     'MorphStateBehavior',               # Interactive state properties
-    'MorphScaleBehavior',               # Scaling behavior
+    'MorphHighlightLayerBehavior',      # Highlight layer functionality
     'MorphSurfaceLayerBehavior',        # Surface and border styling
     'MorphInteractionLayerBehavior',    # Interaction layer (state-layer) management
     'MorphContentLayerBehavior',        # Content layer styling
@@ -73,6 +74,7 @@ __all__ = [
     'MorphButtonBehavior',              # Button touch behavior
     'MorphRippleBehavior',              # Ripple effects for buttons
     'MorphToggleButtonBehavior',        # Toggle button behavior
+    'MorphScaleBehavior',               # Scaling behavior
     'MorphRoundSidesBehavior',          # Automatic rounded sides
     'MorphMenuMotionBehavior',          # Menu motion behavior
     'MorphIconBehavior',                # Icon functionality

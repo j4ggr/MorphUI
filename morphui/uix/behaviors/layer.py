@@ -8,10 +8,12 @@ from typing import Tuple
 from typing import Literal
 from typing import Generator
 
+from kivy.event import EventDispatcher
 from kivy.metrics import dp
 from kivy.graphics import Line
 from kivy.graphics import Color
 from kivy.graphics import Mesh
+from kivy.graphics import Rectangle
 from kivy.graphics import SmoothLine
 from kivy.graphics import SmoothRoundedRectangle
 from kivy.properties import ListProperty
@@ -33,6 +35,7 @@ from .states import MorphStateBehavior
 
 
 __all__ = [
+    'MorphHighlightLayerBehavior',
     'MorphSurfaceLayerBehavior',
     'MorphInteractionLayerBehavior',
     'MorphContentLayerBehavior',
@@ -300,6 +303,207 @@ class BaseLayerBehavior(
         if tesselator.meshes:
             vertices, indices = tesselator.meshes[0]
         return vertices, indices
+
+
+class MorphHighlightLayerBehavior(EventDispatcher):
+    """A behavior class that provides highlight styling capabilities.
+
+    This behavior adds highlight color properties to widgets. It
+    automatically manages the canvas graphics instructions to render a
+    highlight effect based on the widget's state.
+    """
+    
+    highlight: bool = BooleanProperty(False)
+    """Whether to show the highlight effect.
+
+    This property controls whether the highlight effect is rendered on
+    the widget. When True, the highlight color is applied.
+
+    :attr:`highlight` is a :class:`~kivy.properties.BooleanProperty` and
+    defaults to `False`."""
+
+    normal_highlight_color: List[float] = ColorProperty([0, 0, 0, 0])
+    """Current highlight color of the widget.
+
+    This property reflects the active highlight color, which may change
+    based on interaction states.
+
+    :attr:`highlight_color` is a :class:`~kivy.properties.ColorProperty`
+    and defaults to `[0, 0, 0, 0]` (fully transparent)."""
+
+    highlight_opacity: float | None = BoundedNumericProperty(
+        None, min=0, max=1, errorvalue=0.08, allownone=True)
+    """Opacity of the highlight color.
+
+    This property controls the transparency level of the highlight
+    color, ranging from 0 (fully transparent) to 1 (fully opaque). If
+    set to None, the :attr:`highlight_color` alpha value is used as is.
+
+    :attr:`highlight_opacity` is a
+    :class:`~kivy.properties.BoundedNumericProperty` and defaults to
+    `None`."""
+
+    def _get_highlight_color(self) -> List[float]:
+        """Get the highlight color based on the current state.
+
+        This method determines the appropriate highlight color based on
+        the widget's current state (normal). If a specific color for
+        the state is not set, it falls back to the normal highlight
+        color. This method is used by the :attr:`highlight_color`
+        AliasProperty.
+
+        Returns
+        -------
+        List[float]
+            The resolved highlight color as a list of RGBA values.
+        """
+        if not self.highlight:
+            return [0, 0, 0, 0]
+        
+        highlight_color = self.normal_highlight_color
+            
+        if self.highlight_opacity is not None:
+            highlight_color = highlight_color[:3] + [self.highlight_opacity]
+        
+        return highlight_color
+    
+    def _set_highlight_color(self, *args) -> None:
+        """Set the highlight color based on the current state.
+
+        This method updates the highlight color instruction to reflect
+        the appropriate highlight color based on the widget's current
+        state.
+        """
+        self._highlight_color_instruction.rgba = self._get_highlight_color()
+
+    highlight_color: List[float] = AliasProperty(
+        _get_highlight_color,
+        _set_highlight_color,
+        bind=[
+            'normal_highlight_color',
+            'highlight_opacity',
+            'highlight'])
+
+    def _get_highlight_layer_pos(self) -> Tuple[float, float]:
+        """Get the position for the highlight layer.
+
+        This method accounts for whether the widget is a
+        `RelativeLayout` to ensure the highlight is positioned correctly
+        within the layout's coordinate system.
+
+        Returns
+        -------
+        Tuple[float, float]
+            The (x, y) position for the highlight layer.
+        """
+        return get_effective_pos(self)
+
+    def _set_highlight_layer_pos(self, *args) -> None:
+        """Set the position for the highlight layer.
+
+        This method updates the highlight rectangle position to reflect
+        the correct position based on whether the widget is a
+        `RelativeLayout`.
+        """
+        self._highlight_instruction.pos = self._get_highlight_layer_pos()
+
+    highlight_layer_pos: Tuple[float, float] = AliasProperty(
+        _get_highlight_layer_pos,
+        _set_highlight_layer_pos,
+        bind=['pos'])
+
+    def _get_highlight_layer_size(self) -> Tuple[float, float]:
+        """Get the size for the highlight layer.
+
+        This method accounts for whether the widget is a
+        `RelativeLayout` to ensure the highlight is sized correctly
+        within the layout's coordinate system.
+
+        Returns
+        -------
+        Tuple[float, float]
+            The (width, height) size for the highlight layer.
+        """
+        return self.size
+
+    def _set_highlight_layer_size(self, *args) -> None:
+        """Set the size for the highlight layer.
+
+        This method updates the highlight rectangle size to reflect
+        the correct size based on whether the widget is a
+        `RelativeLayout`.
+        """
+        self._highlight_instruction.size = self._get_highlight_layer_size()
+
+    highlight_layer_size: Tuple[float, float] = AliasProperty(
+        _get_highlight_layer_size,
+        _set_highlight_layer_size,
+        bind=['size'])
+
+    _highlight_color_instruction: Color
+    """Internal canvas color instruction for the highlight effect."""
+
+    _highlight_instruction: Rectangle
+    """Internal canvas rectangle instruction for the highlight effect."""
+
+    def __init__(self, **kwargs) -> None:
+        self.register_event_type('on_highlight_updated')
+        super().__init__(**kwargs)
+
+        with self.canvas.before:
+            self._highlight_color_instruction = Color(
+                rgba=self.highlight_color,
+                group=NAME.HIGHLIGHT)
+            self._highlight_instruction = Rectangle(
+                pos=self.pos,
+                size=self.size,)
+        
+        self.bind(
+            highlight=self._set_highlight_color,
+            highlight_layer_pos=self._update_highlight,
+            highlight_layer_size=self._update_highlight,
+            highlight_color=self._update_highlight)
+        self.refresh_highlight()
+            
+    def _resolve_highlight_pos(self) -> Tuple[float, float]:
+        """Get the correct position for the highlight rectangle.
+
+        This method accounts for whether the widget is a
+        `RelativeLayout` to ensure the highlight is positioned correctly
+        within the layout's coordinate system.
+
+        Returns
+        -------
+        Tuple[float, float]
+            The (x, y) position for the highlight rectangle.
+        """
+        return get_effective_pos(self)
+            
+    def _update_highlight(self, *args) -> None:
+        """Update the highlight rectangle position and size.
+        
+        This method is called whenever the widget's position or size
+        changes."""
+        self.highlight_layer_pos = self.highlight_layer_pos
+        self.highlight_layer_size = self.highlight_layer_size
+        self.highlight_color = self.highlight_color
+        self.dispatch('on_highlight_updated')
+
+    def refresh_highlight(self, *args) -> None:
+        """Refresh the highlight color.
+
+        This method is useful when external changes affect the highlight
+        color and a manual refresh is needed.
+        """
+        self._update_highlight()
+
+    def on_highlight_updated(self, *args) -> None:
+        """Event dispatched when the highlight is updated.
+
+        This event can be used to perform additional actions whenever
+        the highlight effect is refreshed.
+        """
+        pass
 
 
 class MorphSurfaceLayerBehavior(BaseLayerBehavior):
