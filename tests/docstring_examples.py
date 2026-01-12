@@ -19,26 +19,35 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).parents[1].resolve()))
 
 from morphui.app import MorphApp
-from morphui.uix.button import MorphIconTextButton
-from morphui.uix.floatlayout import MorphFloatLayout
-from morphui.uix.behaviors import MorphToggleButtonBehavior
-
-class ToggleIconTextButton(
-        MorphIconTextButton,
-        MorphToggleButtonBehavior):
-    pass
+from morphui.uix.button import MorphButton
+from morphui.uix.boxlayout import MorphBoxLayout
+from morphui.uix.screenmanager import MorphScreen
+from morphui.uix.screenmanager import MorphScreenManager
 
 class MyApp(MorphApp):
-    def build(self) -> MorphFloatLayout:
+    def build(self) -> MorphBoxLayout:
         self.theme_manager.seed_color = 'morphui_teal'
-        self.theme_manager.switch_to_dark()
-        return MorphFloatLayout(
-            ToggleIconTextButton(
-                identity='icon_text_button',
-                normal_icon='language-python',
-                active_icon='language-java',
-                label_text='Icon Text Button',
-                pos_hint={'center_x': 0.5, 'center_y': 0.5},),)
-    
+
+        self.main_layout = MorphBoxLayout(
+            MorphScreenManager(
+                MorphScreen(
+                    MorphButton(
+                        text="Go to Screen 2",
+                        on_release=lambda x: self.change_screen('screen2'),),
+                    name='screen1',),
+                MorphScreen(
+                    MorphButton(
+                        text="Go to Screen 1",
+                        on_release=lambda x: self.change_screen('screen1'),),
+                    name='screen2',),
+                identity='screen_manager',),
+            identity='main_layout',
+            orientation='vertical',)
+        return self.main_layout
+
+    def change_screen(self, name: str) -> None:
+        sm = self.main_layout.identities.screen_manager
+        sm.current = name
+
 if __name__ == '__main__':
     MyApp().run()
