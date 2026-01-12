@@ -16,7 +16,7 @@ from morphui.uix.behaviors import MorphContentLayerBehavior
 from morphui.uix.behaviors import MorphDelegatedThemeBehavior
 from morphui.uix.behaviors import MorphInteractionLayerBehavior
 
-from morphui.uix.container import MorphLeadingTextTrailingContainer
+from morphui.uix.container import MorphIconLabelIconContainer
 
 from morphui.uix.label import MorphChipTextLabel
 from morphui.uix.label import MorphChipLeadingIconLabel
@@ -41,7 +41,7 @@ class MorphChip(
         MorphInteractionLayerBehavior,
         MorphSurfaceLayerBehavior,
         MorphElevationBehavior,
-        MorphLeadingTextTrailingContainer,):
+        MorphIconLabelIconContainer,):
     """Morph Chip component.
 
     A chip is a compact element that represents an input, attribute, 
@@ -53,7 +53,7 @@ class MorphChip(
     icons to the chip. The `label_text` property is used to set the text
     of the chip.
     
-    Inherits from :class:`~morphui.uix.container.MorphLeadingTextTrailingContainer`
+    Inherits from :class:`~morphui.uix.container.MorphIconLabelIconContainer`
     which provides the base layout structure and child widget management.
 
     Example

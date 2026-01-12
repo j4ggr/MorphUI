@@ -22,7 +22,7 @@ from morphui.uix.behaviors import MorphContentLayerBehavior
 from morphui.uix.behaviors import MorphIdentificationBehavior
 from morphui.uix.behaviors import MorphDelegatedThemeBehavior
 from morphui.uix.behaviors import MorphInteractionLayerBehavior
-from morphui.uix.container import MorphLeadingTextTrailingContainer
+from morphui.uix.container import MorphIconLabelIconContainer
 from morphui.uix.recycleboxlayout import MorphRecycleBoxLayout
 
 
@@ -43,12 +43,12 @@ class MorphListItemFlat(
         MorphOverlayLayerBehavior,
         MorphInteractionLayerBehavior,
         MorphContentLayerBehavior,
-        MorphLeadingTextTrailingContainer,):
+        MorphIconLabelIconContainer,):
     """A single item within the MorphDropdownMenu widget.
     
     This widget represents a menu item with support for leading icon,
     text label, and trailing icon. It inherits from
-    :class:`~morphui.uix.container.MorphLeadingTextTrailingContainer` which
+    :class:`~morphui.uix.container.MorphIconLabelIconContainer` which
     provides the layout structure and child widget management.
     """
 
@@ -79,7 +79,7 @@ class MorphListItemFlat(
     """
 
     default_config: Dict[str, Any] = (
-        MorphLeadingTextTrailingContainer.default_config.copy() | dict(
+        MorphIconLabelIconContainer.default_config.copy() | dict(
             theme_color_bindings={
                 'normal_overlay_edge_color': 'outline_color',
                 'normal_content_color': 'content_surface_color',},

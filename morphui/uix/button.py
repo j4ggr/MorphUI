@@ -34,7 +34,7 @@ from morphui.uix.behaviors import MorphHighlightLayerBehavior
 from morphui.uix.behaviors import MorphDelegatedThemeBehavior
 from morphui.uix.behaviors import MorphIdentificationBehavior
 from morphui.uix.behaviors import MorphInteractionLayerBehavior
-from morphui.uix.container import MorphLeadingTextContainer
+from morphui.uix.container import MorphIconLabelContainer
 
 
 __all__ = [
@@ -219,11 +219,11 @@ class MorphIconTextButton(
         MorphCompleteLayerBehavior,
         MorphButtonBehavior,
         MorphElevationBehavior,
-        MorphLeadingTextContainer,):
+        MorphIconLabelContainer,):
     """A button widget that combines icon and text display with ripple
     effect and MorphUI theming.
 
-    This class extends MorphLeadingTextContainer to create a button
+    This class extends MorphIconLabelContainer to create a button
     that supports both icon and text content, along with ripple effects
     and theming.
 
