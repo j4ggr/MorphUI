@@ -45,6 +45,10 @@ from .scrollsync import MorphScrollSyncBehavior
 
 from .tooltip import MorphTooltipBehavior
 
+from .composition import MorphLeadingWidgetBehavior
+from .composition import MorphLabelWidgetBehavior
+from .composition import MorphTrailingWidgetBehavior
+
 
 __all__ = [
     'MorphAppReferenceBehavior',        # App reference handling
@@ -80,4 +84,7 @@ __all__ = [
     'MorphIconBehavior',                # Icon functionality
     'MorphScrollSyncBehavior',          # Scroll synchronization behavior
     'MorphTooltipBehavior',             # Tooltip functionality
+    'MorphLeadingWidgetBehavior',       # Leading widget delegation
+    'MorphLabelWidgetBehavior',         # Label widget delegation
+    'MorphTrailingWidgetBehavior',      # Trailing widget delegation
 ]
