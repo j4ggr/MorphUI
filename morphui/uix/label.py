@@ -29,6 +29,7 @@ __all__ = [
     'MorphTextLabel',
     'MorphTrailingIconLabel',
     'MorphButtonLeadingIconLabel',
+    'MorphButtonTrailingIconLabel',
     'MorphButtonTextLabel',
     'MorphChipLeadingIconLabel',
     'MorphChipTextLabel',
@@ -405,6 +406,15 @@ class MorphButtonLeadingIconLabel(
     """Leading icon label for icon text buttons.
     
     Inherits from :class:`~morphui.uix.label.MorphLeadingIconLabel`.
+    """
+    pass
+
+
+class MorphButtonTrailingIconLabel(
+        MorphTrailingIconLabel):
+    """Trailing icon label for text icon buttons.
+    
+    Inherits from :class:`~morphui.uix.label.MorphTrailingIconLabel`.
     """
     pass
 
