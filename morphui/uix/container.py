@@ -117,6 +117,88 @@ class MorphLeadingTextContainer(
     and is bound to changes in the `leading_widget`.
     """
 
+    def _get_normal_leading_icon(self) -> str:
+        """Get the text from the label widget.
+
+        This method retrieves the normal icon from the `leading_widget`.
+        If the `leading_widget` is None, it returns an empty string.
+
+        Returns
+        -------
+        str
+            The normal icon name of the leading widget
+        """
+        if self.leading_widget is None:
+            return ''
+        
+        return self.leading_widget.normal_icon
+    
+    def _set_normal_leading_icon(self, icon_name: str) -> None:
+        """Set the text on the label widget.
+
+        This method sets the normal icon on the `leading_widget`. It
+        also updates  the internal stored leading icon name.
+
+        Parameters
+        ----------
+        icon_name : str
+            The icon name to set on the leading widget in its normal 
+            state.
+        """
+        self._leading_icon = icon_name
+        if self.leading_widget is not None:
+            self.leading_widget.normal_icon = icon_name
+
+    normal_leading_icon: str = AliasProperty(
+        _get_normal_leading_icon,
+        _set_normal_leading_icon,
+        bind=['leading_widget',])
+    """The icon name in normal state of the leading icon displayed to 
+    the left.
+
+    This property gets/sets the `normal_icon` property of the 
+    `leading_widget`.
+
+    :attr:`normal_leading_icon` is a 
+    :class:`~kivy.properties.AliasProperty` and is bound to changes in
+    the `leading_widget`.
+    """
+
+    def _get_active_leading_icon(self) -> str:
+        """Get the text from the label widget.
+
+        This method retrieves the active icon from the `leading_widget`.
+        If the `leading_widget` is None, it returns an empty string.
+
+        Returns
+        -------
+        str
+            The active icon name of the leading widget
+        """
+        if self.leading_widget is None:
+            return ''
+        
+        return self.leading_widget.active_icon
+    
+    def _set_active_leading_icon(self, icon_name: str) -> None:
+        """Set the text on the label widget.
+
+        This method sets the active icon on the `leading_widget`. 
+
+        Parameters
+        ----------
+        icon_name : str
+            The icon name to set on the leading widget in its active 
+            state.
+        """
+        if self.leading_widget is not None:
+            self.leading_widget.active_icon = icon_name
+    
+    active_leading_icon: str = AliasProperty(
+        _get_active_leading_icon,
+        _set_active_leading_icon,
+        bind=['leading_widget',])
+
     def _get_label_text(self) -> str:
         """Get the text from the label widget.
 
@@ -164,7 +246,7 @@ class MorphLeadingTextContainer(
     and is bound to changes in the `label_widget`.
     """
 
-    leading_widget: MorphLeadingIconLabel = ObjectProperty()
+    leading_widget: MorphLeadingIconLabel = ObjectProperty(None)
     """The leading icon widget displayed to the left.
 
     :attr:`leading_widget` is by default an instance of
@@ -202,7 +284,7 @@ class MorphLeadingTextContainer(
     def __init__(self, **kwargs) -> None:
         config = clean_config(self.default_config, kwargs)
         for key, widget_cls in self._default_child_widgets.items():
-            if key not in config:
+            if key not in config and widget_cls is not None:
                 config[key] = widget_cls()
         super().__init__(**config)
         
@@ -305,6 +387,99 @@ class MorphLeadingTextTrailingContainer(
 
     :attr:`trailing_icon` is a :class:`~kivy.properties.AliasProperty`
     and is bound to changes in the `trailing_widget`.
+    """
+
+    def _get_normal_trailing_icon(self) -> str:
+        """Get the text from the label widget.
+
+        This method retrieves the normal icon from the `trailing_widget`.
+        If the `trailing_widget` is None, it returns an empty string.
+
+        Returns
+        -------
+        str
+            The normal icon name of the trailing widget
+        """
+
+        if self.trailing_widget is None:
+            return ''
+        
+        return self.trailing_widget.normal_icon
+
+    def _set_normal_trailing_icon(self, icon_name: str) -> None:
+        """Set the text on the label widget.
+
+        This method sets the normal icon on the `trailing_widget`. It
+        also updates  the internal stored trailing icon name.
+
+        Parameters
+        ----------
+        icon_name : str
+            The icon name to set on the trailing widget in its normal 
+            state.
+        """
+        self._trailing_icon = icon_name
+        if self.trailing_widget is not None:
+            self.trailing_widget.normal_icon = icon_name
+
+    normal_trailing_icon: str = AliasProperty(
+        _get_normal_trailing_icon,
+        _set_normal_trailing_icon,
+        bind=['label_widget',])
+    """The icon name in normal state of the trailing icon displayed to
+    the right.
+
+    This property gets/sets the `normal_icon` property of the 
+    `trailing_widget`.
+
+    :attr:`normal_trailing_icon` is a 
+    :class:`~kivy.properties.AliasProperty` and is bound to changes in
+    the `trailing_widget`.
+    """
+
+    def _get_active_trailing_icon(self) -> str:
+        """Get the text from the label widget.
+
+        This method retrieves the active icon from the `trailing_widget`.
+        If the `trailing_widget` is None, it returns an empty string.
+
+        Returns
+        -------
+        str
+            The active icon name of the trailing widget
+        """
+        if self.trailing_widget is None:
+            return ''
+        
+        return self.trailing_widget.active_icon
+    
+    def _set_active_trailing_icon(self, icon_name: str) -> None:
+        """Set the text on the label widget.
+
+        This method sets the active icon on the `trailing_widget`. 
+
+        Parameters
+        ----------
+        icon_name : str
+            The icon name to set on the trailing widget in its active 
+            state.
+        """
+        if self.trailing_widget is not None:
+            self.trailing_widget.active_icon = icon_name
+
+    active_trailing_icon: str = AliasProperty(
+        _get_active_trailing_icon,
+        _set_active_trailing_icon,
+        bind=['label_widget',])
+    """The icon name in active state of the trailing icon displayed to
+    the right.
+
+    This property gets/sets the `active_icon` property of the 
+    `trailing_widget`.
+
+    :attr:`active_trailing_icon` is a 
+    :class:`~kivy.properties.AliasProperty` and is bound to changes in
+    the `trailing_widget`.
     """
 
     trailing_widget: MorphTrailingIconLabel = ObjectProperty(None)
