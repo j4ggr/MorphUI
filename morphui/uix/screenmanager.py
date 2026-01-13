@@ -1,10 +1,13 @@
+
+from kivy.properties import AliasProperty
 from kivy.uix.screenmanager import Screen
 from kivy.uix.screenmanager import ScreenManager
 
 from morphui.utils.helpers import clean_config
+from morphui.uix.behaviors import MorphAutoSizingBehavior
 from morphui.uix.behaviors import MorphColorThemeBehavior
-from morphui.uix.behaviors import MorphSurfaceLayerBehavior
 from morphui.uix.behaviors import MorphDeclarativeBehavior
+from morphui.uix.behaviors import MorphSurfaceLayerBehavior
 
 
 __all__ = [
@@ -16,6 +19,7 @@ class MorphScreen(
         MorphDeclarativeBehavior,
         MorphColorThemeBehavior,
         MorphSurfaceLayerBehavior,
+        MorphAutoSizingBehavior,
         Screen):
     """A Screen that supports declarative child widgets via
     :class:`~morphui.uix.behaviors.MorphDeclarativeBehavior`.
@@ -54,11 +58,93 @@ class MorphScreen(
             return sm
     MyApp().run()
     ```
+
+    Notes
+    -----
+    - The `identity` property of the screen can be set via the `name`
+      keyword argument during instantiation for convenience and vice
+      versa.
+    - The `minimum_height` and `minimum_width` properties provide
+      read-only access to the minimum dimensions required by the screen
+      based on its child widgets.
     """
+
+    def _get_minimum_height(self) -> float:
+        """Calculate the minimum height required by the screen based on
+        its child widgets.
+
+        This method iterates through all child widgets of the screen
+        to determine the vertical span they occupy, returning the
+        minimum height needed to accommodate them.
+        """
+        if not self.children:
+            return 0.0
+        
+        y_min = float('inf')
+        y_max = float('-inf')
+        for child in self.children:
+            y_min = min(y_min, child.y)
+            y_max = max(y_max, child.y + child.height)
+        return y_max - y_min
+
+    minimum_height: float = AliasProperty(
+        _get_minimum_height,
+        None,
+        bind=['children'],
+        cache=True,)
+    """The minimum height required by the screen based on its child
+    widgets (read-only).
+
+    This property is automatically updated whenever the screen's
+    children change.
+
+    :attr:`minimum_height` is an 
+    :class:`~kivy.properties.AliasProperty` that is read-only and bound
+    to the screen's children.
+    """
+
+    def _get_minimum_width(self) -> float:
+        """Calculate the minimum width required by the screen based on
+        its child widgets.
+
+        This method iterates through all child widgets of the screen
+        to determine the horizontal span they occupy, returning the
+        minimum width needed to accommodate them.
+        """
+        if not self.children:
+            return 0.0
+        
+        x_min = float('inf')
+        x_max = float('-inf')
+        for child in self.children:
+            x_min = min(x_min, child.x)
+            x_max = max(x_max, child.x + child.width)
+        return x_max - x_min    
+    
+    minimum_width: float = AliasProperty(
+        _get_minimum_width,
+        None,
+        bind=['children'],
+        cache=True,)
+    """The minimum width required by the screen based on its child
+    widgets (read-only).
+
+    This property is automatically updated whenever the screen's
+    children change.
+
+    :attr:`minimum_width` is an
+    :class:`~kivy.properties.AliasProperty` that is read-only and bound
+    to the screen's children.
+    """
+
     default_config: dict = dict()
     
     def __init__(self, *widgets, **kwargs) -> None:
         config = clean_config(self.default_config, kwargs)
+        if 'name' in config and 'identity' not in config:
+            config['identity'] = config['name']
+        elif 'identity' in config and 'name' not in config:
+            config['name'] = config['identity']
         super().__init__(*widgets, **config)
     
 
@@ -104,5 +190,66 @@ class MorphScreenManager(
         MyApp().run()
     ```
     """
+    def _get_minimum_width(self) -> float:
+        """Calculate the minimum width required by the screen manager
+        based on its current screen.
+
+        This method returns the minimum width needed to accommodate
+        the currently active screen.
+        """
+        current_screen = self.current_screen
+        if current_screen:
+            return current_screen.minimum_width
+        return 0.0
+    
+    minimum_width: float = AliasProperty(
+        _get_minimum_width,
+        None,
+        bind=['current_screen'],
+        cache=True,)
+    """The minimum width required by the screen manager based on its
+    current screen (read-only).
+
+    This property is automatically updated whenever the current
+    screen changes. The minimum width is derived from the
+    `minimum_width` property of the active screen.
+
+    :attr:`minimum_width` is an
+    :class:`~kivy.properties.AliasProperty` that is read-only and bound
+    to the current screen's minimum width.
+    """
+
+    def _get_minimum_height(self) -> float:
+        """Calculate the minimum height required by the screen manager
+        based on its current screen.
+
+        This method returns the minimum height needed to accommodate
+        the currently active screen.
+        """
+        current_screen = self.current_screen
+        if current_screen:
+            return current_screen.minimum_height
+        return 0.0
+
+    minimum_height: float = AliasProperty(
+        _get_minimum_height,
+        None,
+        bind=['current_screen'],
+        cache=True,)
+    """The minimum height required by the screen manager based on its
+    current screen (read-only).
+
+    This property is automatically updated whenever the current
+    screen changes. The minimum height is derived from the
+    `minimum_height` property of the active screen.
+
+    :attr:`minimum_height` is an
+    :class:`~kivy.properties.AliasProperty` that is read-only and bound
+    to the current screen's minimum height.
+    """
+
+    default_config: dict = dict()
+    
     def __init__(self, *widgets, **kwargs) -> None:
-        super().__init__(*widgets, **kwargs)
+        config = clean_config(self.default_config, kwargs)
+        super().__init__(*widgets, **config)
