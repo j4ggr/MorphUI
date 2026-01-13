@@ -437,25 +437,26 @@ class MorphAutoSizingBehavior(EventDispatcher):
             self.auto_width = False
             self.auto_height = False
 
-        self._original_size = self.size
-        self._original_size_hint = self.size_hint
+        self._original_size = tuple(self.size)
+        self._original_size_hint = tuple(self.size_hint)
         
         if self.has_texture_size and hasattr(self, 'text_size'):
             self.bind(text=self._update_text_size)
             self.bind(texture_size=self._update_text_size)
 
         if hasattr(self, 'minimum_width') and hasattr(self, 'minimum_height'):
-            self.fbind('minimum_width', self._update_size)
-            self.fbind('minimum_height', self._update_size)
+            self.fbind('minimum_width', self._update_auto_sizing)
+            self.fbind('minimum_height', self._update_auto_sizing)
         elif self.has_texture_size:
-            self.fbind('texture_size', self._update_size)
-        for prop in ('auto_width', 'auto_height'):
-            self.fbind(prop, self._update_auto_sizing, prop=prop)
-        if hasattr(self, 'maximum_width'):
-            self.fbind('maximum_width', self._update_size)
-        if hasattr(self, 'maximum_height'):
-            self.fbind('maximum_height', self._update_size)
+            self.fbind('texture_size', self._update_auto_sizing)
 
+        for prop in (
+                'auto_width',
+                'auto_height',
+                'maximum_width',
+                'maximum_height',):
+            if hasattr(self, prop):
+                self.fbind(prop, self._update_auto_sizing)
         self.refresh_auto_sizing()
     
     @property
@@ -471,41 +472,6 @@ class MorphAutoSizingBehavior(EventDispatcher):
             self._has_texture_size = hasattr(self, 'texture_size')
         return self._has_texture_size
 
-    def _update_size(self, *args) -> None:
-        """Update size based on current auto sizing settings.
-
-        This method adjusts the widget's width and/or height based on
-        the current values of :attr:`auto_width` and :attr:`auto_height`.
-        It uses texture_size if available, otherwise falls back to
-        minimum_width and minimum_height.
-
-        This method is called whenever the relevant size properties
-        change, ensuring that the widget's size remains consistent with
-        its content.
-        """
-        if not self.auto_width and not self.auto_height:
-            return None
-        
-        width, height = self._original_size
-        if self.auto_width:
-            if self.has_texture_size:
-                width = self.texture_size[0]
-            width = getattr(self, 'minimum_width', width)
-            if getattr(self, 'maximum_width', None) is not None:
-                width = min(width, self.maximum_width)
-
-        if self.auto_height:
-            if self.has_texture_size:
-                height = self.texture_size[1]
-            height = getattr(self, 'minimum_height', height)
-            if getattr(self, 'maximum_height', None) is not None:
-                height = min(height, self.maximum_height)
-
-        if self.size_hint[0] is None:
-            self.width = width
-        if self.size_hint[1] is None:
-            self.height = height
-    
     def _update_text_size(
             self, instance: Any, texture_size: Tuple[float, float]) -> None:
         """Update text_size to match current width when auto_width is 
@@ -551,25 +517,15 @@ class MorphAutoSizingBehavior(EventDispatcher):
         self.text_size = (w_text, h_text)
         self.texture_update()
 
-    def _update_auto_sizing(
-            self, instance: Any, value: bool, prop: str) -> None:
+    def _update_auto_sizing(self, *args) -> None:
         """Update auto sizing based on property changes.
 
-        This method is called whenever one of the auto sizing properties
-        changes. It ensures that the appropriate sizing adjustments are
+        This method is called whenever the relevant size properties
+        change, ensuring that the widget's size remains consistent with
+        its content.It ensures that the appropriate sizing adjustments are
         made to the widget. If :attr:`auto_size` is changed, it sets
         both :attr:`auto_width` and :attr:`auto_height` to the same
         value, triggering their respective handlers.
-
-        Parameters
-        ----------
-        instance : Any
-            The widget instance that triggered the event.
-        value : bool
-            The new value of the property that changed.
-        prop : str
-            The name of the property that changed. One of 'auto_size',
-            'auto_width', 'auto_height'.
         """
         self.apply_auto_sizing(self.auto_width, self.auto_height)
 
@@ -581,7 +537,9 @@ class MorphAutoSizingBehavior(EventDispatcher):
         This method is responsible for applying the appropriate sizing
         adjustments to the widget based on the provided flags. It stores
         the original size and size_hint before making any changes,
-        allowing for restoration when auto sizing is disabled.
+        allowing for restoration when auto sizing is disabled. It uses 
+        :attr:`texture_size` if available, otherwise falls back to
+        :attr:`minimum_width` and :attr:`minimum_height`.
 
         Parameters
         ----------
@@ -590,17 +548,27 @@ class MorphAutoSizingBehavior(EventDispatcher):
         auto_height : bool
             Whether to apply auto height sizing.
         """
+        width, height = self._original_size
         if auto_width:
             self.size_hint_x = None
+            if self.has_texture_size:
+                width = self.texture_size[0]
+            self.width = min(
+                getattr(self, 'minimum_width', width),
+                getattr(self, 'maximum_width', float('inf')),)
         else:
             self.size_hint_x = self._original_size_hint[0]
-
+        
         if auto_height:
             self.size_hint_y = None
+            if self.has_texture_size:
+                height = self.texture_size[1]
+            self.height = min(
+                getattr(self, 'minimum_height', height),
+                getattr(self, 'maximum_height', float('inf')),)
         else:
             self.size_hint_y = self._original_size_hint[1]
-        
-        self._update_size()
+
         self.dispatch('on_auto_size_updated')
 
     def refresh_auto_sizing(self) -> None:
