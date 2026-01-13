@@ -153,7 +153,9 @@ class MorphIconBehavior(
         _set_icon,
         bind=[
             'normal_icon',
-            'active_icon'],)
+            'active_icon',
+            'disabled_icon',
+            'focus_icon',],)
     """Gets or sets the icon name for the widget.
     
     The `icon` property represents the name of the icon to be displayed
