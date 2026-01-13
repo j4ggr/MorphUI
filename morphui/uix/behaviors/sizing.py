@@ -454,7 +454,8 @@ class MorphAutoSizingBehavior(EventDispatcher):
                 'auto_width',
                 'auto_height',
                 'maximum_width',
-                'maximum_height',):
+                'maximum_height',
+                'identities'):
             if hasattr(self, prop):
                 self.fbind(prop, self._update_auto_sizing)
         self.refresh_auto_sizing()
