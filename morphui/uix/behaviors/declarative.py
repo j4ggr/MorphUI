@@ -2,6 +2,8 @@ from typing import Any
 
 from kivy.uix.widget import Widget
 from kivy.properties import ListProperty
+from kivy.properties import AliasProperty
+from kivy.properties import ObjectProperty
 from kivy.properties import StringProperty
 
 from morphui.utils.dotdict import DotDict
@@ -63,7 +65,7 @@ class MorphIdentificationBehavior:
     ```
     """
 
-    _identities = DotDict()
+    _identities: DotDict = ObjectProperty(DotDict())
     """Internal storage for the identities-to-widgets mapping.
     
     This private attribute stores the mapping between identity strings
@@ -71,35 +73,60 @@ class MorphIdentificationBehavior:
     directly - use the :attr:`identities` property instead.
     """
 
-    @property
-    def identities(self) -> DotDict:
-        """A mapping of child widget identities to their widget
-        instances.
+    def _get_identities(self) -> DotDict:
+        """Get the mapping of identities to widget instances.
         
-        This property provides access to child widgets that have been
-        assigned identities, similar to the ``ids`` attribute in Kivy's
-        kv language. Widgets can be accessed using dot notation.
-        
+        This method is used by the :attr:`identities` property to
+        retrieve the current mapping of identity strings to their
+        corresponding widget instances.
+
         Returns
         -------
         DotDict
-            A dictionary-like object that supports both bracket notation
-            (``identities['widget_name']``) and dot notation 
-            (``identities.widget_name``) for accessing widgets.
-            
-        Examples
-        --------
-        ```python
-        # Assuming child widgets have been added with identities:
-        button = parent.identities.submit_button
-        label = parent.identities['status_label']
-        
-        # Check if an identity exists:
-        if 'optional_widget' in parent.identities:
-            widget = parent.identities.optional_widget
-        ```
+            A mapping of identity strings to their corresponding widget
+            instances.
         """
         return self._identities
+    
+    def _set_identities(self, identities: DotDict) -> None:
+        """Set the mapping of identities to widget instances.
+
+        This method is used internally to update the :attr:`_identities`
+        attribute when new widgets with identities are added or removed.
+
+        Parameters
+        ----------
+        identities : DotDict
+            The new mapping of identity strings to widget instances.
+        """
+        self._identities = identities
+
+    identities = AliasProperty(
+        _get_identities,
+        _set_identities,
+        bind=['_identities'])
+    """A mapping of child widget identities to their widget instances.
+
+    This property provides access to child widgets by their identity
+    strings. When a child widget with an identity is added to this 
+    widget, it becomes accessible via this mapping. This is similar to
+    the ``ids`` attribute in Kivy's kv language. The mapping is a
+    :class:`DotDict`, allowing access via dot notation.
+
+    :attr:`identities` is a :class:`~kivy.properties.AliasProperty`
+    that returns a :class:`DotDict` mapping identity strings to widget
+    instances.
+    
+    Examples
+    --------
+    ```python
+    parent = SomeDeclarativeWidget()
+    child = SomeWidget(identity='my_child')
+    parent.add_widget(child)
+    # Access the child via its identity
+    my_child = parent.identities.my_child
+    ```
+    """
     
     def _register_declarative_child(self, widget: Any) -> None:
         """Register a child widget's identity for easy access.
@@ -126,14 +153,14 @@ class MorphIdentificationBehavior:
         """
         # Always overwrite identities here to avoid class attribute
         # conflicts in multiple inheritance scenarios!
-        if hasattr(widget, '_identities'):
-            for sub_widget in widget._identities.values():
+        if hasattr(widget, 'identities'):
+            for sub_widget in widget.identities.values():
                 self._register_declarative_child(sub_widget)
 
         identity = getattr(widget, 'identity', None)
         if identity is not None and identity != '':
-            self._identities = DotDict(
-                {identity: widget} | {**self._identities})
+            self.identities = DotDict(
+                {identity: widget} | {**self.identities})
     
     def _unregister_declarative_child(self, widget: Any) -> None:
         """Unregister a child widget's identity from the identities 
