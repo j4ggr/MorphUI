@@ -44,8 +44,12 @@ __all__ = [
     'MorphButton',
     'MorphIconButton',
     'MorphTrailingIconButton',
+    'MorphIconTextButton',
+    'MorphTextIconButton',
+    'MorphTextIconToggleButton',
     'MorphChipTrailingIconButton',
-    'MorphTextFieldTrailingIconButton',]
+    'MorphTextFieldTrailingIconButton',
+    'MorphDatePickerDayButton',]
 
 
 class MorphSimpleIconButton(
@@ -405,6 +409,23 @@ class MorphTextIconButton(
         `active_icon` depending on whether the chip is active or not.
         """
         self.trailing_icon = self.icon
+
+
+class MorphTextIconToggleButton(
+        MorphToggleButtonBehavior,
+        MorphTextIconButton,):
+    """A toggle button widget that combines text and icon display with
+    ripple effect and MorphUI theming.
+
+    This class extends MorphTextIconButton and adds toggle behavior,
+    allowing the button to switch between active and inactive states.
+    By default, it uses 'menu-down' and 'menu-up' icons to indicate
+    the toggle state.
+    """
+    default_config: Dict[str, Any] = (
+        MorphTextIconButton.default_config.copy() | dict(
+        normal_icon='menu-down',
+        active_icon='menu-up',))
 
 
 class MorphChipTrailingIconButton(
