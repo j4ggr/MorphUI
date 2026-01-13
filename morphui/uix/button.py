@@ -55,6 +55,7 @@ __all__ = [
 class MorphSimpleIconButton(
         MorphIconBehavior,
         MorphAutoSizingBehavior,
+        MorphIdentificationBehavior,
         MorphThemeBehavior,
         MorphHoverBehavior,
         MorphRippleBehavior,
@@ -75,8 +76,8 @@ class MorphSimpleIconButton(
     default_config: Dict[str, Any] = dict(
         theme_color_bindings=dict(
             normal_surface_color='transparent_color',
-            disabled_border_color='outline_variant_color',
             normal_content_color='content_surface_color',
+            disabled_content_color='content_surface_variant_color',
             hovered_content_color='content_surface_variant_color'),
         typography_role=MorphIconLabel.default_config['typography_role'],
         typography_size=MorphIconLabel.default_config['typography_size'],
@@ -298,10 +299,9 @@ class MorphIconTextButton(
     default_config: Dict[str, Any] = dict(
         theme_color_bindings={
             'normal_surface_color': 'surface_container_color',
-            'normal_border_color': 'outline_color',
-            'disabled_border_color': 'outline_variant_color',
             'normal_content_color': 'content_surface_color',
-            'hovered_content_color': 'content_surface_variant_color',},
+            'hovered_content_color': 'content_surface_variant_color',
+            'disabled_content_color': 'content_surface_variant_color',},
         orientation='horizontal',
         ripple_enabled=True,
         ripple_color=None,
@@ -375,20 +375,11 @@ class MorphTextIconButton(
       MorphButtonTrailingIconLabel` for displaying the trailing icon.
     """
 
-    default_config: Dict[str, Any] = dict(
-        theme_color_bindings={
-            'normal_surface_color': 'transparent_color',
-            'normal_content_color': 'content_surface_color',
-            'disabled_content_color': 'content_surface_variant_color',},
-        orientation='horizontal',
-        ripple_enabled=True,
-        ripple_color=None,
-        ripple_layer='interaction',
-        padding=dp(8),
-        spacing=dp(4),
-        radius=dp(4),
-        auto_size=True,
-        delegate_content_color=True,)
+    default_config: Dict[str, Any] = MorphIconTextButton.default_config.copy()
+    """Default configuration values for MorphTextIconButton.
+
+    Inherits default configuration from :class:`MorphIconTextButton`.
+    """
 
     def __init__(self, **kwargs) -> None:
         config = clean_config(self.default_config, kwargs)
