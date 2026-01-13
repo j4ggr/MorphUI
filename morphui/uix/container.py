@@ -118,11 +118,11 @@ class MorphIconLabelContainer(
     def _initialize_child_widgets(self) -> None:
         if self.leading_widget is not None:
             self.add_widget(self.leading_widget)
-            self.leading_widget.icon = self._leading_icon
+            self.leading_widget.icon = self.leading_icon
 
         if self.label_widget is not None:
             self.add_widget(self.label_widget)
-            self.label_widget.text = self._label_text
+            self.label_widget.text = self.label_text
 
 
 class MorphIconLabelIconContainer(
@@ -175,7 +175,7 @@ class MorphIconLabelIconContainer(
         
         if self.trailing_widget is not None:
             self.add_widget(self.trailing_widget)
-            self.trailing_widget.icon = self._trailing_icon
+            self.trailing_widget.icon = self.trailing_icon
 
 
 class MorphLabelIconContainer(
@@ -223,8 +223,8 @@ class MorphLabelIconContainer(
     def _initialize_child_widgets(self) -> None:
         if self.label_widget is not None:
             self.add_widget(self.label_widget)
-            self.label_widget.text = self._label_text
+            self.label_widget.text = self.label_text
 
         if self.trailing_widget is not None:
             self.add_widget(self.trailing_widget)
-            self.trailing_widget.icon = self._trailing_icon
+            self.trailing_widget.icon = self.trailing_icon
