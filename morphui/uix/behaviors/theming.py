@@ -3,6 +3,7 @@ import warnings
 from typing import Any
 from typing import Dict
 from typing import Literal
+from typing import get_args
 
 from kivy.event import EventDispatcher
 from kivy.properties import DictProperty
@@ -14,6 +15,8 @@ from kivy.properties import ListProperty
 from .appreference import MorphAppReferenceBehavior
 
 from morphui.constants import THEME
+
+from morphui._typing import State
 
 
 __all__ = [
@@ -883,8 +886,12 @@ class MorphDelegatedThemeBehavior(EventDispatcher):
             The new list of child widgets to which theme delegation
             should be applied.
         """
+        states = [s for s in get_args(State) if hasattr(self, s)]
         for child in children:
             self._delegate_content_color_to_child(child)
+            for state in states:
+                if hasattr(child, state):
+                    self.fbind(state, child.setter(state))
 
     def _delegate_content_color_to_child(self, widget: Any) -> None:
         """Delegate content color theming to a specific child widget.
