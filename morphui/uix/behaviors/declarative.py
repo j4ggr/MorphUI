@@ -328,6 +328,8 @@ class MorphDeclarativeBehavior(MorphIdentificationBehavior):
         ```
         """
         super().__init__(**kwargs)
+        self.bind( # type: ignore
+            declarative_children=lambda _, children: self.add_widgets(*children))
         self.declarative_children = list(widgets)
     
     def add_widget(self, widget: Widget, *args, **kwargs) -> None:
@@ -406,8 +408,7 @@ class MorphDeclarativeBehavior(MorphIdentificationBehavior):
         super().remove_widget(widget, *args, **kwargs) # type: ignore
         self._unregister_declarative_child(widget)
 
-    def on_declarative_children(
-            self, instance: Widget, children: list[Widget]) -> None:
+    def add_widgets(self, *children: Widget) -> None:
         """Handle changes to the declarative children list.
         
         This method is automatically called when
@@ -427,9 +428,6 @@ class MorphDeclarativeBehavior(MorphIdentificationBehavior):
         
         Parameters
         ----------
-        instance : Widget
-            The widget instance (self) that triggered the property 
-            change.
         children : list[Widget]
             The new list of declarative children.
             
