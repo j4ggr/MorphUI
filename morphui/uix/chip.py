@@ -105,7 +105,7 @@ class MorphChip(
         MyApp().run()
     """
 
-    _default_child_widgets = {
+    default_child_widgets = {
         'leading_widget': MorphChipLeadingIconLabel,
         'label_widget': MorphChipTextLabel,
         'trailing_widget': MorphChipTrailingIconButton,}

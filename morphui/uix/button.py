@@ -54,6 +54,7 @@ __all__ = [
 
 class MorphSimpleIconButton(
         MorphIconBehavior,
+        MorphRoundSidesBehavior,
         MorphAutoSizingBehavior,
         MorphIdentificationBehavior,
         MorphThemeBehavior,
@@ -285,7 +286,7 @@ class MorphIconTextButton(
         MyApp().run()
     """ 
 
-    _default_child_widgets = {
+    default_child_widgets = {
         'leading_widget': MorphButtonLeadingIconLabel,
         'label_widget': MorphButtonTextLabel,}
     """Default child widgets for MorphIconTextButton.
@@ -334,14 +335,8 @@ class MorphIconTextButton(
         self.delegate_to_children = [
             self.leading_widget,
             self.label_widget,]
-    
-    def _update_icon(self, *args) -> None:
-        """Update the leading icon based on the toggle state.
-
-        This method switches the leading icon between `normal_icon` and
-        `active_icon` depending on whether the chip is active or not.
-        """
-        self.leading_icon = self.icon
+        self.leading_widget._get_icon = self._get_icon
+        self.leading_widget.icon = self.icon
 
 
 class MorphTextIconButton(
@@ -364,7 +359,7 @@ class MorphTextIconButton(
     ripple effects and theming.
     """
 
-    _default_child_widgets = {
+    default_child_widgets = {
         'label_widget': MorphButtonTextLabel,
         'trailing_widget': MorphButtonTrailingIconLabel,}
     """Default child widgets for MorphTextIconButton.
@@ -392,14 +387,8 @@ class MorphTextIconButton(
         self.delegate_to_children = [
             self.label_widget,
             self.trailing_widget,]
-        
-    def _update_icon(self, *args) -> None:
-        """Update the leading icon based on the toggle state.
-
-        This method switches the leading icon between `normal_icon` and
-        `active_icon` depending on whether the chip is active or not.
-        """
-        self.trailing_icon = self.icon
+        self.trailing_widget._get_icon = self._get_icon
+        self.trailing_widget.icon = self.icon
 
 
 class MorphTextIconToggleButton(

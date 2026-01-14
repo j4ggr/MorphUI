@@ -37,7 +37,7 @@ class _MorphBaseContainer(
     all container widgets to eliminate code duplication.
     """
 
-    _default_child_widgets: Dict[str, Any] = {}
+    default_child_widgets: Dict[str, Any] = {}
     """Default child widgets for the container.
     
     This dictionary maps widget identities to their default classes.
@@ -56,21 +56,47 @@ class _MorphBaseContainer(
     """
 
     def __init__(self, **kwargs) -> None:
-        config = clean_config(self.default_config, kwargs)
-        
-        # Create default child widgets if not provided
-        for key, widget_cls in self._default_child_widgets.items():
-            if key not in config and widget_cls is not None:
-                config[key] = widget_cls()
-        
+        config = self._prepare_config(**kwargs)
         super().__init__(**config)
-        
-        # Initialize child widgets with stored values
         self._initialize_child_widgets()
     
+    def _prepare_config(self, **kwargs) -> Dict[str, Any]:
+        """Prepare configuration by merging defaults and instantiating
+        child widgets.
+
+        This method combines the default configuration with any
+        overrides provided during instantiation. It also ensures that
+        default child widgets are created if not explicitly provided.
+
+        Parameters
+        ----------
+        **kwargs : Any
+            Configuration overrides provided during instantiation.
+
+        Returns
+        -------
+        Dict[str, Any]
+            The final configuration dictionary with defaults applied
+            and child widgets instantiated.
+        """
+        config = clean_config(self.default_config, kwargs)
+        for key, widget_cls in self.default_child_widgets.items():
+            if key not in config and widget_cls is not None:
+                config[key] = widget_cls()
+        return config
+    
     def _initialize_child_widgets(self) -> None:
-        """Initialize child widgets. Override in subclasses."""
-        pass
+        """Initialize child widgets. Override in subclasses.
+        
+        This method adds the child widgets to the container based on
+        the `default_child_widgets` mapping. Subclasses can override
+        this method to customize the initialization process.
+        """
+        for key in self.default_child_widgets.keys():
+            widget = getattr(self, key, None)
+            if widget is not None:
+                self.add_widget(widget)
+                getattr(self, f'refresh_{key}', lambda: None)()
 
 
 class MorphIconLabelContainer(
@@ -111,23 +137,16 @@ class MorphIconLabelContainer(
     ```
     """
 
-    _default_child_widgets = {
+    default_child_widgets = {
         'leading_widget': MorphLeadingIconLabel,
         'label_widget': MorphTextLabel,}
 
-    def _initialize_child_widgets(self) -> None:
-        if self.leading_widget is not None:
-            self.add_widget(self.leading_widget)
-            self.leading_widget.icon = self.leading_icon
-
-        if self.label_widget is not None:
-            self.add_widget(self.label_widget)
-            self.label_widget.text = self.label_text
-
 
 class MorphIconLabelIconContainer(
+        MorphLeadingWidgetBehavior,
+        MorphLabelWidgetBehavior,
         MorphTrailingWidgetBehavior,
-        MorphIconLabelContainer):
+        _MorphBaseContainer):
     """Container with leading icon, text label, and trailing icon.
     
     This container provides a horizontal layout with three child widgets:
@@ -165,17 +184,10 @@ class MorphIconLabelIconContainer(
     ```
     """
 
-    _default_child_widgets = {
+    default_child_widgets = {
         'leading_widget': MorphLeadingIconLabel,
         'label_widget': MorphTextLabel,
         'trailing_widget': MorphTrailingIconLabel,}
-
-    def _initialize_child_widgets(self) -> None:
-        super()._initialize_child_widgets()
-        
-        if self.trailing_widget is not None:
-            self.add_widget(self.trailing_widget)
-            self.trailing_widget.icon = self.trailing_icon
 
 
 class MorphLabelIconContainer(
@@ -216,15 +228,6 @@ class MorphLabelIconContainer(
     ```
     """
 
-    _default_child_widgets = {
+    default_child_widgets = {
         'label_widget': MorphTextLabel,
         'trailing_widget': MorphTrailingIconLabel,}
-
-    def _initialize_child_widgets(self) -> None:
-        if self.label_widget is not None:
-            self.add_widget(self.label_widget)
-            self.label_widget.text = self.label_text
-
-        if self.trailing_widget is not None:
-            self.add_widget(self.trailing_widget)
-            self.trailing_widget.icon = self.trailing_icon

@@ -133,6 +133,8 @@ class MorphIconBehavior(
             text = icon
         elif icon == '':
             text = ''
+        elif icon == 'blank':
+            text = '\u200B'  # Zero-width space
         else:
             text = self.typography.get_icon_character(icon)
 
