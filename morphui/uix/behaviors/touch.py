@@ -329,6 +329,36 @@ class MorphButtonBehavior(EventDispatcher):
         """
         self.active = False
     
+    def trigger_action(self, duration=0.1) -> None:
+        """Programmatically trigger a press and release action.
+
+        This method simulates a press and release action on the widget.
+        It can be used to programmatically activate the button behavior
+        without user interaction.
+
+        Parameters
+        ----------
+        duration : float, optional
+            The duration (in seconds) to wait between the press and
+            release actions. Default is 0.1 seconds.
+        
+        Notes
+        -----
+        This implementation is based on Kivy button behavior's, see
+        :meth:`~kivy.uix.behaviors.ButtonBehavior.trigger_action`
+        """
+        self._do_press()
+        self.dispatch('on_press')
+
+        def trigger_release(dt) -> None:
+            self._do_release()
+            self.dispatch('on_release')
+
+        if not duration:
+            trigger_release(0)
+        else:
+            Clock.schedule_once(trigger_release, duration)
+    
     def on_press(self) -> None:
         """Event fired when the widget is pressed.
 
@@ -1015,4 +1045,3 @@ class MorphToggleButtonBehavior(MorphButtonBehavior):
             self.active = True
         elif self.group is None or self.allow_no_selection:
             self.active = False
-
