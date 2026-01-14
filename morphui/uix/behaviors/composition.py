@@ -4,6 +4,7 @@ This module provides behaviors for managing child widget delegation,
 allowing parent widgets to expose and control properties of their child
 widgets through aliased properties.
 """
+from typing import Any
 
 from kivy.properties import AliasProperty
 from kivy.properties import StringProperty
@@ -105,7 +106,7 @@ class MorphLeadingWidgetBehavior:
         if self.leading_widget is None:
             return ''
         
-        return self.leading_widget.normal_icon
+        return self.leading_widget.normal_icon or self._normal_leading_icon
     
     def _set_normal_leading_icon(self, icon_name: str) -> None:
         """Set the normal icon on the leading widget.
@@ -119,14 +120,18 @@ class MorphLeadingWidgetBehavior:
             The icon name to set on the leading widget in its normal 
             state.
         """
-        self._leading_icon = icon_name
+        self._normal_leading_icon = icon_name
         if self.leading_widget is not None:
             self.leading_widget.normal_icon = icon_name
+
+    _normal_leading_icon: str = StringProperty('')
+    """Internal stored name of the normal leading icon displayed to the
+    left."""
 
     normal_leading_icon: str = AliasProperty(
         _get_normal_leading_icon,
         _set_normal_leading_icon,
-        bind=['leading_widget',])
+        bind=['leading_widget', '_normal_leading_icon',])
     """The icon name in normal state of the leading icon displayed to 
     the left.
 
@@ -152,7 +157,7 @@ class MorphLeadingWidgetBehavior:
         if self.leading_widget is None:
             return ''
         
-        return self.leading_widget.active_icon
+        return self.leading_widget.active_icon or self._active_leading_icon
     
     def _set_active_leading_icon(self, icon_name: str) -> None:
         """Set the active icon on the leading widget.
@@ -165,13 +170,18 @@ class MorphLeadingWidgetBehavior:
             The icon name to set on the leading widget in its active 
             state.
         """
+        self._active_leading_icon = icon_name
         if self.leading_widget is not None:
             self.leading_widget.active_icon = icon_name
+    
+    _active_leading_icon: str = StringProperty('')
+    """Internal stored name of the active leading icon displayed to the
+    left."""
     
     active_leading_icon: str = AliasProperty(
         _get_active_leading_icon,
         _set_active_leading_icon,
-        bind=['leading_widget',])
+        bind=['leading_widget', '_active_leading_icon',])
     """The icon name in active state of the leading icon displayed to 
     the left.
 
@@ -189,6 +199,29 @@ class MorphLeadingWidgetBehavior:
     :attr:`leading_widget` is by default an instance of
     :class:`~morphui.uix.label.MorphLeadingIconLabel`.
     """
+
+    def on_leading_widget(self, instance: Any, leading_widget: Any) -> None:
+        """Called when the leading widget is changed.
+
+        This method updates the `leading_widget` to ensure it reflects
+        the current state of the parent widget, including icon names
+        and any other relevant properties.
+        """
+        if self.leading_widget is None:
+            return
+        
+        self.leading_widget.icon = self.leading_icon
+        self.leading_widget.normal_icon = self.normal_leading_icon
+        self.leading_widget.active_icon = self.active_leading_icon
+    
+    def refresh_leading_widget(self) -> None:
+        """Refresh the leading widget to reflect current properties.
+
+        This method updates the `leading_widget` to ensure it reflects
+        the current state of the parent widget, including icon names
+        and any other relevant properties.
+        """
+        self.on_leading_widget(self, self.leading_widget)
 
 
 class MorphLabelWidgetBehavior:
@@ -260,6 +293,26 @@ class MorphLabelWidgetBehavior:
     :attr:`label_widget` is by default an instance of
     :class:`~morphui.uix.label.MorphTextLabel`.
     """
+    def on_label_widget(self, instance: Any, label_widget: Any) -> None:
+        """Called when the label widget is changed.
+
+        This method updates the `label_widget` to ensure it reflects
+        the current state of the parent widget, including text content
+        and any other relevant properties.
+        """
+        if self.label_widget is None:
+            return
+        
+        self.label_widget.text = self.label_text
+
+    def refresh_label_widget(self) -> None:
+        """Refresh the label widget to reflect current properties.
+
+        This method updates the `label_widget` to ensure it reflects
+        the current state of the parent widget, including text content
+        and any other relevant properties.
+        """
+        self.on_label_widget(self, self.label_widget)
 
 
 class MorphTrailingWidgetBehavior:
@@ -322,7 +375,7 @@ class MorphTrailingWidgetBehavior:
     trailing_icon: str = AliasProperty(
         _get_trailing_icon,
         _set_trailing_icon,
-        bind=['trailing_widget',])
+        bind=['trailing_widget', '_trailing_icon',])
     """The name of the trailing icon displayed to the right.
 
     This property gets/sets the `icon` property of the `trailing_widget`.
@@ -348,7 +401,7 @@ class MorphTrailingWidgetBehavior:
         if self.trailing_widget is None:
             return ''
         
-        return self.trailing_widget.normal_icon
+        return self.trailing_widget.normal_icon or self._normal_trailing_icon
 
     def _set_normal_trailing_icon(self, icon_name: str) -> None:
         """Set the normal icon on the trailing widget.
@@ -362,14 +415,18 @@ class MorphTrailingWidgetBehavior:
             The icon name to set on the trailing widget in its normal 
             state.
         """
-        self._trailing_icon = icon_name
+        self._normal_trailing_icon = icon_name
         if self.trailing_widget is not None:
             self.trailing_widget.normal_icon = icon_name
+    
+    _normal_trailing_icon: str = StringProperty('')
+    """Internal stored name of the normal trailing icon displayed to the
+    right."""
 
     normal_trailing_icon: str = AliasProperty(
         _get_normal_trailing_icon,
         _set_normal_trailing_icon,
-        bind=['trailing_widget',])
+        bind=['trailing_widget', '_normal_trailing_icon',])
     """The icon name in normal state of the trailing icon displayed to
     the right.
 
@@ -395,7 +452,7 @@ class MorphTrailingWidgetBehavior:
         if self.trailing_widget is None:
             return ''
         
-        return self.trailing_widget.active_icon
+        return self.trailing_widget.active_icon or self._active_trailing_icon
     
     def _set_active_trailing_icon(self, icon_name: str) -> None:
         """Set the active icon on the trailing widget.
@@ -408,13 +465,18 @@ class MorphTrailingWidgetBehavior:
             The icon name to set on the trailing widget in its active 
             state.
         """
+        self._active_trailing_icon = icon_name
         if self.trailing_widget is not None:
             self.trailing_widget.active_icon = icon_name
+    
+    _active_trailing_icon: str = StringProperty('')
+    """Internal stored name of the active trailing icon displayed to the
+    right."""
 
     active_trailing_icon: str = AliasProperty(
         _get_active_trailing_icon,
         _set_active_trailing_icon,
-        bind=['trailing_widget',])
+        bind=['trailing_widget', '_active_trailing_icon',])
     """The icon name in active state of the trailing icon displayed to
     the right.
 
@@ -432,3 +494,25 @@ class MorphTrailingWidgetBehavior:
     :attr:`trailing_widget` is by default an instance of
     :class:`~morphui.uix.label.MorphTrailingIconLabel`.
     """
+    def on_trailing_widget(self, instance: Any, trailing_widget: Any) -> None:
+        """Called when the trailing widget is changed.
+
+        This method updates the `trailing_widget` to ensure it reflects
+        the current state of the parent widget, including icon names
+        and any other relevant properties.
+        """
+        if self.trailing_widget is None:
+            return
+        
+        self.trailing_widget.icon = self.trailing_icon
+        self.trailing_widget.normal_icon = self.normal_trailing_icon
+        self.trailing_widget.active_icon = self.active_trailing_icon
+
+    def refresh_trailing_widget(self) -> None:
+        """Refresh the trailing widget to reflect current properties.
+
+        This method updates the `trailing_widget` to ensure it reflects
+        the current state of the parent widget, including icon names
+        and any other relevant properties.
+        """
+        self.on_trailing_widget(self, self.trailing_widget)
