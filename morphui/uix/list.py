@@ -17,6 +17,7 @@ from morphui.uix.behaviors import MorphHoverBehavior
 from morphui.uix.behaviors import MorphRippleBehavior
 from morphui.uix.behaviors import MorphButtonBehavior
 from morphui.uix.behaviors import MorphColorThemeBehavior
+from morphui.uix.behaviors import MorphToggleButtonBehavior
 from morphui.uix.behaviors import MorphOverlayLayerBehavior
 from morphui.uix.behaviors import MorphContentLayerBehavior
 from morphui.uix.behaviors import MorphIdentificationBehavior
@@ -28,6 +29,7 @@ from morphui.uix.recycleboxlayout import MorphRecycleBoxLayout
 
 __all__ = [
     'MorphListItemFlat',
+    'MorphToggleListItemFlat',
     'MorphListLayout',
     'BaseListView',
     ]
@@ -81,6 +83,7 @@ class MorphListItemFlat(
     default_config: Dict[str, Any] = (
         MorphIconLabelIconContainer.default_config.copy() | dict(
             theme_color_bindings={
+                'normal_surface_color': 'transparent_color',
                 'normal_overlay_edge_color': 'outline_color',
                 'normal_content_color': 'content_surface_color',},
             overlay_edge_width=dp(0.5),
@@ -122,6 +125,9 @@ class MorphListItemFlat(
         self.refresh_auto_sizing()
         self.refresh_content()
         self.refresh_overlay()
+        self.refresh_leading_widget()
+        self.refresh_label_widget()
+        self.refresh_trailing_widget()
 
     def on_release(self) -> None:
         """Handle the release event for this list item.
@@ -134,6 +140,38 @@ class MorphListItemFlat(
             self.release_callback(self, self.rv_index)
 
 
+class MorphToggleListItemFlat(
+        MorphToggleButtonBehavior,
+        MorphListItemFlat):
+    """A toggleable list item within a MorphUI list view.
+
+    This widget extends the base MorphListItemFlat to include toggle
+    button behavior, allowing it to be used as a selectable item
+    within a list. It supports active state management and can be
+    grouped with other toggle items.
+    """
+
+    def refresh_view_attrs(
+            self,
+            rv: RecycleView,
+            index: int,
+            data: Dict[str, Any]
+            ) -> None:
+        """Refreshes the view attributes of this top list item.
+
+        Parameters
+        ----------
+        rv : RecycleView
+            The RecycleView instance managing this list item.
+        index : int
+            The index of this menu item within the RecycleView data.
+        data : Dict[str, Any]
+            The data list containing the attributes for all menu items.
+        """
+        super().refresh_view_attrs(rv, index, data)
+        self.leading_widget.active = self.active
+
+
 class MorphListLayout(
         MorphRecycleBoxLayout):
     """A layout for arranging index labels in a data view.
@@ -144,7 +182,7 @@ class MorphListLayout(
     
     default_config: Dict[str, Any] = dict(
         theme_color_bindings={
-            'normal_surface_color': 'surface_container_low_color'},
+            'normal_surface_color': 'transparent_color',},
         orientation='vertical',
         auto_size=(False, True),
         size_hint_x=1,)
