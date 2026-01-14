@@ -51,9 +51,9 @@ class DisabledButton(MorphButton):
 class AutoSizeIcon(MorphIconLabel):
 
     def switch_auto_size(self, *args) -> None:
-        new_state = not self.auto_size
+        new_state = not self.auto_size[0]
         self.auto_size = new_state, new_state
-        self.icon = 'language-java' if new_state else 'language-python'
+        self.active = new_state
 
 class MyApp(MorphApp):
     def build(self) -> MorphBoxLayout:
@@ -66,8 +66,11 @@ class MyApp(MorphApp):
                 theme_style='secondary',
                 disabled=True,),
             AutoSizeIcon(
+                auto_size_once=False,
+                size_hint=(1, 1),
                 identity='icon_label',
-                icon='language-python'),
+                normal_icon='language-python',
+                active_icon='language-java'),
             MorphLabel(
                 text="Morph default\n Label",),
             MorphIconLabel(

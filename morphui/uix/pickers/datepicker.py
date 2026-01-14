@@ -15,13 +15,17 @@ from kivy.properties import ListProperty
 from kivy.properties import AliasProperty
 from kivy.properties import StringProperty
 from kivy.properties import NumericProperty
+from kivy.uix.widget import Widget
 
 from morphui.uix.list import BaseListView
 from morphui.uix.list import MorphListLayout # noqa F401
-from morphui.uix.list import MorphListItemFlat
+from morphui.uix.list import MorphToggleListItemFlat
 from morphui.uix.label import MorphSimpleLabel
-from morphui.uix.button import MorphTextIconButton
+from morphui.uix.label import MorphSimpleIconLabel
+from morphui.uix.label import MorphLeadingIconLabel
+from morphui.uix.button import MorphSimpleIconButton
 from morphui.uix.button import MorphDatePickerDayButton
+from morphui.uix.button import MorphTextIconToggleButton
 from morphui.uix.boxlayout import MorphBoxLayout
 from morphui.uix.textfield import MorphTextField
 from morphui.uix.behaviors import MorphElevationBehavior
@@ -30,6 +34,8 @@ from morphui.uix.behaviors import MorphSizeBoundsBehavior
 from morphui.uix.gridlayout import MorphGridLayout
 from morphui.uix.screenmanager import MorphScreen
 from morphui.uix.screenmanager import MorphScreenManager
+
+from morphui.utils.helpers import clamp
 
 
 __all__ = [
@@ -40,25 +46,57 @@ __all__ = [
     'MorphDockedDatePickerField',]
 
 
+class _ListItemLeadingWidget(MorphLeadingIconLabel):
+
+    default_config: Dict[str, Any] = (
+        MorphLeadingIconLabel.default_config.copy() | dict(
+            auto_size=(False, True),
+            size_hint_x=(None),
+            width=(dp(24)),))
+    
+class _ListItemLabelWidget(MorphSimpleLabel):
+
+    default_config: Dict[str, Any] = (
+        MorphSimpleLabel.default_config.copy() | dict(
+            auto_size=(True, True),))
+    
+class _ListItemTrailingWidget(MorphSimpleIconLabel):
+
+    default_config: Dict[str, Any] = (
+        MorphSimpleIconLabel.default_config.copy() | dict(
+            auto_size=(False, True),
+            size_hint_x=(1),))
+
+class _ToggleListItemFlat(
+        MorphToggleListItemFlat):
+    
+    default_child_widgets = (
+        MorphToggleListItemFlat.default_child_widgets | {
+        'leading_widget': _ListItemLeadingWidget,
+        'label_widget': _ListItemLabelWidget,
+        'trailing_widget': _ListItemTrailingWidget,})
+
+
 class BaseDatePickerListView(
         BaseListView):
+    """Base class for date picker list views.
+
+    This class serves as a foundation for specific date picker views
+    such as year and month views.
+    """
     
     Builder.load_string(dedent('''
-        <MorphDatePickerYearView>:
-            viewclass: 'MorphListItemFlat'
+        <BaseDatePickerListView>:
+            viewclass: '_ToggleListItemFlat'
             MorphListLayout:
-                normal_surface_color: [0, 0, 0, 0]
         '''))
 
     default_data: Dict[str, Any] = DictProperty(
-        MorphListItemFlat.default_config.copy() | {
-        'normal_leading_icon': '',
+        MorphToggleListItemFlat.default_config.copy() | {
+        'normal_leading_icon': 'blank',
         'active_leading_icon': 'check',
-        'label_text': '',})
-    
-    default_config: Dict[str, Any] = (
-        BaseListView.default_config.copy() | dict(
-            size_hint=(None, None),))
+        'label_text': '',
+        'visible_edges': [],})
 
 
 class MorphDatePickerYearView(
@@ -93,14 +131,57 @@ class MorphDatePickerYearView(
     :attr:`current_year` is a :class:`kivy.properties.NumericProperty` and
     defaults to `2024`.
     """
+
+    def _get_default_scroll_y(self) -> float:
+        """Calculate the default scroll position for the year view.
+
+        This method computes the initial scroll position based on the
+        current year, ensuring that the current year is visible when
+        the view is first displayed.
+        """
+        total_years = self.year_end - self.year_start + 1
+        if total_years <= 0:
+            return 1.0
+        position = (self.current_year - self.year_start) / total_years
+        return 1.0 - position
+    
+    def _set_default_scroll_y(self, value: float) -> None:
+        """Set the scroll position for the year view.
+
+        Parameters
+        ----------
+        value : float
+            The scroll position to set (0.0 to 1.0).
+        """
+        self.scroll_y = clamp(value, 0.0, 1.0)
+
+    default_scroll_y: float = AliasProperty(
+        _get_default_scroll_y,
+        _set_default_scroll_y,
+        bind=[
+            'year_start',
+            'year_end',
+            'current_year'],)
+    """The default scroll position for the year view (read-only).
+
+    This property is automatically calculated based on the 
+    :attr:`year_start`, :attr:`year_end`, and :attr:`current_year`
+    properties to ensure that the current year is visible when the
+    view is first displayed.
+
+    :attr:`default_scroll_y` is a
+    :class:`kivy.properties.AliasProperty` that is read-only and bound
+    to the relevant year properties.
+    """
     
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
 
         self.bind( # type: ignore
             year_start=self._populate_years,
-            year_end=self._populate_years,)
-        
+            year_end=self._populate_years,
+            default_scroll_y=lambda _, value: self._set_default_scroll_y(value),)
+        self.default_scroll_y = self.default_scroll_y
         self._populate_years()
 
     def _populate_years(self, *args) -> None:
@@ -111,7 +192,10 @@ class MorphDatePickerYearView(
         year view based on the specified start and end years.
         """
         years = [
-            {'label_text': str(y), 'active': y == self.current_year,}
+            {   
+                'label_text': str(y),
+                'active': y == self.current_year,
+                'group': 'year_list_items'}
             for y in range(self.year_start, self.year_end + 1)]
         self.items = years
 
@@ -144,7 +228,9 @@ class MorphDatePickerMonthView(
 
     current_month_name: str = AliasProperty(
         lambda self: self.month_names[self.current_month - 1],
-        bind=['current_month'])
+        bind=[
+            'current_month',
+            'month_names'],)
     """The name of the currently selected month (read-only).
 
     :attr:`current_month_name` is a 
@@ -165,7 +251,10 @@ class MorphDatePickerMonthView(
         month view.
         """
         months = [
-            {'label_text': self.month_names[i], 'active': (i + 1) == self.current_month,}
+            {
+                'label_text': self.month_names[i],
+                'active': (i + 1) == self.current_month,
+                'group': 'month_list_items',}
             for i in range(12)]
         self.items = months
 
@@ -209,7 +298,7 @@ class MorphDatePickerCalendarView(
                         valign='middle',)
                     for _ in range(7)],
                 theme_color_bindings=dict(
-                    normal_surface_color='primary_color',),
+                    normal_surface_color='transparent_color',),
                 height=dp(42),
                 size_hint=(1, None),
                 identity='weekday_header_layout',),
@@ -284,43 +373,81 @@ class MorphDockedDatePickerMenu(
         theme_color_bindings=dict(
             normal_surface_color='surface_container_high_color',),
         orientation='vertical',
+        size_hint=(None, None),
         padding=dp(4),
-        spacing=dp(8),)
+        spacing=dp(8),
+        radius=[dp(8)],)
     
     def __init__(self, **kwargs) -> None:
-        self.screen_manager = MorphScreenManager(
-            MorphScreen(
-                MorphDatePickerCalendarView(
-                    identity='calendar_view',),
-                name='calendar_view_screen',),
-            MorphScreen(
-                MorphDatePickerMonthView(
-                    identity='month_view',),
-                name='month_view_screen',),
-            MorphScreen(
-                MorphDatePickerYearView(
-                    identity='year_view',),
-                name='year_view_screen',),
-            identity='screen_manager',)
         super().__init__(**kwargs)
-        self.add_widget(
+        kw_header_button = dict(
+            theme_color_bindings=dict(
+                normal_surface_color='transparent_color',
+                normal_content_color='content_surface_color',
+                disabled_content_color='content_surface_variant_color',
+                hovered_content_color='content_surface_variant_color',),
+            auto_size=(True, True),
+            disabled_state_opacity=0.0,
+            round_sides=True,)
+            
+        self.add_widgets(
             MorphBoxLayout(
-                MorphTextIconButton(
-                    on_release=lambda x: self._go_to_month_view(),
-                    normal_icon='menu-down',
-                    active_icon='menu-up',
-                    identity='month_button',),
-                MorphTextIconButton(
-                    normal_icon='menu-down',
-                    active_icon='menu-up',
-                    on_release=lambda x: self._go_to_year_view(),
-                    identity='year_button',),))
-        self.add_widget(self.screen_manager)
-        self.screen_manager.current = 'calendar_view_screen'
+                MorphSimpleIconButton(
+                    icon='arrow-left',
+                    on_release=lambda x: self._change_month(-1),
+                    identity='prev_month_button',
+                    **kw_header_button),
+                MorphTextIconToggleButton(
+                    on_release=lambda x: self.change_view(x, 'month_view_screen'),
+                    identity='month_button',
+                    **kw_header_button),
+                MorphSimpleIconButton(
+                    icon='arrow-right',
+                    on_release=lambda x: self._change_month(1),
+                    identity='next_month_button',
+                    **kw_header_button,),
+                Widget(),
+                MorphSimpleIconButton(
+                    icon='arrow-left',
+                    on_release=lambda x: self._change_year(-1),
+                    identity='prev_year_button',
+                    **kw_header_button),
+                MorphTextIconToggleButton(
+                    on_release=lambda x: self.change_view(x, 'year_view_screen'),
+                    identity='year_button',
+                    **kw_header_button),
+                MorphSimpleIconButton(
+                    icon='arrow-right',
+                    on_release=lambda x: self._change_year(1),
+                    identity='next_year_button',
+                    **kw_header_button),
+                identity='header_layout',
+                size_hint=(1, None),
+                auto_size=(False, True),
+                height=dp(48),),
+            MorphScreenManager(
+                MorphScreen(
+                    MorphDatePickerCalendarView(
+                        identity='calendar_view',),
+                    name='calendar_view_screen',),
+                MorphScreen(
+                    MorphDatePickerMonthView(
+                        identity='month_view',),
+                    name='month_view_screen',),
+                MorphScreen(
+                    MorphDatePickerYearView(
+                        item_release_callback=self._on_year_selected,
+                        identity='year_view',),
+                    name='year_view_screen',),
+                identity='screen_manager',))
         self.bind(
             current_year=self._update_calendar,
             current_month=self._update_calendar,)
+        self.identities.calendar_view.bind(
+            width=self._update_size,
+            height=self._update_size,)
         self._update_calendar()
+        self._update_size()
 
     def _update_calendar(self, *args) -> None:
         """Update the calendar view based on the current year and month.
@@ -334,22 +461,93 @@ class MorphDockedDatePickerMenu(
             self.calendar.itermonthdates(self.current_year, self.current_month)]
         self.identities.calendar_view.date_values = date_values
         
+        self.identities.month_view.current_month = self.current_month
+        self.identities.year_view.current_year = self.current_year
 
         self.identities.month_button.label_text = (
             self.identities.month_view.current_month_name)
         self.identities.year_button.label_text = str(self.current_year)
+
+    def _update_size(self, *args) -> None:
+        """Update the size of the date picker menu based on the calendar
+        view.
+
+        This method adjusts the width and height of the date picker menu
+        to match the size of the calendar view.
+        """
+        self.width = (
+            self.identities.calendar_view.width
+            + self.padding[0]
+            + self.padding[2])
+        self.height = (
+            self.identities.weekday_header_layout.height
+            + self.identities.date_grid_layout.height
+            + self.identities.header_layout.height
+            + self.padding[1]
+            + self.padding[3]
+            + self.spacing * 2)
     
-    def _go_to_month_view(self) -> None:
+    def change_view(
+            self, button: MorphTextIconToggleButton, screen_name: str) -> None:
         """Navigate to the month selection view."""
-        self.screen_manager.current = 'month_view_screen'
+        if screen_name == 'calendar_view_screen' or not button.active:
+            self.identities.screen_manager.transition.direction = 'right'
+            self.identities.screen_manager.current = 'calendar_view_screen'
+        else:
+            self.identities.screen_manager.transition.direction = 'left'
+            self.identities.screen_manager.current = screen_name
+        
+        kind = 'month' if 'year' in button.identity else 'year'
+        for other_button in self.identities.header_layout.children:
+            identity = getattr(other_button, 'identity', '')
+            if kind in identity:
+                other_button.disabled = button.active
+    
+    def _on_year_selected(
+            self, item: MorphToggleListItemFlat, index: int) -> None:
+        """Handle the selection of a year from the year view.
+        This method updates the current year based on the selected
+        year item and navigates back to the calendar view.
 
-    def _go_to_year_view(self) -> None:
-        """Navigate to the year selection view."""
-        self.screen_manager.current = 'year_view_screen'
+        Parameters
+        ----------
+        item : MorphToggleListItemFlat
+            The selected year item.
+        index : int
+            The index of the selected year item.
+        """
+        self._change_year(int(item.label_text) - self.current_year)
+        self.identities.year_button.trigger_action()
+    
+    def _change_year(self, delta: int) -> None:
+        """Change the current year by the specified delta.
 
-    def _go_to_calendar_view(self) -> None:
-        """Navigate to the calendar view."""
-        self.screen_manager.current = 'calendar_view_screen'
+        Parameters
+        ----------
+        delta : int
+            The amount to change the current year by (positive or
+            negative).
+        """
+        self.current_year += delta
+    
+    def _change_month(self, delta: int) -> None:
+        """Change the current month by the specified delta.
+
+        Parameters
+        ----------
+        delta : int
+            The amount to change the current month by (positive or
+            negative).
+        """
+        new_month = self.current_month + delta
+        if new_month < 1:
+            self.current_month = 12
+            self._change_year(-1)
+        elif new_month > 12:
+            self.current_month = 1
+            self._change_year(1)
+        else:
+            self.current_month = new_month
     
 
 class MorphDockedDatePickerField(MorphTextField):
