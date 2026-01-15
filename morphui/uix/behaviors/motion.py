@@ -54,6 +54,15 @@ class MorphMenuMotionBehavior(MorphScaleBehavior,):
     :attr:`is_open` is a :class:`~kivy.properties.AliasProperty` and is
     read-only."""
 
+    same_width_as_caller: bool = BooleanProperty(False)
+    """Whether the menu should match the caller button's width.
+
+    If set to `True`, the menu will automatically adjust its width to
+    match the width of the caller button when opened.
+
+    :attr:`same_width_as_caller` is a
+    :class:`~kivy.properties.BoolProperty` and defaults to `False`.
+    """
 
     menu_anchor_position: Literal['left', 'center', 'right'] = OptionProperty(
         'center', options=['left', 'center', 'right'])
@@ -353,7 +362,7 @@ class MorphMenuMotionBehavior(MorphScaleBehavior,):
         """
         margin = self.menu_window_margin
         caller_x, caller_y = self._resolve_caller_pos()
-        _, caller_height = self._resolve_caller_size()
+        caller_width, caller_height = self._resolve_caller_size()
 
         match self.menu_opening_direction:
             case 'up':
@@ -364,6 +373,7 @@ class MorphMenuMotionBehavior(MorphScaleBehavior,):
                 max_height = caller_y - self.y
                 if self.menu_anchor_position in ('left', 'right'):
                     max_height += caller_height
+        max_height = max(max_height, 0)
 
         match self.menu_anchor_position:
             case 'left':
@@ -372,16 +382,18 @@ class MorphMenuMotionBehavior(MorphScaleBehavior,):
                 max_width = Window.width - 2 * margin
             case 'right':
                 max_width = Window.width - self.x - margin
-
         max_width = max(max_width, 0)
-        max_height = max(max_height, 0)
+
         if hasattr(self, 'size_upper_bound'):
             self.size_upper_bound = (max_width, max_height)
-            max_width, max_height = self.constrain_size((max_width, max_height))
-        size = (
-            clamp(self.width, 0, max_width),
-            clamp(self.height, 0, max_height))
-        return size
+
+        if self.same_width_as_caller and self.caller is not None:
+            width = caller_width
+        else:
+            width = clamp(self.width, 0, max_width)
+        height = clamp(self.height, 0, max_height)
+        
+        return width, height
     
     def set_scale_origin(self, *args) -> None:
         """Set the scale origin based on the caller button position and 
