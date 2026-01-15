@@ -380,7 +380,7 @@ class MorphTextLabel(
     
     default_config: Dict[str, Any] = (
         MorphSimpleLabel.default_config.copy() | dict(
-        auto_size=(False, True),
+        auto_size=(True, True),
         size_hint=(1, None),
         padding=dp(0),
         pos_hint={'center_y': 0.5},))
