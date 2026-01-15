@@ -571,6 +571,7 @@ class MorphDatePickerDayButton(
         super().__init__(**config)
             
         self.bind(
+            active=self._reset_flags,
             is_today=self._set_border_color,
             is_in_range=self._update_highlight_flag,
             is_start_day=self._update_highlight_flag,
@@ -587,6 +588,17 @@ class MorphDatePickerDayButton(
         based on the new date value.
         """
         self.text = str(date_value.day) if date_value else ''
+
+    def _reset_flags(self, *args) -> None:
+        """Reset range flags when the button's active state changes.
+
+        This method resets the `is_in_range`, `is_start_day`, and
+        `is_end_day` properties to False whenever the button's active
+        state changes.
+        """
+        self.is_in_range = False
+        self.is_start_day = False
+        self.is_end_day = False
 
     def _update_highlight_flag(self, *args) -> None:
         """Update the highlight layer based on range flags.
