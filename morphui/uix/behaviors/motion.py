@@ -351,7 +351,6 @@ class MorphMenuMotionBehavior(MorphScaleBehavior,):
         we can assume that the position (self.x and self.y) always has 
         at least the necessary margin.
         """
-        print(self.children)
         margin = self.menu_window_margin
         caller_x, caller_y = self._resolve_caller_pos()
         _, caller_height = self._resolve_caller_size()
