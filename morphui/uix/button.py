@@ -455,7 +455,7 @@ class MorphTextFieldTrailingIconButton(MorphIconButton):
 
     default_config: Dict[str, Any] = dict(
         theme_color_bindings=dict(
-            normal_content_color='primary_color',
+            normal_content_color='content_surface_color',
             normal_surface_color='transparent_color',
             hovered_content_color='content_surface_variant_color',),
         font_name=MorphIconButton.default_config['font_name'],
