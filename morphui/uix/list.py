@@ -313,7 +313,8 @@ class BaseListView(
         do_scroll_x=False,
         do_scroll_y=True,
         size_hint=(1, 1),
-        bar_width=dp(3),
+        bar_width=dp(4),
+        scroll_type=['bars', 'content'],
         scroll_distance=dp(120),)
     """Default configuration for the BaseListView."""
 
