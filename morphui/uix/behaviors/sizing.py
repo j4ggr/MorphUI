@@ -207,47 +207,19 @@ class MorphSizeBoundsBehavior(EventDispatcher):
         # Bind to minimum/maximum properties if they exist on the widget
         super().__init__(**kwargs)
         self.bind(
-            width=self._update_constrained_width,
-            height=self._update_constrained_height,)
+            size_lower_bound=self._update_constrained_size,
+            size_upper_bound=self._update_constrained_size,
+            size=self._update_constrained_size,)
+        self._update_constrained_size()
+
+    def _update_constrained_size(self, *args) -> None:
+        """Enforce size constraints when size changes.
+
+        This method clamps the widget's size to be within the resolved
+        size bounds whenever the size property changes. It is bound to
+        the `size` property to automatically enforce constraints.
+        """
         self.size = self.constrain_size(self.size)
-    
-    def _update_size_bounds_bindings(self) -> None:
-        """Update bindings for size bounds properties.
-        
-        This method ensures that the resolved size bounds are updated
-        when the widget's inherent minimum/maximum properties change.
-        It safely handles cases where these properties don't exist.
-        
-        Note: This method is called during initialization but doesn't
-        recreate AliasProperties since they can't be reassigned.
-        """
-        # The AliasProperties are already defined with getattr fallbacks
-        # so they will work correctly even if minimum_width/height don't exist
-        pass
-
-    def _update_constrained_width(self, instance: Any, width: float) -> None:
-        """Enforce width constraints when width changes.
-
-        This method clamps the widget's width to be within the resolved
-        size bounds whenever the width property changes. It is bound to
-        the `width` property to automatically enforce constraints.
-        """
-        self.width = clamp(
-            width,
-            self._resolved_size_lower_bound[0],
-            self._resolved_size_upper_bound[0])
-    
-    def _update_constrained_height(self, instance: Any, height: float) -> None:
-        """Enforce height constraints when height changes.
-
-        This method clamps the widget's height to be within the resolved
-        size bounds whenever the height property changes. It is bound to
-        the `height` property to automatically enforce constraints.
-        """
-        self.height = clamp(
-            height,
-            self._resolved_size_lower_bound[1],
-            self._resolved_size_upper_bound[1])
     
     def constrain_size(self, size: Tuple[float, float]) -> Tuple[float, float]:
         """Apply size bounds constraints to a given size.
