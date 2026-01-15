@@ -199,11 +199,17 @@ class MorphMenuMotionBehavior(MorphScaleBehavior,):
         Call this method after the menu size has changed to ensure
         correct positioning.
         """
-        if self.is_open:
-            self.size = getattr(self, 'layout_manager', self).size # type: ignore
-            self._adjust_to_fit_window()
-            self.pos = self._resolve_pos()
-            self.size = self._resolve_size()
+        if not self.is_open:
+            return
+        if hasattr(self, 'layout_manager'):
+            size = self.layout_manager.size
+            padding = getattr(self, 'padding', [0]*4)
+            self.size = (
+                size[0] + padding[0] + padding[2],
+                size[1] + padding[1] + padding[3],)
+        self._adjust_to_fit_window()
+        self.pos = self._resolve_pos()
+        self.size = self._resolve_size()
 
     def _resolve_caller_pos(self) -> Tuple[float, float]:
         """Get the caller button position in window coordinates.
@@ -345,6 +351,7 @@ class MorphMenuMotionBehavior(MorphScaleBehavior,):
         we can assume that the position (self.x and self.y) always has 
         at least the necessary margin.
         """
+        print(self.children)
         margin = self.menu_window_margin
         caller_x, caller_y = self._resolve_caller_pos()
         _, caller_height = self._resolve_caller_size()
