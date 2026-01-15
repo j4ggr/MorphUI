@@ -209,6 +209,7 @@ class MorphSizeBoundsBehavior(EventDispatcher):
         self.bind(
             width=self._update_constrained_width,
             height=self._update_constrained_height,)
+        self.size = self.constrain_size(self.size)
     
     def _update_size_bounds_bindings(self) -> None:
         """Update bindings for size bounds properties.
