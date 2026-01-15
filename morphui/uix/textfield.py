@@ -26,6 +26,7 @@ from morphui.utils import clean_config
 
 from morphui.uix.behaviors import MorphThemeBehavior
 from morphui.uix.behaviors import MorphHoverBehavior
+from morphui.uix.behaviors import MorphSizeBoundsBehavior
 from morphui.uix.behaviors import MorphAutoSizingBehavior
 from morphui.uix.behaviors import MorphTypographyBehavior
 from morphui.uix.behaviors import MorphRoundSidesBehavior
@@ -308,6 +309,7 @@ class MorphTextInput(
         MorphContentLayerBehavior,
         MorphSurfaceLayerBehavior,
         MorphAutoSizingBehavior,
+        MorphSizeBoundsBehavior,
         TextInput):
 
     minimum_width: int = NumericProperty(dp(80))
@@ -326,7 +328,7 @@ class MorphTextInput(
     :attr:`row_height` is a :class:`~kivy.properties.AliasProperty`.
     """
 
-    def _get_min_height(self) -> Any:
+    def _get_minimum_height(self) -> Any:
         """Calculate the minimum height required for the TextInput.
         
         This method computes the minimum height needed to display all
@@ -344,7 +346,7 @@ class MorphTextInput(
         return clamp(minimum_height, self.row_height, self.maximum_height)
 
     minimum_height: int = AliasProperty(
-        _get_min_height,
+        _get_minimum_height,
         cache=True,
         bind=[
             '_lines',
