@@ -6,6 +6,7 @@ from textwrap import dedent
 from typing import Any
 from typing import List
 from typing import Dict
+from typing import Literal
 from datetime import date
 
 from kivy.lang import Builder
@@ -268,6 +269,26 @@ class MorphDatePickerCalendarView(
     allowing date selection.
     """
 
+    kind: Literal['range', 'single'] = StringProperty('single')
+    """The selection mode of the calendar view.
+
+    This property defines whether the calendar allows single date
+    selection or range selection.
+
+    :attr:`kind` is a :class:`kivy.properties.StringProperty` and
+    defaults to `'single'`.
+    """
+
+    selected_day_buttons: List[MorphDatePickerDayButton] = ListProperty([])
+    """List of currently selected day buttons.
+
+    This property holds the list of day button instances that are
+    currently selected in the calendar view.
+
+    :attr:`selected_dates` is a :class:`kivy.properties.ListProperty`
+    and defaults to an empty list.
+    """
+
     weekday_headers: List[str] = ListProperty(list(day_abbr))
     """List of weekday abbreviations to display as headers.
 
@@ -310,7 +331,8 @@ class MorphDatePickerCalendarView(
             **kwargs)
         self.bind(
             weekday_headers=self._populate_weekday_headers,
-            date_values=self._populate_date_values,)
+            date_values=self._populate_date_values,
+            selected_day_buttons=self._highlight_selected_days,)
         self._populate_weekday_headers()
         self._populate_date_values()
 
@@ -331,14 +353,120 @@ class MorphDatePickerCalendarView(
         on the :attr:`date_values` property.
         """
         date_grid = self.identities.date_grid_layout
+        for child in date_grid.children[:]:
+            child.unbind(active=self._on_day_button_active)
+
         date_grid.clear_widgets()
+        is_start_day = False
+        is_end_day = False
         for date_value in self.date_values:
-            date_grid.add_widget(
-                MorphDatePickerDayButton(
-                    typography_size='large',
-                    is_today= date_value == date.today(),
-                    disabled= date_value is None,
-                    date_value=date_value,))
+            if len(self.selected_day_buttons) == 2:
+                start_date = self.selected_day_buttons[0].date_value
+                end_date = self.selected_day_buttons[1].date_value
+                is_start_day = date_value == start_date
+                is_end_day = date_value == end_date
+            day_button = MorphDatePickerDayButton(
+                typography_size='large',
+                is_today= date_value == date.today(),
+                disabled= date_value is None,
+                is_start_day= is_start_day,
+                is_end_day= is_end_day,
+                active= is_start_day or is_end_day,
+                date_value=date_value,)
+            if is_start_day:
+                is_start_day = False
+                self.selected_day_buttons = [
+                    day_button, self.selected_day_buttons[1]]
+            if is_end_day:
+                is_end_day = False
+                self.selected_day_buttons = [
+                    self.selected_day_buttons[0], day_button]
+            day_button.bind(active=self._on_day_button_active)
+            date_grid.add_widget(day_button)
+        self._highlight_selected_days()
+    
+    def _on_day_button_active(
+            self, instance: MorphDatePickerDayButton, active: bool) -> None:
+        """Handle changes to the active state of day buttons.
+
+        This method is called when a day button's active state
+        changes.
+
+        Parameters
+        ----------
+        instance : MorphDatePickerDayButton
+            The day button instance whose state changed.
+        active : bool
+            The new active state of the button.
+        """
+        if self.kind == 'single':
+            if self.selected_day_buttons:
+                self.selected_day_buttons[0].active = False
+            if active and instance.date_value:
+                self.selected_day_buttons = [instance]
+            else:
+                self.selected_day_buttons = []
+            return None
+        
+        if active and instance.date_value:
+            match len(self.selected_day_buttons):
+                case 0:
+                    self.selected_day_buttons = [instance]
+                case 1:
+                    first_date = self.selected_day_buttons[0].date_value
+                    second_date = instance.date_value
+                    if second_date < first_date:
+                        self.selected_day_buttons = [
+                            instance, self.selected_day_buttons[0]]
+                    else:
+                        self.selected_day_buttons = [
+                            self.selected_day_buttons[0], instance]
+                case 2:
+                    first_date = self.selected_day_buttons[0].date_value
+                    second_date = self.selected_day_buttons[1].date_value
+                    delta_first = abs((instance.date_value - first_date).days)
+                    delta_second = abs((instance.date_value - second_date).days)
+                    if delta_first < delta_second:
+                        self.selected_day_buttons[0].active = False
+                        self.selected_day_buttons = [
+                            instance, self.selected_day_buttons[-1]]
+                    else:
+                        self.selected_day_buttons[1].active = False
+                        self.selected_day_buttons = [
+                            self.selected_day_buttons[0], instance]
+
+        elif instance in self.selected_day_buttons:
+            self.selected_day_buttons.remove(instance)
+        
+    def _highlight_selected_days(self, *args) -> None:
+        """Highlight the selected day buttons in the calendar view.
+
+        This method updates the visual state of the day buttons
+        based on the currently selected day buttons.
+        """
+        if self.kind == 'single':
+            return
+        
+        if len(self.selected_day_buttons) != 2:
+            for button in self.identities.date_grid_layout.children:
+                button.is_in_range = False
+                button.is_start_day = False
+                button.is_end_day = False
+            return
+        
+        start_button, end_button = self.selected_day_buttons
+        start_button.is_start_day = True
+        end_button.is_end_day = True
+
+        start_value = start_button.date_value
+        end_value = end_button.date_value
+        for button in self.identities.date_grid_layout.children:
+            if button.date_value is None:
+                continue
+            if start_value <= button.date_value <= end_value:
+                button.is_in_range = True
+            else:
+                button.is_in_range = False
 
 
 class MorphDockedDatePickerMenu(
@@ -369,6 +497,16 @@ class MorphDockedDatePickerMenu(
 
     :attr:`current_month` is a :class:`kivy.properties.NumericProperty`
     and defaults to current month.
+    """
+
+    kind: Literal['range', 'single'] = StringProperty('single')
+    """The selection mode of the date picker menu.
+
+    This property defines whether the date picker allows single date
+    selection or range selection.
+
+    :attr:`kind` is a :class:`kivy.properties.StringProperty` and
+    defaults to `'single'`.
     """
     
     default_config: Dict[str, Any] = dict(
@@ -430,6 +568,7 @@ class MorphDockedDatePickerMenu(
             MorphScreenManager(
                 MorphScreen(
                     MorphDatePickerCalendarView(
+                        kind=self.kind,
                         identity='calendar_view',),
                     name='calendar_view_screen',),
                 MorphScreen(
@@ -444,6 +583,7 @@ class MorphDockedDatePickerMenu(
                     name='year_view_screen',),
                 identity='screen_manager',))
         self.bind(
+            kind=self.identities.calendar_view.setter('kind'),
             current_year=self._update_calendar,
             current_month=self._update_calendar,)
         self.identities.calendar_view.bind(
