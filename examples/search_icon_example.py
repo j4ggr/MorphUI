@@ -5,7 +5,7 @@ sys.path.append(str(Path(__file__).parents[1].resolve()))
 
 from morphui.app import MorphApp
 from morphui.uix.floatlayout import MorphFloatLayout
-from morphui.uix.dropdown import MorphDropdownFilterField
+from morphui.uix.dropdown import MorphDropdownFilterFieldFilled
 
 class MyApp(MorphApp):
     def build(self) -> MorphFloatLayout:
@@ -17,7 +17,7 @@ class MyApp(MorphApp):
                 'leading_icon': icon_name,}
             for icon_name in sorted(self.typography.icon_map.keys())]
         layout = MorphFloatLayout(
-            MorphDropdownFilterField(
+            MorphDropdownFilterFieldFilled(
                 identity='icon_picker',
                 items=icon_items,
                 item_release_callback=self.icon_selected_callback,

@@ -13,6 +13,7 @@ from kivy.metrics import dp
 from kivy.properties import DictProperty
 from kivy.properties import ListProperty
 from kivy.properties import AliasProperty
+from kivy.properties import ObjectProperty
 from kivy.properties import StringProperty
 from kivy.properties import NumericProperty
 from kivy.uix.widget import Widget
@@ -432,6 +433,7 @@ class MorphDockedDatePickerMenu(
                     name='calendar_view_screen',),
                 MorphScreen(
                     MorphDatePickerMonthView(
+                        item_release_callback=self._on_month_selected,
                         identity='month_view',),
                     name='month_view_screen',),
                 MorphScreen(
@@ -529,6 +531,24 @@ class MorphDockedDatePickerMenu(
             negative).
         """
         self.current_year += delta
+
+    def _on_month_selected(
+            self, item: MorphToggleListItemFlat, index: int) -> None:
+        """Handle the selection of a month from the month view.
+        This method updates the current month based on the selected
+        month item and navigates back to the calendar view.
+
+        Parameters
+        ----------
+        item : MorphToggleListItemFlat
+            The selected month item.
+        index : int
+            The index of the selected month item.
+        """
+        self.current_month = (
+            self.identities.month_view.month_names.index(item.label_text)
+            + 1)
+        self.identities.month_button.trigger_action()
     
     def _change_month(self, delta: int) -> None:
         """Change the current month by the specified delta.
@@ -582,7 +602,21 @@ class MorphDockedDatePickerField(MorphTextField):
     `''`.
     """
 
+    picker_menu: MorphDockedDatePickerMenu = ObjectProperty(None)
+    """Reference to the associated date picker menu.
+
+    This property holds a reference to the
+    :class:`~morphui.uix.pickers.MorphDockedDatePickerMenu` instance
+    that is associated with this text field. It allows the text field to
+    interact with the date picker menu for date selection.
+
+    :attr:`picker_menu` is a
+    :class:`~kivy.properties.ObjectProperty` and is instantiated during
+    the initialization of the text field.
+    """
+
     def __init__(self, **kwargs) -> None:
+        kwargs['picker_menu'] = MorphDockedDatePickerMenu()
         kwargs['trailing_icon'] = kwargs.get(
             'trailing_icon', self.normal_trailing_icon)
         super().__init__(**kwargs)
