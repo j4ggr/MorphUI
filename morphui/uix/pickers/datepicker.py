@@ -336,6 +336,7 @@ class MorphDatePickerCalendarView(
             date_grid.add_widget(
                 MorphDatePickerDayButton(
                     typography_size='large',
+                    is_today= date_value == date.today(),
                     disabled= date_value is None,
                     date_value=date_value,))
 

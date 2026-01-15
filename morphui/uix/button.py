@@ -555,10 +555,10 @@ class MorphDatePickerDayButton(
         valign='center',
         theme_color_bindings={
             'normal_surface_color': 'transparent_color',
-            'active_surface_color': 'primary_container_color',
             'normal_content_color': 'content_surface_color',
-            'active_content_color': 'on_primary_container_color',
             'normal_border_color': 'transparent_color',
+            'active_surface_color': 'primary_container_color',
+            'active_content_color': 'content_primary_container_color',
             'today_border_color': 'primary_color',
             'normal_highlight_color': 'primary_container_color',},
         highlight_opacity=0.3,
@@ -652,4 +652,3 @@ class MorphDatePickerDayButton(
         if self.is_today:
             return self.today_border_color
         return super()._get_border_color()
-
