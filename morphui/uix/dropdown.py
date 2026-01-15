@@ -1,19 +1,23 @@
 from textwrap import dedent
 
 from typing import Any
+from typing import List
 from typing import Dict
 
 from kivy.lang import Builder
+from kivy.metrics import dp
 from kivy.properties import DictProperty
+from kivy.properties import AliasProperty
 from kivy.properties import StringProperty
 from kivy.properties import ObjectProperty
 
 from morphui.uix.list import BaseListView
 from morphui.uix.list import MorphListLayout # noqa F401
 from morphui.uix.list import MorphListItemFlat
-from morphui.uix.behaviors import MorphElevationBehavior
+from morphui.uix.boxlayout import MorphElevationBoxLayout
 from morphui.uix.behaviors import MorphMenuMotionBehavior
 from morphui.uix.behaviors import MorphSizeBoundsBehavior
+
 from morphui.uix.textfield import MorphTextField
 from morphui.uix.textfield import MorphTextFieldFilled
 from morphui.uix.textfield import MorphTextFieldRounded
@@ -21,9 +25,6 @@ from morphui.uix.textfield import MorphTextFieldOutlined
 
 
 class MorphDropdownList(
-        MorphSizeBoundsBehavior,
-        MorphElevationBehavior,
-        MorphMenuMotionBehavior,
         BaseListView):
     """A dropdown list widget that combines list view with menu motion.
     
@@ -45,13 +46,76 @@ class MorphDropdownList(
         'trailing_icon': '',
         'label_text': '',
         })
+
+
+class MorphDropdownMenu(
+        MorphMenuMotionBehavior,
+        MorphSizeBoundsBehavior,
+        MorphElevationBoxLayout,):
+    """A base dropdown menu class with color theme, surface layer,
+    elevation, and menu motion behaviors.
+    """
+
+    dropdown_list: MorphDropdownList = ObjectProperty(None)
+    """The dropdown list associated with this menu.
+
+    This property holds a reference to the :class:`MorphDropdownList`
+    instance that is linked to this filter field.
+
+    :attr:`dropdown` is a :class:`~kivy.properties.ObjectProperty` and
+    defaults to `None`.
+    """
     
-    default_config: Dict[str, Any] = (
-        BaseListView.default_config.copy() | dict(
+    items: List[Dict[str, Any]] = AliasProperty(
+        lambda self: self.dropdown_list._get_items(),
+        lambda self, items: self.dropdown_list._set_items(items),)
+    """The list of items in the dropdown menu.
+
+    This property provides access to the items displayed in the
+    dropdown list. It allows getting and setting the list of items.
+
+    :attr:`items` is a :class:`~kivy.properties.AliasProperty`.
+    """
+    
+    item_release_callback: Any = AliasProperty(
+        lambda self: self.dropdown_list.item_release_callback,
+        lambda self, callback: setattr(
+            self.dropdown_list, 'item_release_callback', callback),)
+    """Callback function for item release events.
+
+    This property allows getting and setting the callback function that
+    is called when an item in the dropdown list is released.
+
+    :attr:`items_release_callback` is a
+    :class:`~kivy.properties.AliasProperty`.
+    """
+
+    layout_manager: MorphListLayout = ObjectProperty(None)
+    """The layout manager for the dropdown list.
+
+    This property holds a reference to the layout manager used by the
+    dropdown list to arrange its items. It is set during initialization.
+
+    :attr:`layout_manager` is a :class:`~kivy.properties.ObjectProperty`
+    and defaults to `None`.
+    """
+    
+    default_config: Dict[str, Any] = dict(
+            theme_color_bindings=dict(
+                normal_surface_color='surface_container_highest_color',),
             size_lower_bound=(150, 100),
             size_hint=(None, None),
-            elevation=2,))
-    """Default configuration for the MorphDropdownList widget."""
+            radius=[0, 0, dp(8), dp(8)],
+            padding=dp(8),
+            elevation=2,
+            same_width_as_caller=True,)
+    """Default configuration for the MorphDropdownMenu."""
+    
+    def __init__(self, **kwargs) -> None:
+        self.dropdown_list = MorphDropdownList()
+        super().__init__(**kwargs)
+        self.layout_manager = self.dropdown_list.layout_manager
+        self.add_widget(self.dropdown_list)
 
 
 class MorphDropdownFilterField(MorphTextField):
@@ -159,13 +223,13 @@ class MorphDropdownFilterField(MorphTextField):
     `'menu-up'`.
     """
 
-    dropdown: MorphDropdownList = ObjectProperty(None)
-    """The dropdown list associated with this filter field.
+    dropdown_menu: MorphDropdownMenu = ObjectProperty(None)
+    """The dropdown menu associated with this filter field.
 
-    This property holds a reference to the :class:`MorphDropdownList`
+    This property holds a reference to the :class:`MorphDropdownMenu`
     instance that is linked to this filter field.
 
-    :attr:`dropdown` is a :class:`~kivy.properties.ObjectProperty` and
+    :attr:`dropdown_menu` is a :class:`~kivy.properties.ObjectProperty` and
     defaults to `None`.
     """
 
@@ -173,18 +237,20 @@ class MorphDropdownFilterField(MorphTextField):
         MorphTextField.default_config.copy() | dict())
     """Default configuration for the MorphDropdownFilterField."""
 
-    def __init__(self, **kwargs) -> None:
-        dropdown = MorphDropdownList(
+    def __init__(self, kw_dropdown: Dict[str, Any] = {}, **kwargs) -> None:
+        kw_dropdown = dict(
             caller=self,
             items=kwargs.pop('items', []),
-            item_release_callback=kwargs.pop('item_release_callback', None))
+            item_release_callback=kwargs.pop('item_release_callback', None)
+            ) | kw_dropdown
+        self.dropdown_menu = MorphDropdownMenu(**kw_dropdown)
         kwargs['trailing_icon'] = kwargs.get(
             'trailing_icon', self.normal_trailing_icon)
-        super().__init__(dropdown=dropdown, **kwargs)
+        super().__init__(**kwargs)
         self.bind(
             text=self._on_text_changed,
             focus=self._on_focus_changed,
-            width=self.dropdown.setter('width'),
+            width=self.dropdown_menu.setter('width'),
             normal_trailing_icon=self.trailing_widget.setter('normal_icon'),
             focus_trailing_icon=self.trailing_widget.setter('focus_icon'),)
         self.trailing_widget.normal_icon = self.normal_trailing_icon
@@ -211,9 +277,9 @@ class MorphDropdownFilterField(MorphTextField):
         text : str
             The new text value of the filter field.
         """
-        full_texts = [
-            item['label_text'] for item in self.dropdown._source_items]    
-        self.dropdown.filter_value = '' if text in full_texts else text
+        items = self.dropdown_menu.dropdown_list._source_items
+        full_texts = [item['label_text'] for item in items]    
+        self.dropdown_menu.filter_value = '' if text in full_texts else text
     
     def _on_focus_changed(
             self,
@@ -234,9 +300,9 @@ class MorphDropdownFilterField(MorphTextField):
         """
         self.trailing_widget.focus = focus
         if focus:
-            self.dropdown.open()
+            self.dropdown_menu.open()
         else:
-            self.dropdown.dismiss()
+            self.dropdown_menu.dismiss()
     
     def _on_trailing_release(self, *args) -> None:
         """Handle the release event of the trailing widget.
@@ -246,7 +312,7 @@ class MorphDropdownFilterField(MorphTextField):
         focus to the filter field, thereby opening the dropdown.
         Otherwise, it does nothing.
         """
-        if not self.dropdown.is_open:
+        if not self.dropdown_menu.is_open:
             self.focus = True
 
 
