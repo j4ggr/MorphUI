@@ -3711,7 +3711,8 @@ class TestMorphMenuMotionBehavior:
         assert widget.is_open is False
 
     def test_resolve_caller_pos_without_caller(self):
-        """Test _resolve_caller_pos returns (0, 0) when no caller."""
+        """Test _resolve_caller_pos returns (0, 600) (top left) when no
+        caller."""
         from morphui.uix.behaviors import MorphMenuMotionBehavior
         
         class TestWidget(MorphMenuMotionBehavior, Widget):
@@ -3719,7 +3720,7 @@ class TestMorphMenuMotionBehavior:
         
         widget = TestWidget()
         pos = widget._resolve_caller_pos()
-        assert pos == (0, 0)
+        assert pos == (0, 600)
 
     def test_resolve_caller_pos_with_caller(self):
         """Test _resolve_caller_pos returns caller position."""
