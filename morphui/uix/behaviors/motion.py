@@ -10,6 +10,7 @@ from kivy.properties import StringProperty
 from kivy.properties import OptionProperty
 from kivy.properties import NumericProperty
 from kivy.core.window import Window
+from kivy.input.motionevent import MotionEvent
 
 from morphui.utils import clamp
 from morphui.uix.behaviors import MorphScaleBehavior
@@ -224,9 +225,11 @@ class MorphMenuMotionBehavior(MorphScaleBehavior,):
         """Get the caller button position in window coordinates.
         
         This method returns the position of the caller button in window
-        coordinates. If the caller is not set, it returns (0, 0)."""
+        coordinates. If the caller is not set, it returns 
+        `(0, Window.height)`.
+        """
         if self.caller is None:
-            return (0, 0)
+            return (0, Window.height)
         
         return self.caller.to_window(*self.caller.pos)
     
@@ -234,7 +237,7 @@ class MorphMenuMotionBehavior(MorphScaleBehavior,):
         """Get the caller button size.
         
         This method returns the size of the caller button. If the caller
-        is not set, it returns (0, 0).
+        is not set, it returns `(0, 0)`.
         """
         if self.caller is None:
             return (0, 0)
@@ -470,6 +473,19 @@ class MorphMenuMotionBehavior(MorphScaleBehavior,):
             self.dismiss()
         else:
             self.open()
+    
+    def on_touch_down(self, touch: MotionEvent) -> bool:
+        """Handle touch down events to close the menu when touching
+        outside.
+
+        This method overrides the default touch down behavior to
+        close the date picker menu if a touch event occurs outside
+        its bounds.
+        """
+        if not self.collide_point(*touch.pos):
+            self.dismiss()
+            return True
+        return super().on_touch_down(touch)
 
     def on_pre_open(self, *args) -> None:
         """Event fired before the menu is opened."""
