@@ -7,7 +7,9 @@ from typing import Any
 from typing import List
 from typing import Dict
 from typing import Literal
+
 from datetime import date
+from dateutil.parser import parse as parse_date
 
 from kivy.lang import Builder
 from kivy.metrics import dp
@@ -16,6 +18,7 @@ from kivy.properties import ListProperty
 from kivy.properties import AliasProperty
 from kivy.properties import ObjectProperty
 from kivy.properties import StringProperty
+from kivy.properties import OptionProperty
 from kivy.properties import NumericProperty
 from kivy.uix.widget import Widget
 
@@ -766,17 +769,47 @@ class MorphDockedDatePickerField(MorphTextField):
     defaults to `'single'`.
     """
 
+    date_format: Literal['iso', 'us', 'eu'] = OptionProperty(
+        'eu', options=['iso', 'us', 'eu'] )
+    """The date format used for displaying selected dates.
+
+    This property defines the format in which selected dates are
+    displayed in the text field. Possible values include 'iso' 
+    (YYYY-MM-DD), 'us' (MM/DD/YYYY), and 'eu' (DD.MM.YYYY).
+
+    :attr:`date_format` is a :class:`kivy.properties.OptionProperty` and
+    defaults to `'eu'`.
+    """
+
+    range_sep: str = StringProperty(' - ')
+    """Separator used between start and end dates in range selection.
+
+    This property defines the string used to separate the start and
+    end dates when the date picker is in range selection mode.
+
+    :attr:`range_sep` is a :class:`kivy.properties.StringProperty` and
+    defaults to `' - '`.
+    """
+
+    _label_text_provided: bool = False
+    """Internal flag to track if label_text was provided during
+    initialization."""
+
     def __init__(self, **kwargs) -> None:
         kwargs['picker_menu'] = MorphDockedDatePickerMenu(caller=self)
         kwargs['trailing_icon'] = kwargs.get(
             'trailing_icon', self.normal_trailing_icon)
+        self._label_text_provided = 'label_text' in kwargs
         super().__init__(**kwargs)
         self.bind(
             kind=self._on_kind_changed,
             text=self._on_text_changed,
             focus=self._on_focus_changed,
+            range_sep=self._update_label_text,
             normal_trailing_icon=self.trailing_widget.setter('normal_icon'),
             focus_trailing_icon=self.trailing_widget.setter('focus_icon'),)
+        self.calendar_view.bind(
+            selected_day_buttons=self._set_text_by_selected_dates)
         self.trailing_widget.normal_icon = self.normal_trailing_icon
         self.trailing_widget.focus_icon = self.focus_trailing_icon
         self.trailing_widget.bind(
@@ -784,6 +817,19 @@ class MorphDockedDatePickerField(MorphTextField):
         self._on_kind_changed(self,self.kind)
         self._on_text_changed(self, self.text)
         self._on_focus_changed(self, self.focus)
+
+    @property
+    def calendar_view(self) -> MorphDatePickerCalendarView:
+        """Get the calendar view from the associated date picker menu.
+
+        This property provides access to the
+        :class:`~morphui.uix.pickers.MorphDatePickerCalendarView`
+        instance within the associated date picker menu.
+
+        :return: The calendar view instance.
+        :rtype: MorphDatePickerCalendarView
+        """
+        return self.picker_menu.identities.calendar_view
 
     def _on_kind_changed(
             self,
@@ -796,14 +842,82 @@ class MorphDockedDatePickerField(MorphTextField):
         """
         self.picker_menu.kind = kind
         self.validator = 'daterange' if kind == 'range' else 'date'
+        self._update_label_text()
 
-    def _on_text_changed(self, instance, value) -> None:
+    def _update_label_text(self, *args) -> None:
+
+        if self._label_text_provided:
+            return
+
+        input_format = {
+            'iso': 'YYYY-MM-DD',
+            'us': 'MM/DD/YYYY',
+            'eu': 'DD.MM.YYYY',}[self.date_format]
+        if self.kind == 'range':
+            input_format = f'{input_format}{self.range_sep}{input_format}'
+        self.label_text = input_format
+
+    def _on_text_changed(
+            self,
+            instance: 'MorphDockedDatePickerField',
+            text: str
+            ) -> None:
         """Handle changes to the text property.
 
         This method is called whenever the text in the text field
         changes. It can be used to validate or format the date input.
         """
-        pass  # Implement date validation/formatting as needed
+        if self.error or not self.focus:
+            return None
+        
+        if self.kind == 'single':
+            texts = [text]
+        else:
+            texts = [t.strip() for t in text.split(self.range_sep)]
+
+        date_grid = self.picker_menu.identities.date_grid_layout
+
+        for button in self.calendar_view.selected_day_buttons:
+            button.active = False
+
+        for _text in texts:
+            parsed_date = self._parse_date_text(_text)
+            if parsed_date is not None:
+                self.picker_menu.current_year = parsed_date.year
+                self.picker_menu.current_month = parsed_date.month
+                for button in date_grid.children:
+                    if (isinstance(button, MorphDatePickerDayButton)
+                            and button.date_value == parsed_date):
+                        button.trigger_action()
+                        break
+
+    def _set_text_by_selected_dates(self, *args) -> None:
+        """Set the text field's text based on selected dates."""
+        selected_buttons = self.calendar_view.selected_day_buttons
+        if not selected_buttons:
+            return
+        
+        format_str = {
+            'iso': r'%Y-%m-%d',
+            'us': r'%m/%d/%Y',
+            'eu': r'%d.%m.%Y',
+            }[self.date_format]
+        
+        def get_date_str(button: MorphDatePickerDayButton) -> str:
+            date_value = button.date_value
+            if date_value:
+                return date_value.strftime(format_str)
+            return ''
+        
+        if self.kind == 'single':
+            self.text = get_date_str(selected_buttons[0])
+        else:
+            date_str = ''
+            if len(selected_buttons) >= 1:
+                date_str += get_date_str(selected_buttons[0]) + self.range_sep
+            if len(selected_buttons) == 2:
+                date_str += get_date_str(selected_buttons[1])
+            self.text = date_str
 
     def _on_focus_changed(
             self,
@@ -819,6 +933,23 @@ class MorphDockedDatePickerField(MorphTextField):
         self.trailing_widget.focus = focus
         if focus:
             self.picker_menu.open()
+
+    def _parse_date_text(self, text: str) -> date | None:
+        """Parse the date from the text field.
+
+        This method attempts to parse a date from the text field's
+        content. If the text is a valid date format, it returns a
+        :class:`datetime.date` object; otherwise, it returns `None`.
+        """
+        try:
+            parsed_date = parse_date(
+                text,
+                dayfirst= self.date_format == 'eu',
+                yearfirst= self.date_format == 'iso',
+                ).date()
+            return parsed_date
+        except (ValueError, TypeError):
+            return None
 
     def _on_trailing_release(self, instance) -> None:
         """Handle the release event of the trailing icon button.
