@@ -223,6 +223,56 @@ def test_is_valid_datetime_invalid_formats(validator, datetime):
     assert not validator.is_valid_datetime(datetime), f"Expected {datetime!r} to be invalid"
 
 
+# Date range validation tests
+@pytest.mark.parametrize("daterange", [
+    '2023/12/25 - 2023/12/31',  # ISO format week range
+    '2023-01-01 - 2023-12-31',  # ISO format year range
+    '25/12/2023 - 31/12/2023',  # EU format week range
+    '01-01-2023 - 31-12-2023',  # EU format year range
+    '12/25/2023 - 12/31/2023',  # US format week range
+    '01.01.2023 - 12.31.2023',  # US format year range with dots
+    '2023/01/15 - 2024/01/15',  # ISO format year span
+    '15/01/2023 - 15/01/2024',  # EU format year span
+    '01/15/2023 - 01/15/2024',  # US format year span
+])
+def test_is_valid_daterange_valid_formats(validator, daterange):
+    """Test valid date range formats."""
+    assert validator.is_valid_daterange(daterange), f"Expected {daterange!r} to be valid"
+
+
+@pytest.mark.parametrize("daterange", [
+    '',  # empty string
+    '2023/12/25',  # single date only
+    '2023/12/25-2023/12/31',  # missing spaces around separator
+    '2023/12/25- 2023/12/31',  # missing space before separator
+    '2023/12/25 -2023/12/31',  # missing space after separator
+    '2023/12/25 to 2023/12/31',  # wrong separator
+    '2023/12/25 -- 2023/12/31',  # double hyphen
+    '32/12/2023 - 31/12/2023',  # invalid start date
+    '25/12/2023 - 32/12/2023',  # invalid end date
+    '25/13/2023 - 31/12/2023',  # invalid month in start
+    '25/12/2023 - 31/13/2023',  # invalid month in end
+    '2023/12/25 - ',  # missing end date
+    ' - 2023/12/31',  # missing start date
+    '2023/12/25 - 2023/12/25 - 2024/01/01',  # too many dates
+    '25 12 2023 - 31 12 2023',  # spaces instead of separators
+    '2023/12/25 | 2023/12/31',  # invalid range separator
+])
+def test_is_valid_daterange_invalid_formats(validator, daterange):
+    """Test invalid date range formats."""
+    assert not validator.is_valid_daterange(daterange), f"Expected {daterange!r} to be invalid"
+
+
+@pytest.mark.parametrize("daterange", [
+    '2023-01-01 - 2023/12/31',  # Mixed separators (ISO and slash)
+    '01/01/2023 - 31-12-2023',  # Mixed EU formats
+    '2023/01/01 - 31/12/2023',  # ISO start, EU end
+])
+def test_is_valid_daterange_mixed_formats(validator, daterange):
+    """Test date ranges with mixed date formats (should still be valid)."""
+    assert validator.is_valid_daterange(daterange), f"Expected {daterange!r} to be valid"
+
+
 # Validate method tests
 def test_validate_no_validator_set(validator):
     """Test validation when no validator is set."""
@@ -279,6 +329,23 @@ def test_validate_phone_validator(validator):
     
     # Invalid phone
     assert not validator.validate('123')
+    assert validator.error
+
+
+def test_validate_daterange_validator(validator):
+    """Test validation with daterange validator."""
+    validator.validator = 'daterange'
+    
+    # Valid date range
+    assert validator.validate('2023/01/01 - 2023/12/31')
+    assert not validator.error
+    
+    # Invalid date range (missing separator)
+    assert not validator.validate('2023/01/01-2023/12/31')
+    assert validator.error
+    
+    # Invalid date range (single date)
+    assert not validator.validate('2023/01/01')
     assert validator.error
 
 
