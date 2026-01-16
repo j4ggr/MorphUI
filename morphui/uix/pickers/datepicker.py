@@ -870,29 +870,39 @@ class MorphDockedDatePickerField(MorphTextField):
         if self.error or not self.focus:
             return None
         
+        date_grid = self.picker_menu.identities.date_grid_layout
         if self.kind == 'single':
             texts = [text]
         else:
             texts = [t.strip() for t in text.split(self.range_sep)]
 
-        date_grid = self.picker_menu.identities.date_grid_layout
+        parsed_dates = [self._parse_date_text(_text) for _text in texts]
+        parsed_dates = [d for d in parsed_dates if d is not None]
+        if len(parsed_dates) >= 2 and parsed_dates[0] > parsed_dates[1]:
+            self.text = f'{texts[1]}{self.range_sep}{texts[0]}'
+            return None
 
         for button in self.calendar_view.selected_day_buttons:
-            button.active = False
-
-        for _text in texts:
-            parsed_date = self._parse_date_text(_text)
-            if parsed_date is not None:
-                self.picker_menu.current_year = parsed_date.year
-                self.picker_menu.current_month = parsed_date.month
-                for button in date_grid.children:
-                    if (isinstance(button, MorphDatePickerDayButton)
-                            and button.date_value == parsed_date):
-                        button.trigger_action()
-                        break
+            button.trigger_action()
+        
+        for parsed_date in parsed_dates:
+            self.picker_menu.current_year = parsed_date.year
+            self.picker_menu.current_month = parsed_date.month
+            for button in date_grid.children:
+                if button.date_value == parsed_date:
+                    button.trigger_action()
+                    print(button.date_value)
 
     def _set_text_by_selected_dates(self, *args) -> None:
-        """Set the text field's text based on selected dates."""
+        """Set the text field's text based on selected dates.
+        
+        This method updates the text field's content to reflect the
+        currently selected dates in the calendar view. It formats the
+        dates according to the specified date format and selection mode.
+        """
+        if self.focus:
+            return None
+        
         selected_buttons = self.calendar_view.selected_day_buttons
         if not selected_buttons:
             return
@@ -912,11 +922,10 @@ class MorphDockedDatePickerField(MorphTextField):
         if self.kind == 'single':
             self.text = get_date_str(selected_buttons[0])
         else:
-            date_str = ''
-            if len(selected_buttons) >= 1:
-                date_str += get_date_str(selected_buttons[0]) + self.range_sep
+            date_str = get_date_str(selected_buttons[0])
             if len(selected_buttons) == 2:
-                date_str += get_date_str(selected_buttons[1])
+                date_str = self.range_sep.join(
+                    (date_str, get_date_str(selected_buttons[1])))
             self.text = date_str
 
     def _on_focus_changed(
@@ -931,6 +940,7 @@ class MorphDockedDatePickerField(MorphTextField):
         gains focus and closes it when the field loses focus.
         """
         self.trailing_widget.focus = focus
+        self.picker_menu.dismiss_allowed = not focus
         if focus:
             self.picker_menu.open()
 
