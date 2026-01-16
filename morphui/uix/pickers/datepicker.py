@@ -891,7 +891,6 @@ class MorphDockedDatePickerField(MorphTextField):
             for button in date_grid.children:
                 if button.date_value == parsed_date:
                     button.trigger_action()
-                    print(button.date_value)
 
     def _set_text_by_selected_dates(self, *args) -> None:
         """Set the text field's text based on selected dates.
