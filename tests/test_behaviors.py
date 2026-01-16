@@ -814,8 +814,8 @@ class TestMorphResizeBehavior:
         assert widget.auto_width is False
         assert widget.auto_height is False
         assert widget.auto_size == (False, False)
-        assert widget._original_size_hint == [1, 1]  # Stored as list
-        assert widget._original_size == [100.0, 100.0]  # Default Widget size (stored as list)
+        assert widget._original_size_hint == (1, 1)  # Stored as tuple
+        assert widget._original_size == (100.0, 100.0)  # Default Widget size (stored as tuple)
         # _has_texture_size should be initialized during __init__.
         assert widget._has_texture_size is False
         assert widget.has_texture_size is False
@@ -894,7 +894,7 @@ class TestMorphResizeBehavior:
         # Test auto_width only
         widget.auto_width = True
         widget.auto_height = False
-        widget._update_size()
+        widget._update_auto_sizing()
         
         assert widget.width == 120
         assert widget.height == widget._original_size[1]
@@ -908,7 +908,7 @@ class TestMorphResizeBehavior:
         # Test auto_height only
         widget.auto_width = False
         widget.auto_height = True
-        widget._update_size()
+        widget._update_auto_sizing()
         
         assert widget.width == widget._original_size[0]
         assert widget.height == 75
@@ -920,7 +920,7 @@ class TestMorphResizeBehavior:
         widget.auto_width = True
         widget.auto_height = True
         
-        widget._update_size()
+        widget._update_auto_sizing()
         
         assert widget.width == 200
         assert widget.height == 100
@@ -933,7 +933,7 @@ class TestMorphResizeBehavior:
         
         widget.auto_width = False
         widget.auto_height = False
-        widget._update_size()
+        widget._update_auto_sizing()
         
         assert widget.width == original_width
         assert widget.height == original_height
@@ -1015,10 +1015,10 @@ class TestMorphResizeBehavior:
         widget.auto_height = True
         
         # Simulate texture_size change
-        with patch.object(widget, '_update_size') as mock_update:
+        with patch.object(widget, '_update_auto_sizing') as mock_update:
             widget.texture_size = (300, 150)
             # In real Kivy, this would trigger the bound callback
-            widget._update_size()
+            widget._update_auto_sizing()
             mock_update.assert_called_once()
 
     def test_minimum_size_binding_integration(self):
@@ -1028,11 +1028,11 @@ class TestMorphResizeBehavior:
         widget.auto_height = True
         
         # Simulate minimum size change
-        with patch.object(widget, '_update_size') as mock_update:
+        with patch.object(widget, '_update_auto_sizing') as mock_update:
             widget.minimum_width = 200
             widget.minimum_height = 100
             # In real Kivy, this would trigger the bound callback
-            widget._update_size()
+            widget._update_auto_sizing()
             mock_update.assert_called_once()
 
     def test_event_type_registration(self):
@@ -1045,23 +1045,20 @@ class TestMorphResizeBehavior:
         # this tests that the method exists
 
     def test_original_size_preservation(self):
-        """Test that original size and size_hint are properly stored."""
+        """Test that original size and size_hint are properly stored and restored."""
         widget = self.MockWidget(size=(200, 150), size_hint=(0.5, 0.3))
         
-        # Check that original values are stored (both are stored as lists)
-        assert widget._original_size == [200, 150]
-        assert widget._original_size_hint == [0.5, 0.3]
+        # Check that original values are stored as tuples
+        assert widget._original_size == (200, 150)
+        assert widget._original_size_hint == (0.5, 0.3)
         
         # Enable auto sizing
         widget.apply_auto_sizing(True, True)
         assert list(widget.size_hint) == [None, None]
         
-        # Note: Due to list aliasing, _original_size_hint gets modified when size_hint is modified
-        # So when disabling auto sizing, it cannot restore the original values
-        # This test verifies the current behavior (which may be a bug)
+        # Disable auto sizing - original size_hint should be restored
         widget.apply_auto_sizing(False, False)
-        # size_hint remains None because _original_size_hint was modified in-place
-        assert list(widget.size_hint) == [None, None]
+        assert list(widget.size_hint) == [0.5, 0.3]
 
     def test_complex_auto_sizing_scenario(self):
         """Test complex scenario with multiple property changes."""
