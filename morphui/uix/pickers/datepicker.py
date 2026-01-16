@@ -756,12 +756,23 @@ class MorphDockedDatePickerField(MorphTextField):
     the initialization of the text field.
     """
 
+    kind: Literal['range', 'single'] = StringProperty('single')
+    """The selection mode of the date picker menu.
+
+    This property defines whether the date picker allows single date
+    selection or range selection.
+
+    :attr:`kind` is a :class:`kivy.properties.StringProperty` and
+    defaults to `'single'`.
+    """
+
     def __init__(self, **kwargs) -> None:
-        kwargs['picker_menu'] = MorphDockedDatePickerMenu()
+        kwargs['picker_menu'] = MorphDockedDatePickerMenu(caller=self)
         kwargs['trailing_icon'] = kwargs.get(
             'trailing_icon', self.normal_trailing_icon)
         super().__init__(**kwargs)
         self.bind(
+            kind=self._on_kind_changed,
             text=self._on_text_changed,
             focus=self._on_focus_changed,
             normal_trailing_icon=self.trailing_widget.setter('normal_icon'),
@@ -770,8 +781,21 @@ class MorphDockedDatePickerField(MorphTextField):
         self.trailing_widget.focus_icon = self.focus_trailing_icon
         self.trailing_widget.bind(
             on_release=self._on_trailing_release)
+        self._on_kind_changed(self,self.kind)
         self._on_text_changed(self, self.text)
         self._on_focus_changed(self, self.focus)
+
+    def _on_kind_changed(
+            self,
+            instance: 'MorphDockedDatePickerField',
+            kind: Literal['range', 'single']) -> None:
+        """Handle changes to the kind property.
+
+        This method is called whenever the kind property changes.
+        It updates the kind of the associated date picker menu.
+        """
+        self.picker_menu.kind = kind
+        self.validator = 'daterange' if kind == 'range' else 'date'
 
     def _on_text_changed(self, instance, value) -> None:
         """Handle changes to the text property.
@@ -781,11 +805,28 @@ class MorphDockedDatePickerField(MorphTextField):
         """
         pass  # Implement date validation/formatting as needed
 
-    def _on_focus_changed(self, instance, value) -> None:
+    def _on_focus_changed(
+            self,
+            instance: 'MorphDockedDatePickerField',
+            focus: bool
+            ) -> None:
         """Handle changes to the focus property.
 
         This method is called whenever the focus state of the text
-        field changes. It can be used to open or close the date picker
-        when the field gains or loses focus.
+        field changes. It opens the date picker menu when the field
+        gains focus and closes it when the field loses focus.
         """
-        pass  # Implement focus handling as needed
+        self.trailing_widget.focus = focus
+        if focus:
+            self.picker_menu.open()
+
+    def _on_trailing_release(self, instance) -> None:
+        """Handle the release event of the trailing icon button.
+
+        This method toggles the focus state of the text field when
+        the trailing icon button is released, effectively opening or
+        closing the date picker menu.
+        """
+        if not self.picker_menu.is_open:
+            self.focus = True
+        
