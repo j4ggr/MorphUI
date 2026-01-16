@@ -109,8 +109,8 @@ class MorphTextValidator(EventDispatcher):
         None,
         allownone=True,
         options=[
-            'email', 'phone', 'date', 'time', 'datetime', 'numeric', 
-            'alphanumeric'])
+            'email', 'phone', 'date', 'time', 'datetime', 'daterange', 
+            'numeric', 'alphanumeric'])
     """The type of validation to apply to the text.
 
     This property determines the kind of validation that will be 
@@ -123,10 +123,14 @@ class MorphTextValidator(EventDispatcher):
     - 'time': Validates that the text is a properly formatted time.
     - 'datetime': Validates that the text is a properly formatted 
       datetime.
+    - 'daterange': Validates that the text is a valid date range. Where
+      the separator is a hyphen (-) and the format is any of the
+      supported date formats for each date, e.g.,
+      'YYYY-MM-DD - YYYY-MM-DD'. For more information, see
+      :meth:`is_valid_daterange`.
     - 'numeric': Validates that the text is a valid numeric value.
     - 'alphanumeric': Validates that the text contains only letters
       and numbers.
-
     When set to None, no validation is performed.
     :attr:`validator` is a :class:`~kivy.properties.OptionProperty`
     and defaults to None.
@@ -172,6 +176,10 @@ class MorphTextValidator(EventDispatcher):
 
         This method checks the text against various date formats to
         determine its validity.
+        The supported formats are:
+        - European format: 'DD/MM/YYYY' or 'DD-MM-YYYY'
+        - ISO format: 'YYYY-MM-DD'
+        - US format: 'MM/DD/YYYY' or 'MM-DD-YYYY'
 
         Parameters
         ----------
@@ -229,6 +237,30 @@ class MorphTextValidator(EventDispatcher):
         else:
             return False
         return self.is_valid_date(date_part) and self.is_valid_time(time_part)
+    
+    def is_valid_daterange(self, text: str) -> bool:
+        """Check if the given text is a valid date range.
+
+        Splits the text into two date components using a hyphen (-) as
+        the separator. Then checks if both parts are valid dates. The
+        format is expected to be 'YYYY-MM-DD - YYYY-MM-DD'. But other
+        date formats are also supported for each date. For more
+        information, see :meth:`is_valid_date`.
+
+        Parameters
+        ----------
+        text : str
+            The text input to validate.
+
+        Returns
+        -------
+        bool
+            True if the input is a valid date range, False otherwise.
+        """
+        if ' - ' not in text:
+            return False
+        start_date, end_date = map(str.strip, text.split(' - ', 1))
+        return self.is_valid_date(start_date) and self.is_valid_date(end_date)
 
     def is_valid_numeric(self, text: str) -> bool:
         """Check if the given text is a valid numeric value.

@@ -284,7 +284,8 @@ class MorphDropdownFilterField(MorphTextField):
     def _on_focus_changed(
             self,
             instance: 'MorphDropdownFilterField',
-            focus: bool) -> None:
+            focus: bool
+            ) -> None:
         """Handle changes to the focus property.
 
         This method is called whenever the focus state of the filter

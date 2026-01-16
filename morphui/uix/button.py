@@ -53,9 +53,9 @@ __all__ = [
 
 
 class MorphSimpleIconButton(
+        MorphAutoSizingBehavior,
         MorphIconBehavior,
         MorphRoundSidesBehavior,
-        MorphAutoSizingBehavior,
         MorphIdentificationBehavior,
         MorphThemeBehavior,
         MorphHoverBehavior,
