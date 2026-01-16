@@ -434,8 +434,13 @@ class MorphTextInput(
     _cursor_color_instruction: Line
     """Kivy Color instruction for the cursor color."""
 
+    default_config: Dict[str, Any] = dict(
+        theme_color_bindings={
+            'cursor_color': 'secondary_color',}) # TODO: not working yet
+
     def __init__(self, **kwargs) -> None:
-        super().__init__(**kwargs)
+        config = clean_config(self.default_config, kwargs)
+        super().__init__(**config)
 
         for child in self.canvas.before.children:
             if child.group is None and not isinstance(child, BoxShadow):
