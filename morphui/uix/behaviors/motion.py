@@ -3,6 +3,7 @@ from typing import Tuple
 from typing import Literal
 
 from kivy.metrics import dp
+from kivy.animation import Animation
 from kivy.properties import AliasProperty
 from kivy.properties import BooleanProperty
 from kivy.properties import ObjectProperty
@@ -440,6 +441,7 @@ class MorphMenuMotionBehavior(MorphScaleBehavior,):
          fit within the window bounds before opening.
         """
         if self.is_open:
+            Animation.cancel_all(self)
             return
         
         self.dispatch('on_pre_open')
@@ -455,6 +457,7 @@ class MorphMenuMotionBehavior(MorphScaleBehavior,):
     def dismiss(self, *args) -> None:
         """Dismiss the menu with animation."""
         if not self.is_open:
+            Animation.cancel_all(self)
             return
         
         self.dispatch('on_pre_dismiss')
@@ -484,7 +487,7 @@ class MorphMenuMotionBehavior(MorphScaleBehavior,):
         """
         if not self.collide_point(*touch.pos):
             self.dismiss()
-            return True
+            return False
         return super().on_touch_down(touch)
 
     def on_pre_open(self, *args) -> None:
