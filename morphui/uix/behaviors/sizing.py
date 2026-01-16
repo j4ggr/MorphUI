@@ -441,13 +441,12 @@ class MorphAutoSizingBehavior(EventDispatcher):
         self.register_event_type('on_auto_size_updated')
         super().__init__(**kwargs)
         
+        self._original_size_hint = tuple(self.size_hint)
         if self.auto_size_once:
             self.apply_auto_sizing(self.auto_width, self.auto_width)
             self.auto_width = False
             self.auto_height = False
-
         self._original_size = tuple(self.size)
-        self._original_size_hint = tuple(self.size_hint)
         
         if self.has_texture_size and hasattr(self, 'text_size'):
             self.bind(text=self._update_text_size)
