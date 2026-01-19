@@ -17,6 +17,7 @@ from morphui.uix.list import MorphListItemFlat
 from morphui.uix.boxlayout import MorphElevationBoxLayout
 from morphui.uix.behaviors import MorphMenuMotionBehavior
 from morphui.uix.behaviors import MorphSizeBoundsBehavior
+from morphui.uix.behaviors import MorphRoundSidesBehavior
 
 from morphui.uix.textfield import MorphTextField
 from morphui.uix.textfield import MorphTextFieldFilled
@@ -333,7 +334,8 @@ class MorphDropdownFilterFieldOutlined(
 
 
 class MorphDropdownFilterFieldRounded(
-    MorphDropdownFilterField):
+        MorphRoundSidesBehavior,
+        MorphDropdownFilterField):
     """A rounded text field used for filtering items in a dropdown 
     menu.
 

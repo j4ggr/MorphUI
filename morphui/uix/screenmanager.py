@@ -168,24 +168,29 @@ class MorphScreenManager(
 
     class MyApp(MorphApp):
         def build(self) -> MorphBoxLayout:
-            self.theme_manager.seed_color = 'Purple'
+            self.theme_manager.seed_color = 'morphui_teal'
 
-            box = MorphBoxLayout(
+            self.main_layout = MorphBoxLayout(
                 MorphScreenManager(
                     MorphScreen(
                         MorphButton(
                             text="Go to Screen 2",
-                            on_release=lambda x: box.screen_manager.current = 'screen2',),
+                            on_release=lambda x: self.change_screen('screen2'),),
                         name='screen1',),
                     MorphScreen(
                         MorphButton(
                             text="Go to Screen 1",
-                            on_release=lambda x: box.screen_manager.current = 'screen1',),
+                            on_release=lambda x: self.change_screen('screen1'),),
                         name='screen2',),
                     identity='screen_manager',),
                 identity='main_layout',
                 orientation='vertical',)
-            return box
+            return self.main_layout
+
+        def change_screen(self, name: str) -> None:
+            sm = self.main_layout.identities.screen_manager
+            sm.current = name
+
     if __name__ == '__main__':
         MyApp().run()
     ```
