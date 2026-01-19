@@ -33,7 +33,11 @@ from morphui.uix.button import MorphDatePickerDayButton
 from morphui.uix.button import MorphTextIconToggleButton
 from morphui.uix.boxlayout import MorphBoxLayout
 from morphui.uix.textfield import MorphTextField
+from morphui.uix.textfield import MorphTextFieldFilled
+from morphui.uix.textfield import MorphTextFieldRounded
+from morphui.uix.textfield import MorphTextFieldOutlined
 from morphui.uix.behaviors import MorphElevationBehavior
+from morphui.uix.behaviors import MorphRoundSidesBehavior
 from morphui.uix.behaviors import MorphMenuMotionBehavior
 from morphui.uix.behaviors import MorphSizeBoundsBehavior
 from morphui.uix.gridlayout import MorphGridLayout
@@ -48,7 +52,10 @@ __all__ = [
     'MorphDatePickerMonthView',
     'MorphDatePickerCalendarView',
     'MorphDockedDatePickerMenu',
-    'MorphDockedDatePickerField',]
+    'MorphDockedDatePickerField',
+    'MorphDockedDatePickerFieldOutlined',
+    'MorphDockedDatePickerFieldRounded',
+    'MorphDockedDatePickerFieldFilled',]
 
 
 class _ListItemLeadingWidget(MorphLeadingIconLabel):
@@ -470,6 +477,16 @@ class MorphDatePickerCalendarView(
                 button.is_in_range = True
             else:
                 button.is_in_range = False
+    
+    def clear_selection(self) -> None:
+        """Clear the current date selection in the calendar view.
+
+        This method resets the selection state, removing any selected
+        day buttons.
+        """
+        for button in self.selected_day_buttons:
+            button.trigger_action()
+        self.selected_day_buttons = []
 
 
 class MorphDockedDatePickerMenu(
@@ -720,6 +737,58 @@ class MorphDockedDatePickerField(MorphTextField):
 
     This text field integrates with a docked date picker layout to
     provide date selection functionality.
+
+    Examples
+    --------
+    Single date selection:
+    ```python
+    from morphui.app import MorphApp
+    from morphui.uix.pickers import MorphDockedDatePickerField
+    from morphui.uix.floatlayout import MorphFloatLayout
+
+    class MyApp(MorphApp):
+
+        def build(self) -> MorphFloatLayout:
+            self.theme_manager.theme_mode = 'Dark'
+            self.theme_manager.seed_color = 'morphui_teal'
+
+            self.layout = MorphFloatLayout(
+                MorphDockedDatePickerField(
+                    kind='single',
+                    identity='date_picker_field',
+                    pos_hint={'center_x': 0.5, 'center_y': 0.8},
+                    size_hint_x= 0.6,))
+
+            return self.layout
+
+    if __name__ == "__main__":
+        MyApp().run()
+    ```
+
+    Range date selection:
+    ```python
+    from morphui.app import MorphApp
+    from morphui.uix.pickers import MorphDockedDatePickerField
+    from morphui.uix.floatlayout import MorphFloatLayout
+
+    class MyApp(MorphApp):
+
+        def build(self) -> MorphFloatLayout:
+            self.theme_manager.theme_mode = 'Dark'
+            self.theme_manager.seed_color = 'morphui_teal'
+
+            self.layout = MorphFloatLayout(
+                MorphDockedDatePickerField(
+                    kind='range',
+                    identity='date_picker_field',
+                    pos_hint={'center_x': 0.5, 'center_y': 0.8},
+                    size_hint_x= 0.6,))
+
+            return self.layout
+
+    if __name__ == "__main__":
+        MyApp().run()
+    ```
     """
 
     normal_trailing_icon: str = StringProperty('calendar')
@@ -795,6 +864,19 @@ class MorphDockedDatePickerField(MorphTextField):
     """Internal flag to track if label_text was provided during
     initialization."""
 
+    _format_strings: Dict[str, str] = dict(
+        iso=r'%Y-%m-%d',
+        us=r'%m/%d/%Y',
+        eu=r'%d.%m.%Y',)
+    """Mapping of date formats to strftime/strptime format strings.
+    
+    This dictionary maps the date format options to their corresponding
+    strftime/strptime format strings for date parsing and formatting:
+    - 'iso': '%Y-%m-%d'
+    - 'us': '%m/%d/%Y'
+    - 'eu': '%d.%m.%Y'
+    """
+
     def __init__(self, **kwargs) -> None:
         kwargs['picker_menu'] = MorphDockedDatePickerMenu(caller=self)
         kwargs['trailing_icon'] = kwargs.get(
@@ -830,6 +912,39 @@ class MorphDockedDatePickerField(MorphTextField):
         :rtype: MorphDatePickerCalendarView
         """
         return self.picker_menu.identities.calendar_view
+    
+    @property
+    def format_string(self) -> str:
+        """Get the strftime/strptime format string based on the
+        selected date format.
+
+        This property retrieves the appropriate format string for
+        date parsing and formatting based on the current value of
+        the :attr:`date_format` property.
+
+        :return: The corresponding format string.
+        :rtype: str
+        """
+        return self._format_strings[self.date_format]
+
+    def _get_date_string(self, date_value: date | None) -> str:
+        """Format a date value as a string based on the selected
+        date format.
+
+        This method converts a :class:`datetime.date` object into a
+        string representation according to the specified date format.
+
+        Parameters
+        ----------
+        date_value : date | None
+            The date value to format.
+
+        :return: The formatted date string.
+        :rtype: str
+        """
+        if date_value is None:
+            return ''
+        return date_value.strftime(self.format_string)
 
     def _on_kind_changed(
             self,
@@ -867,24 +982,23 @@ class MorphDockedDatePickerField(MorphTextField):
         This method is called whenever the text in the text field
         changes. It can be used to validate or format the date input.
         """
-        if self.error or not self.focus:
+        if not self.focus:
+            return None
+        
+        if self.error:
+            if not text:
+                self.calendar_view.clear_selection()
             return None
         
         date_grid = self.picker_menu.identities.date_grid_layout
-        if self.kind == 'single':
-            texts = [text]
-        else:
-            texts = [t.strip() for t in text.split(self.range_sep)]
-
+        texts = [t.strip() for t in text.split(self.range_sep)]
         parsed_dates = [self._parse_date_text(_text) for _text in texts]
         parsed_dates = [d for d in parsed_dates if d is not None]
         if len(parsed_dates) >= 2 and parsed_dates[0] > parsed_dates[1]:
             self.text = f'{texts[1]}{self.range_sep}{texts[0]}'
             return None
-
-        for button in self.calendar_view.selected_day_buttons:
-            button.trigger_action()
         
+        self.calendar_view.clear_selection()
         for parsed_date in parsed_dates:
             self.picker_menu.current_year = parsed_date.year
             self.picker_menu.current_month = parsed_date.month
@@ -906,26 +1020,12 @@ class MorphDockedDatePickerField(MorphTextField):
         if not selected_buttons:
             return
         
-        format_str = {
-            'iso': r'%Y-%m-%d',
-            'us': r'%m/%d/%Y',
-            'eu': r'%d.%m.%Y',
-            }[self.date_format]
-        
-        def get_date_str(button: MorphDatePickerDayButton) -> str:
-            date_value = button.date_value
-            if date_value:
-                return date_value.strftime(format_str)
-            return ''
-        
-        if self.kind == 'single':
-            self.text = get_date_str(selected_buttons[0])
-        else:
-            date_str = get_date_str(selected_buttons[0])
-            if len(selected_buttons) == 2:
-                date_str = self.range_sep.join(
-                    (date_str, get_date_str(selected_buttons[1])))
-            self.text = date_str
+        date_string = self._get_date_string(selected_buttons[0].date_value)
+        if len(selected_buttons) == 2 and self.kind == 'range':
+            date_string = self.range_sep.join((
+                date_string,
+                self._get_date_string(selected_buttons[1].date_value)))
+        self.text = date_string
 
     def _on_focus_changed(
             self,
@@ -969,4 +1069,198 @@ class MorphDockedDatePickerField(MorphTextField):
         """
         if not self.picker_menu.is_open:
             self.focus = True
-        
+        else:
+            self.picker_menu.dismiss()
+
+
+class MorphDockedDatePickerFieldOutlined(
+        MorphDockedDatePickerField):
+    """An outlined variant of the MorphDockedDatePickerField.
+
+    This class extends the MorphDockedDatePickerField to provide an
+    outlined style for the date picker text field.
+
+    Examples
+    --------
+    Single date selection:
+    ```python
+    from morphui.app import MorphApp
+    from morphui.uix.pickers import MorphDockedDatePickerFieldOutlined
+    from morphui.uix.floatlayout import MorphFloatLayout
+
+    class MyApp(MorphApp):
+
+        def build(self) -> MorphFloatLayout:
+            self.theme_manager.theme_mode = 'Dark'
+            self.theme_manager.seed_color = 'morphui_teal'
+
+            self.layout = MorphFloatLayout(
+                MorphDockedDatePickerFieldOutlined(
+                    kind='single',
+                    identity='date_picker_field',
+                    pos_hint={'center_x': 0.5, 'center_y': 0.8},
+                    size_hint_x= 0.6,))
+
+            return self.layout
+    
+    if __name__ == "__main__":
+        MyApp().run()
+    ```
+
+    range date selection:
+    ```python
+    from morphui.app import MorphApp
+    from morphui.uix.pickers import MorphDockedDatePickerFieldOutlined
+    from morphui.uix.floatlayout import MorphFloatLayout
+
+    class MyApp(MorphApp):
+
+        def build(self) -> MorphFloatLayout:
+            self.theme_manager.theme_mode = 'Dark'
+            self.theme_manager.seed_color = 'morphui_teal'
+
+            self.layout = MorphFloatLayout(
+                MorphDockedDatePickerFieldOutlined(
+                    kind='range',
+                    identity='date_picker_field',
+                    pos_hint={'center_x': 0.5, 'center_y': 0.8},
+                    size_hint_x= 0.6,))
+
+            return self.layout
+    if __name__ == "__main__":
+        MyApp().run()
+    ```
+    """
+
+    default_config: Dict[str, Any] = (
+        MorphTextFieldOutlined.default_config.copy() | dict())
+
+
+class MorphDockedDatePickerFieldRounded(
+        MorphRoundSidesBehavior,
+        MorphDockedDatePickerField):
+    """A rounded variant of the MorphDockedDatePickerField.
+
+    This class extends the MorphDockedDatePickerField to provide a
+    rounded style for the date picker text field.
+
+    Examples
+    --------
+    Single date selection:
+    ```python
+    from morphui.app import MorphApp
+    from morphui.uix.pickers import MorphDockedDatePickerFieldRounded
+    from morphui.uix.floatlayout import MorphFloatLayout
+
+    class MyApp(MorphApp):
+
+        def build(self) -> MorphFloatLayout:
+            self.theme_manager.theme_mode = 'Dark'
+            self.theme_manager.seed_color = 'morphui_teal'
+
+            self.layout = MorphFloatLayout(
+                MorphDockedDatePickerFieldRounded(
+                    kind='single',
+                    identity='date_picker_field',
+                    pos_hint={'center_x': 0.5, 'center_y': 0.8},
+                    size_hint_x= 0.6,))
+
+            return self.layout
+
+    if __name__ == "__main__":
+        MyApp().run()
+    ```
+
+    Range date selection:
+    ```python
+    from morphui.app import MorphApp
+    from morphui.uix.pickers import MorphDockedDatePickerFieldRounded
+    from morphui.uix.floatlayout import MorphFloatLayout
+
+    class MyApp(MorphApp):
+
+        def build(self) -> MorphFloatLayout:
+            self.theme_manager.theme_mode = 'Dark'
+            self.theme_manager.seed_color = 'morphui_teal'
+
+            self.layout = MorphFloatLayout(
+                MorphDockedDatePickerFieldRounded(
+                    kind='range',
+                    identity='date_picker_field',
+                    pos_hint={'center_x': 0.5, 'center_y': 0.8},
+                    size_hint_x= 0.6,))
+
+            return self.layout
+
+    if __name__ == "__main__":
+        MyApp().run()
+    ```
+    """
+
+    default_config: Dict[str, Any] = (
+        MorphTextFieldRounded.default_config.copy() | dict())
+    
+    
+class MorphDockedDatePickerFieldFilled(
+        MorphDockedDatePickerField):
+    """A filled variant of the MorphDockedDatePickerField.
+
+    This class extends the MorphDockedDatePickerField to provide a
+    filled style for the date picker text field.
+
+    Examples
+    --------
+    Single date selection:
+    ```python
+    from morphui.app import MorphApp
+    from morphui.uix.pickers import MorphDockedDatePickerFieldFilled
+    from morphui.uix.floatlayout import MorphFloatLayout
+
+    class MyApp(MorphApp):
+
+        def build(self) -> MorphFloatLayout:
+            self.theme_manager.theme_mode = 'Dark'
+            self.theme_manager.seed_color = 'morphui_teal'
+
+            self.layout = MorphFloatLayout(
+                MorphDockedDatePickerFieldFilled(
+                    kind='single',
+                    identity='date_picker_field',
+                    pos_hint={'center_x': 0.5, 'center_y': 0.8},
+                    size_hint_x= 0.6,))
+
+            return self.layout
+
+    if __name__ == "__main__":
+        MyApp().run()
+    ```
+
+    Range date selection:
+    ```python
+    from morphui.app import MorphApp
+    from morphui.uix.pickers import MorphDockedDatePickerFieldFilled
+    from morphui.uix.floatlayout import MorphFloatLayout
+
+    class MyApp(MorphApp):
+
+        def build(self) -> MorphFloatLayout:
+            self.theme_manager.theme_mode = 'Dark'
+            self.theme_manager.seed_color = 'morphui_teal'
+
+            self.layout = MorphFloatLayout(
+                MorphDockedDatePickerFieldFilled(
+                    kind='range',
+                    identity='date_picker_field',
+                    pos_hint={'center_x': 0.5, 'center_y': 0.8},
+                    size_hint_x= 0.,))
+
+            return self.layout
+
+    if __name__ == "__main__":
+        MyApp().run()
+    ```
+    """
+
+    default_config: Dict[str, Any] = (
+        MorphTextFieldFilled.default_config.copy() | dict())
+    

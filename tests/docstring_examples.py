@@ -16,38 +16,27 @@ sys.path.append(str(Path(__file__).parents[1].resolve()))
 """
 import sys
 from pathlib import Path
+
 sys.path.append(str(Path(__file__).parents[1].resolve()))
 
 from morphui.app import MorphApp
-from morphui.uix.button import MorphButton
-from morphui.uix.boxlayout import MorphBoxLayout
-from morphui.uix.screenmanager import MorphScreen
-from morphui.uix.screenmanager import MorphScreenManager
+from morphui.uix.pickers import MorphDockedDatePickerFieldRounded
+from morphui.uix.floatlayout import MorphFloatLayout
 
 class MyApp(MorphApp):
-    def build(self) -> MorphBoxLayout:
+
+    def build(self) -> MorphFloatLayout:
+        self.theme_manager.theme_mode = 'Dark'
         self.theme_manager.seed_color = 'morphui_teal'
 
-        self.main_layout = MorphBoxLayout(
-            MorphScreenManager(
-                MorphScreen(
-                    MorphButton(
-                        text="Go to Screen 2",
-                        on_release=lambda x: self.change_screen('screen2'),),
-                    name='screen1',),
-                MorphScreen(
-                    MorphButton(
-                        text="Go to Screen 1",
-                        on_release=lambda x: self.change_screen('screen1'),),
-                    name='screen2',),
-                identity='screen_manager',),
-            identity='main_layout',
-            orientation='vertical',)
-        return self.main_layout
+        self.layout = MorphFloatLayout(
+            MorphDockedDatePickerFieldRounded(
+                kind='range',
+                identity='date_picker_field',
+                pos_hint={'center_x': 0.5, 'center_y': 0.8},
+                size_hint_x= 0.6,))
 
-    def change_screen(self, name: str) -> None:
-        sm = self.main_layout.identities.screen_manager
-        sm.current = name
+        return self.layout
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     MyApp().run()
