@@ -503,6 +503,19 @@ class MorphMenuMotionBehavior(MorphScaleBehavior,):
             self.dismiss()
             return False
         return super().on_touch_down(touch)
+    
+    def on_touch_up(self, touch: MotionEvent) -> bool:
+        """Handle touch up events to close the menu when touching
+        outside.
+
+        This method overrides the default touch up behavior to
+        close the date picker menu if a touch event occurs outside
+        its bounds.
+        """
+        if not self.collide_point(*touch.pos):
+            self.dismiss()
+            return False
+        return super().on_touch_up(touch)
 
     def on_pre_open(self, *args) -> None:
         """Event fired before the menu is opened."""
