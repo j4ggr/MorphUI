@@ -3,6 +3,7 @@ from typing import Dict
 from typing import List
 from typing import Tuple
 
+from kivy.clock import Clock
 from kivy.event import EventDispatcher
 from kivy.metrics import dp
 from kivy.metrics import sp
@@ -895,7 +896,7 @@ class MorphTextField(
             pos=self._update_layout,
             size=self._update_layout,
             declarative_children=self._update_layout,
-            focus=self._animate_on_focus,
+            focus=lambda *args: Clock.schedule_once(self._animate_on_focus),
             selected_text_color=self._update_selection_color,
             selected_text_color_opacity=self._update_selection_color,
             error_type=self._update_supporting_error_text,
@@ -1318,7 +1319,7 @@ class MorphTextFieldOutlined(
             label_focus_behavior='float_to_border',
             border_bottom_line_only=False,
             multiline=False,
-            radius=[2, 2, 2, 2],))
+            radius=[dp(4), dp(4), dp(4), dp(4)],))
 
 
 class MorphTextFieldRounded(
@@ -1349,6 +1350,6 @@ class MorphTextFieldFilled(
         MorphTextField.default_config.copy() | dict(            
             label_focus_behavior='move_above',
             border_bottom_line_only=True,
-            text_input_default_padding=[8, 8, 18, 18],
+            text_input_default_padding=[dp(8), dp(8), dp(18), dp(18)],
             multiline=False,
-            radius=[16, 16, 0, 0],))
+            radius=[dp(16), dp(16), 0, 0],))
