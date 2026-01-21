@@ -2,6 +2,7 @@ from typing import Any
 from typing import Tuple
 from typing import Literal
 
+from kivy.clock import Clock
 from kivy.metrics import dp
 from kivy.animation import Animation
 from kivy.properties import AliasProperty
@@ -72,9 +73,9 @@ class MorphMenuMotionBehavior(MorphScaleBehavior,):
 
     This property defines the horizontal alignment of the menu relative
     to the caller button. Options are:
-    - 'left': Align the menu's left edge with the caller's left edge
+    - 'left': Align the menu's right edge with the caller's left edge
     - 'center': Center the menu horizontally with the caller
-    - 'right': Align the menu's right edge with the caller's right edge
+    - 'right': Align the menu's left edge with the caller's right edge
 
     :attr:`menu_anchor_position` is a
     :class:`~kivy.properties.OptionProperty` and defaults to `'center'`.
@@ -443,6 +444,7 @@ class MorphMenuMotionBehavior(MorphScaleBehavior,):
         """Remove the menu from the window."""
         if self.is_open:
             Window.remove_widget(self)
+        self.dispatch('on_dismiss')
 
     def open(self, *args) -> None:
         """Open the menu with animation.
@@ -455,6 +457,7 @@ class MorphMenuMotionBehavior(MorphScaleBehavior,):
             Animation.cancel_all(self)
             return None
         
+        self.dismiss_allowed = False
         self.dispatch('on_pre_open')
         self._add_to_window()
         self._adjust_and_reposition()
@@ -462,8 +465,9 @@ class MorphMenuMotionBehavior(MorphScaleBehavior,):
             self.scale_animation_duration = self.menu_opening_duration
             self.scale_animation_transition = self.menu_opening_transition
             self.set_scale_origin()
-            self.animate_scale_in()
-        self.dispatch('on_open')
+            self.animate_scale_in(lambda *_: self.dispatch('on_open'))
+        else:
+            self.dispatch('on_open')
 
     def dismiss(self, *args) -> None:
         """Dismiss the menu with animation."""
@@ -482,7 +486,6 @@ class MorphMenuMotionBehavior(MorphScaleBehavior,):
             self.animate_scale_out(callback=self._remove_from_window)
         else:
             self._remove_from_window()
-        self.dispatch('on_dismiss')
 
     def toggle(self, *args) -> None:
         """Toggle the menu open/closed state with animation."""
@@ -490,19 +493,6 @@ class MorphMenuMotionBehavior(MorphScaleBehavior,):
             self.dismiss()
         else:
             self.open()
-    
-    def on_touch_down(self, touch: MotionEvent) -> bool:
-        """Handle touch down events to close the menu when touching
-        outside.
-
-        This method overrides the default touch down behavior to
-        close the date picker menu if a touch event occurs outside
-        its bounds.
-        """
-        if not self.collide_point(*touch.pos):
-            self.dismiss()
-            return False
-        return super().on_touch_down(touch)
     
     def on_touch_up(self, touch: MotionEvent) -> bool:
         """Handle touch up events to close the menu when touching
@@ -513,7 +503,7 @@ class MorphMenuMotionBehavior(MorphScaleBehavior,):
         its bounds.
         """
         if not self.collide_point(*touch.pos):
-            self.dismiss()
+            Clock.schedule_once(self.dismiss, 0)
             return False
         return super().on_touch_up(touch)
 

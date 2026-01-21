@@ -117,6 +117,14 @@ class MorphDropdownMenu(
         super().__init__(**kwargs)
         self.layout_manager = self.dropdown_list.layout_manager
         self.add_widget(self.dropdown_list)
+    
+    def on_open(self, *args) -> None:
+        """Event handler for when the dropdown menu is opened.
+        
+        This method is called when the dropdown menu is opened. It sets
+        the `dismiss_allowed` property to `True`, allowing the menu to
+        be dismissed by touching outside its bounds."""
+        self.dismiss_allowed = True
 
 
 class MorphDropdownFilterField(MorphTextField):
@@ -239,6 +247,7 @@ class MorphDropdownFilterField(MorphTextField):
     """Default configuration for the MorphDropdownFilterField."""
 
     def __init__(self, kw_dropdown: Dict[str, Any] = {}, **kwargs) -> None:
+        self.register_event_type('on_item_release')
         kw_dropdown = dict(
             caller=self,
             items=kwargs.pop('items', []),
@@ -316,6 +325,30 @@ class MorphDropdownFilterField(MorphTextField):
         """
         if not self.dropdown_menu.is_open:
             self.focus = True
+
+    def on_item_release(
+            self,
+            item: Any,
+            index: int) -> None:
+        """Event handler for item release events.
+
+        This method is called when an item in the dropdown list is
+        released. It can be overridden to provide custom behavior when
+        an item is selected.
+
+        Parameters
+        ----------
+        item : Any
+            The item that was released.
+        index : int
+            The index of the released item in the dropdown list.
+        
+        Notes
+        -----
+        This method is not called if an `item_release_callback` is 
+        provided during initialization.
+        """
+        pass
 
 
 class MorphDropdownFilterFieldOutlined(

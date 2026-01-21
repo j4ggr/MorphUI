@@ -604,15 +604,61 @@ class _RegexPattern_:
     
     HEX_COLOR: re.Pattern = re.compile(
         r'^#(?:[0-9a-fA-F]{3}){1,2}$')
-    """Matches valid hex color codes (e.g., #FFF, #FFFFFF)."""
+    """Matches valid hex color codes (e.g., #FFF, #FFFFFF).
+    
+    Accepts both 3-digit and 6-digit hex color formats, with an
+    optional leading hash (#) symbol.
+    
+    Pattern Components
+    ------------------
+    - Start with #: `^#`
+    - Hex digits: `[0-9a-fA-F]{3}` (3 hex digits)
+    - Repeat for 6-digit: `{1,2}` (either 1 or 2 groups of 3 digits)
+    - End of string: `$`
+    
+    Examples
+    --------
+    Valid: "#FFF", "#ffffff", "#123ABC"
+    Invalid: "FFF", "#FFFF", "#12345G"
+    """
 
     EMAIL: re.Pattern = re.compile(
         r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
-    """Matches valid email addresses."""
+    """Matches valid email addresses.
+    
+    Pattern Components
+    ------------------
+    - Local part: `[a-zA-Z0-9._%+-]+` (letters, digits, and special
+      characters)
+    - @ symbol: `@`
+    - Domain: `[a-zA-Z0-9.-]+` (letters, digits, dots, hyphens)
+    - TLD: `.[a-zA-Z]{2,}` (dot followed by at least 2 letters)
+
+    Examples
+    --------
+    Valid: "user@example.com", "first.last@domain.co.uk"
+    Invalid: "user@.com", "user@domain", "user@domain..com"
+    """
 
     PHONE: re.Pattern = re.compile(
         r'^\+?1?\d{9,15}$')
-    """Matches valid phone numbers in international format."""
+    """Matches valid phone numbers in international format.
+    
+    Accepts optional leading plus (+) and country code (1 for US),
+    followed by 9 to 15 digits.
+    
+    Pattern Components
+    ------------------
+    - Optional +: `^+?`
+    - Optional country code 1: `1?`
+    - Digits: `d{9,15}` (9 to 15 digits)
+    - End of string: `$`
+    
+    Examples
+    --------
+    Valid: "+12345678901", "1234567890", "19876543210"
+    Invalid: "123-456-7890", "(123) 456-7890", "123456"
+    """
 
     DATE_EU: re.Pattern = re.compile(
         r'^(0[1-9]|[12][0-9]|3[01])(\/|-|\.)(0[1-9]|1[1,2])\2(19\d{2}|20\d{2})$')
@@ -717,10 +763,39 @@ class _RegexPattern_:
     """
 
     NUMERIC: re.Pattern = re.compile(r'^\d+(\.\d+)?$')
-    """Matches valid numeric values (integers and decimals)."""
+    """Matches valid numeric values (integers and decimals).
+    
+    Accepts whole numbers and decimal numbers with optional fractional 
+    part. Does not allow negative numbers or scientific notation.
+    
+    Pattern Components
+    ------------------
+    - Integer part: One or more digits (0-9)
+    - Decimal part: Optional, consists of a period (.) followed by one
+      or more digits (0-9)
+    
+    Examples
+    --------
+    Valid: "123", "45.67", "0", "0.99"
+    Invalid: "-123", "45.", ".67", "12e3"
+    """
 
     ALPHANUMERIC: re.Pattern = re.compile(r'^[a-zA-Z0-9]+$')
-    """Matches valid alphanumeric values (letters and numbers)."""
+    """Matches valid alphanumeric values (letters and numbers).
+    
+    Accepts strings containing only uppercase and lowercase letters
+    (A-Z, a-z) and digits (0-9). Does not allow spaces, special
+    characters, or punctuation.
 
+    Pattern Components
+    ------------------
+    - Letters: Uppercase (A-Z) and lowercase (a-z)
+    - Digits: 0-9
+    
+    Examples
+    --------
+    Valid: "Hello123", "abcDEF456", "2024"
+    Invalid: "Hello 123", "abc_def!", "2024-01-01"
+    """
 REGEX = _RegexPattern_()
 """Container for precompiled regular expressions."""
