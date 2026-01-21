@@ -251,8 +251,10 @@ class MorphDropdownFilterField(MorphTextField):
         kw_dropdown = dict(
             caller=self,
             items=kwargs.pop('items', []),
-            item_release_callback=kwargs.pop('item_release_callback', None)
-            ) | kw_dropdown
+            item_release_callback=kwargs.pop(
+                'item_release_callback',
+                lambda item, index: self.dispatch('on_item_release', item, index))
+                ) | kw_dropdown
         self.dropdown_menu = MorphDropdownMenu(**kw_dropdown)
         kwargs['trailing_icon'] = kwargs.get(
             'trailing_icon', self.normal_trailing_icon)
