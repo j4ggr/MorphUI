@@ -95,3 +95,5 @@ class MorphTooltip(
             on_enter=self.open,
             on_leave=self.dismiss,)
 
+    def on_pre_open(self, *args) -> None:
+        self.dismiss_allowed = True

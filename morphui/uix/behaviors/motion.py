@@ -494,7 +494,7 @@ class MorphMenuMotionBehavior(MorphScaleBehavior,):
         else:
             self.open()
     
-    def on_touch_up(self, touch: MotionEvent) -> bool:
+    def on_touch_up(self, touch: MotionEvent) -> bool | None:
         """Handle touch up events to close the menu when touching
         outside.
 
