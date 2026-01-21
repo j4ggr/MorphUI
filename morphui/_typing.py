@@ -92,6 +92,7 @@ OverlayState: TypeAlias = Literal[
     'disabled',
     'resizing',
     'dragging',
+    'active',
     'normal',]
 """TypeAlias for overlay-related states.
 
