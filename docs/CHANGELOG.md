@@ -14,6 +14,13 @@ __Types of changes__:
 - _Fixed_ for any bug fixes.
 - _Security_ in case of vulnerabilities.
 
+## [0.3.1] - 2026-01-21
+
+### Fixed
+
+- Fixed an issue where the datepicker menu would not dismiss correctly when the text field lost focus.
+- Fixed overlay layer not updating correctly on state change in MorphUI.
+
 ## [0.3.0] - 2026-01-19
 
 ### Added
