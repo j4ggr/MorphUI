@@ -1723,6 +1723,16 @@ class MorphOverlayLayerBehavior(BaseLayerBehavior):
     `[0, 0, 0, 0]`.
     """
 
+    active_overlay_edge_color: ColorProperty = ColorProperty([0, 0, 0, 0])
+    """Edge color of the overlay when the widget is active.
+
+    This color is applied when the widget is in an active state.
+
+    :attr:`active_overlay_edge_color` is a
+    :class:`~kivy.properties.ColorProperty` and defaults to
+    `[0, 0, 0, 0]`.
+    """
+
     def _get_overlay_edge_color(self, *args) -> List[float]:
         """Get the overlay edge color based on the current overlay state.
 
@@ -2015,9 +2025,11 @@ class MorphOverlayLayerBehavior(BaseLayerBehavior):
             normal_overlay_edge_color=self.setter('overlay_edge_color'),
             disabled_overlay_edge_color=self.setter('overlay_edge_color'),
             resizing_overlay_edge_color=self.setter('overlay_edge_color'),
-            overlay_layer_pos=self.on_overlay_updated,
-            overlay_layer_size=self.on_overlay_updated,
-            overlay_layer_radius=self.on_overlay_updated,)
+            overlay_layer_pos=self._update_overlay_layer,
+            overlay_layer_size=self._update_overlay_layer,
+            overlay_layer_radius=self._update_overlay_layer,
+            overlay_edge_color=self._update_overlay_layer,
+            overlay_color=self._update_overlay_layer,)
 
         self.refresh_overlay()
     
