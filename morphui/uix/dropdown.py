@@ -117,14 +117,20 @@ class MorphDropdownMenu(
         super().__init__(**kwargs)
         self.layout_manager = self.dropdown_list.layout_manager
         self.add_widget(self.dropdown_list)
-    
-    def on_open(self, *args) -> None:
-        """Event handler for when the dropdown menu is opened.
+
+    def _update_caller_bindings(self, *args) -> None:
+        """Update bindings to the caller button's position and size.
+
+        This method binds to the caller button's `pos` and `size`
+        properties to adjust the tooltip position whenever the caller
+        changes. If there is no caller set, it does nothing.
+        """
+        if self.caller is None:
+            return
         
-        This method is called when the dropdown menu is opened. It sets
-        the `dismiss_allowed` property to `True`, allowing the menu to
-        be dismissed by touching outside its bounds."""
-        self.dismiss_allowed = True
+        super()._update_caller_bindings()
+        self.caller.bind(
+            focus=lambda _, focus: setattr(self, 'dismiss_allowed', not focus))
 
 
 class MorphDropdownFilterField(MorphTextField):
@@ -290,8 +296,9 @@ class MorphDropdownFilterField(MorphTextField):
             The new text value of the filter field.
         """
         items = self.dropdown_menu.dropdown_list._source_items
-        full_texts = [item['label_text'] for item in items]    
-        self.dropdown_menu.filter_value = '' if text in full_texts else text
+        full_texts = [item['label_text'] for item in items]
+        filter_value = '' if text in full_texts else text
+        self.dropdown_menu.dropdown_list.filter_value = filter_value
     
     def _on_focus_changed(
             self,
