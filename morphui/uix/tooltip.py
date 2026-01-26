@@ -93,7 +93,5 @@ class MorphTooltip(
         super()._update_caller_bindings()
         self.caller.bind(
             on_enter=self.open,
-            on_leave=self.dismiss,)
-
-    def on_pre_open(self, *args) -> None:
-        self.dismiss_allowed = True
+            on_leave=self.dismiss,
+            hovered=lambda _, hover: setattr(self, 'dismiss_allowed', not hover),)
