@@ -3,6 +3,7 @@ from textwrap import dedent
 from typing import Any
 from typing import List
 from typing import Dict
+from typing import Literal
 
 from kivy.lang import Builder
 from kivy.metrics import dp
@@ -23,6 +24,16 @@ from morphui.uix.textfield import MorphTextField
 from morphui.uix.textfield import MorphTextFieldFilled
 from morphui.uix.textfield import MorphTextFieldRounded
 from morphui.uix.textfield import MorphTextFieldOutlined
+
+
+__all__ = [
+    'MorphDropdownList',
+    'MorphDropdownMenu',
+    'MorphDropdownFilterField',
+    'MorphDropdownFilterFieldOutlined',
+    'MorphDropdownFilterFieldRounded',
+    'MorphDropdownFilterFieldFilled',
+    ]
 
 
 class MorphDropdownList(
@@ -47,6 +58,127 @@ class MorphDropdownList(
         'trailing_icon': '',
         'label_text': '',
         })
+    
+    def _clear_focus(self) -> None:
+        """Clear focus from all child items in the list."""
+        for child in self.layout_manager.children:
+            child.focus = False
+    
+    def set_neighbor_focus(
+            self,
+            current_focus_child: Any,
+            direction: Literal['up', 'down']
+            ) -> None:
+        """Set focus to the neighboring child item in the specified
+        direction.
+
+        Parameters
+        ----------
+        current_child : Any
+            The currently focused child item.
+        direction : Literal['up', 'down']
+            The direction to move focus, either 'up' or 'down'.
+        """
+        children = self.layout_manager.children
+        n_children = len(children)
+        if n_children == 0:
+            return None
+        
+        n_children_after = 0
+        delta_y = float('inf')
+        ref_y = current_focus_child.y
+        new_child = current_focus_child
+        for child in children:
+            _dy = child.y - ref_y if direction == 'up' else ref_y - child.y
+            if _dy <= 0 or _dy >= delta_y:
+                continue
+            
+            n_children_after += 1
+            delta_y = _dy
+            new_child = child
+
+        self._clear_focus()
+        new_child.focus = True
+        if n_children_after <= 2:
+            self.scroll_by_item(direction, 2 - n_children_after)
+
+    def scroll_by_item(
+            self,
+            direction: Literal['up', 'down'],
+            n_items: int
+            ) -> None:
+        """Scroll the list by the specified number of items in the given
+        direction.
+
+        Parameters
+        ----------
+        direction : Literal['up', 'down']
+            The direction to scroll, either 'up' or 'down'.
+        n_items : int
+            The number of items to scroll by.
+        """
+        total_items = len(self.data)
+        if total_items == 0:
+            return None
+        
+        delta = n_items / total_items
+        if direction == 'up':
+            self.scroll_y = min(1, self.scroll_y + delta)
+        elif direction == 'down':
+            self.scroll_y = max(0, self.scroll_y - delta)
+    
+    def on_arrow_down_press(self) -> None:
+        """Handle the arrow down key press event.
+
+        This method is called when the arrow down key is pressed.
+        It moves the focus to the next item in the list.
+        """
+        children = self.layout_manager.children
+        n_children = len(children)
+        total_items = len(self.data)
+        if n_children == 0:
+            return None
+        
+        focused_child = next((c for c in children if c.focus), None)
+        if focused_child is None or n_children == 1 or total_items == 1:
+            children[-1].focus = True
+            return None
+        
+        self.set_neighbor_focus(focused_child, 'down')
+
+    def on_arrow_up_press(self) -> None:
+        """Handle the arrow up key press event.
+
+        This method is called when the arrow up key is pressed.
+        It moves the focus to the previous item in the list.
+        """
+        children = self.layout_manager.children
+        n_children = len(children)
+        total_items = len(self.data)
+        if n_children == 0:
+            return None
+        
+        focused_child = next((c for c in children if c.focus), None)
+        if focused_child is None or n_children == 1 or total_items == 1:
+            children[-1].focus = True
+            return None
+        
+        self.set_neighbor_focus(focused_child, 'up')
+    
+    def on_enter_press(self) -> None:
+        """Handle the enter key press event.
+
+        This method is called when the enter key is pressed.
+        It triggers the release action on the currently focused item.
+        """
+        children = self.layout_manager.children
+        if not children:
+            return None
+        
+        for child in children[::-1]:
+            if child.focus:
+                child.trigger_action()
+                return None
 
 
 class MorphDropdownMenu(

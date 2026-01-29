@@ -8,6 +8,7 @@ from kivy.properties import ListProperty
 from kivy.properties import DictProperty
 from kivy.properties import AliasProperty
 from kivy.properties import ObjectProperty
+from kivy.properties import BooleanProperty
 from kivy.properties import NumericProperty
 from kivy.uix.recycleview import RecycleView
 from kivy.uix.recycleview.views import RecycleDataViewBehavior
@@ -16,6 +17,7 @@ from morphui.utils import clean_config
 from morphui.uix.behaviors import MorphHoverBehavior
 from morphui.uix.behaviors import MorphRippleBehavior
 from morphui.uix.behaviors import MorphButtonBehavior
+from morphui.uix.behaviors import MorphKeyPressBehavior
 from morphui.uix.behaviors import MorphColorThemeBehavior
 from morphui.uix.behaviors import MorphToggleButtonBehavior
 from morphui.uix.behaviors import MorphOverlayLayerBehavior
@@ -52,6 +54,18 @@ class MorphListItemFlat(
     text label, and trailing icon. It inherits from
     :class:`~morphui.uix.container.MorphIconLabelIconContainer` which
     provides the layout structure and child widget management.
+    """
+
+    focus: bool = BooleanProperty(False)
+    """Indicates whether this list item is focused.
+
+    This property determines if the list item is currently focused, 
+    when pressing the keyboard navigation keys. A focused item
+    typically receives keyboard input and may have a visual
+    indication of its focused state.
+
+    :attr:`focus` is a :class:`~kivy.properties.BooleanProperty` and
+    defaults to `False`.
     """
 
     release_callback: Callable[[Any, int], None] | None = ObjectProperty(None)
@@ -194,6 +208,7 @@ class MorphListLayout(
 
 
 class BaseListView(
+        MorphKeyPressBehavior,
         MorphIdentificationBehavior,
         RecycleView):
     """A base RecycleView subclass for displaying a list of items.

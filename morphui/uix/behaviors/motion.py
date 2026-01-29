@@ -224,6 +224,7 @@ class MorphMenuMotionBehavior(MorphScaleBehavior,):
         """
         if not self.is_open:
             return
+
         if hasattr(self, 'layout_manager'):
             size = self.layout_manager.size
             padding = getattr(self, 'padding', [0]*4)
@@ -494,7 +495,7 @@ class MorphMenuMotionBehavior(MorphScaleBehavior,):
         else:
             self.open()
     
-    def on_touch_up(self, touch: MotionEvent) -> bool | None:
+    def on_touch_up(self, touch: MotionEvent) -> Literal[True] | None:
         """Handle touch up events to close the menu when touching
         outside.
 
@@ -504,7 +505,7 @@ class MorphMenuMotionBehavior(MorphScaleBehavior,):
         """
         if not self.collide_point(*touch.pos):
             Clock.schedule_once(self.dismiss, 0)
-            return False
+            return None
         return super().on_touch_up(touch)
 
     def on_pre_open(self, *args) -> None:
