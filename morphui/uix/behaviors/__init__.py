@@ -1,3 +1,4 @@
+from matplotlib.pylab import f
 from .appreference import MorphAppReferenceBehavior
 
 from .states import MorphStateBehavior
@@ -24,6 +25,8 @@ from .theming import MorphThemeBehavior
 from .theming import MorphDelegatedThemeBehavior
 
 from .keypress import MorphKeyPressBehavior
+from .keypress import MorphTabNavigationManagerBehavior
+from .keypress import MorphTabNavigableBehavior
 
 from .elevation import MorphElevationBehavior
 
@@ -71,6 +74,8 @@ __all__ = [
     'MorphThemeBehavior',               # Combined theme integration (compatibility)
     'MorphDelegatedThemeBehavior',      # Delegated theming to child widgets
     'MorphKeyPressBehavior',            # Key press handling
+    'MorphTabNavigationManagerBehavior',# Tab navigation management
+    'MorphTabNavigableBehavior',        # Tab navigation target behavior
     'MorphElevationBehavior',           # Elevation and shadow effects
     'MorphDeclarativeBehavior',         # Declarative property binding
     'MorphIdentificationBehavior',      # Identity management

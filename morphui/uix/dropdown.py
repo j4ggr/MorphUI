@@ -429,7 +429,7 @@ class MorphDropdownFilterField(MorphTextField):
         """
         items = self.dropdown_menu.dropdown_list._source_items
         full_texts = [item['label_text'] for item in items]
-        filter_value = '' if text in full_texts else text
+        filter_value = '' if text in full_texts else text.strip()
         self.dropdown_menu.dropdown_list.filter_value = filter_value
     
     def _on_focus_changed(
