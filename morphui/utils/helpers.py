@@ -6,6 +6,7 @@ from typing import Any
 from typing import Dict
 from typing import List
 from typing import Tuple
+from typing import overload
 
 from functools import lru_cache
 from functools import wraps
@@ -111,12 +112,25 @@ def calculate_text_size(text, font_size=16, font_name=None):
     label.refresh()
     return label.content_size
 
+@overload
+def clamp(
+        value: int, 
+        min_value: int | None = None, 
+        max_value: int | None = None
+        ) -> int: ...
 
+@overload
 def clamp(
         value: float, 
         min_value: float | None = None, 
         max_value: float | None = None
-        ) -> float:
+        ) -> float: ...
+
+def clamp(
+        value: int | float, 
+        min_value: int | float | None = None, 
+        max_value: int | float | None = None
+        ) -> int | float:
     """Constrain a numeric value to lie within a specified range.
     
     This function ensures that a value falls within the bounds defined by
@@ -126,12 +140,12 @@ def clamp(
     
     Parameters
     ----------
-    value : float
+    value : float | int
         The value to constrain.
-    min_value : float | None, optional
+    min_value : float | int | None, optional
         The minimum allowed value. If None, no minimum constraint is applied.
         Defaults to None.
-    max_value : float | None, optional
+    max_value : float | int | None, optional
         The maximum allowed value. If None, no maximum constraint is applied.
         Defaults to None.
         
