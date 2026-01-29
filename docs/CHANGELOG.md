@@ -14,6 +14,25 @@ __Types of changes__:
 - _Fixed_ for any bug fixes.
 - _Security_ in case of vulnerabilities.
 
+## [0.4.0] - 2026-01-29
+
+### Added
+
+- Added key press behavior to MorphDropdownList to allow navigation and selection using keyboard arrows and enter key.
+- Added focus state flag to MorphListItemFlat to visually indicate when an item is focused.
+
+### Fixed
+
+- Fixed an issue where the filter_value property in Dropdown was set to wrong child widget. So that filtering did not work at all.
+
+### Changed
+
+- Binding hovering flag to dismiss_allowed flag for Tooltip and Dropdown to ensure correct behavior when hovering state changes.
+
+### Removed
+
+- Removed on_open override in Dropdown as so stays available for further customization.
+
 ## [0.3.1] - 2026-01-21
 
 ### Fixed
