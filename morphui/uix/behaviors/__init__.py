@@ -1,4 +1,3 @@
-from matplotlib.pylab import f
 from .appreference import MorphAppReferenceBehavior
 
 from .states import MorphStateBehavior
