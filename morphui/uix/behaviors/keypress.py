@@ -1,7 +1,9 @@
+from re import L
 from typing import Any
 from typing import List
 from typing import Dict
 
+from kivy.clock import Clock
 from kivy.event import EventDispatcher
 from kivy.properties import ListProperty
 from kivy.properties import DictProperty
@@ -386,8 +388,28 @@ class MorphTabNavigableBehavior(EventDispatcher):
         self.bind(
             tab_group=self._register_tab_group,
             focus=self._sync_focus_to_manager,)
+        if hasattr(self, 'text'):
+            self.bind(text=self._remove_tab_characters)
         self._register_tab_group(self, self.tab_group)
         self._sync_focus_to_manager()
+
+    def _remove_tab_characters(
+            self,
+            instance: Any,
+            text: str) -> None:
+        """Remove any tab characters from the text property.
+        
+        Parameters
+        ----------
+        instance : Any
+            The instance of the widget.
+        text : str
+            The current text of the widget.
+        """
+        if '\t' in text:
+            cleaned_text = text.replace('\t', '')
+            Clock.schedule_once(
+                lambda dt: setattr(self, 'text', cleaned_text), 0)
     
     def _register_tab_group(
             self,
