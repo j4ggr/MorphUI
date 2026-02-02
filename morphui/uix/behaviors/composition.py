@@ -58,7 +58,11 @@ class MorphLeadingWidgetBehavior:
         """
         if self.leading_widget is None:
             return ''
-        return self.leading_widget.icon or self._leading_icon
+        
+        if self.leading_widget.icon and not self._leading_icon:
+            self._leading_icon = self.leading_widget.icon
+    
+        return self._leading_icon
     
     def _set_leading_icon(self, icon_name: str) -> None:
         """Set the leading icon name on the leading widget.
@@ -106,7 +110,10 @@ class MorphLeadingWidgetBehavior:
         if self.leading_widget is None:
             return ''
         
-        return self.leading_widget.normal_icon or self._normal_leading_icon
+        if self.leading_widget.normal_icon and not self._normal_leading_icon:
+            self._normal_leading_icon = self.leading_widget.normal_icon
+        
+        return self._normal_leading_icon
     
     def _set_normal_leading_icon(self, icon_name: str) -> None:
         """Set the normal icon on the leading widget.
@@ -157,7 +164,10 @@ class MorphLeadingWidgetBehavior:
         if self.leading_widget is None:
             return ''
         
-        return self.leading_widget.active_icon or self._active_leading_icon
+        if self.leading_widget.active_icon and not self._active_leading_icon:
+            self._active_leading_icon = self.leading_widget.active_icon
+        
+        return self._active_leading_icon
     
     def _set_active_leading_icon(self, icon_name: str) -> None:
         """Set the active icon on the leading widget.
@@ -255,7 +265,10 @@ class MorphLabelWidgetBehavior:
         if self.label_widget is None:
             return ''
         
-        return self.label_widget.text or self._label_text
+        if self.label_widget.text and not self._label_text:
+            self._label_text = self.label_widget.text
+        
+        return self._label_text
     
     def _set_label_text(self, text: str) -> None:
         """Set the text on the label widget.
@@ -352,7 +365,11 @@ class MorphTrailingWidgetBehavior:
         """
         if self.trailing_widget is None:
             return ''
-        return self.trailing_widget.icon or self._trailing_icon
+        
+        if self.trailing_widget.icon and not self._trailing_icon:
+            self._trailing_icon = self.trailing_widget.icon
+
+        return self._trailing_icon
     
     def _set_trailing_icon(self, icon_name: str) -> None:
         """Set the trailing icon name on the trailing widget.
@@ -401,7 +418,10 @@ class MorphTrailingWidgetBehavior:
         if self.trailing_widget is None:
             return ''
         
-        return self.trailing_widget.normal_icon or self._normal_trailing_icon
+        if self.trailing_widget.normal_icon and not self._normal_trailing_icon:
+            self._normal_trailing_icon = self.trailing_widget.normal_icon
+
+        return self._normal_trailing_icon
 
     def _set_normal_trailing_icon(self, icon_name: str) -> None:
         """Set the normal icon on the trailing widget.
@@ -452,7 +472,10 @@ class MorphTrailingWidgetBehavior:
         if self.trailing_widget is None:
             return ''
         
-        return self.trailing_widget.active_icon or self._active_trailing_icon
+        if self.trailing_widget.active_icon and not self._active_trailing_icon:
+            self._active_trailing_icon = self.trailing_widget.active_icon
+
+        return self._active_trailing_icon
     
     def _set_active_trailing_icon(self, icon_name: str) -> None:
         """Set the active icon on the trailing widget.
