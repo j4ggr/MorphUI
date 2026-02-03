@@ -249,6 +249,7 @@ class MorphDropdownMenu(
         super().__init__(**kwargs)
         self.layout_manager = self.dropdown_list.layout_manager
         self.add_widget(self.dropdown_list)
+        self.bind(is_open=self.dropdown_list.setter('key_press_enabled'))
 
     def _update_caller_bindings(self, *args) -> None:
         """Update bindings to the caller button's position and size.
