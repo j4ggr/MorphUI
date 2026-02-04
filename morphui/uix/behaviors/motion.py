@@ -456,7 +456,7 @@ class MorphMenuMotionBehavior(MorphScaleBehavior,):
         """
         if self.is_open:
             Animation.cancel_all(self)
-            return None
+            return
         
         self.dismiss_allowed = False
         self.dispatch('on_pre_open')
@@ -473,11 +473,11 @@ class MorphMenuMotionBehavior(MorphScaleBehavior,):
     def dismiss(self, *args) -> None:
         """Dismiss the menu with animation."""
         if not self.dismiss_allowed:
-            return None
+            return
         
         if not self.is_open:
             Animation.cancel_all(self)
-            return None
+            return
         
         self.dispatch('on_pre_dismiss')
         if self.scale_enabled:

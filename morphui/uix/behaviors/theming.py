@@ -322,7 +322,7 @@ class MorphColorThemeBehavior(BaseThemeBehavior):
         """Update widget colors based on current theme."""
         color_bindings = self.effective_color_bindings
         if not self.auto_theme or not color_bindings:
-            return None
+            return
 
         for property_name, theme_color in color_bindings.items():
             self.apply_theme_color(property_name, theme_color)
@@ -670,7 +670,7 @@ class MorphTypographyBehavior(BaseThemeBehavior):
         properties change or when the typography system is updated.
         """
         if not self.auto_typography:
-            return None
+            return
             
         self.apply_typography_style(
             font_name=getattr(self, 'font_name', None),
@@ -911,6 +911,6 @@ class MorphDelegatedThemeBehavior(EventDispatcher):
         if (not self.delegate_content_color
                 or widget is None
                 or widget not in delegate_to_children):
-            return None
+            return
         
         widget._get_content_color = self._get_content_color

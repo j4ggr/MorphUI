@@ -511,7 +511,7 @@ class MorphAutoSizingBehavior(EventDispatcher):
         changing text_size.
         """
         if not self.auto_width and not self.auto_height:
-            return None
+            return
         
         w_text, h_text = None, None
 
@@ -788,7 +788,7 @@ class MorphResizeBehavior(
     def hovered_resizable_corner(self) -> str | None:
         """Currently hovered corner if it is resizable, else None."""
         if not self.resize_enabled or self.hovered_corner is None:
-            return None
+            return
         
         corner_edges = self.hovered_corner.split(NAME.SEP_CORNER)
         if all(edge in self.resizable_edges for edge in corner_edges):
@@ -823,7 +823,7 @@ class MorphResizeBehavior(
         [Kivy Documentation](https://kivy.org/doc/stable/api-kivy.core.window.html#kivy.core.window.WindowBase.set_system_cursor)
         """
         if not self.resize_enabled:
-            return None
+            return
         
         if self._resize_in_progress:
             self.resizing = True

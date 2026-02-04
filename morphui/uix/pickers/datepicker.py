@@ -416,7 +416,7 @@ class MorphDatePickerCalendarView(
                 self.selected_day_buttons = [instance]
             else:
                 self.selected_day_buttons = []
-            return None
+            return
         
         if active and instance.date_value:
             match len(self.selected_day_buttons):
@@ -983,12 +983,12 @@ class MorphDockedDatePickerField(MorphTextField):
         changes. It can be used to validate or format the date input.
         """
         if not self.focus:
-            return None
+            return
         
         if self.error:
             if not text:
                 self.calendar_view.clear_selection()
-            return None
+            return
         
         date_grid = self.picker_menu.identities.date_grid_layout
         texts = [t.strip() for t in text.split(self.range_sep)]
@@ -996,7 +996,7 @@ class MorphDockedDatePickerField(MorphTextField):
         parsed_dates = [d for d in parsed_dates if d is not None]
         if len(parsed_dates) >= 2 and parsed_dates[0] > parsed_dates[1]:
             self.text = f'{texts[1]}{self.range_sep}{texts[0]}'
-            return None
+            return
         
         self.calendar_view.clear_selection()
         for parsed_date in parsed_dates:
@@ -1014,7 +1014,7 @@ class MorphDockedDatePickerField(MorphTextField):
         dates according to the specified date format and selection mode.
         """
         if self.focus:
-            return None
+            return
         
         selected_buttons = self.calendar_view.selected_day_buttons
         if not selected_buttons:

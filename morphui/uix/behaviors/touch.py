@@ -637,7 +637,7 @@ class MorphRippleBehavior(EventDispatcher):
             The position of the touch event.
         """
         if not self.ripple_enabled:
-            return None
+            return
         
         if self._ripple_in_progress:
             Animation.cancel_all(self, '_current_ripple_radius')
@@ -660,7 +660,7 @@ class MorphRippleBehavior(EventDispatcher):
         """Start the ripple animation.
         """
         if self._ripple_is_fading or not self._ripple_in_progress:
-            return None
+            return
 
         animation = Animation(
             _current_ripple_radius=self._ripple_final_radius,
@@ -673,7 +673,7 @@ class MorphRippleBehavior(EventDispatcher):
         """Finish the ripple animation immediately.
         """
         if self._ripple_is_fading or not self._ripple_in_progress:
-            return None
+            return
         
         self._ripple_is_finishing = True
         Animation.cancel_all(self, '_current_ripple_radius')
@@ -688,7 +688,7 @@ class MorphRippleBehavior(EventDispatcher):
         """Fade out the ripple animation.
         """
         if self._ripple_is_fading or not self._ripple_in_progress:
-            return None
+            return
         
         self._ripple_is_finishing = False
         self._ripple_is_fading = True
@@ -985,7 +985,7 @@ class MorphToggleButtonBehavior(MorphButtonBehavior):
 
         self._previous_group = group
         if group is None:
-            return None
+            return
         
         if group not in groups:
             groups[group] = []
@@ -1004,7 +1004,7 @@ class MorphToggleButtonBehavior(MorphButtonBehavior):
             The current toggle button instance.
         """
         if self.group is None:
-            return None
+            return
         
         grouped_items = self.__groups.get(self.group, [])
         for item in grouped_items:
