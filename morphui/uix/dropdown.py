@@ -82,7 +82,7 @@ class MorphDropdownList(
         children = self.layout_manager.children
         n_children = len(children)
         if n_children == 0:
-            return None
+            return
         
         n_children_after = 0
         delta_y = float('inf')
@@ -119,7 +119,7 @@ class MorphDropdownList(
         """
         total_items = len(self.data)
         if total_items == 0:
-            return None
+            return
         
         delta = n_items / total_items
         if direction == 'up':
@@ -137,12 +137,12 @@ class MorphDropdownList(
         n_children = len(children)
         total_items = len(self.data)
         if n_children == 0:
-            return None
+            return
         
         focused_child = next((c for c in children if c.focus), None)
         if focused_child is None or n_children == 1 or total_items == 1:
             children[-1].focus = True
-            return None
+            return
         
         self.set_neighbor_focus(focused_child, 'down')
 
@@ -156,12 +156,12 @@ class MorphDropdownList(
         n_children = len(children)
         total_items = len(self.data)
         if n_children == 0:
-            return None
+            return
         
         focused_child = next((c for c in children if c.focus), None)
         if focused_child is None or n_children == 1 or total_items == 1:
             children[-1].focus = True
-            return None
+            return
         
         self.set_neighbor_focus(focused_child, 'up')
     
@@ -173,12 +173,15 @@ class MorphDropdownList(
         """
         children = self.layout_manager.children
         if not children:
-            return None
+            return
+        
+        if not self.parent.is_open:
+            return
         
         for child in children[::-1]:
             if child.focus:
                 child.trigger_action()
-                return None
+                return
 
 
 class MorphDropdownMenu(
@@ -250,6 +253,7 @@ class MorphDropdownMenu(
         self.layout_manager = self.dropdown_list.layout_manager
         self.add_widget(self.dropdown_list)
         self.bind(is_open=self.dropdown_list.setter('key_press_enabled'))
+        self.key_press_enabled = self.is_open
 
     def _update_caller_bindings(self, *args) -> None:
         """Update bindings to the caller button's position and size.

@@ -1008,14 +1008,27 @@ class MorphTextField(
 
         This method recalculates the positions and sizes of the child
         widgets based on the current layout settings.
+
+        Notes
+        -----
+        If width or height is non-positive, the method exits early to 
+        avoid layout issues. This occurs when the widget is not yet 
+        fully initialized or visible (by ScreenManager).
+
+        This method stops any ongoing animations on the child widgets
+        before updating their positions and sizes to ensure smooth
+        transitions. 
         """
+        spacing = dp(4)
+        x_input, y_input = self.pos
+        w_input, h_input = self.size
+        if w_input <= 0 or h_input <= 0: # ScreenManager issue when widget was not visible yet.
+            return
+        
         Animation.stop_all(self.label_widget)
         Animation.stop_all(self._text_input)
         Animation.stop_all(self)
         
-        spacing = dp(4)
-        x_input, y_input = self.pos
-        w_input, h_input = self.size
         if NAME.LEADING_WIDGET in self.identities:
             self.leading_widget.x = self.x + self._horizontal_padding
             self.leading_widget.center_y = self.y + self.height / 2
