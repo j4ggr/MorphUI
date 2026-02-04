@@ -334,7 +334,8 @@ class MorphPlotWidget(
             return
         
         if touch.is_double_tap:
-            self.toolbar.navigation.home()
+            if self.toolbar is not None and self.toolbar.navigation is not None:
+                self.toolbar.navigation.home()
             return
         
         if self.figure_canvas is None:
