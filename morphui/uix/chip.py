@@ -129,7 +129,7 @@ class MorphChip(
     
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
-        self.delegate_to_children = [
+        self.delegated_children = [
             self.leading_widget,
             self.label_widget,
             self.trailing_widget,]

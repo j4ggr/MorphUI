@@ -825,7 +825,7 @@ class MorphDelegatedThemeBehavior(EventDispatcher):
     :class:`~kivy.properties.BooleanProperty` and defaults to True.
     """
 
-    delegate_to_children: list = ListProperty([])
+    delegated_children: list = ListProperty([])
     """List of child widgets to which theme delegation should be applied.
 
     This property allows you to specify which child widgets should
@@ -834,7 +834,7 @@ class MorphDelegatedThemeBehavior(EventDispatcher):
     contains specific widget instances, only those widgets will have
     their theme properties managed by the container.
 
-    :attr:`delegate_to_children` is a
+    :attr:`delegated_children` is a
     :class:`~kivy.properties.ListProperty` and defaults to [] 
     (all children).
     
@@ -843,7 +843,7 @@ class MorphDelegatedThemeBehavior(EventDispatcher):
     Delegate to all children (default):
     
     ```python
-    container.delegate_to_children = []
+    container.delegated_children = []
     ```
     
     Delegate to specific children only:
@@ -857,25 +857,25 @@ class MorphDelegatedThemeBehavior(EventDispatcher):
     container.add_widget(button)
     
     # Only delegate to label1 and label2, not button
-    container.delegate_to_children = [label1, label2]
+    container.delegated_children = [label1, label2]
     ```
     """
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.bind(
-            delegate_to_children=self._update_delegated_children)
-        self._update_delegated_children(self, self.delegate_to_children)
+            delegated_children=self._setup_child_delegation)
+        self._setup_child_delegation(self, self.delegated_children)
 
-    def _update_delegated_children(
+    def _setup_child_delegation(
             self,
             instance: Any,
             children: list) -> None:
-        """Event handler fired when :attr:`delegate_to_children` property
+        """Event handler fired when :attr:`delegated_children` property
         changes.
 
         This method is automatically called when the
-        :attr:`delegate_to_children` property is modified. It updates
+        :attr:`delegated_children` property is modified. It updates
         the theme bindings for all child widgets based on the new list.
 
         Parameters
@@ -907,10 +907,12 @@ class MorphDelegatedThemeBehavior(EventDispatcher):
             The child widget from which to remove content color
             bindings.
         """
-        delegate_to_children = self.delegate_to_children or self.children
+        delegated_children = self.delegated_children or self.children
         if (not self.delegate_content_color
                 or widget is None
-                or widget not in delegate_to_children):
+                or widget not in delegated_children):
             return
         
+        self.bind(
+            content_color=widget._update_content_layer,)
         widget._get_content_color = self._get_content_color

@@ -332,7 +332,7 @@ class MorphIconTextButton(
             config['normal_icon'] = kwargs.pop('leading_icon')
 
         super().__init__(**config)
-        self.delegate_to_children = [
+        self.delegated_children = [
             self.leading_widget,
             self.label_widget,]
         self.leading_widget._get_icon = self._get_icon
@@ -384,7 +384,7 @@ class MorphTextIconButton(
                 UserWarning,)
             config['normal_icon'] = kwargs.pop('trailing_icon')
         super().__init__(**config)
-        self.delegate_to_children = [
+        self.delegated_children = [
             self.label_widget,
             self.trailing_widget,]
         self.trailing_widget._get_icon = self._get_icon

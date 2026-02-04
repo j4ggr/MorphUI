@@ -111,7 +111,7 @@ class MorphListItemFlat(
     def __init__(self, **kwargs) -> None:
         config = clean_config(self.default_config, kwargs)
         super().__init__(**config)
-        self.delegate_to_children = [
+        self.delegated_children = [
             self.leading_widget,
             self.label_widget,
             self.trailing_widget,]
