@@ -10,8 +10,6 @@ from morphui.utils import clean_config
 from morphui.uix.label import MorphSimpleLabel
 from morphui.uix.button import MorphSimpleIconButton
 from morphui.uix.boxlayout import MorphBoxLayout
-from morphui.uix.behaviors import MorphIdentificationBehavior
-from morphui.uix.behaviors import MorphRoundSidesBehavior
 
 
 __all__ = [
@@ -20,10 +18,7 @@ __all__ = [
     'MorphDataViewNavigation',]
 
 
-class MorphDataViewNavigationButton(
-        MorphIdentificationBehavior,
-        MorphRoundSidesBehavior,
-        MorphSimpleIconButton):
+class MorphDataViewNavigationButton(MorphSimpleIconButton):
     """A button used in the data view navigation component."""
 
     page_offset: float = NumericProperty(0)
