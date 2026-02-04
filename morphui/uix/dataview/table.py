@@ -34,11 +34,10 @@ class TopLeftCorner(
 
     default_config: Dict[str, Any] = dict(
         size_hint=(None, None),
-        identity='top_left',
         visible_edges=['right', 'bottom'],
         overlay_edge_width=dp(0.5),
         theme_color_bindings={
-            'normal_surface_color': 'surface_container_highest_color',
+            'normal_surface_color': 'transparent_color',
             'normal_overlay_edge_color': 'outline_color'},)
     
     def __init__(self, **kwargs) -> None:
@@ -52,8 +51,7 @@ class BottomLeftCorner(
     """An empty cell for the bottom-left corner of the data view table."""
 
     default_config: Dict[str, Any] = dict(
-        size_hint=(None, None),
-        identity='bottom_left',)
+        size_hint=(None, None),)
     
     def __init__(self, **kwargs) -> None:
         config = clean_config(self.default_config, kwargs)
@@ -298,6 +296,33 @@ class MorphDataViewTable(MorphGridLayout):
     and is bound to changes in `row_names`, `current_page`, and
     `rows_per_page`."""
 
+    def _get_is_empty(self) -> bool:
+        """Check if the data view table has no data.
+
+        Returns
+        -------
+        bool
+            `True` if the table has no values, column names, or row
+            names; `False` otherwise.
+        """
+        return not any((
+            bool(self.values),
+            bool(self.column_names),
+            bool(self.row_names)))
+
+    is_empty: bool = AliasProperty(
+        _get_is_empty,
+        None,
+        bind=['values', 'column_names', 'row_names'])
+    """Flag indicating whether the data view table is empty (read-only).
+
+    This property returns `True` if the table has no values, column
+    names, or row names; otherwise, it returns `False`.
+
+    :attr:`is_empty` is an :class:`~kivy.properties.AliasProperty` and
+    is bound to changes in `values`, `column_names`, and `row_names`.
+    """
+
     header: MorphDataViewHeader
     """The header component of the data view table."""
 
@@ -309,6 +334,15 @@ class MorphDataViewTable(MorphGridLayout):
 
     navigation: MorphDataViewNavigation
     """The navigation component of the data view table."""
+
+    top_left: TopLeftCorner
+    """The top-left corner component of the data view table."""
+
+    bottom_left: BottomLeftCorner
+    """The bottom-left corner component of the data view table."""
+
+    _top_left_visible_edges: List[str]
+    """Storage of visible edges for the top-left corner component."""
 
     default_config = dict(
         cols=2,
@@ -337,34 +371,35 @@ class MorphDataViewTable(MorphGridLayout):
             identity='body', header=self.header, index=self.index, **kw_body)
         self.navigation = MorphDataViewNavigation(
             identity='navigation', **kw_navigation)
+        self.top_left = TopLeftCorner()
+        self.bottom_left = BottomLeftCorner()
         
         super().__init__(
-            TopLeftCorner(),
+            self.top_left,
             self.header,
             self.index,
             self.body,
-            BottomLeftCorner(),
+            self.bottom_left,
             self.navigation,
             **config)
-        
+        self._top_left_visible_edges = self.top_left.visible_edges.copy()
         self.bind(
             page_values=self.body.setter('values'),
             page_rows=self.index.setter('row_names'),
             values=self.update_chunked_values,
-            rows_per_page=self.update_chunked_values,)
+            rows_per_page=self.update_chunked_values,
+            is_empty=self._update_view,)
         
-        top_left = self.identities.top_left
-        bottom_left = self.identities.bottom_left
-        self.index.bind(width=top_left.setter('width'))
-        top_left.bind(width=bottom_left.setter('width'))
-        self.header.bind(height=top_left.setter('height'))
+        self.index.bind(width=self.top_left.setter('width'))
+        self.top_left.bind(width=self.bottom_left.setter('width')) # type: ignore
+        self.header.bind(height=self.top_left.setter('height'))
         self.navigation.bind(
-            height=bottom_left.setter('height'),
+            height=self.bottom_left.setter('height'), # type: ignore
             current_page=self._update_view,)
-        top_left.size = (self.index.width, self.header.height)
-        bottom_left.size = (self.index.width, self.navigation.height)
+        self.top_left.size = (self.index.width, self.header.height)
+        self.bottom_left.size = (self.index.width, self.navigation.height)
         self.update_chunked_values()
-        top_left.refresh_overlay()
+        self.top_left.refresh_overlay()
 
     def update_chunked_values(self, *args) -> None:
         """Set the chunked values based on rows_per_page.
@@ -389,6 +424,18 @@ class MorphDataViewTable(MorphGridLayout):
         self.navigation.total_pages = len(chunked)
 
     def _update_view(self, *args) -> None:
-        """Update the body and index views based on current page values."""
+        """Update the body and index views based on current page values.
+        
+        This method refreshes the body and index components of the
+        data view table with the values and row names corresponding
+        to the current page. It also manages the visibility of the
+        top-left corner component based on whether the table is empty.
+        """
         self.body.values = self.page_values
         self.index.row_names = self.page_rows
+
+        if self.is_empty:
+            self._top_left_visible_edges = self.top_left.visible_edges.copy()
+            self.top_left.visible_edges = []
+        else:
+            self.top_left.visible_edges = self._top_left_visible_edges.copy()
