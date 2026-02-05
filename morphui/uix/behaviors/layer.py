@@ -968,14 +968,14 @@ class MorphInteractionLayerBehavior(BaseLayerBehavior):
     :attr:`focus_state_opacity` is a
     :class:`~kivy.properties.NumericProperty` and defaults to `0.05`."""
 
-    disabled_state_opacity: float = NumericProperty(0.16)
+    disabled_state_opacity: float = NumericProperty(0.0)
     """Opacity of the state layer when the widget is disabled.
 
     The opacity is specified as a float between 0 and 1. A value of 0
     means no state layer, while a value of 1 means a fully opaque state.
 
     :attr:`disabled_state_opacity` is a
-    :class:`~kivy.properties.NumericProperty` and defaults to `0.16`."""
+    :class:`~kivy.properties.NumericProperty` and defaults to `0.0`."""
 
     interaction_enabled: bool = BooleanProperty(True)
     """Whether to enable the interaction layer (state-layer) to be 
