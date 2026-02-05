@@ -324,6 +324,38 @@ class BaseListView(
     properties.
     """
 
+    def _get_available_texts(self) -> List[str]:
+        """Retrieve the list of label texts from the current data.
+
+        This method extracts and returns a list of label texts from
+        the current data. Each item's label text is retrieved from the
+        `label_text` key if it exists; otherwise, it falls back to the
+        `text` key. If neither key is present, an empty string is used.
+
+        Returns
+        -------
+        List[str]
+            A list of label texts extracted from the current data.
+        """
+        return [i.get('label_text', i.get('text', '')) for i in self.data]
+
+    available_texts: List[str] = AliasProperty(
+        _get_available_texts,
+        None,
+        cache=True,
+        bind=['data'])
+    """Get the list of label texts from the current data (read-only).
+
+    This property returns a list of label texts extracted from the
+    current data. Each item's label text is retrieved from the
+    `label_text` key if it exists; otherwise, it falls back to the
+    `text` key. If neither key is present, an empty string is used.
+
+    :attr:`available_texts` is an 
+    :class:`~kivy.properties.AliasProperty` and is bound to changes in
+    the :attr:`data` property.
+    """
+
     default_config: Dict[str, Any] = dict(
         do_scroll_x=False,
         do_scroll_y=True,

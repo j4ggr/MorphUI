@@ -60,9 +60,39 @@ class MorphDropdownList(
         })
     
     def _clear_focus(self) -> None:
-        """Clear focus from all child items in the list."""
+        """Clear focus from all child items in the list.
+        
+        This method sets the `focus` property of all child items to
+        `False`."""
         for child in self.layout_manager.children:
             child.focus = False
+
+    def _clear_hover(self) -> None:
+        """Clear hover state from all child items in the list.
+        
+        This method sets the `hovered` property of all child items to
+        `False`."""
+        for child in self.layout_manager.children:
+            child.hovered = False
+
+    def set_focus_by_text(self, text: str) -> None:
+        """Set focus to the child item with the specified label text.
+
+        Parameters
+        ----------
+        text : str
+            The label text of the item to focus.
+        """
+        children = self.layout_manager.children
+        n_children = len(children)
+        if n_children == 0:
+            return
+        
+        for child in children:
+            if child.label_text == text:
+                self._clear_focus()
+                child.focus = True
+                return
     
     def set_neighbor_focus(
             self,
@@ -74,7 +104,7 @@ class MorphDropdownList(
 
         Parameters
         ----------
-        current_child : Any
+        current_focus_child : Any
             The currently focused child item.
         direction : Literal['up', 'down']
             The direction to move focus, either 'up' or 'down'.
@@ -268,6 +298,27 @@ class MorphDropdownMenu(
         super()._update_caller_bindings()
         self.caller.bind(
             focus=lambda _, focus: setattr(self, 'dismiss_allowed', not focus))
+    
+    def on_pre_open(self, *args) -> None:
+        """Handle actions before the dropdown menu opens.
+
+        This method is called just before the dropdown menu is opened.
+        It sets the focus in the dropdown list based on the caller's
+        current text value.
+        """
+        text = getattr(self.caller, 'text', '')
+        if text in self.dropdown_list.available_texts:
+            self.dropdown_list.set_focus_by_text(text)
+
+    def on_dismiss(self, *args) -> None:
+        """Handle actions after the dropdown menu is dismissed.
+
+        This method is called just after the dropdown menu is
+        dismissed. It clears the focus and hover states from all items
+        in the dropdown list.
+        """
+        self.dropdown_list._clear_focus()
+        self.dropdown_list._clear_hover()
 
 
 class MorphDropdownFilterField(MorphTextField):
