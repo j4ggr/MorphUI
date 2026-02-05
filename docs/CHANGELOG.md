@@ -14,31 +14,91 @@ __Types of changes__:
 - _Fixed_ for any bug fixes.
 - _Security_ in case of vulnerabilities.
 
+## [0.5.0] - 2026-02-05
+
+### Added
+
+- Added MorphScrollView class to scrollview.py module.
+- Added MorphTabNavigationManagerBehavior and MorphTabNavigableBehavior for managing tab navigation between widgets.
+- Added `is_empty` property to MorphDataViewTable to indicate when table has no data to show.
+- Added attributes for top left and lower left widgets in MorphDataViewTable.
+- Added `available_texts` property to BaseListView.
+- Added `_clear_hover` method to MorphDropdownList.
+- Added `_set_focus_by_text` method to MorphDropdownList.
+- Added tests for refactored KeyPressBehavior.
+- Added tests for MorphTabNavigableBehavior class.
+- Added tests for MorphTabNavigationManagerBehavior.
+
+### Changed
+
+- Changed MorphStateBehavior's `update_available_states` method to bind and unbind only available states.
+- Changed default `disabled_state_opacity` to 0.0 in MorphInteractionLayerBehavior.
+- Changed all properties named `interaction_layer_` to `interaction_` in InteractionLayer.
+- Changed property name from `delegate_to_children` to `delegated_children` in MorphDelegatedThemeBehavior.
+- Changed method name from `_update_delegated_children` to `_setup_child_delegation` in MorphDelegatedThemeBehavior.
+- Changed MorphDataViewTable to remove edges of top_left widget when table is empty.
+- Changed MorphDropdownMenu to set current focus of current text at `on_pre_open` method.
+- Changed MorphDropdownMenu to clear focus and hover state for all items at `on_dismiss` method.
+- Changed MorphTabNavigableBehavior to automatically remove tabs in text property.
+- Changed `return None` to `return` for early exit at functions and methods where no return value is expected.
+- Removed tab handling from MorphKeyPressBehavior and moved to MorphTabNavigationManagerBehavior.
+- Removed random added imports.
+
+### Fixed
+
+- Fixed delegating content in MorphDelegatedThemeBehavior which did not work correctly.
+- Fixed MRO error by removing redundant base classes from MorphDataViewNavigationButton.
+- Fixed MorphPlotWidget where calling home of navigation during double tap failed if there is no navigation.
+- Fixed MorphTextField trying to recalculate layout when widget is on a Screen of ScreenManager and was never visible.
+- Fixed MorphDropDownMenu where listview registered key presses even when it was not open.
+- Fixed Composition behavior where getting and setting icons failed for recycled widgets, using wrong icons for setting new ones.
+
 ## [0.4.0] - 2026-01-29
 
 ### Added
 
 - Added key press behavior to MorphDropdownList to allow navigation and selection using keyboard arrows and enter key.
 - Added focus state flag to MorphListItemFlat to visually indicate when an item is focused.
+- Added MorphKeyPressBehavior inheritance to BaseListView.
+- Added overloads for clamp function in helpers module.
+- Added default item_release_callback for MorphDropdownFilterField, setting on_item_release method as the default.
 
 ### Fixed
 
-- Fixed an issue where the filter_value property in Dropdown was set to wrong child widget. So that filtering did not work at all.
+- Fixed an issue where the filter_value property in Dropdown was set to wrong child widget, preventing filtering from working.
+- Fixed MorphTooltip not dismissing anymore after introduction of MorphMenuBehavior.
 
 ### Changed
 
-- Binding hovering flag to dismiss_allowed flag for Tooltip and Dropdown to ensure correct behavior when hovering state changes.
+- Changed binding of hovering flag to dismiss_allowed flag for Tooltip.
+- Changed binding of focus flag to dismiss_allowed flag for Dropdown.
 
 ### Removed
 
-- Removed on_open override in Dropdown as so stays available for further customization.
+- Removed on_open override in Dropdown to keep it available for further customization.
 
 ## [0.3.1] - 2026-01-21
+
+### Added
+
+- Added active state to OverlayState.
+- Added active_overlay_edge_color property to MorphOverlayLayerBehavior.
 
 ### Fixed
 
 - Fixed an issue where the datepicker menu would not dismiss correctly when the text field lost focus.
-- Fixed overlay layer not updating correctly on state change in MorphUI.
+- Fixed overlay layer not updating correctly on state change in MorphOverlayLayerBehavior.
+- Fixed MorphMenuMotionBehavior to schedule calling dismiss in on_touch_up() method to ensure it registers allowing_dismiss when clicking outside of caller and menu.
+
+### Changed
+
+- Changed MorphMenuMotionBehavior to set dismiss_allowed to False before opening.
+- Changed MorphMenuMotionBehavior to dispatch on_open after animation.
+- Changed MorphMenuMotionBehavior to dispatch on_dismiss after animation.
+
+### Removed
+
+- Removed override of on_touch_down() method from MorphMenuMotionBehavior.
 
 ## [0.3.0] - 2026-01-19
 
