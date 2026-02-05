@@ -151,7 +151,7 @@ class MorphStateBehavior(EventDispatcher):
 
     def __init__(self, **kwargs) -> None:
         self.register_event_type('on_current_state_changed')
-        self._available_states = set('normal')
+        self._available_states = {'normal'}
         super().__init__(**kwargs)
         self.refresh_state()
     
@@ -176,14 +176,17 @@ class MorphStateBehavior(EventDispatcher):
         :attr:`states_precedence` the widget currently has properties
         for and updates the :attr:`available_states` set accordingly.
         """
+        properties = self.properties()
         for state in self.available_states:
-            self.funbind(state, self._update_current_state)
+            if state in properties:
+                self.funbind(state, self._update_current_state)
         self._available_states.clear()
         
         for state in self.possible_states:
             if hasattr(self, state):
                 self._available_states.add(state)
-                self.fbind(state, self._update_current_state, state=state)
+                if state in properties:
+                    self.fbind(state, self._update_current_state, state=state)
         self._available_states.add('normal')
 
     def _update_current_state(
