@@ -33,6 +33,8 @@ from morphui.uix.behaviors import MorphInteractionLayerBehavior
 from morphui.uix.behaviors import MorphOverlayLayerBehavior
 from morphui.uix.behaviors.touch import MorphButtonBehavior
 from morphui.uix.behaviors.touch import MorphToggleButtonBehavior
+from morphui.uix.behaviors.composition import MorphTripleLabelBehavior
+from morphui.uix.label import MorphTextLabel
 
 
 class TestMorphDeclarativeBehavior:
@@ -4529,3 +4531,239 @@ class TestMorphMenuMotionBehavior:
         # Scale origin should be at center of caller
         # x: 100 + 150/2 = 175, y: 200 + 40/2 = 220
         assert widget.scale_origin == [175, 220]
+
+
+class TestMorphTripleLabelBehavior:
+    """Test suite for MorphTripleLabelBehavior class."""
+
+    class TestWidget(MorphTripleLabelBehavior, Widget):
+        """Test widget that combines Widget with MorphTripleLabelBehavior."""
+        
+        def __init__(self, **kwargs):
+            Widget.__init__(self, **kwargs)
+            MorphTripleLabelBehavior.__init__(self, **kwargs)
+
+    def test_initialization(self):
+        """Test basic initialization of MorphTripleLabelBehavior."""
+        widget = self.TestWidget()
+        assert widget._heading_text == ''
+        assert widget._supporting_text == ''
+        assert widget._tertiary_text == ''
+        assert widget.heading_text == ''
+        assert widget.supporting_text == ''
+        assert widget.tertiary_text == ''
+        assert widget.heading_widget is None
+        assert widget.supporting_widget is None
+        assert widget.tertiary_widget is None
+
+    def test_heading_text_without_widget(self):
+        """Test heading_text property when heading_widget is None."""
+        widget = self.TestWidget()
+        widget.heading_text = 'Test Heading'
+        assert widget._heading_text == 'Test Heading'
+        # When widget is None, getter returns empty string
+        assert widget.heading_text == ''
+
+    def test_heading_text_with_widget(self):
+        """Test heading_text property when heading_widget is set."""
+        widget = self.TestWidget()
+        heading_widget = MorphTextLabel()
+        widget.heading_widget = heading_widget
+        
+        widget.heading_text = 'Test Heading'
+        assert widget._heading_text == 'Test Heading'
+        assert widget.heading_widget.text == 'Test Heading'
+        assert widget.heading_text == 'Test Heading'
+
+    def test_heading_text_getter_from_widget(self):
+        """Test heading_text getter retrieves text from widget."""
+        widget = self.TestWidget()
+        heading_widget = MorphTextLabel()
+        heading_widget.text = 'Widget Heading'
+        widget.heading_widget = heading_widget
+        
+        # Getter should retrieve from widget
+        assert widget.heading_text == 'Widget Heading'
+
+    def test_supporting_text_without_widget(self):
+        """Test supporting_text property when supporting_widget is None."""
+        widget = self.TestWidget()
+        widget.supporting_text = 'Test Supporting'
+        assert widget._supporting_text == 'Test Supporting'
+        # When widget is None, getter returns empty string
+        assert widget.supporting_text == ''
+
+    def test_supporting_text_with_widget(self):
+        """Test supporting_text property when supporting_widget is set."""
+        widget = self.TestWidget()
+        supporting_widget = MorphTextLabel()
+        widget.supporting_widget = supporting_widget
+        
+        widget.supporting_text = 'Test Supporting'
+        assert widget._supporting_text == 'Test Supporting'
+        assert widget.supporting_widget.text == 'Test Supporting'
+        assert widget.supporting_text == 'Test Supporting'
+
+    def test_supporting_text_getter_from_widget(self):
+        """Test supporting_text getter retrieves text from widget."""
+        widget = self.TestWidget()
+        supporting_widget = MorphTextLabel()
+        supporting_widget.text = 'Widget Supporting'
+        widget.supporting_widget = supporting_widget
+        
+        # Getter should retrieve from widget
+        assert widget.supporting_text == 'Widget Supporting'
+
+    def test_tertiary_text_without_widget(self):
+        """Test tertiary_text property when tertiary_widget is None."""
+        widget = self.TestWidget()
+        widget.tertiary_text = 'Test Tertiary'
+        assert widget._tertiary_text == 'Test Tertiary'
+        # When widget is None, getter returns empty string
+        assert widget.tertiary_text == ''
+
+    def test_tertiary_text_with_widget(self):
+        """Test tertiary_text property when tertiary_widget is set."""
+        widget = self.TestWidget()
+        tertiary_widget = MorphTextLabel()
+        widget.tertiary_widget = tertiary_widget
+        
+        widget.tertiary_text = 'Test Tertiary'
+        assert widget._tertiary_text == 'Test Tertiary'
+        assert widget.tertiary_widget.text == 'Test Tertiary'
+        assert widget.tertiary_text == 'Test Tertiary'
+
+    def test_tertiary_text_getter_from_widget(self):
+        """Test tertiary_text getter retrieves text from widget."""
+        widget = self.TestWidget()
+        tertiary_widget = MorphTextLabel()
+        tertiary_widget.text = 'Widget Tertiary'
+        widget.tertiary_widget = tertiary_widget
+        
+        # Getter should retrieve from widget
+        assert widget.tertiary_text == 'Widget Tertiary'
+
+    def test_on_heading_widget_none(self):
+        """Test on_heading_widget when widget is None."""
+        widget = self.TestWidget()
+        widget.on_heading_widget(widget, None)
+        # Should not raise an error
+
+    def test_on_heading_widget_updates_widget(self):
+        """Test on_heading_widget updates widget text."""
+        widget = self.TestWidget()
+        widget.heading_text = 'Pre-set Heading'
+        heading_widget = MorphTextLabel()
+        
+        widget.heading_widget = heading_widget
+        # on_heading_widget should be called automatically
+        Clock.tick()  # Allow property binding to process
+        
+        assert heading_widget.text == 'Pre-set Heading'
+
+    def test_on_supporting_widget_none(self):
+        """Test on_supporting_widget when widget is None."""
+        widget = self.TestWidget()
+        widget.on_supporting_widget(widget, None)
+        # Should not raise an error
+
+    def test_on_supporting_widget_updates_widget(self):
+        """Test on_supporting_widget updates widget text."""
+        widget = self.TestWidget()
+        widget.supporting_text = 'Pre-set Supporting'
+        supporting_widget = MorphTextLabel()
+        
+        widget.supporting_widget = supporting_widget
+        # on_supporting_widget should be called automatically
+        Clock.tick()  # Allow property binding to process
+        
+        assert supporting_widget.text == 'Pre-set Supporting'
+
+    def test_on_tertiary_widget_none(self):
+        """Test on_tertiary_widget when widget is None."""
+        widget = self.TestWidget()
+        widget.on_tertiary_widget(widget, None)
+        # Should not raise an error
+
+    def test_on_tertiary_widget_updates_widget(self):
+        """Test on_tertiary_widget updates widget text."""
+        widget = self.TestWidget()
+        widget.tertiary_text = 'Pre-set Tertiary'
+        tertiary_widget = MorphTextLabel()
+        
+        widget.tertiary_widget = tertiary_widget
+        # on_tertiary_widget should be called automatically
+        Clock.tick()  # Allow property binding to process
+        
+        assert tertiary_widget.text == 'Pre-set Tertiary'
+
+    def test_refresh_triple_labels(self):
+        """Test refresh_triple_labels updates all widgets."""
+        widget = self.TestWidget()
+        widget.heading_text = 'Heading'
+        widget.supporting_text = 'Supporting'
+        widget.tertiary_text = 'Tertiary'
+        
+        heading_widget = MorphTextLabel()
+        supporting_widget = MorphTextLabel()
+        tertiary_widget = MorphTextLabel()
+        
+        widget.heading_widget = heading_widget
+        widget.supporting_widget = supporting_widget
+        widget.tertiary_widget = tertiary_widget
+        
+        # Manually clear the widget texts
+        heading_widget.text = ''
+        supporting_widget.text = ''
+        tertiary_widget.text = ''
+        
+        # Refresh should update all
+        widget.refresh_triple_labels()
+        
+        assert heading_widget.text == 'Heading'
+        assert supporting_widget.text == 'Supporting'
+        assert tertiary_widget.text == 'Tertiary'
+
+    def test_all_three_labels_work_together(self):
+        """Test that all three label properties work together."""
+        widget = self.TestWidget()
+        
+        heading_widget = MorphTextLabel()
+        supporting_widget = MorphTextLabel()
+        tertiary_widget = MorphTextLabel()
+        
+        widget.heading_widget = heading_widget
+        widget.supporting_widget = supporting_widget
+        widget.tertiary_widget = tertiary_widget
+        
+        widget.heading_text = 'Title'
+        widget.supporting_text = 'Subtitle'
+        widget.tertiary_text = 'Extra Info'
+        
+        assert widget.heading_widget.text == 'Title'
+        assert widget.supporting_widget.text == 'Subtitle'
+        assert widget.tertiary_widget.text == 'Extra Info'
+
+    def test_text_update_after_widget_assignment(self):
+        """Test text is updated when widget is assigned after text is set."""
+        widget = self.TestWidget()
+        
+        # Set texts first
+        widget.heading_text = 'Heading'
+        widget.supporting_text = 'Supporting'
+        widget.tertiary_text = 'Tertiary'
+        
+        # Then assign widgets - on_*_widget callbacks should sync
+        heading_widget = MorphTextLabel()
+        supporting_widget = MorphTextLabel()
+        tertiary_widget = MorphTextLabel()
+        
+        widget.heading_widget = heading_widget
+        widget.supporting_widget = supporting_widget
+        widget.tertiary_widget = tertiary_widget
+        
+        Clock.tick()  # Allow property binding to process
+        
+        assert heading_widget.text == 'Heading'
+        assert supporting_widget.text == 'Supporting'
+        assert tertiary_widget.text == 'Tertiary'
