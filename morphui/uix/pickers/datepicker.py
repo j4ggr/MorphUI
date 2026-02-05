@@ -82,8 +82,8 @@ class _ListItemTrailingWidget(MorphSimpleIconLabel):
 class _ToggleListItemFlat(
         MorphToggleListItemFlat):
     
-    default_child_widgets = (
-        MorphToggleListItemFlat.default_child_widgets | {
+    default_child_classes = (
+        MorphToggleListItemFlat.default_child_classes | {
         'leading_widget': _ListItemLeadingWidget,
         'label_widget': _ListItemLabelWidget,
         'trailing_widget': _ListItemTrailingWidget,})

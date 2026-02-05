@@ -8,14 +8,12 @@ from typing import Any
 from typing import Dict
 
 from kivy.metrics import dp
-from kivy.uix.boxlayout import BoxLayout
 
 from morphui.utils import clean_config
 from morphui.uix.label import MorphTextLabel
 from morphui.uix.label import MorphLeadingIconLabel
 from morphui.uix.label import MorphTrailingIconLabel
-from morphui.uix.behaviors import MorphAutoSizingBehavior
-from morphui.uix.behaviors import MorphIdentificationBehavior
+from morphui.uix.boxlayout import MorphSimpleBoxLayout
 from morphui.uix.behaviors import MorphLeadingWidgetBehavior
 from morphui.uix.behaviors import MorphLabelWidgetBehavior
 from morphui.uix.behaviors import MorphTrailingWidgetBehavior
@@ -27,17 +25,14 @@ __all__ = [
     'MorphLabelIconContainer',]
 
 
-class _MorphBaseContainer(
-        MorphIdentificationBehavior,
-        MorphAutoSizingBehavior,
-        BoxLayout):
+class _MorphBaseContainer(MorphSimpleBoxLayout):
     """Base container class with shared configuration and initialization.
     
     This internal base class consolidates common functionality across
     all container widgets to eliminate code duplication.
     """
 
-    default_child_widgets: Dict[str, Any] = {}
+    default_child_classes: Dict[str, Any] = {}
     """Default child widgets for the container.
     
     This dictionary maps widget identities to their default classes.
@@ -80,7 +75,7 @@ class _MorphBaseContainer(
             and child widgets instantiated.
         """
         config = clean_config(self.default_config, kwargs)
-        for key, widget_cls in self.default_child_widgets.items():
+        for key, widget_cls in self.default_child_classes.items():
             if key not in config and widget_cls is not None:
                 config[key] = widget_cls()
         return config
@@ -89,10 +84,10 @@ class _MorphBaseContainer(
         """Initialize child widgets. Override in subclasses.
         
         This method adds the child widgets to the container based on
-        the `default_child_widgets` mapping. Subclasses can override
+        the `default_child_classes` mapping. Subclasses can override
         this method to customize the initialization process.
         """
-        for key in self.default_child_widgets.keys():
+        for key in self.default_child_classes.keys():
             widget = getattr(self, key, None)
             if widget is not None:
                 self.add_widget(widget)
@@ -137,7 +132,7 @@ class MorphIconLabelContainer(
     ```
     """
 
-    default_child_widgets = {
+    default_child_classes = {
         'leading_widget': MorphLeadingIconLabel,
         'label_widget': MorphTextLabel,}
 
@@ -184,7 +179,7 @@ class MorphIconLabelIconContainer(
     ```
     """
 
-    default_child_widgets = {
+    default_child_classes = {
         'leading_widget': MorphLeadingIconLabel,
         'label_widget': MorphTextLabel,
         'trailing_widget': MorphTrailingIconLabel,}
@@ -228,6 +223,6 @@ class MorphLabelIconContainer(
     ```
     """
 
-    default_child_widgets = {
+    default_child_classes = {
         'label_widget': MorphTextLabel,
         'trailing_widget': MorphTrailingIconLabel,}

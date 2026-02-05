@@ -286,7 +286,7 @@ class MorphIconTextButton(
         MyApp().run()
     """ 
 
-    default_child_widgets = {
+    default_child_classes = {
         'leading_widget': MorphButtonLeadingIconLabel,
         'label_widget': MorphButtonTextLabel,}
     """Default child widgets for MorphIconTextButton.
@@ -359,7 +359,7 @@ class MorphTextIconButton(
     ripple effects and theming.
     """
 
-    default_child_widgets = {
+    default_child_classes = {
         'label_widget': MorphButtonTextLabel,
         'trailing_widget': MorphButtonTrailingIconLabel,}
     """Default child widgets for MorphTextIconButton.

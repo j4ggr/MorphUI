@@ -49,6 +49,7 @@ from .tooltip import MorphTooltipBehavior
 
 from .composition import MorphLeadingWidgetBehavior
 from .composition import MorphLabelWidgetBehavior
+from .composition import MorphTripleLabelBehavior
 from .composition import MorphTrailingWidgetBehavior
 
 
@@ -90,5 +91,6 @@ __all__ = [
     'MorphTooltipBehavior',             # Tooltip functionality
     'MorphLeadingWidgetBehavior',       # Leading widget delegation
     'MorphLabelWidgetBehavior',         # Label widget delegation
+    'MorphTripleLabelBehavior',         # Triple label delegation
     'MorphTrailingWidgetBehavior',      # Trailing widget delegation
 ]
