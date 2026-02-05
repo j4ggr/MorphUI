@@ -8,12 +8,60 @@ from morphui.uix.behaviors import MorphAutoSizingBehavior
 from morphui.uix.behaviors import MorphColorThemeBehavior
 from morphui.uix.behaviors import MorphDeclarativeBehavior
 from morphui.uix.behaviors import MorphSurfaceLayerBehavior
+from morphui.uix.behaviors import MorphIdentificationBehavior
 
 from morphui.utils import clean_config
 
 __all__ = [
+    'MorphSimpleBoxLayout',
     'MorphBoxLayout',
     'MorphElevationBoxLayout',]
+
+
+class MorphSimpleBoxLayout(
+        MorphIdentificationBehavior,
+        MorphAutoSizingBehavior,
+        BoxLayout):
+    """A simple BoxLayout that supports auto-sizing and identification.
+
+    This class combines the functionality of Kivy's BoxLayout with
+    MorphUI's declarative behaviors to enhance its capabilities. It
+    allows for adding child widgets in a declarative manner while
+    maintaining the standard behavior and features of a BoxLayout.
+
+    Examples
+    --------
+    ```python
+    from morphui.app import MorphApp
+    from morphui.uix.boxlayout import MorphSimpleBoxLayout
+    from morphui.uix.label import MorphLabel
+
+    class MyApp(MorphApp):
+    
+        def build(self):
+            return MorphSimpleBoxLayout(
+                MorphLabel(
+                    identity="label1",
+                    text="Label 1",),
+                MorphLabel(
+                    identity="label2",
+                    text="Label 2",),
+                orientation='vertical',
+                padding=50,
+                spacing=15,)
+            
+    MyApp().run()
+    ```
+    """
+    
+    default_config: Dict[str, Any] = dict(
+        orientation='horizontal',)
+    """Initialize the MorphSimpleBoxLayout with the provided 
+    configuration."""
+    
+    def __init__(self, *widgets, **kwargs) -> None:
+        config = clean_config(self.default_config, kwargs)
+        super().__init__(*widgets, **config)
 
 
 class MorphBoxLayout(
@@ -62,9 +110,9 @@ class MorphBoxLayout(
                 orientation='vertical',
                 padding=50,
                 spacing=15,)
-            return self.root
             
     MyApp().run()
+    ```
     """
     
     default_config: Dict[str, Any] = dict(
