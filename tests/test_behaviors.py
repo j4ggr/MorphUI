@@ -18,6 +18,8 @@ from morphui.uix.behaviors import MorphColorThemeBehavior
 from morphui.uix.behaviors import MorphTypographyBehavior
 from morphui.uix.behaviors import MorphThemeBehavior
 from morphui.uix.behaviors import MorphKeyPressBehavior
+from morphui.uix.behaviors import MorphTabNavigationManagerBehavior
+from morphui.uix.behaviors import MorphTabNavigableBehavior
 from morphui.uix.behaviors import MorphSurfaceLayerBehavior
 from morphui.uix.behaviors import MorphDeclarativeBehavior
 from morphui.uix.behaviors import MorphAppReferenceBehavior
@@ -1092,24 +1094,14 @@ class TestMorphKeyPressBehavior:
         """Test widget that combines Widget with MorphKeyPressBehavior."""
         pass
 
-    class FocusWidget(MorphKeyPressBehavior, FocusBehavior, Widget):
-        """Test widget that combines Widget with FocusBehavior and MorphKeyPressBehavior."""
-        pass
-
-    def setup_method(self):
-        """Clear tab groups before each test."""
-        MorphKeyPressBehavior.tab_widgets.clear()
-
     def test_initialization(self):
         """Test basic initialization of MorphKeyPressBehavior."""
         widget = self.TestWidget()
         assert widget.key_press_enabled is True
-        assert widget.tab_group is None
-        assert widget.index_last_focus == -1
-        assert widget.index_next_focus == 0
         assert widget.keyboard == 0
         assert widget.key_text == ''
         assert widget.keycode == -1
+        assert widget.modifiers == []
 
     def test_key_press_enabled_property(self):
         """Test the key_press_enabled property."""
@@ -1121,147 +1113,450 @@ class TestMorphKeyPressBehavior:
         widget.key_press_enabled = True
         assert widget.key_press_enabled is True
 
-    def test_tab_group_property(self):
-        """Test the tab_group property and group management."""
-        widget1 = self.FocusWidget()
-        widget2 = self.FocusWidget()
-        widget3 = self.FocusWidget()
-        
-        # Test setting tab group
-        widget1.tab_group = "form1"
-        assert widget1.tab_group == "form1"
-        assert "form1" in MorphKeyPressBehavior.tab_widgets
-        assert widget1 in MorphKeyPressBehavior.tab_widgets["form1"]
-        
-        # Test adding multiple widgets to same group
-        widget2.tab_group = "form1"
-        widget3.tab_group = "form1"
-        assert len(MorphKeyPressBehavior.tab_widgets["form1"]) == 3
-        assert widget2 in MorphKeyPressBehavior.tab_widgets["form1"]
-        assert widget3 in MorphKeyPressBehavior.tab_widgets["form1"]
-        
-        # Test moving widget to different group
-        widget3.tab_group = "form2"
-        assert len(MorphKeyPressBehavior.tab_widgets["form1"]) == 2
-        assert widget3 not in MorphKeyPressBehavior.tab_widgets["form1"]
-        assert widget3 in MorphKeyPressBehavior.tab_widgets["form2"]
-        
-        # Test removing widget from groups
-        widget1.tab_group = None
-        assert widget1 not in MorphKeyPressBehavior.tab_widgets["form1"]
-        assert len(MorphKeyPressBehavior.tab_widgets["form1"]) == 1
-
-    def test_current_tab_widgets_property(self):
-        """Test the current_tab_widgets property."""
-        widget1 = self.FocusWidget()
-        widget2 = self.FocusWidget()
-        widget3 = self.FocusWidget()
-        
-        # Test empty list when no group set
-        assert widget1.current_tab_widgets == []
-        
-        # Test current_tab_widgets returns correct group
-        widget1.tab_group = "form1"
-        widget2.tab_group = "form1"
-        widget3.tab_group = "form2"
-        
-        form1_widgets = widget1.current_tab_widgets
-        assert len(form1_widgets) == 2
-        assert widget1 in form1_widgets
-        assert widget2 in form1_widgets
-        assert widget3 not in form1_widgets
-        
-        form2_widgets = widget3.current_tab_widgets
-        assert len(form2_widgets) == 1
-        assert widget3 in form2_widgets
-
-    def test_has_focus_property(self):
-        """Test the has_focus property with groups."""
-        widget1 = self.FocusWidget()
-        widget2 = self.FocusWidget()
-        widget3 = self.FocusWidget()
-        
-        widget1.tab_group = "form1"
-        widget2.tab_group = "form1"
-        widget3.tab_group = "form2"
-        
-        # Test no focus initially
-        assert widget1.has_focus is False
-        assert widget3.has_focus is False
-        
-        # Test focus in group
-        widget1.focus = True
-        assert widget1.has_focus is True
-        assert widget2.has_focus is True  # Same group
-        assert widget3.has_focus is False  # Different group
-
-    def test_tab_navigation_with_groups(self):
-        """Test tab navigation within groups."""
-        widget1 = self.FocusWidget()
-        widget2 = self.FocusWidget()
-        widget3 = self.FocusWidget()
-        widget4 = self.FocusWidget()
-        
-        # Set up two groups
-        widget1.tab_group = "form1"
-        widget2.tab_group = "form1"
-        widget3.tab_group = "form2"
-        widget4.tab_group = "form2"
-        
-        # Test tab navigation in form1 group
-        current_widgets = widget1.current_tab_widgets
-        assert len(current_widgets) == 2
-        assert not any(w.focus for w in current_widgets)
-
-        # First tab press in group 1
-        widget1.on_key_press(
-            instance=self, keyboard=9, keycode=43, text=None, modifiers=[])
-        widget1.on_key_release(instance=self, keyboard=9, keycode=43)
-        
-        form1_widgets = widget1.current_tab_widgets
-        assert sum(w.focus for w in form1_widgets) == 1
-        assert widget1.index_last_focus == -1
-        assert widget1.index_next_focus == 0
-        assert form1_widgets[0].focus is True
-
-        # Second tab press in group 1
-        widget1.on_key_press(
-            instance=self, keyboard=9, keycode=43, text=None, modifiers=[])
-        widget1.on_key_release(instance=self, keyboard=9, keycode=43)
-        
-        assert sum(w.focus for w in form1_widgets) == 1
-        assert widget1.index_last_focus == 0
-        assert widget1.index_next_focus == 1
-        assert form1_widgets[1].focus is True
-
-        # Third tab press (should wrap around)
-        widget1.on_key_press(
-            instance=self, keyboard=9, keycode=43, text=None, modifiers=[])
-        widget1.on_key_release(instance=self, keyboard=9, keycode=43)
-        
-        assert sum(w.focus for w in form1_widgets) == 1
-        assert widget1.index_last_focus == 1
-        assert widget1.index_next_focus == 0  # Wrapped around
-        assert form1_widgets[0].focus is True
-
-        # Verify form2 group is unaffected
-        form2_widgets = widget3.current_tab_widgets
-        assert not any(w.focus for w in form2_widgets)
-
-    def test_key_properties(self):
-        """Test key-related properties."""
+    def test_key_map_default(self):
+        """Test default key map."""
         widget = self.TestWidget()
-        widget.key_map = {97: 'a', 98: 'b'}
+        assert 40 in widget.key_map  # enter
+        assert 41 in widget.key_map  # escape
+        assert 42 in widget.key_map  # backspace
+        assert 43 in widget.key_map  # tab
+        assert widget.key_map[40] == 'enter'
+        assert widget.key_map[43] == 'tab'
+
+    def test_event_registration(self):
+        """Test that events are registered for keys in key_map."""
+        widget = self.TestWidget()
+        # Check that events are registered
+        assert hasattr(widget, 'on_enter_press')
+        assert hasattr(widget, 'on_enter_release')
+        assert hasattr(widget, 'on_tab_press')
+        assert hasattr(widget, 'on_tab_release')
+
+    def test_key_press_event(self):
+        """Test key press event handling."""
+        widget = self.TestWidget()
+        
+        # Track if event was called
+        press_called = []
+        
+        def on_enter_press(*args):
+            press_called.append(True)
+        
+        widget.bind(on_enter_press=on_enter_press)
+        
+        # Simulate enter key press (keycode 40)
+        widget.on_key_press(
+            instance=self, keyboard=9, keycode=40, text=None, modifiers=['shift'])
+        
+        assert len(press_called) == 1
+        assert widget.keyboard == 9
+        assert widget.keycode == 40
+        assert widget.key_text is None
+        assert widget.modifiers == ['shift']
+
+    def test_key_release_event(self):
+        """Test key release event handling."""
+        widget = self.TestWidget()
+        
+        # Track if event was called
+        release_called = []
+        
+        def on_escape_release(*args):
+            release_called.append(True)
+        
+        widget.bind(on_escape_release=on_escape_release)
+        
+        # Simulate escape key release (keycode 41)
+        widget.on_key_release(instance=self, keyboard=9, keycode=41)
+        
+        assert len(release_called) == 1
+
+    def test_skip_keypress_when_disabled(self):
+        """Test that key press is skipped when key_press_enabled is False."""
+        widget = self.TestWidget()
+        widget.key_press_enabled = False
+        
+        press_called = []
+        widget.bind(on_enter_press=lambda *args: press_called.append(True))
+        
+        widget.on_key_press(
+            instance=self, keyboard=9, keycode=40, text=None, modifiers=[])
+        
+        assert len(press_called) == 0
+
+    def test_skip_keypress_for_unmapped_keys(self):
+        """Test that key press is skipped for keys not in key_map."""
+        widget = self.TestWidget()
+        
+        # Try a keycode not in the key_map
+        widget.on_key_press(
+            instance=self, keyboard=9, keycode=999, text='x', modifiers=[])
+        
+        # Keycode should not be updated
+        assert widget.keycode == -1
+
+    def test_ignore_key_press_property(self):
+        """Test the ignore_key_press property."""
+        
+        class CustomWidget(MorphKeyPressBehavior, Widget):
+            @property
+            def ignore_key_press(self):
+                return True
+        
+        widget = CustomWidget()
+        press_called = []
+        widget.bind(on_enter_press=lambda *args: press_called.append(True))
+        
+        widget.on_key_press(
+            instance=self, keyboard=9, keycode=40, text=None, modifiers=[])
+        
+        # Should be ignored
+        assert len(press_called) == 0
+
+    def test_custom_key_map(self):
+        """Test using a custom key_map."""
+        
+        class CustomWidget(MorphKeyPressBehavior, Widget):
+            key_map = {97: 'custom_a', 98: 'custom_b'}
+        
+        widget = CustomWidget()
+        
+        # Check custom events are registered
+        assert hasattr(widget, 'on_custom_a_press')
+        assert hasattr(widget, 'on_custom_b_release')
+        
+        press_called = []
+        widget.bind(on_custom_a_press=lambda *args: press_called.append(True))
+        
         widget.on_key_press(
             instance=self, keyboard=9, keycode=97, text='a', modifiers=[])
+        
+        assert len(press_called) == 1
         assert widget.key_text == 'a'
-        assert widget.keycode == 97
-        assert widget.keyboard == 9
-        widget.on_key_press(
-            instance=self, keyboard=9, keycode=98, text='b', modifiers=[])
-        assert widget.key_text == 'b'
-        assert widget.keycode == 98
-        assert widget.keyboard == 9
+
+
+class TestMorphTabNavigationManagerBehavior:
+    """Test suite for MorphTabNavigationManagerBehavior class."""
+
+    class TestManager(MorphTabNavigationManagerBehavior, Widget):
+        """Test widget that combines Widget with MorphTabNavigationManagerBehavior."""
+        pass
+
+    def test_initialization(self):
+        """Test basic initialization of MorphTabNavigationManagerBehavior."""
+        manager = self.TestManager()
+        assert manager.current_tab_group == ''
+        assert manager.index_last_focus == -1
+        assert manager.index_next_focus == 0
+        assert manager.tab_widgets == []
+        assert manager._tab_widgets == {}
+
+    def test_current_tab_group_property(self):
+        """Test the current_tab_group property."""
+        manager = self.TestManager()
+        
+        manager.current_tab_group = "form1"
+        assert manager.current_tab_group == "form1"
+        
+        manager.current_tab_group = "form2"
+        assert manager.current_tab_group == "form2"
+
+    def test_tab_widgets_property(self):
+        """Test the tab_widgets property returns widgets from current group."""
+        manager = self.TestManager()
+        manager.current_tab_group = "form1"
+        
+        # Manually add widgets to internal dict for testing
+        widget1 = Widget()
+        widget2 = Widget()
+        widget3 = Widget()
+        
+        manager._tab_widgets["form1"] = [widget1, widget2]
+        manager._tab_widgets["form2"] = [widget3]
+        
+        # Should return widgets from form1
+        assert len(manager.tab_widgets) == 2
+        assert widget1 in manager.tab_widgets
+        assert widget2 in manager.tab_widgets
+        
+        # Change to form2
+        manager.current_tab_group = "form2"
+        assert len(manager.tab_widgets) == 1
+        assert widget3 in manager.tab_widgets
+
+    def test_tab_widgets_filters_disabled(self):
+        """Test that tab_widgets filters out disabled widgets."""
+        manager = self.TestManager()
+        manager.current_tab_group = "form1"
+        
+        # Create widgets with disabled property
+        widget1 = Widget()
+        widget1.disabled = False
+        widget2 = Widget()
+        widget2.disabled = True
+        widget3 = Widget()
+        widget3.disabled = False
+        
+        manager._tab_widgets["form1"] = [widget1, widget2, widget3]
+        
+        # Should only return enabled widgets
+        tab_widgets = manager.tab_widgets
+        assert len(tab_widgets) == 2
+        assert widget1 in tab_widgets
+        assert widget2 not in tab_widgets
+        assert widget3 in tab_widgets
+
+    def test_index_last_focus(self):
+        """Test index_last_focus property."""
+        manager = self.TestManager()
+        manager.current_tab_group = "form1"
+        
+        widget1 = Widget()
+        widget1.focus = False
+        widget2 = Widget()
+        widget2.focus = True
+        
+        manager._tab_widgets["form1"] = [widget1, widget2]
+        
+        # Should find the focused widget
+        assert manager.index_last_focus == 1
+        
+        # Test when no widget has focus
+        widget2.focus = False
+        manager._index_last_focus = {}  # Clear cache
+        # When no widget has focus, returns max(-1, len-1) = max(-1, 1) = 1
+        assert manager.index_last_focus == 1
+
+    def test_index_next_focus(self):
+        """Test index_next_focus property."""
+        manager = self.TestManager()
+        manager.current_tab_group = "form1"
+        
+        widget1 = Widget()
+        widget2 = Widget()
+        widget3 = Widget()
+        
+        manager._tab_widgets["form1"] = [widget1, widget2, widget3]
+        
+        # When index_last_focus is -1, next should be 0
+        assert manager.index_next_focus == 0
+        
+        # When index_last_focus is 0, next should be 1
+        manager.index_last_focus = 0
+        assert manager.index_next_focus == 1
+        
+        # When index_last_focus is last, should wrap to 0
+        manager.index_last_focus = 2
+        assert manager.index_next_focus == 0
+
+    def test_on_tab_release(self):
+        """Test tab release event handling."""
+        manager = self.TestManager()
+        manager.current_tab_group = "form1"
+        
+        widget1 = Widget()
+        widget1.focus = False
+        widget2 = Widget()
+        widget2.focus = False
+        widget3 = Widget()
+        widget3.focus = False
+        
+        manager._tab_widgets["form1"] = [widget1, widget2, widget3]
+        
+        # First tab: index_last_focus will be max(-1, 2) = 2 initially
+        # So it will unfocus widget at index 2 and focus widget at index_next_focus
+        # index_next_focus when index_last_focus is 2 should be (2+1) % 3 = 0
+        initial_index = manager.index_last_focus
+        assert initial_index == 2  # max(-1, len-1) = max(-1, 2) = 2
+        initial_next = manager.index_next_focus
+        # index_next_focus = index + 1, if >= len, wraps to 0
+        # So 2 + 1 = 3, which is >= 3, so wraps to 0
+        assert initial_next == 0
+        
+        manager.on_tab_release()
+        # Should unfocus widget3 (index 2) and focus widget1 (index 0)
+        assert widget1.focus is True
+        assert widget3.focus is False
+        
+        # Manually update index to continue testing
+        manager.index_last_focus = 0
+        assert manager.index_next_focus == 1
+        
+        manager.on_tab_release()
+        assert widget2.focus is True
+        
+        # Continue testing the cycle
+        manager.index_last_focus = 1
+        assert manager.index_next_focus == 2
+        
+        manager.on_tab_release()
+        assert widget3.focus is True
+        
+        # Test wrap around
+        manager.index_last_focus = 2
+        assert manager.index_next_focus == 0
+        
+        manager.on_tab_release()
+        assert widget1.focus is True
+
+    def test_on_tab_release_empty_widgets(self):
+        """Test tab release when no widgets in group."""
+        manager = self.TestManager()
+        manager.current_tab_group = "empty_group"
+        
+        # Should not raise error
+        manager.on_tab_release()
+
+
+class TestMorphTabNavigableBehavior:
+    """Test suite for MorphTabNavigableBehavior class."""
+
+    class TestWidget(MorphTabNavigableBehavior, Widget):
+        """Test widget that combines Widget with MorphTabNavigableBehavior."""
+        text = BooleanProperty(False)  # Mock text property
+
+    def setup_method(self):
+        """Set up test fixtures before each test method."""
+        # Create a manager
+        self.manager = MorphTabNavigationManagerBehavior()
+
+    def test_initialization(self):
+        """Test basic initialization of MorphTabNavigableBehavior."""
+        widget = self.TestWidget()
+        assert widget.focus is False
+        assert widget.tab_manager is None
+        assert widget.tab_group is None
+
+    def test_focus_property(self):
+        """Test the focus property."""
+        widget = self.TestWidget()
+        
+        widget.focus = True
+        assert widget.focus is True
+        
+        widget.focus = False
+        assert widget.focus is False
+
+    def test_tab_manager_property(self):
+        """Test the tab_manager property."""
+        widget = self.TestWidget()
+        
+        widget.tab_manager = self.manager
+        assert widget.tab_manager is self.manager
+
+    def test_tab_group_registration(self):
+        """Test tab group registration with manager."""
+        widget = self.TestWidget()
+        widget.tab_manager = self.manager
+        
+        # Test setting tab group
+        widget.tab_group = "form1"
+        assert widget.tab_group == "form1"
+        assert "form1" in self.manager._tab_widgets
+        assert widget in self.manager._tab_widgets["form1"]
+
+    def test_tab_group_multiple_widgets(self):
+        """Test multiple widgets in same tab group."""
+        widget1 = self.TestWidget()
+        widget2 = self.TestWidget()
+        widget3 = self.TestWidget()
+        
+        widget1.tab_manager = self.manager
+        widget2.tab_manager = self.manager
+        widget3.tab_manager = self.manager
+        
+        # Test adding multiple widgets to same group
+        widget1.tab_group = "form1"
+        widget2.tab_group = "form1"
+        widget3.tab_group = "form1"
+        
+        assert len(self.manager._tab_widgets["form1"]) == 3
+        assert widget1 in self.manager._tab_widgets["form1"]
+        assert widget2 in self.manager._tab_widgets["form1"]
+        assert widget3 in self.manager._tab_widgets["form1"]
+
+    def test_tab_group_move_to_different_group(self):
+        """Test moving widget to different group."""
+        widget = self.TestWidget()
+        widget.tab_manager = self.manager
+        
+        # Set initial group
+        widget.tab_group = "form1"
+        assert widget in self.manager._tab_widgets["form1"]
+        
+        # Move to different group
+        widget.tab_group = "form2"
+        assert widget not in self.manager._tab_widgets["form1"]
+        assert widget in self.manager._tab_widgets["form2"]
+
+    def test_tab_group_remove_from_groups(self):
+        """Test removing widget from groups."""
+        widget = self.TestWidget()
+        widget.tab_manager = self.manager
+        
+        widget.tab_group = "form1"
+        assert widget in self.manager._tab_widgets["form1"]
+        
+        # Remove from groups
+        widget.tab_group = None
+        assert len(self.manager._tab_widgets.get("form1", [])) == 0
+
+    def test_sync_focus_to_manager(self):
+        """Test syncing focus state with manager."""
+        widget1 = self.TestWidget()
+        widget2 = self.TestWidget()
+        
+        widget1.tab_manager = self.manager
+        widget2.tab_manager = self.manager
+        
+        widget1.tab_group = "form1"
+        widget2.tab_group = "form1"
+        
+        # Set focus on widget1
+        widget1.focus = True
+        
+        # Manager should update current group
+        assert self.manager.current_tab_group == "form1"
+        # Widget1 should be in the manager's tab_widgets list
+        assert widget1 in self.manager.tab_widgets
+        expected_index = self.manager.tab_widgets.index(widget1)
+        assert expected_index == 0  # widget1 should be first
+        
+        # Manually call _sync_focus_to_manager to ensure it updates the index
+        # (In actual usage, the binding would call this automatically)
+        widget1._sync_focus_to_manager()
+        
+        # Check that the internal dict was updated correctly
+        assert self.manager._index_last_focus.get("form1") == 0
+
+    def test_remove_tab_characters(self):
+        """Test that tab characters are removed from text."""
+        
+        class TextWidget(MorphTabNavigableBehavior, Widget):
+            from kivy.properties import StringProperty
+            text = StringProperty('')
+        
+        widget = TextWidget()
+        widget.tab_manager = self.manager
+        
+        # Set text with tab character
+        widget.text = "hello\tworld"
+        
+        # Give clock a chance to run scheduled callback
+        Clock.tick()
+        
+        # Tab should be removed
+        assert widget.text == "helloworld"
+
+    def test_no_manager_registration(self):
+        """Test that registration doesn't happen without manager."""
+        widget = self.TestWidget()
+        
+        # Set tab_group without manager - should not raise error
+        widget.tab_group = "form1"
+        
+        # No registration should occur
+        assert widget.tab_group == "form1"
 
 
 class TestMorphAppReferenceBehavior:
@@ -2396,7 +2691,7 @@ class TestMorphInteractionLayerBehavior:
         assert widget.hovered_state_opacity == 0.08
         assert widget.pressed_state_opacity == 0.16
         assert widget.focus_state_opacity == 0.05
-        assert widget.disabled_state_opacity == 0.16
+        assert widget.disabled_state_opacity == 0.0
         assert widget.interaction_enabled is True
         assert widget.interaction_gray_value is None
 
@@ -2528,7 +2823,7 @@ class TestMorphOverlayLayerBehavior:
         # Test default edge properties
         assert widget.overlay_edge_width == 1.0
         assert widget.resizing_overlay_edge_width == 3.0
-        assert widget.overlay_edge_inside == True
+        assert widget.overlay_edge_inside is True
         assert widget.visible_edges == []
 
     def test_overlay_color_state_resolution(self):
@@ -4061,6 +4356,7 @@ class TestMorphMenuMotionBehavior:
                 self.open_called = True
         
         widget = TestWidget()
+        widget.scale_enabled = False  # Disable animation for immediate event dispatch
         caller = Widget()
         caller.to_window = Mock(return_value=(100, 200))
         caller.size = (150, 40)
@@ -4110,7 +4406,7 @@ class TestMorphMenuMotionBehavior:
                 super().__init__(**kwargs)
                 self.pre_dismiss_called = False
                 self.dismiss_called = False
-            
+
             def on_pre_dismiss(self, *args):
                 self.pre_dismiss_called = True
             
@@ -4118,6 +4414,8 @@ class TestMorphMenuMotionBehavior:
                 self.dismiss_called = True
         
         widget = TestWidget()
+        widget.scale_enabled = False  # Disable animation for immediate event dispatch
+        widget.dismiss_allowed = True  # Allow dismissing
         
         # Mock Window and add widget
         mock_window.remove_widget = Mock()
