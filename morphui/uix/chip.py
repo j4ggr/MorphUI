@@ -157,7 +157,7 @@ class MorphChip(
             trailing_radius = [0, 0, 0, 0]
             expansion = [0, 0, 0, 0]
         self.trailing_widget.radius = trailing_radius
-        self.trailing_widget.interaction_layer_expansion = expansion
+        self.trailing_widget.interaction_expansion = expansion
 
 
 class MorphFilterChip(

@@ -2439,7 +2439,7 @@ class TestMorphInteractionLayerBehavior:
 
     @patch('morphui.app.MorphApp._theme_manager')
     def test_resolved_interaction_color(self, mock_app_theme_manager):
-        """Test the interaction_layer_color property for theme-aware colors."""
+        """Test the interaction_color property for theme-aware colors."""
         mock_app_theme_manager.configure_mock(**{
             'transparent_color': [0, 0, 0, 0],
             'is_dark_mode': False
@@ -2452,7 +2452,7 @@ class TestMorphInteractionLayerBehavior:
         widget.current_interaction_state = 'hovered'
         
         # Test light mode (should return black with hovered opacity)
-        resolved_color = widget.interaction_layer_color
+        resolved_color = widget.interaction_color
         assert resolved_color == [0.0, 0.0, 0.0, 0.08]
         
 
@@ -2485,7 +2485,7 @@ class TestMorphInteractionLayerBehavior:
         widget.current_interaction_state = 'hovered'
         
         # Test light mode - should use gray value as-is
-        resolved_color = widget.interaction_layer_color
+        resolved_color = widget.interaction_color
         assert resolved_color == [0.2, 0.2, 0.2, 0.08]
         
 

@@ -615,8 +615,8 @@ class MorphRippleBehavior(EventDispatcher):
         if self.ripple_color is not None:
             return self.ripple_color
         
-        if hasattr(self, 'interaction_layer_color'):
-            ripple_color = self.interaction_layer_color
+        if hasattr(self, 'interaction_color'):
+            ripple_color = self.interaction_color
         else:
             gray_value = 0.0
             if hasattr(self, 'theme_manager'):
@@ -651,7 +651,7 @@ class MorphRippleBehavior(EventDispatcher):
         self._current_ripple_radius = self.ripple_initial_radius
         self._current_ripple_color = self.determine_ripple_color()
         self._ripple_final_radius = (
-            max(getattr(self, 'interaction_layer_size', self.size)) * 2)
+            max(getattr(self, 'interaction_size', self.size)) * 2)
         self._evaluate_ripple_pos(touch_pos)
         self.ripple_canvas_instructions()
         self.start_ripple_animation()
@@ -726,8 +726,8 @@ class MorphRippleBehavior(EventDispatcher):
         else:
             canvas = self.canvas.before
 
-        pos = getattr(self, 'interaction_layer_pos', self.pos)
-        size = getattr(self, 'interaction_layer_size', self.size)
+        pos = getattr(self, 'interaction_pos', self.pos)
+        size = getattr(self, 'interaction_size', self.size)
         with canvas:
             StencilPush(
                 group=NAME.RIPPLE)
