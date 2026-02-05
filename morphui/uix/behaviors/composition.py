@@ -18,6 +18,7 @@ from morphui.uix.label import MorphTrailingIconLabel
 __all__ = [
     'MorphLeadingWidgetBehavior',
     'MorphLabelWidgetBehavior',
+    'MorphTripleLabelBehavior',
     'MorphTrailingWidgetBehavior',]
 
 
@@ -291,7 +292,7 @@ class MorphLabelWidgetBehavior:
     label_text: str = AliasProperty(
         _get_label_text,
         _set_label_text,
-        bind=['label_widget',])
+        bind=['label_widget', '_label_text'])
     """The text displayed in the center.
 
     This property gets/sets the `text` property of the `label_widget`.
@@ -326,6 +327,252 @@ class MorphLabelWidgetBehavior:
         and any other relevant properties.
         """
         self.on_label_widget(self, self.label_widget)
+
+
+class MorphTripleLabelBehavior:
+    """Behavior for managing three text label widgets.
+
+    This behavior provides properties and methods for delegating text
+    content management to three child label widgets: `heading_widget`,
+    `supporting_widget`, and `tertiary_widget`. It creates aliased
+    properties that automatically sync with the child widgets' text
+    properties.
+    """
+
+    def _get_heading_text(self) -> str:
+        """Get the text from the heading label widget.
+
+        This method retrieves the text from the `heading_widget`.
+        If the `heading_widget` is None, it returns the internal
+        stored heading text.
+
+        Returns
+        -------
+        str
+            The heading text displayed at the top
+        """
+        if self.heading_widget is None:
+            return ''
+        
+        if self.heading_widget.text and not self._heading_text:
+            self._heading_text = self.heading_widget.text
+        
+        return self._heading_text
+    
+    def _set_heading_text(self, text: str) -> None:
+        """Set the text on the heading label widget.
+
+        This method sets the text on the `heading_widget`. It also
+        updates the internal stored heading text.
+
+        Parameters
+        ----------
+        text : str
+            The heading text to set
+        """
+        self._heading_text = text
+        if self.heading_widget is not None:
+            self.heading_widget.text = text
+
+    _heading_text: str = StringProperty('')
+    """Internal stored text of the heading label displayed at the top."""
+
+    heading_text: str = AliasProperty(
+        _get_heading_text,
+        _set_heading_text,
+        bind=['heading_widget', '_heading_text'])
+    """The heading text displayed at the top.
+
+    This property gets/sets the `text` property of the `heading_widget`.
+
+    :attr:`heading_text` is a :class:`~kivy.properties.AliasProperty`
+    and is bound to changes in the `heading_widget`.
+    """
+
+    heading_widget: MorphTextLabel = ObjectProperty(None)
+    """The heading label widget displayed at the top.
+
+    This widget is typically used above the main label to provide
+    a headline text.
+
+    :attr:`heading_widget` is by default an instance of
+    :class:`~morphui.uix.label.MorphTextLabel`.
+    """
+
+    def _get_supporting_text(self) -> str:
+        """Get the text from the supporting label widget.
+
+        This method retrieves the text from the `supporting_widget`.
+        If the `supporting_widget` is None, it returns the internal
+        stored supporting text.
+
+        Returns
+        -------
+        str
+            The supporting text displayed in the center
+        """
+        if self.supporting_widget is None:
+            return ''
+        
+        if self.supporting_widget.text and not self._supporting_text:
+            self._supporting_text = self.supporting_widget.text
+        
+        return self._supporting_text
+    
+    def _set_supporting_text(self, text: str) -> None:
+        """Set the text on the supporting label widget.
+
+        This method sets the text on the `supporting_widget`. It also
+        updates the internal stored supporting text.
+
+        Parameters
+        ----------
+        text : str
+            The supporting text to set
+        """
+        self._supporting_text = text
+        if self.supporting_widget is not None:
+            self.supporting_widget.text = text
+
+    _supporting_text: str = StringProperty('')
+    """Internal stored text of the supporting label displayed in the
+    center."""
+
+    supporting_text: str = AliasProperty(
+        _get_supporting_text,
+        _set_supporting_text,
+        bind=['supporting_widget', '_supporting_text'])
+    """The supporting text displayed in the center.
+
+    This property gets/sets the `text` property of the
+    `supporting_widget`.
+
+    :attr:`supporting_text` is a :class:`~kivy.properties.AliasProperty`
+    and is bound to changes in the `supporting_widget`.
+    """
+
+    supporting_widget: MorphTextLabel = ObjectProperty(None)
+    """The body label widget displayed in the center.
+
+    This widget is typically used below the main label to provide
+    supporting text.
+
+    :attr:`supporting_widget` is by default an instance of
+    :class:`~morphui.uix.label.MorphTextLabel`.
+    """
+
+    def _get_tertiary_text(self) -> str:
+        """Get the text from the tertiary label widget.
+
+        This method retrieves the text from the `tertiary_widget`.
+        If the `tertiary_widget` is None, it returns the internal
+        stored tertiary text.
+
+        Returns
+        -------
+        str
+            The tertiary text displayed at the bottom
+        """
+        if self.tertiary_widget is None:
+            return ''
+        
+        if self.tertiary_widget.text and not self._tertiary_text:
+            self._tertiary_text = self.tertiary_widget.text
+        
+        return self._tertiary_text
+    
+    def _set_tertiary_text(self, text: str) -> None:
+        """Set the text on the tertiary label widget.
+
+        This method sets the text on the `tertiary_widget`. It also
+        updates the internal stored tertiary text.
+
+        Parameters
+        ----------
+        text : str
+            The tertiary text to set
+        """
+        self._tertiary_text = text
+        if self.tertiary_widget is not None:
+            self.tertiary_widget.text = text
+
+    _tertiary_text: str = StringProperty('')
+    """Internal stored text of the tertiary label displayed at the
+    bottom."""
+
+    tertiary_text: str = AliasProperty(
+        _get_tertiary_text,
+        _set_tertiary_text,
+        bind=['tertiary_widget', '_tertiary_text'])
+    """The tertiary text displayed at the bottom.
+
+    This property gets/sets the `text` property of the
+    `tertiary_widget`.
+
+    :attr:`tertiary_text` is a :class:`~kivy.properties.AliasProperty`
+    and is bound to changes in the `tertiary_widget`.
+    """
+
+    tertiary_widget: MorphTextLabel = ObjectProperty(None)
+    """The tertiary label widget displayed at the bottom.
+
+    This widget is typically used below the supporting label to provide
+    additional tertiary text.
+
+    :attr:`tertiary_widget` is by default an instance of
+    :class:`~morphui.uix.label.MorphTextLabel`.
+    """
+
+    def on_heading_widget(
+            self, instance: Any, heading_widget: Any) -> None:
+        """Called when the heading widget is changed.
+
+        This method updates the `heading_widget` to ensure it reflects
+        the current state of the parent widget, including text content
+        and any other relevant properties.
+        """
+        if self.heading_widget is None:
+            return
+        
+        self.heading_widget.text = self.heading_text
+
+    def on_supporting_widget(
+            self, instance: Any, supporting_widget: Any) -> None:
+        """Called when the supporting widget is changed.
+
+        This method updates the `supporting_widget` to ensure it
+        reflects the current state of the parent widget, including text
+        content and any other relevant properties.
+        """
+        if self.supporting_widget is None:
+            return
+        
+        self.supporting_widget.text = self.supporting_text
+
+    def on_tertiary_widget(
+            self, instance: Any, tertiary_widget: Any) -> None:
+        """Called when the tertiary widget is changed.
+
+        This method updates the `tertiary_widget` to ensure it reflects
+        the current state of the parent widget, including text content
+        and any other relevant properties.
+        """
+        if self.tertiary_widget is None:
+            return
+
+        self.tertiary_widget.text = self.tertiary_text
+
+    def refresh_triple_labels(self) -> None:
+        """Refresh all three label widgets to reflect current properties.
+
+        This method updates the `heading_widget`, `supporting_widget`,
+        and `tertiary_widget` to ensure they reflect the current state
+        of the parent widget, including text content and any other
+        relevant properties.
+        """
+        self.on_heading_widget(self, self.heading_widget)
+        self.on_supporting_widget(self, self.supporting_widget)
+        self.on_tertiary_widget(self, self.tertiary_widget)
 
 
 class MorphTrailingWidgetBehavior:
