@@ -14,14 +14,22 @@ from kivy.uix.recycleview import RecycleView
 from kivy.uix.recycleview.views import RecycleDataViewBehavior
 
 from morphui.utils import clean_config
+from morphui.uix.label import MorphHeadingLabel
+from morphui.uix.label import MorphTertiaryLabel
+from morphui.uix.label import MorphSupportingLabel
+from morphui.uix.label import MorphLeadingIconLabel
+from morphui.uix.label import MorphTrailingIconLabel
+from morphui.uix.boxlayout import MorphSimpleBoxLayout
 from morphui.uix.behaviors import MorphHoverBehavior
 from morphui.uix.behaviors import MorphRippleBehavior
 from morphui.uix.behaviors import MorphButtonBehavior
 from morphui.uix.behaviors import MorphKeyPressBehavior
 from morphui.uix.behaviors import MorphColorThemeBehavior
+from morphui.uix.behaviors import MorphTripleLabelBehavior
 from morphui.uix.behaviors import MorphToggleButtonBehavior
 from morphui.uix.behaviors import MorphOverlayLayerBehavior
 from morphui.uix.behaviors import MorphContentLayerBehavior
+from morphui.uix.behaviors import MorphLeadingWidgetBehavior
 from morphui.uix.behaviors import MorphIdentificationBehavior
 from morphui.uix.behaviors import MorphDelegatedThemeBehavior
 from morphui.uix.behaviors import MorphInteractionLayerBehavior
@@ -32,6 +40,8 @@ from morphui.uix.recycleboxlayout import MorphRecycleBoxLayout
 __all__ = [
     'MorphListItemFlat',
     'MorphToggleListItemFlat',
+    'MorphListItem',
+    'MorphToggleListItem',
     'MorphListLayout',
     'BaseListView',
     ]
@@ -184,6 +194,162 @@ class MorphToggleListItemFlat(
         """
         super().refresh_view_attrs(rv, index, data)
         self.leading_widget.active = self.active
+
+
+class MorphListItem(
+        RecycleDataViewBehavior,
+        MorphHoverBehavior,
+        MorphRippleBehavior,
+        MorphButtonBehavior,
+        MorphDelegatedThemeBehavior,
+        MorphColorThemeBehavior,
+        MorphOverlayLayerBehavior,
+        MorphInteractionLayerBehavior,
+        MorphContentLayerBehavior,
+        MorphTripleLabelBehavior,
+        MorphLeadingWidgetBehavior,
+        MorphSimpleBoxLayout,):
+    """A single item within a List widget with triple labels and 
+    leading/trailing icons.
+
+    This widget represents a list item with support for leading icon,
+    heading label, supporting label, tertiary label, and trailing icon.
+    It provides a more complex layout compared to the flat list item, 
+    allowing for additional information to be displayed within the item.
+    """
+
+    default_child_classes = {
+        'leading_widget': MorphLeadingIconLabel,
+        'heading_widget': MorphHeadingLabel,
+        'supporting_widget': MorphSupportingLabel,
+        'tertiary_widget': MorphTertiaryLabel,
+        'trailing_widget': MorphTrailingIconLabel,}
+    """Default child widgets for the container.
+    
+    This dictionary maps widget identities to their default classes.
+    Override in subclasses to change default child widgets.
+    """
+
+    label_container: MorphSimpleBoxLayout
+    """Container for the label widgets.
+
+    This attribute holds a reference to the container that manages the
+    label widgets (heading, supporting, tertiary). It allows for easy
+    access and manipulation of the label widgets as a group.
+    """
+
+    default_config: Dict[str, Any] = (
+        MorphIconLabelIconContainer.default_config.copy() | dict(
+        theme_color_bindings={
+            'normal_surface_color': 'transparent_color',
+            'normal_overlay_edge_color': 'outline_color',
+            'normal_content_color': 'content_surface_color',},
+        overlay_edge_width=dp(0.5),
+        visible_edges=['bottom'],
+        auto_size=(False, True),
+        size_hint=(1, None),
+        spacing=dp(8),
+        padding=[dp(8), dp(2)],
+        delegate_content_color=True,))
+
+    def __init__(self, **kwargs) -> None:
+        config = clean_config(self.default_config, kwargs)
+        self.leading_widget = self.default_child_classes['leading_widget']()
+        self.heading_widget = self.default_child_classes['heading_widget']()
+        self.supporting_widget = self.default_child_classes['supporting_widget']()
+        self.tertiary_widget = self.default_child_classes['tertiary_widget']()
+        self.trailing_widget = self.default_child_classes['trailing_widget']()
+        self.label_container = MorphSimpleBoxLayout(
+            orientation='vertical',
+            spacing=dp(2),
+            auto_size=(False, True),
+            size_hint=(1, None),
+            pos_hint={'center_y': 0.5},)
+        
+        super().__init__(**config)
+        self.add_widget(self.leading_widget)
+        self.label_container.add_widget(self.heading_widget)
+        self.label_container.add_widget(self.supporting_widget)
+        self.label_container.add_widget(self.tertiary_widget)
+        self.add_widget(self.label_container)
+        self.add_widget(self.trailing_widget)
+
+        self.delegated_children = [
+            self.leading_widget,
+            self.heading_widget,
+            self.supporting_widget,
+            self.tertiary_widget,
+            self.trailing_widget,]
+
+    def refresh_view_attrs(
+            self,
+            rv: RecycleView,
+            index: int,
+            data: Dict[str, Any]
+            ) -> None:
+        """Refreshes the view attributes of this menu item.
+
+        Parameters
+        ----------
+        rv : RecycleView
+            The RecycleView instance managing this menu item.
+        index : int
+            The index of this menu item within the RecycleView data.
+        data : Dict[str, Any]
+            The data list containing the attributes for all menu items.
+        """
+        super().refresh_view_attrs(rv, index, data)
+        self.rv = rv
+        self.rv_index = index
+        self.refresh_auto_sizing()
+        self.refresh_content()
+        self.refresh_overlay()
+        self.refresh_leading_widget()
+        self.refresh_triple_labels()
+        self.refresh_trailing_widget()
+
+    def on_release(self) -> None:
+        """Handle the release event for this list item.
+
+        This method is called when the list item is released. It
+        invokes the `release_callback` function if it is defined,
+        passing the item data and index as arguments.
+        """
+        if getattr(self, 'release_callback', None) is not None:
+            self.release_callback(self, self.rv_index)
+
+
+class MorphToggleListItem(
+        MorphToggleButtonBehavior,
+        MorphListItem):
+    """A toggleable list item with triple labels and leading/trailing
+    icons.
+
+    This widget extends the base MorphListItem to include toggle button
+    behavior, allowing it to be used as a selectable item within a list.
+    It supports active state management and can be grouped with other
+    toggle items.
+    """
+
+    def refresh_view_attrs(
+            self,
+            rv: RecycleView,
+            index: int,
+            data: Dict[str, Any]
+            ) -> None:
+        """Refreshes the view attributes of this top list item.
+
+        Parameters
+        ----------
+        rv : RecycleView
+            The RecycleView instance managing this list item.
+        index : int
+            The index of this menu item within the RecycleView data.
+        data : Dict[str, Any]
+            The data list containing the attributes for all menu items.
+        """
+        super().refresh_view_attrs(rv, index, data)
+        self.trailing_widget.active = self.active
 
 
 class MorphListLayout(

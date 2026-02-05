@@ -27,6 +27,9 @@ __all__ = [
     'MorphIconLabel',
     'MorphLeadingIconLabel',
     'MorphTextLabel',
+    'MorphHeadingLabel',
+    'MorphSupportingLabel',
+    'MorphTertiaryLabel',
     'MorphTrailingIconLabel',
     'MorphButtonLeadingIconLabel',
     'MorphButtonTrailingIconLabel',
@@ -385,6 +388,42 @@ class MorphTextLabel(
         padding=dp(0),
         pos_hint={'center_y': 0.5},))
 
+
+class MorphHeadingLabel(
+        MorphSimpleLabel):
+    """Heading label for containers.
+    
+    This widget displays a heading text mostly used in between leading and 
+    trailing icons or other widgets.
+    """
+    
+    default_config: Dict[str, Any] = (
+        MorphSimpleLabel.default_config.copy() | dict(
+        auto_size=(True, True),
+        size_hint=(1, None),
+        padding=dp(0),
+        pos_hint={'center_y': 0.5},
+        bold=True,))
+
+
+MorphSupportingLabel = MorphTextLabel
+
+
+class MorphTertiaryLabel(
+        MorphSimpleLabel):
+    """Tertiary label for containers.
+    
+    This widget displays a tertiary text mostly used in between leading and 
+    trailing icons or other widgets.
+    """
+    
+    default_config: Dict[str, Any] = (
+        MorphSimpleLabel.default_config.copy() | dict(
+        auto_size=(True, True),
+        size_hint=(1, None),
+        padding=dp(0),
+        pos_hint={'center_y': 0.5},
+        italic=True,))
 
 class MorphTrailingIconLabel(
         MorphScaleBehavior,
