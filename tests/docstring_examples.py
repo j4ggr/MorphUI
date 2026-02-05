@@ -20,23 +20,27 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).parents[1].resolve()))
 
 from morphui.app import MorphApp
-from morphui.uix.pickers import MorphDockedDatePickerFieldRounded
-from morphui.uix.floatlayout import MorphFloatLayout
+from morphui.uix.label import MorphLabel
+from morphui.uix.boxlayout import MorphBoxLayout
+from morphui.uix.scrollview import MorphScrollView
 
 class MyApp(MorphApp):
 
-    def build(self) -> MorphFloatLayout:
+    def build(self) -> MorphScrollView:
         self.theme_manager.theme_mode = 'Dark'
         self.theme_manager.seed_color = 'morphui_teal'
 
-        self.layout = MorphFloatLayout(
-            MorphDockedDatePickerFieldRounded(
-                kind='range',
-                identity='date_picker_field',
-                pos_hint={'center_x': 0.5, 'center_y': 0.8},
-                size_hint_x= 0.6,))
-
-        return self.layout
+        return MorphScrollView(
+                MorphBoxLayout(
+                    MorphLabel(text='Label 1', theme_style='primary'),
+                    MorphLabel(text='Label 2', theme_style='secondary'),
+                    MorphLabel(text='Label 3', theme_style='tertiary'),
+                    size_hint=(1, None),
+                    height=1000,
+                    theme_style='surface',
+                    orientation='vertical',
+                    identity='scroll_content'),
+                identity='scroll_view',)
 
 if __name__ == "__main__":
     MyApp().run()
