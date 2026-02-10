@@ -224,13 +224,7 @@ class MorphMenuMotionBehavior(MorphScaleBehavior,):
         """
         if not self.is_open:
             return
-
-        if hasattr(self, 'layout_manager'):
-            size = self.layout_manager.size
-            padding = getattr(self, 'padding', [0]*4)
-            self.size = (
-                size[0] + padding[0] + padding[2],
-                size[1] + padding[1] + padding[3],)
+        
         self._adjust_to_fit_window()
         self.pos = self._resolve_pos()
         self.size = self._resolve_size()
@@ -275,11 +269,19 @@ class MorphMenuMotionBehavior(MorphScaleBehavior,):
         """
         if self.caller is None or not self.auto_adjust_position:
             return
-    
+
         caller_x, caller_y = self._resolve_caller_pos()
         caller_width, caller_height = self._resolve_caller_size()
         margin = self.menu_window_margin
+        padding = getattr(self, 'padding', [0]*4)
         w, h = self.size
+        
+        if hasattr(self, 'layout_manager'):
+            w = self.layout_manager.width + padding[0] + padding[2]
+            h = self.layout_manager.height + padding[1] + padding[3]
+        if self.same_width_as_caller and self.caller is not None:
+            w = self._resolve_caller_size()[0]
+        self.size = (w, h)
         
         space_above = Window.height - (caller_y + caller_height) - margin
         space_below = caller_y - margin
