@@ -5,13 +5,15 @@ This module provides a dynamic color system that automatically updates
 all widget colors when switching between light and dark themes.
 """
 from typing import Any
+from typing import Dict
 from typing import Tuple
 from typing import Literal
 
-from kivy.utils import colormap
 from kivy.utils import hex_colormap
 from kivy.utils import get_color_from_hex
 from kivy.animation import Animation
+from kivy.properties import DictProperty
+from kivy.properties import AliasProperty
 from kivy.properties import StringProperty
 from kivy.properties import OptionProperty
 from kivy.properties import BooleanProperty
@@ -28,12 +30,6 @@ from morphui.theme.palette import MorphDynamicColorPalette
 
 __all__ = [
     'ThemeManager',]
-
-
-def get_available_seed_colors() -> Tuple[str, ...]:
-    """Get a tuple of all available seed color names."""
-    return tuple(
-        color.capitalize() for color in hex_colormap.keys())
 
 
 class ThemeManager(MorphDynamicColorPalette):
@@ -146,8 +142,39 @@ class ThemeManager(MorphDynamicColorPalette):
     :class:`~kivy.properties.StringProperty` and defaults to 'out_sine'.
     """
 
-    _available_seed_colors: Tuple[str, ...] = get_available_seed_colors()
-    """List of available seed colors (read-only)."""
+    available_seed_colors = AliasProperty(
+        lambda self: self._get_available_seed_colors(),
+        bind=['hex_colormap', '_colormap_version'],
+        cache=True)
+    """List of available seed colors (read-only).
+    
+    :attr:`available_seed_colors` is an 
+    :class:`~kivy.properties.AliasProperty`.
+    """
+    
+    hex_colormap: Dict[str, str] = DictProperty(hex_colormap.copy())
+    """Instance-level hex colormap for storing registered seed colors.
+    
+    This property allows for dynamic registration of new seed colors at
+    runtime. It is initialized with a copy of Kivy's default hex 
+    colormap. When a new seed color is registered using 
+    `register_seed_color()`, it is added to this dictionary.
+
+    :attr:`hex_colormap` is a :class:`~kivy.properties.DictProperty` and
+    defaults to a copy of Kivy's default hex colormap.
+    """
+
+    _colormap_version: int = BoundedNumericProperty(0, min=0)
+    """Internal version counter for the hex colormap.
+
+    This property is used to track changes to the hex colormap. Whenever
+    a new seed color is registered, this counter is incremented. It can
+    be used to trigger updates in dependent properties or to invalidate
+    caches when the colormap changes.
+
+    :attr:`_colormap_version` is a 
+    :class:`~kivy.properties.BoundedNumericProperty` and defaults to 0.
+    """
     
     _cached_theme: Theme | None = None
     """Cached theme containing both light and dark schemes."""
@@ -168,10 +195,18 @@ class ThemeManager(MorphDynamicColorPalette):
 
         self.refresh_theme_colors()
 
+    def _get_available_seed_colors(self) -> Tuple[str, ...]:
+        """Get a tuple of all available seed color names."""
+        return tuple(
+            color.capitalize() for color in self.hex_colormap.keys())
+    
     @property
-    def available_seed_colors(self) -> Tuple[str, ...]:
-        """List of available seed colors (read-only)."""
-        return self._available_seed_colors
+    def colormap(self) -> dict:
+        """RGBA colormap derived from hex_colormap (read-only).
+        
+        Returns a dictionary mapping color names to RGBA values.
+        """
+        return {k: get_color_from_hex(v) for k, v in self.hex_colormap.items()}
     
     @property
     def is_dark_mode(self) -> bool:
@@ -284,9 +319,8 @@ class ThemeManager(MorphDynamicColorPalette):
             'hex_value must be a valid hex color code.')
         
         color_name = color_name.lower()
-        hex_colormap[color_name] = hex_value
-        colormap[color_name] = get_color_from_hex(hex_value)
-        self._available_seed_colors = get_available_seed_colors()
+        self.hex_colormap[color_name] = hex_value
+        self._colormap_version += 1
 
     def on_seed_color(self, instance: Any, seed_color: str) -> None:
         """Event handler for when the seed color changes.
@@ -359,7 +393,7 @@ class ThemeManager(MorphDynamicColorPalette):
             and dark schemes.
         """
         if self._cached_theme is None or bypass_cache:
-            hex_color = hex_colormap[self.seed_color.lower()]
+            hex_color = self.hex_colormap[self.seed_color.lower()]
             variant = getattr(Variant, self.color_scheme)
             
             theme = theme_from_color(
