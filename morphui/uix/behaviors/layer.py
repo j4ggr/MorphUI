@@ -565,20 +565,18 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
         This method determines the appropriate surface color based on
         the widget's current state (normal, disabled, error, focus,
         active). If a specific color for the state is not set, it falls
-        back to the normal surface color or white if normal is not set.
-        This method is used by the :attr:`surface_color` AliasProperty.
+        back to the normal surface color. This method is used by the
+        :attr:`surface_color` AliasProperty.
 
         Returns
         -------
         List[float]
             The resolved surface color as a list of RGBA values.
         """
-        surface_color = getattr(
-            self, f'{self.current_surface_state}_surface_color', None)
-        if surface_color is None:
-            surface_color = self.normal_surface_color
-            
-        return surface_color
+        return (
+            getattr(self, f'{self.current_surface_state}_surface_color', None)
+            or self.normal_surface_color
+            or self.theme_manager.transparent_color)
     
     def _set_surface_color(self, *args) -> None:
         """Set the surface color based on the current state.
@@ -665,12 +663,10 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
         List[float]
             The resolved border color as a list of RGBA values.
         """
-        border_color = getattr(
-            self, f'{self.current_surface_state}_border_color', None)
-        if border_color is None:
-            border_color = self.normal_border_color
-            
-        return border_color
+        return (
+            getattr(self, f'{self.current_surface_state}_border_color', None)
+            or self.normal_border_color
+            or self.theme_manager.transparent_color)
     
     def _set_border_color(self, *args) -> None:
         """Set the border color based on the current state.
@@ -1437,8 +1433,11 @@ class MorphContentLayerBehavior(BaseLayerBehavior):
         This method determines the appropriate content color based on
         the widget's current content state (normal, disabled, error, 
         focus, hovered, active). If a specific color for the state is 
-        not set, it falls back to the normal_content_color.
-        This method is used by the :attr:`content_color` 
+        not set, it falls back to the color of the text instruction 
+        (if available) or the normal content color. If none of those are
+        set, it falls back to the widget's `color` or `foreground_color` 
+        property, or finally to the theme's `content_surface_color` as 
+        a last resort. This method is used by the :attr:`content_color` 
         AliasProperty.
 
         Returns
@@ -1446,13 +1445,19 @@ class MorphContentLayerBehavior(BaseLayerBehavior):
         List[float] | None
             The resolved content color as a list of RGBA values.
         """
-        state = self.current_content_state
-        content_color = getattr(self, f'{state}_content_color', None)
-        
-        if content_color is None:
-            content_color = self.normal_content_color
 
-        return content_color
+        color = (
+            getattr(self, f'{self.current_content_state}_content_color', None)
+            or self.normal_content_color)
+
+        if color is None:
+            if hasattr(self, 'color'):
+                color = self.color
+            elif hasattr(self, 'foreground_color'):
+                color = self.foreground_color
+            else:
+                color = self.theme_manager.content_surface_color
+        return color
     
     def _set_content_color(self, *args) -> None:
         """Set the content color based on the current state.
@@ -1493,12 +1498,7 @@ class MorphContentLayerBehavior(BaseLayerBehavior):
         self.register_event_type('on_content_updated')
         super().__init__(**kwargs)
         if self.normal_content_color is None:
-            if hasattr(self, 'color'):
-                self.normal_content_color = self.color
-            elif hasattr(self, 'foreground_color'):
-                self.normal_content_color = self.foreground_color
-            else:
-                self.normal_content_color = self.theme_manager.content_surface_color
+            self.normal_content_color = self._get_content_color()
         if hasattr(self, 'disabled_color'):
             self.disabled_color = (
                 self.disabled_content_color or self.disabled_color)
@@ -1576,7 +1576,7 @@ class MorphContentLayerBehavior(BaseLayerBehavior):
         widget's state properties are modified externally. It ensures
         that the content color reflects the current state and theme.
         """
-        self.content_color = self._get_content_color()
+        self._set_content_color()
     
     def on_content_updated(self, *args) -> None:
         """Event dispatched when the content layer is updated.
@@ -1629,17 +1629,17 @@ class MorphOverlayLayerBehavior(BaseLayerBehavior):
     :class:`~kivy.properties.ColorProperty` and defaults to 
     `[0, 0, 0, 0]`."""
 
-    disabled_overlay_color: ColorProperty = ColorProperty([0, 0, 0, 0])
+    disabled_overlay_color: List[float] | None = ColorProperty(None)
     """Color of the overlay when the widget is disabled.
 
     This color is applied when the widget is in a disabled state.
 
     :attr:`disabled_overlay_color` is a
     :class:`~kivy.properties.ColorProperty` and defaults to 
-    `[0, 0, 0, 0]`.
+    `None`.
     """
 
-    resizing_overlay_color: ColorProperty = ColorProperty([0, 0, 0, 0])
+    resizing_overlay_color: List[float] | None = ColorProperty(None)
     """Color of the overlay during resizing.
 
     The color should be provided as a list of RGBA values between 0 and
@@ -1647,19 +1647,22 @@ class MorphOverlayLayerBehavior(BaseLayerBehavior):
 
     :attr:`resizing_overlay_color` is a
     :class:`~kivy.properties.ColorProperty` and defaults to
-    `[0, 0, 0, 0]`.
+    `None`.
     """
 
     def _get_overlay_color(self, *args) -> List[float]:
         """Get the overlay color based on the current overlay state.
 
         This method returns the appropriate overlay color depending on
-        the current overlay state of the widget. It is used internally
-        by the :attr:`overlay_color` property.
+        the current overlay state of the widget. If a specific color for
+        the state is not set, it falls back to the normal overlay
+        color. It is used internally by the :attr:`overlay_color`
+        property.
         """
-        color = getattr(
-            self, f'{self.current_overlay_state}_overlay_color', None)
-        return color or self.theme_manager.transparent_color
+        return (
+            getattr(self, f'{self.current_overlay_state}_overlay_color', None)
+            or self.normal_overlay_color
+            or self.theme_manager.transparent_color)
 
     def _set_overlay_color(self, *args) -> None:
         """Set the overlay color based on the current overlay state.
@@ -1668,8 +1671,7 @@ class MorphOverlayLayerBehavior(BaseLayerBehavior):
         resolved overlay color. It is used internally by the
         :attr:`overlay_color` property.
         """
-        overlay_color = self._get_overlay_color()
-        self._overlay_color_instruction.rgba = overlay_color
+        self._overlay_color_instruction.rgba = self._get_overlay_color()
 
     overlay_color: List[float] = AliasProperty(
         _get_overlay_color,
@@ -1701,17 +1703,17 @@ class MorphOverlayLayerBehavior(BaseLayerBehavior):
     :class:`~kivy.properties.ColorProperty` and defaults to
     `[0, 0, 0, 0]`."""
 
-    disabled_overlay_edge_color: ColorProperty = ColorProperty([0, 0, 0, 0])
+    disabled_overlay_edge_color: List[float] | None = ColorProperty(None)
     """Edge color of the overlay when the widget is disabled.
 
     This color is applied when the widget is in a disabled state.
 
     :attr:`disabled_overlay_edge_color` is a
     :class:`~kivy.properties.ColorProperty` and defaults to
-    `[0, 0, 0, 0]`.
+    `None`.
     """
 
-    resizing_overlay_edge_color: ColorProperty = ColorProperty([0, 0, 0, 0])
+    resizing_overlay_edge_color: List[float] | None = ColorProperty(None)
     """Edge color of the overlay during resizing.
 
     The edge color should be provided as a list of RGBA values between
@@ -1720,29 +1722,33 @@ class MorphOverlayLayerBehavior(BaseLayerBehavior):
 
     :attr:`resizing_overlay_edge_color` is a
     :class:`~kivy.properties.ColorProperty` and defaults to
-    `[0, 0, 0, 0]`.
+    `None`.
     """
 
-    active_overlay_edge_color: ColorProperty = ColorProperty([0, 0, 0, 0])
+    active_overlay_edge_color: List[float] | None = ColorProperty(None)
     """Edge color of the overlay when the widget is active.
 
     This color is applied when the widget is in an active state.
 
     :attr:`active_overlay_edge_color` is a
     :class:`~kivy.properties.ColorProperty` and defaults to
-    `[0, 0, 0, 0]`.
+    `None`.
     """
 
     def _get_overlay_edge_color(self, *args) -> List[float]:
         """Get the overlay edge color based on the current overlay state.
 
         This method returns the appropriate overlay edge color depending
-        on the current overlay state of the widget. It is used internally
-        by the :attr:`overlay_edge_color` property.
+        on the current overlay state of the widget. If a specific color 
+        for the state is not set, it falls back to the normal overlay 
+        edge color. If that is also not set, it falls back to the 
+        theme's transparent color. It is used internally by the 
+        :attr:`overlay_edge_color` property.
         """
-        color = getattr(
-            self, f'{self.current_overlay_state}_overlay_edge_color', None)
-        return color or self.theme_manager.transparent_color
+        return (
+            getattr(self, f'{self.current_overlay_state}_overlay_edge_color', None)
+            or self.normal_overlay_edge_color
+            or self.theme_manager.transparent_color)
 
     def _set_overlay_edge_color(self, *args) -> None:
         """Set the overlay edge color based on the current overlay state.
@@ -1751,12 +1757,12 @@ class MorphOverlayLayerBehavior(BaseLayerBehavior):
         on the resolved overlay edge color. It is used internally by
         the :attr:`overlay_edge_color` property.
         """
-        overlay_edge_color = self._get_overlay_edge_color()
-        for name, color_instruction in self._overlay_edges_color_instructions.items():
+        color = self._get_overlay_edge_color()
+        for name, instruction in self._overlay_edges_color_instructions.items():
             if name in self.visible_edges:
-                color_instruction.rgba = overlay_edge_color
+                instruction.rgba = color
             else:
-                color_instruction.rgba = self.theme_manager.transparent_color
+                instruction.rgba = self.theme_manager.transparent_color
     
     overlay_edge_color: List[float] = AliasProperty(
         _get_overlay_edge_color,
