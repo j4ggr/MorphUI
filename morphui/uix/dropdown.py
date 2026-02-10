@@ -311,6 +311,17 @@ class MorphDropdownMenu(
         text = getattr(self.caller, 'text', '')
         if text in self.dropdown_list.available_texts:
             self.dropdown_list.set_focus_by_text(text)
+        self.dropdown_list.refresh_from_data()
+    
+    def on_pre_dismiss(self, *args) -> None:
+        """Handle actions before the dropdown menu is dismissed.
+
+        This method is called just before the dropdown menu is
+        dismissed. It refreshes the dropdown list to ensure that any 
+        changes made while the dropdown was open are reflected when it 
+        is opened again.
+        """
+        self.dropdown_list.refresh_from_data()
 
     def on_dismiss(self, *args) -> None:
         """Handle actions after the dropdown menu is dismissed.
