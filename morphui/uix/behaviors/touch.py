@@ -277,12 +277,10 @@ class MorphButtonBehavior(EventDispatcher):
             assert hasattr(self, 'finish_ripple_animation'), (
                 'Ripple behavior expected but not found.')
             self.finish_ripple_animation()
-            release_delay = (
-                0.8 * self.ripple_duration_in # 0.8, in order to achieve a small overlap, which leads to a smoother transition for elements that react to the active state.
-                + self.ripple_duration_out)
+            release_delay = self.ripple_duration_in + self.ripple_duration_out
         
         if not self.always_release and not self.collide_point(*touch.pos):
-            self._do_release()
+            self._do_release() # TODO: is this correct? Should the release action be triggered if the touch up occurs outside the widget bounds when always_release is False?
             return None
 
         if self._press_duration < self.min_state_time:
@@ -665,7 +663,7 @@ class MorphRippleBehavior(EventDispatcher):
         animation = Animation(
             _current_ripple_radius=self._ripple_final_radius,
             duration=self.ripple_duration_in_long,
-            t=self.ripple_transition_in)
+            transition=self.ripple_transition_in)
         animation.bind(on_complete=self.fade_ripple_animation)
         animation.start(self)
     
@@ -680,7 +678,7 @@ class MorphRippleBehavior(EventDispatcher):
         animation = Animation(
             _current_ripple_radius=self._ripple_final_radius,
             duration=self.ripple_duration_in,
-            t=self.ripple_transition_in)
+            transition=self.ripple_transition_in)
         animation.bind(on_complete=self.fade_ripple_animation)
         animation.start(self)
 
@@ -696,7 +694,7 @@ class MorphRippleBehavior(EventDispatcher):
         animation = Animation(
             _current_ripple_color=self.determine_ripple_color()[:3] + [0],
             duration=self.ripple_duration_out,
-            t=self.ripple_transition_out)
+            transition=self.ripple_transition_out)
         animation.bind(on_complete=self._on_ripple_complete)
         animation.start(self)
 
