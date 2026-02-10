@@ -9,6 +9,7 @@ from typing import Any
 from kivy.properties import AliasProperty
 from kivy.properties import StringProperty
 from kivy.properties import ObjectProperty
+from kivy.properties import BooleanProperty
 
 from morphui.uix.label import MorphTextLabel
 from morphui.uix.label import MorphLeadingIconLabel
@@ -204,6 +205,18 @@ class MorphLeadingWidgetBehavior:
     the `leading_widget`.
     """
 
+    leading_scale_enabled: bool = BooleanProperty(False)
+    """Whether scale animations are enabled for the leading widget.
+
+    If True, changes to the leading icon will be animated with a scale
+    effect. If False, icon changes will happen instantly without 
+    animation.
+
+    :attr:`leading_scale_enabled` is a 
+    :class:`~kivy.properties.BooleanProperty` that controls whether 
+    scale animations are enabled for the leading icon.
+    """
+
     leading_widget: MorphLeadingIconLabel = ObjectProperty(None)
     """The leading icon widget displayed to the left.
 
@@ -221,6 +234,7 @@ class MorphLeadingWidgetBehavior:
         if self.leading_widget is None:
             return
         
+        self.leading_widget.scale_enabled = self.leading_scale_enabled
         self.leading_widget.icon = self.leading_icon
         self.leading_widget.normal_icon = self.normal_leading_icon
         self.leading_widget.active_icon = self.active_leading_icon
@@ -758,12 +772,24 @@ class MorphTrailingWidgetBehavior:
     the `trailing_widget`.
     """
 
+    trailing_scale_enabled: bool = BooleanProperty(False)
+    """Whether scale animations are enabled for the trailing widget.
+
+    If True, changes to the trailing icon will be animated with a scale
+    effect. If False, icon changes will happen instantly without animation.
+
+    :attr:`trailing_scale_enabled` is a 
+    :class:`~kivy.properties.BooleanProperty` that controls whether 
+    scale animations are enabled for the trailing icon.
+    """
+
     trailing_widget: MorphTrailingIconLabel = ObjectProperty(None)
     """The trailing icon widget displayed to the right.
 
     :attr:`trailing_widget` is by default an instance of
     :class:`~morphui.uix.label.MorphTrailingIconLabel`.
     """
+
     def on_trailing_widget(self, instance: Any, trailing_widget: Any) -> None:
         """Called when the trailing widget is changed.
 
@@ -774,6 +800,7 @@ class MorphTrailingWidgetBehavior:
         if self.trailing_widget is None:
             return
         
+        self.trailing_widget.scale_enabled = self.trailing_scale_enabled
         self.trailing_widget.icon = self.trailing_icon
         self.trailing_widget.normal_icon = self.normal_trailing_icon
         self.trailing_widget.active_icon = self.active_trailing_icon
