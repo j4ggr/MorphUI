@@ -15,7 +15,9 @@ from kivy.properties import ObjectProperty
 from morphui.uix.list import BaseListView
 from morphui.uix.list import MorphListLayout # noqa F401
 from morphui.uix.list import MorphListItemFlat
+from morphui.uix.button import MorphTextIconButton
 from morphui.uix.boxlayout import MorphElevationBoxLayout
+from morphui.uix.behaviors import MorphToggleButtonBehavior
 from morphui.uix.behaviors import MorphMenuMotionBehavior
 from morphui.uix.behaviors import MorphSizeBoundsBehavior
 from morphui.uix.behaviors import MorphRoundSidesBehavior
@@ -190,7 +192,7 @@ class MorphDropdownList(
         
         focused_child = next((c for c in children if c.focus), None)
         if focused_child is None or n_children == 1 or total_items == 1:
-            children[-1].focus = True
+            children[0].focus = True
             return
         
         self.set_neighbor_focus(focused_child, 'up')
@@ -319,6 +321,138 @@ class MorphDropdownMenu(
         """
         self.dropdown_list._clear_focus()
         self.dropdown_list._clear_hover()
+
+
+class MorphDropdownSelect(
+        MorphToggleButtonBehavior,
+        MorphTextIconButton):
+    """This is a simple dropdown select button that can be used to 
+    trigger a dropdown menu.
+
+    This button displays an icon that changes depending on whether
+    the dropdown menu is open or closed. It is designed to work with
+    :class:`~morphui.uix.dropdown.MorphDropdownMenu`.
+
+    Examples
+    --------
+    Basic usage with a simple list of items:
+
+    ```python
+    from morphui.app import MorphApp
+    from morphui.uix.floatlayout import MorphFloatLayout
+    from morphui.uix.dropdown import MorphDropdownSelect
+
+    class MyApp(MorphApp):
+    
+        def build(self) -> MorphFloatLayout:
+            self.theme_manager.theme_mode = 'Dark'
+            self.theme_manager.seed_color = 'morphui_teal'
+            layout = MorphFloatLayout(
+                MorphDropdownSelect(
+                    identity='dropdown_button',
+                    items=[
+                        {'label_text': f'Item {i}'} for i in range(10)],
+                    pos_hint={'center_x': 0.5, 'center_y': 0.9},))
+            self.dropdown_button = layout.identities.dropdown_button
+            return layout
+
+    if __name__ == '__main__':
+        MyApp().run()
+    ```
+    """
+
+    normal_icon: str = StringProperty('menu-down')
+    """Icon for the normal (closed) state of the dropdown filter field.
+
+    This property holds the icon name used when the dropdown is in its
+    normal (closed) state.
+
+    :attr:`normal_icon` is a
+    :class:`~kivy.properties.StringProperty` and defaults to
+    `'menu-down'`.
+    """
+
+    active_icon: str | None  = StringProperty('menu-up')
+    """Icon for the focused (open) state of the dropdown filter field.
+
+    This property holds the icon name used when the dropdown is in its
+    focused (open) state.
+    
+    :attr:`active_icon` is a
+    :class:`~kivy.properties.StringProperty` and defaults to
+    `'menu-up'`.
+    """
+
+    dropdown_menu: MorphDropdownMenu = ObjectProperty(None)
+    """The dropdown menu associated with this filter field.
+
+    This property holds a reference to the :class:`MorphDropdownMenu`
+    instance that is linked to this filter field.
+
+    :attr:`dropdown_menu` is a :class:`~kivy.properties.ObjectProperty` and
+    defaults to `None`.
+    """
+
+    default_config = (
+        MorphTextIconButton.default_config.copy() | dict(
+        auto_size=(False, True),
+        size_hint_x=None,
+        width=dp(200),))
+
+    def __init__(self, kw_dropdown: Dict[str, Any] = {}, **kwargs) -> None:
+        self.register_event_type('on_item_release')
+        kw_dropdown = dict(
+            caller=self,
+            items=kwargs.pop('items', []),
+            item_release_callback=kwargs.pop(
+                'item_release_callback',
+                lambda item, index: self.dispatch('on_item_release', item, index))
+                ) | kw_dropdown
+        self.dropdown_menu = MorphDropdownMenu(**kw_dropdown)
+        super().__init__(**kwargs)
+        self.label_widget.auto_width = False
+        self.dropdown_menu.bind(is_open=self.setter('active'))
+        self.bind(active=self._toggle_menu_on_active)
+
+    def _toggle_menu_on_active(self, *args) -> None:
+        """Toggle the dropdown menu when the button's active state 
+        changes.
+        
+        This method is called whenever the `active` property of the
+        button changes. If the button becomes active, it opens the
+        dropdown menu. If the button becomes inactive, it dismisses the
+        dropdown menu."""
+        if self.active:
+            self.dropdown_menu.open()
+            self.dropdown_menu.dismiss_allowed = True
+        else:
+            self.dropdown_menu.dismiss()
+
+    def on_item_release(
+            self,
+            item: Any,
+            index: int) -> None:
+        """Event handler for item release events.
+
+        This method is called when an item in the dropdown list is
+        released. It can be overridden to provide custom behavior when
+        an item is selected.
+
+        Parameters
+        ----------
+        item : Any
+            The item that was released.
+        index : int
+            The index of the released item in the dropdown list.
+        
+        Notes
+        -----
+        This method is not called if an `item_release_callback` is 
+        provided during initialization.
+        """
+        self.label_text = getattr(
+            item, 'label_text', getattr(item, 'text', str(item)))
+        self.trigger_action()
 
 
 class MorphDropdownFilterField(MorphTextField):

@@ -20,27 +20,22 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).parents[1].resolve()))
 
 from morphui.app import MorphApp
-from morphui.uix.label import MorphLabel
-from morphui.uix.boxlayout import MorphBoxLayout
-from morphui.uix.scrollview import MorphScrollView
+from morphui.uix.floatlayout import MorphFloatLayout
+from morphui.uix.dropdown import MorphDropdownSelect
 
 class MyApp(MorphApp):
 
-    def build(self) -> MorphScrollView:
+    def build(self) -> MorphFloatLayout:
         self.theme_manager.theme_mode = 'Dark'
         self.theme_manager.seed_color = 'morphui_teal'
+        layout = MorphFloatLayout(
+            MorphDropdownSelect(
+                identity='dropdown_button',
+                items=[
+                    {'label_text': f'Item {i}'} for i in range(10)],
+                pos_hint={'center_x': 0.5, 'center_y': 0.9},))
+        self.dropdown_button = layout.identities.dropdown_button
+        return layout
 
-        return MorphScrollView(
-                MorphBoxLayout(
-                    MorphLabel(text='Label 1', theme_style='primary'),
-                    MorphLabel(text='Label 2', theme_style='secondary'),
-                    MorphLabel(text='Label 3', theme_style='tertiary'),
-                    size_hint=(1, None),
-                    height=1000,
-                    theme_style='surface',
-                    orientation='vertical',
-                    identity='scroll_content'),
-                identity='scroll_view',)
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     MyApp().run()
