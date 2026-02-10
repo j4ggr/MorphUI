@@ -14,6 +14,30 @@ __Types of changes__:
 - _Fixed_ for any bug fixes.
 - _Security_ in case of vulnerabilities.
 
+## [0.6.0] - 2026-02-10
+
+### Added
+
+- Added MorphDropdownButton class (a simple dropdown select button that can be used to trigger a dropdown menu).
+- Added MorphSimpleBoxLayout class that is basic kivy BoxLayout with support for auto_sizing.
+- Added MorphTripleLabelBehavior class for managing heading, supporting and tertiary label widgets.
+- Added MorphHeadingLabel, MorphSupportingLabel and MorphTertiaryLabel classes.
+- Added MorphListItem which provides a more complex layout than MorphListItemFlat with heading, supporting and tertiary labels.
+- Added MorphToggleListItem that extends MorphListItem with toggling its active state.
+- Added tests for MorphTripleLabelBehavior class.
+
+### Changed
+
+- Changed MorphDropdownList to set focus to lowest child at `on_arrow_up_press` method if none has focus.
+- Changed Container classes to inherit from the new MorphSimpleBoxLayout.
+- Changed attribute name from `default_child_widgets` to `default_child_classes` in Container.
+- Changed MorphMenuMotionBehavior, moved presetting size from `_adjust_and_reposition` method into `_adjust_to_fit_window` method.
+- Changed touch behavior, removed overlapping transition part for ripple in and out.
+
+### Fixed
+
+- Fixed MorphMenuMotionBehavior where presetting size before adjusting to window did not consider adjusting size to caller when `same_width_as_caller` was set to True.
+
 ## [0.5.0] - 2026-02-05
 
 ### Added
