@@ -408,7 +408,7 @@ class MorphDropdownSelect(
         MorphTextIconButton.default_config.copy() | dict(
         auto_size=(False, True),
         size_hint_x=None,
-        width=dp(200),))
+        width=dp(150),))
 
     def __init__(self, kw_dropdown: Dict[str, Any] = {}, **kwargs) -> None:
         self.register_event_type('on_item_release')

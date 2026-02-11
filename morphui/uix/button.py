@@ -128,14 +128,7 @@ class MorphButton(
     default_config: Dict[str, Any] = dict(
         halign='center',
         valign='center',
-        theme_color_bindings={
-            'normal_surface_color': 'surface_container_high_color',
-            'normal_content_color': 'content_surface_color',
-            'normal_border_color': 'outline_color',
-            'disabled_surface_color': 'transparent_color',
-            'disabled_content_color': 'content_surface_variant_color',
-            'disabled_border_color': 'outline_variant_color',
-            'hovered_content_color': 'inverse_surface_color',},
+        theme_style='container',
         ripple_enabled=True,
         ripple_color=None,
         ripple_layer='interaction',
@@ -173,14 +166,7 @@ class MorphIconButton(
         font_name=MorphIconLabel.default_config['font_name'],
         halign='center',
         valign='center',
-        theme_color_bindings={
-            'normal_surface_color': 'surface_container_high_color',
-            'normal_content_color': 'content_surface_color',
-            'normal_border_color': 'outline_color',
-            'disabled_surface_color': 'transparent_color',
-            'disabled_content_color': 'content_surface_variant_color',
-            'disabled_border_color': 'outline_variant_color',
-            'hovered_content_color': 'inverse_surface_color',},
+        theme_style='container',
         typography_role=MorphIconLabel.default_config['typography_role'],
         typography_size=MorphIconLabel.default_config['typography_size'],
         ripple_enabled=True,
@@ -303,14 +289,7 @@ class MorphIconTextButton(
     """
 
     default_config: Dict[str, Any] = dict(
-        theme_color_bindings={
-            'normal_surface_color': 'surface_container_high_color',
-            'normal_content_color': 'content_surface_color',
-            'normal_border_color': 'outline_color',
-            'disabled_surface_color': 'transparent_color',
-            'disabled_content_color': 'content_surface_variant_color',
-            'disabled_border_color': 'outline_variant_color',
-            'hovered_content_color': 'inverse_surface_color',},
+        theme_style='container',
         orientation='horizontal',
         ripple_enabled=True,
         ripple_color=None,

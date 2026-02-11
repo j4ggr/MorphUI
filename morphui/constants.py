@@ -58,6 +58,15 @@ class _Theme_:
             'surface': {
                 'normal_surface_color': 'surface_color',},
 
+            'container': {
+                'normal_surface_color': 'surface_container_high_color',
+                'normal_content_color': 'content_surface_color',
+                'normal_border_color': 'outline_color',
+                'disabled_surface_color': 'transparent_color',
+                'disabled_content_color': 'outline_variant_color',
+                'disabled_border_color': 'outline_variant_color',
+                'hovered_content_color': 'inverse_surface_color',},
+
             'error': {
                 'error_surface_color': 'error_color',
                 'error_content_color': 'content_error_color', 

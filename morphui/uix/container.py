@@ -8,6 +8,7 @@ from typing import Any
 from typing import Dict
 
 from kivy.metrics import dp
+from kivy.properties import BooleanProperty
 
 from morphui.utils import clean_config
 from morphui.uix.label import MorphTextLabel
@@ -30,6 +31,18 @@ class _MorphBaseContainer(MorphSimpleBoxLayout):
     
     This internal base class consolidates common functionality across
     all container widgets to eliminate code duplication.
+    """
+    
+    disabled: bool = BooleanProperty(False)
+    """Whether the container is disabled.
+    
+    This property can be used to control the disabled state of the
+    container and its child widgets. When set to True, the container and
+    its children will appear disabled and will not respond to user
+    interactions.
+
+    :attr:`disabled` is a :class:`~kivy.properties.BooleanProperty` and 
+    defaults to False.
     """
 
     default_child_classes: Dict[str, Any] = {}
