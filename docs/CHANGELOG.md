@@ -14,6 +14,26 @@ __Types of changes__:
 - _Fixed_ for any bug fixes.
 - _Security_ in case of vulnerabilities.
 
+## [0.7.0] - 2026-02-11
+
+### Added
+
+- Added `hex_colormap` as DictProperty to ThemeManager to store registered seed colors.
+- Added `available_seed_colors` as AliasProperty to ThemeManager that is bound to changes of hex_colormap.
+- Added `colormap` as read-only property to ThemeManager to return a RGBA colormap derived from hex_colormap.
+- Added `leading_scale_enabled` BooleanProperty to MorphLeadingWidgetBehavior as flag, whether scale animations are enabled for the leading widget.
+- Added `on_pre_open` method to chart in which the flag `dismiss_allowed` is set to True.
+- Added refreshing view from data in `on_pre_open` and in `on_pre_dismiss` to MorphDropdownMenu to ensure the view is up to date after a selection.
+
+### Changed
+
+- Changed ThemeManager's `is_dark_mode` to an AliasProperty so we can react to that when theme style changes (e.g. a theme toggle button can get active and normal state based on is_dark_mode status).
+- Changed storing registered colors in ThemeManager to be handled locally instead of storing to kivy global colormap.
+- Changed default theme_color_bindings for buttons.
+- Changed predefined theme styles.
+- Changed default border width to dp(0.5).
+- Changed layer.py color retrieval to use a consistent method: tries to get the color for current state; if a specific color for the state is not set, it falls back to the normal color; if that is also not set it returns the transparent color.
+
 ## [0.6.0] - 2026-02-10
 
 ### Added
