@@ -771,8 +771,8 @@ class MorphRippleBehavior(EventDispatcher):
             canvas = self.canvas.after
         else:
             canvas = self.canvas.before
-        
         canvas.remove_group(NAME.RIPPLE)
+        
         self._ripple_color_instruction.rgba = [0, 0, 0, 0]
 
     def _update_ripple_instruction(self, *args) -> None:

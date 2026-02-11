@@ -107,6 +107,22 @@ class ThemeManager(MorphDynamicColorPalette):
     :attr:`theme_mode` is a :class:`~kivy.properties.OptionProperty`
     and defaults to THEME.LIGHT.
     """
+
+    is_dark_mode: bool = AliasProperty(
+        lambda self: self.theme_mode == THEME.DARK,
+        None,
+        bind=['theme_mode'])
+    """Read-only property that indicates if the current theme mode is 
+    dark.
+
+    This property is automatically updated based on the value of 
+    `theme_mode`. It can be used in widget logic to conditionally adjust
+    styles or behaviors based on whether the app is in light or dark
+    mode.
+
+    :attr:`is_dark_mode` is an :class:`~kivy.properties.AliasProperty` 
+    and is read-only.
+    """
     
     mode_animation: bool = BooleanProperty(True)
     """Enable smooth transitions when switching between theme modes.
@@ -207,11 +223,6 @@ class ThemeManager(MorphDynamicColorPalette):
         Returns a dictionary mapping color names to RGBA values.
         """
         return {k: get_color_from_hex(v) for k, v in self.hex_colormap.items()}
-    
-    @property
-    def is_dark_mode(self) -> bool:
-        """Check if the current theme mode is dark (read-only)."""
-        return self.theme_mode == THEME.DARK
 
     @property
     def inverse_mode(self) -> Literal['Light', 'Dark']:

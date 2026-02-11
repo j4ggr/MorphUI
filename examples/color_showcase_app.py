@@ -7,6 +7,7 @@ from morphui.uix.label import MorphLabel
 from morphui.uix.button import MorphIconButton
 from morphui.uix.boxlayout import MorphBoxLayout
 from morphui.uix.behaviors import MorphScaleBehavior
+from morphui.uix.behaviors import MorphToggleButtonBehavior
 from morphui.theme.palette import create_color_property_mapping
 
 
@@ -18,25 +19,19 @@ COLORS = create_color_property_mapping()
 
 class ThemeToggleButton(
         MorphScaleBehavior,
+        MorphToggleButtonBehavior,
         MorphIconButton):
 
     def __init__(self, **kwargs) -> None:
-        kwargs = dict(identity='theme_toggle_button', **kwargs)
+        kwargs = dict(
+            on_release=self.theme_manager.toggle_theme_mode,
+            normal_icon='brightness-3',
+            active_icon='brightness-5',
+            identity='theme_toggle_button',
+            ) | kwargs
         super().__init__(**kwargs)
-        self.bind(on_release=self.theme_manager.toggle_theme_mode)
-        self.theme_manager.bind(theme_mode=self.update_icon)
-        self.update_icon()
-
-    def update_icon(self, *args) -> None:
-        """Update the icon based on the current theme mode."""
-        def callback(*args) -> None:
-            if self.theme_manager.theme_mode == 'Light':
-                icon = 'brightness-3'  # Icon for dark mode
-            else:
-                icon = 'brightness-5'  # Icon for light mode
-            self.icon = icon
-            self.animate_scale_in()
-        self.animate_scale_out(callback=callback)
+        self.theme_manager.bind(is_dark_mode=self.setter('active'))
+        self.active = self.theme_manager.is_dark_mode
 
 
 class ColorLabel(MorphLabel):
