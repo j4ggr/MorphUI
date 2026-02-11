@@ -312,26 +312,22 @@ class MorphDropdownMenu(
         if text in self.dropdown_list.available_texts:
             self.dropdown_list.set_focus_by_text(text)
         self.dropdown_list.refresh_from_data()
-    
-    def on_pre_dismiss(self, *args) -> None:
-        """Handle actions before the dropdown menu is dismissed.
-
-        This method is called just before the dropdown menu is
-        dismissed. It refreshes the dropdown list to ensure that any 
-        changes made while the dropdown was open are reflected when it 
-        is opened again.
-        """
-        self.dropdown_list.refresh_from_data()
 
     def on_dismiss(self, *args) -> None:
         """Handle actions after the dropdown menu is dismissed.
 
         This method is called just after the dropdown menu is
         dismissed. It clears the focus and hover states from all items
-        in the dropdown list.
+        in the dropdown list. If the caller button has an `active` 
+        property and is not in the middle of a ripple animation, it 
+        sets `active` to `False` to indicate that the dropdown is no 
+        longer active.
         """
         self.dropdown_list._clear_focus()
         self.dropdown_list._clear_hover()
+        if (hasattr(self.caller, 'active') 
+                and not getattr(self.caller, '_ripple_in_progress', False)):
+            self.caller.active = False
 
 
 class MorphDropdownSelect(

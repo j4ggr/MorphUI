@@ -117,6 +117,17 @@ class MorphChartToolbarMenu(
         """
         self.dismiss_allowed = True
 
+    def on_dismiss(self, *args) -> None:
+        """Handle actions after the dropdown menu is dismissed.
+
+        If the caller button has an `active` property and is not in the 
+        middle of a ripple animation, it sets `active` to `False` to 
+        indicate that the dropdown is no longer active.
+        """
+        if (hasattr(self.caller, 'active') 
+                and not getattr(self.caller, '_ripple_in_progress', False)):
+            self.caller.active = False
+
 
 class MorphChartToolbar(MorphChartNavigationButton):
     """Toolbar button for MorphChartCard that opens a menu.
