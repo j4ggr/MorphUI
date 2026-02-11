@@ -1373,7 +1373,63 @@ class MorphContentLayerBehavior(BaseLayerBehavior):
     :class:`~kivy.properties.ColorProperty` and defaults to None.
     """
 
-    disabled_content_color: List[float] | None = ColorProperty(None)
+    _disabled_content_color: List[float] | None = ColorProperty(None, allownone=True)
+    """Internal property to store the disabled content color. 
+
+    This property is used to manage the disabled content color
+    separately from the normal content color. It is not intended to be
+    set directly by users, but is used internally to resolve the
+    disabled content color based on the widget's state and other related
+    properties.
+    """
+
+    def _get_disabled_content_color(self, *args) -> List[float] | None:
+        """Get the disabled content color.
+
+        This method determines the appropriate content color to use when
+        the widget is in a disabled state. If `disabled_content_color` is
+        set, it returns that color. Otherwise, it falls back to the normal
+        content color or other relevant properties as defined in the
+        :attr:`content_color` resolution logic.
+
+        Returns
+        -------
+        List[float] | None
+            The resolved disabled content color as a list of RGBA values,
+            or None if no specific color is set.
+        """
+        return (
+            self._disabled_content_color
+            or getattr(self, 'disabled_color', None)
+            or getattr(self, 'disabled_foreground_color', None))
+
+    def _set_disabled_content_color(self, color: List[float] | None) -> None:
+        """Set the disabled content color.
+
+        This method updates the internal `_disabled_content_color` 
+        property as well as any related properties that may be used for
+        disabled content color resolution. This ensures that the 
+        disabled content color is properly managed and can be resolved 
+        correctly when the widget is in a disabled state.
+
+        Parameters
+        ----------
+        color : List[float] | None
+            The RGBA color values to set as the disabled content color, or
+            None to clear it.
+        """
+        self._disabled_content_color = color
+        if color is None:
+            return
+        if hasattr(self, 'disabled_color'):
+            self.disabled_color = color
+        if hasattr(self, 'disabled_foreground_color'):
+            self.disabled_foreground_color = color
+
+    disabled_content_color: List[float] | None = AliasProperty(
+        _get_disabled_content_color,
+        _set_disabled_content_color,
+        bind=('_disabled_content_color',))
     """Content color to use when the widget is disabled.
 
     This property allows you to specify a different content color for
@@ -1455,6 +1511,8 @@ class MorphContentLayerBehavior(BaseLayerBehavior):
                 color = self.color
             elif hasattr(self, 'foreground_color'):
                 color = self.foreground_color
+            elif getattr(self, 'disabled', False):
+                color = self.theme_manager.outline_variant_color
             else:
                 color = self.theme_manager.content_surface_color
         return color
@@ -1499,12 +1557,6 @@ class MorphContentLayerBehavior(BaseLayerBehavior):
         super().__init__(**kwargs)
         if self.normal_content_color is None:
             self.normal_content_color = self._get_content_color()
-        if hasattr(self, 'disabled_color'):
-            self.disabled_color = (
-                self.disabled_content_color or self.disabled_color)
-        if hasattr(self, 'disabled_foreground_color'):
-            self.disabled_foreground_color = (
-                self.disabled_content_color or self.disabled_foreground_color)
             
         self.bind(
             content_color=self._update_content_layer,)
@@ -1515,25 +1567,6 @@ class MorphContentLayerBehavior(BaseLayerBehavior):
                 self.setter('content_color'),)
 
         self.refresh_content()
-
-    def get_resolved_content_color(self) -> List[float] | None:
-        """Determine the appropriate content color based on the current
-        state.
-
-        This method checks the widget's current content state and
-        returns the corresponding content color. If a specific color
-        for the state is not set, it falls back to the default
-        `normal_content_color`.
-
-        Override this method in subclasses to customize color
-        resolution logic.
-
-        Returns
-        -------
-        List[float] | None
-            The resolved content color as a list of RGBA values.
-        """
-        return self._get_content_color()
     
     def _update_content_layer(self, *args) -> None:
         """Update the content layer based on the current properties.
@@ -1542,11 +1575,7 @@ class MorphContentLayerBehavior(BaseLayerBehavior):
         such as `content_color` or the current state. It applies the
         appropriate content color based on the current state.
         """
-        color = self.get_resolved_content_color()
-        if color is not None:
-            self.apply_content(color)
-
-        self.dispatch('on_content_updated')
+        self._set_content_color()
     
     def apply_content(self, color: List[float]) -> None:
         """Apply the specified content color to the widget.
@@ -1576,7 +1605,8 @@ class MorphContentLayerBehavior(BaseLayerBehavior):
         widget's state properties are modified externally. It ensures
         that the content color reflects the current state and theme.
         """
-        self._set_content_color()
+        self._set_disabled_content_color(self._get_disabled_content_color())
+        self._update_content_layer()
     
     def on_content_updated(self, *args) -> None:
         """Event dispatched when the content layer is updated.

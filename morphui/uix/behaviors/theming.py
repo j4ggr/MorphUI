@@ -888,31 +888,33 @@ class MorphDelegatedThemeBehavior(EventDispatcher):
         """
         states = [s for s in get_args(State) if hasattr(self, s)]
         for child in children:
-            self._delegate_content_color_to_child(child)
+            if self.delegate_content_color:
+                child._get_content_color = self._get_content_color
+                child._get_disabled_content_color = self._get_disabled_content_color
+                child._set_disabled_content_color(
+                    self._get_disabled_content_color())
+                child.refresh_content()
+
             for state in states:
                 if hasattr(child, state):
                     self.fbind(state, child.setter(state))
+    
+    def _update_content_layer(self, *args) -> None:
+        """Update content color for delegated child widgets.
 
-    def _delegate_content_color_to_child(self, widget: Any) -> None:
-        """Delegate content color theming to a specific child widget.
-
-        This method sets up the necessary bindings on the specified
-        child widget to allow it to receive content color updates from
-        the container. If :attr:`delegate_content_color` is False, or if
-        the widget is not a child of the container, no action is taken.
-
-        Parameters
-        ----------
-        widget : Any
-            The child widget from which to remove content color
-            bindings.
+        This method is called when the content color needs to be updated
+        for child widgets that have delegation enabled. It ensures that
+        all delegated children receive the correct content color based 
+        on the container's theme settings.
         """
-        delegated_children = self.delegated_children or self.children
-        if (not self.delegate_content_color
-                or widget is None
-                or widget not in delegated_children):
+        try:
+            super()._update_content_layer(*args)
+        except AttributeError:
+            pass
+
+        if not self.delegate_content_color:
             return
         
-        self.bind(
-            content_color=widget._update_content_layer,)
-        widget._get_content_color = self._get_content_color
+        for child in self.delegated_children:
+            if hasattr(child, '_update_content_layer'):
+                child._update_content_layer(*args)
