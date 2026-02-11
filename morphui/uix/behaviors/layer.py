@@ -700,14 +700,14 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
     and defaults to the resolved border color based on the current
     state."""
 
-    border_width: float = BoundedNumericProperty(dp(1), min=0.01, errorvalue=1)
+    border_width: float = BoundedNumericProperty(dp(0.5), min=0.01, errorvalue=1)
     """Width of the border.
 
     The width is specified in pixels.
     
     :attr:`border_width` is a 
     :class:`~kivy.properties.BoundedNumericProperty` and defaults to 
-    `1` (1 pixel wide).
+    `0.5` (0.5 pixels wide).
     """
 
     border_open_x: float | None = NumericProperty(None, allownone=True)

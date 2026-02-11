@@ -75,11 +75,11 @@ class MorphSimpleIconButton(
     """
 
     default_config: Dict[str, Any] = dict(
-        theme_color_bindings=dict(
-            normal_surface_color='transparent_color',
-            normal_content_color='content_surface_color',
-            disabled_content_color='content_surface_variant_color',
-            hovered_content_color='content_surface_variant_color'),
+        theme_color_bindings={
+            'normal_surface_color': 'transparent_color',
+            'normal_content_color': 'content_surface_color',
+            'hovered_content_color': 'inverse_surface_color',
+            'disabled_content_color': 'content_surface_variant_color',},
         typography_role=MorphIconLabel.default_config['typography_role'],
         typography_size=MorphIconLabel.default_config['typography_size'],
         font_name=MorphIconLabel.default_config['font_name'],
@@ -129,11 +129,13 @@ class MorphButton(
         halign='center',
         valign='center',
         theme_color_bindings={
-            'normal_surface_color': 'surface_container_color',
-            'normal_border_color': 'outline_color',
-            'disabled_border_color': 'outline_variant_color',
+            'normal_surface_color': 'surface_container_high_color',
             'normal_content_color': 'content_surface_color',
-            'hovered_content_color': 'content_surface_variant_color',},
+            'normal_border_color': 'outline_color',
+            'disabled_surface_color': 'transparent_color',
+            'disabled_content_color': 'content_surface_variant_color',
+            'disabled_border_color': 'outline_variant_color',
+            'hovered_content_color': 'inverse_surface_color',},
         ripple_enabled=True,
         ripple_color=None,
         ripple_layer='interaction',
@@ -172,10 +174,13 @@ class MorphIconButton(
         halign='center',
         valign='center',
         theme_color_bindings={
-            'normal_surface_color': 'surface_container_color',
+            'normal_surface_color': 'surface_container_high_color',
             'normal_content_color': 'content_surface_color',
-            'hovered_content_color': 'content_surface_variant_color',
-            'normal_border_color': 'outline_color',},
+            'normal_border_color': 'outline_color',
+            'disabled_surface_color': 'transparent_color',
+            'disabled_content_color': 'content_surface_variant_color',
+            'disabled_border_color': 'outline_variant_color',
+            'hovered_content_color': 'inverse_surface_color',},
         typography_role=MorphIconLabel.default_config['typography_role'],
         typography_size=MorphIconLabel.default_config['typography_size'],
         ripple_enabled=True,
@@ -299,10 +304,13 @@ class MorphIconTextButton(
 
     default_config: Dict[str, Any] = dict(
         theme_color_bindings={
-            'normal_surface_color': 'surface_container_color',
+            'normal_surface_color': 'surface_container_high_color',
             'normal_content_color': 'content_surface_color',
-            'hovered_content_color': 'content_surface_variant_color',
-            'disabled_content_color': 'content_surface_variant_color',},
+            'normal_border_color': 'outline_color',
+            'disabled_surface_color': 'transparent_color',
+            'disabled_content_color': 'content_surface_variant_color',
+            'disabled_border_color': 'outline_variant_color',
+            'hovered_content_color': 'inverse_surface_color',},
         orientation='horizontal',
         ripple_enabled=True,
         ripple_color=None,
@@ -455,9 +463,9 @@ class MorphTextFieldTrailingIconButton(MorphIconButton):
 
     default_config: Dict[str, Any] = dict(
         theme_color_bindings=dict(
-            normal_content_color='content_surface_color',
             normal_surface_color='transparent_color',
-            hovered_content_color='content_surface_variant_color',),
+            normal_content_color='content_surface_color',
+            hovered_content_color='inverse_surface_color',),
         font_name=MorphIconButton.default_config['font_name'],
         typography_role=MorphIconButton.default_config['typography_role'],
         typography_size=MorphIconButton.default_config['typography_size'],

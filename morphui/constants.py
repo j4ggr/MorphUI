@@ -32,31 +32,36 @@ class _Theme_:
         Material Design patterns."""
         return {
             'primary': {
-                'normal_surface_color': 'primary_color',
-                'normal_content_color': 'content_primary_color',
-                'disabled_content_color': 'outline_color',
-                'normal_border_color': 'primary_color',},
+                'normal_surface_color': 'primary_container_color',
+                'normal_content_color': 'content_primary_container_color',
+                'normal_border_color': 'primary_color',
+                'disabled_surface_color': 'transparent_color',
+                'disabled_content_color': 'content_surface_variant_color',
+                'disabled_border_color': 'outline_variant_color',},
 
             'secondary': {
-                'normal_surface_color': 'secondary_color', 
-                'normal_content_color': 'content_secondary_color',
-                'disabled_content_color': 'outline_color',
-                'normal_border_color': 'secondary_color',},
+                'normal_surface_color': 'secondary_container_color',
+                'normal_content_color': 'content_secondary_container_color',
+                'normal_border_color': 'secondary_color',
+                'disabled_surface_color': 'transparent_color',
+                'disabled_content_color': 'content_surface_variant_color',
+                'disabled_border_color': 'outline_variant_color',},
 
             'tertiary': {
-                'normal_surface_color': 'tertiary_color',
-                'normal_content_color': 'content_tertiary_color',
-                'disabled_content_color': 'outline_color',
-                'normal_border_color': 'tertiary_color',},
+                'normal_surface_color': 'tertiary_container_color',
+                'normal_content_color': 'content_tertiary_container_color',
+                'normal_border_color': 'tertiary_color',
+                'disabled_surface_color': 'transparent_color',
+                'disabled_content_color': 'content_surface_variant_color',
+                'disabled_border_color': 'outline_variant_color',},
 
             'surface': {
-                'normal_surface_color': 'surface_color',
-                'normal_border_color': 'outline_color',},
+                'normal_surface_color': 'surface_color',},
 
             'error': {
-                'normal_surface_color': 'error_color',
-                'normal_content_color': 'content_error_color', 
-                'normal_border_color': 'error_color',},
+                'error_surface_color': 'error_color',
+                'error_content_color': 'content_error_color', 
+                'error_border_color': 'error_color',},
 
             'outline': {
                 'normal_surface_color': 'surface_color',
