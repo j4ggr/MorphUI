@@ -405,7 +405,7 @@ class TestMorphSurfaceLayerBehavior:
         widget = self.TestWidget()
         assert widget.surface_color == [0, 0, 0, 0]
         assert widget.radius == [0, 0, 0, 0]
-        assert widget.border_width == 1
+        assert widget.border_width == 0.5
         assert widget.border_color == [0, 0, 0, 0]
 
     def test_surface_color_property(self):
@@ -2814,13 +2814,13 @@ class TestMorphOverlayLayerBehavior:
         
         # Test default overlay colors
         assert widget.normal_overlay_color == [0, 0, 0, 0]
-        assert widget.disabled_overlay_color == [0, 0, 0, 0]
-        assert widget.resizing_overlay_color == [0, 0, 0, 0]
+        assert widget.disabled_overlay_color is None
+        assert widget.resizing_overlay_color is None
         
         # Test default edge colors
         assert widget.normal_overlay_edge_color == [0, 0, 0, 0]
-        assert widget.disabled_overlay_edge_color == [0, 0, 0, 0]
-        assert widget.resizing_overlay_edge_color == [0, 0, 0, 0]
+        assert widget.disabled_overlay_edge_color is None
+        assert widget.resizing_overlay_edge_color is None
         
         # Test default edge properties
         assert widget.overlay_edge_width == 1.0
