@@ -85,12 +85,7 @@ class MorphDropdownList(
         text : str
             The label text of the item to focus.
         """
-        children = self.layout_manager.children
-        n_children = len(children)
-        if n_children == 0:
-            return
-        
-        for child in children:
+        for child in self.layout_manager.children:
             if child.label_text == text:
                 self._clear_focus()
                 child.focus = True
