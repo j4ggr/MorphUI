@@ -1512,9 +1512,7 @@ class MorphContentLayerBehavior(BaseLayerBehavior):
             elif hasattr(self, 'foreground_color'):
                 color = self.foreground_color
             elif getattr(self, 'disabled', False):
-                color = self.theme_manager.outline_variant_color
-            else:
-                color = self.theme_manager.content_surface_color
+                color = self._get_disabled_content_color()
         return color
     
     def _set_content_color(self, *args) -> None:
@@ -1575,6 +1573,7 @@ class MorphContentLayerBehavior(BaseLayerBehavior):
         such as `content_color` or the current state. It applies the
         appropriate content color based on the current state.
         """
+        self._set_disabled_content_color(self._get_disabled_content_color())
         self._set_content_color()
     
     def apply_content(self, color: List[float]) -> None:
@@ -1605,7 +1604,6 @@ class MorphContentLayerBehavior(BaseLayerBehavior):
         widget's state properties are modified externally. It ensures
         that the content color reflects the current state and theme.
         """
-        self._set_disabled_content_color(self._get_disabled_content_color())
         self._update_content_layer()
     
     def on_content_updated(self, *args) -> None:

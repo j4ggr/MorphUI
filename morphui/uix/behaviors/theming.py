@@ -3,7 +3,6 @@ import warnings
 from typing import Any
 from typing import Dict
 from typing import Literal
-from typing import get_args
 
 from kivy.event import EventDispatcher
 from kivy.properties import DictProperty
@@ -15,8 +14,6 @@ from kivy.properties import ListProperty
 from .appreference import MorphAppReferenceBehavior
 
 from morphui.constants import THEME
-
-from morphui._typing import State
 
 
 __all__ = [
@@ -258,8 +255,8 @@ class MorphColorThemeBehavior(BaseThemeBehavior):
         property, the values from :attr:`theme_style` have priority.
         """
         merged = {
-            **self.theme_color_bindings,
-            **self._theme_style_color_bindings}
+            **self._theme_style_color_bindings,
+            **self.theme_color_bindings,}
         return merged
 
     def apply_theme_color(self, property_name: str, theme_color: str) -> bool:
@@ -313,7 +310,7 @@ class MorphColorThemeBehavior(BaseThemeBehavior):
         """
         color_value = getattr(self.theme_manager, theme_color, None)
         if color_value is not None and hasattr(self, property_name):
-            setattr(self, property_name, color_value)
+            self.setter(property_name)(self, color_value)
             return True
         
         return False
@@ -886,35 +883,31 @@ class MorphDelegatedThemeBehavior(EventDispatcher):
             The new list of child widgets to which theme delegation
             should be applied.
         """
-        states = [s for s in get_args(State) if hasattr(self, s)]
-        for child in children:
-            if self.delegate_content_color:
-                child._get_content_color = self._get_content_color
-                child._get_disabled_content_color = self._get_disabled_content_color
-                child._set_disabled_content_color(
-                    self._get_disabled_content_color())
-                child.refresh_content()
-
-            for state in states:
-                if hasattr(child, state):
-                    self.fbind(state, child.setter(state))
-    
-    def _update_content_layer(self, *args) -> None:
-        """Update content color for delegated child widgets.
-
-        This method is called when the content color needs to be updated
-        for child widgets that have delegation enabled. It ensures that
-        all delegated children receive the correct content color based 
-        on the container's theme settings.
-        """
-        try:
-            super()._update_content_layer(*args)
-        except AttributeError:
-            pass
-
         if not self.delegate_content_color:
             return
         
+        for child in children:
+            child._get_content_color = self._get_content_color
+            child._get_disabled_content_color = self._get_disabled_content_color
+
+    def _update_current_state(
+            self, instance: Any, value: bool, state: str) -> None:
+        """Handle changes to state properties.
+
+        This method is called whenever one of the state properties
+        changes. It propagates the state change to all delegated child
+        widgets, ensuring they update their appearance accordingly.
+
+        Parameters
+        ----------
+        instance : Any
+            The widget instance that triggered the state change.
+        value : bool
+            The new value of the state property.
+        state : str
+            The name of the state property that changed.
+        """
+        super()._update_current_state(instance, value, state)
         for child in self.delegated_children:
-            if hasattr(child, '_update_content_layer'):
-                child._update_content_layer(*args)
+            if hasattr(child, state):
+                child.setter(state)(self, getattr(self, state, False))

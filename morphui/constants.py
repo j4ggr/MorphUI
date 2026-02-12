@@ -30,30 +30,28 @@ class _Theme_:
     def STYLES(self) -> Dict[str, Dict[str, str]]:
         """Predefined theme styles mapping to color roles for common 
         Material Design patterns."""
+        disabled = {
+            'disabled_surface_color': 'transparent_color',
+            'disabled_content_color': 'outline_color',
+            'disabled_border_color': 'outline_variant_color',}
         return {
             'primary': {
                 'normal_surface_color': 'primary_container_color',
                 'normal_content_color': 'content_primary_container_color',
                 'normal_border_color': 'primary_color',
-                'disabled_surface_color': 'transparent_color',
-                'disabled_content_color': 'content_surface_variant_color',
-                'disabled_border_color': 'outline_variant_color',},
+                **disabled,},
 
             'secondary': {
                 'normal_surface_color': 'secondary_container_color',
                 'normal_content_color': 'content_secondary_container_color',
                 'normal_border_color': 'secondary_color',
-                'disabled_surface_color': 'transparent_color',
-                'disabled_content_color': 'content_surface_variant_color',
-                'disabled_border_color': 'outline_variant_color',},
+                **disabled,},
 
             'tertiary': {
                 'normal_surface_color': 'tertiary_container_color',
                 'normal_content_color': 'content_tertiary_container_color',
                 'normal_border_color': 'tertiary_color',
-                'disabled_surface_color': 'transparent_color',
-                'disabled_content_color': 'content_surface_variant_color',
-                'disabled_border_color': 'outline_variant_color',},
+                **disabled,},
 
             'surface': {
                 'normal_surface_color': 'surface_color',},
@@ -62,10 +60,10 @@ class _Theme_:
                 'normal_surface_color': 'surface_container_high_color',
                 'normal_content_color': 'content_surface_color',
                 'normal_border_color': 'outline_color',
-                'disabled_surface_color': 'transparent_color',
-                'disabled_content_color': 'outline_variant_color',
-                'disabled_border_color': 'outline_variant_color',
-                'hovered_content_color': 'inverse_surface_color',},
+                'hovered_content_color': 'inverse_surface_color',
+                **disabled,},
+
+            'disabled': disabled,
 
             'error': {
                 'error_surface_color': 'error_color',
