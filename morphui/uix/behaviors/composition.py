@@ -235,9 +235,9 @@ class MorphLeadingWidgetBehavior:
             return
         
         self.leading_widget.scale_enabled = self.leading_scale_enabled
-        self.leading_widget.icon = self.leading_icon
         self.leading_widget.normal_icon = self.normal_leading_icon
         self.leading_widget.active_icon = self.active_leading_icon
+        self.leading_widget._update_icon()
     
     def refresh_leading_widget(self) -> None:
         """Refresh the leading widget to reflect current properties.
@@ -804,6 +804,7 @@ class MorphTrailingWidgetBehavior:
         self.trailing_widget.icon = self.trailing_icon
         self.trailing_widget.normal_icon = self.normal_trailing_icon
         self.trailing_widget.active_icon = self.active_trailing_icon
+        self.trailing_widget._update_icon()
 
     def refresh_trailing_widget(self) -> None:
         """Refresh the trailing widget to reflect current properties.

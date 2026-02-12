@@ -147,6 +147,8 @@ class MorphListItemFlat(
         self.rv = rv
         self.rv_index = index
         self.refresh_auto_sizing()
+        self.refresh_state()
+        self.refresh_interaction()
         self.refresh_content()
         self.refresh_overlay()
         self.refresh_leading_widget()
