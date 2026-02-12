@@ -8,6 +8,7 @@ sys.path.append(str(Path(__file__).parent.resolve()))
 from kivy.clock import Clock
 from kivy.uix.widget import Widget
 from kivy.properties import BooleanProperty
+from kivy.properties import ColorProperty
 from kivy.uix.behaviors import FocusBehavior
 from kivy.input.motionevent import MotionEvent
 
@@ -1669,12 +1670,19 @@ class TestMorphThemeBehavior:
     class TestWidget(MorphThemeBehavior, Widget):
         """Test widget that combines Widget with MorphThemeBehavior."""
         
+        # Define color properties that can be themed
+        normal_surface_color = ColorProperty([1, 1, 1, 1])
+        normal_content_color = ColorProperty([0, 0, 0, 1])
+        normal_border_color = ColorProperty([0, 0, 0, 0])
+        disabled_surface_color = ColorProperty([0.5, 0.5, 0.5, 1])
+        disabled_content_color = ColorProperty([0.3, 0.3, 0.3, 1])
+        disabled_border_color = ColorProperty([0.3, 0.3, 0.3, 1])
+        hovered_content_color = ColorProperty([0, 0, 0, 1])
+        surface_color = ColorProperty([1, 1, 1, 1])
+        content_color = ColorProperty([0, 0, 0, 1])
+        border_color = ColorProperty([0, 0, 0, 0])
+        
         def __init__(self, **kwargs):
-            # Mock properties to avoid Kivy property issues
-            self.surface_color = [1, 1, 1, 1]
-            self.color = [0, 0, 0, 1]
-            self.border_color = [0, 0, 0, 0]
-            self.content_color = [0, 0, 0, 1]
             Widget.__init__(self, **kwargs)
             MorphThemeBehavior.__init__(self, **kwargs)
 
@@ -1793,7 +1801,9 @@ class TestMorphThemeBehavior:
         # Configure the mock to return our mock theme manager
         mock_app_theme_manager.configure_mock(**{
             'primary_color': [1.0, 0.0, 0.0, 1.0],
+            'primary_container_color': [1.0, 0.8, 0.8, 1.0],
             'content_primary_color': [1.0, 1.0, 1.0, 1.0],
+            'content_primary_container_color': [0.5, 0.0, 0.0, 1.0],
             'secondary_color': [0.0, 1.0, 0.0, 1.0],
             'content_secondary_color': [0.8, 0.8, 0.8, 1.0],
             'normal_surface_color': [0.9, 0.9, 0.9, 1.0],
@@ -1801,7 +1811,9 @@ class TestMorphThemeBehavior:
             'error_color': [1.0, 0.0, 0.0, 1.0],
             'content_error_color': [1.0, 1.0, 1.0, 1.0],
             'outline_color': [0.5, 0.5, 0.5, 1.0],
+            'outline_variant_color': [0.6, 0.6, 0.6, 1.0],
             'content_on_surface_color': [0.1, 0.1, 0.1, 1.0],
+            'transparent_color': [0.0, 0.0, 0.0, 0.0],
         })
         
         with patch.object(self.TestWidget, 'register_event_type'), \
@@ -1949,12 +1961,19 @@ class TestMorphColorThemeBehavior:
     class TestWidget(MorphColorThemeBehavior, Widget):
         """Test widget that combines Widget with MorphColorThemeBehavior."""
         
+        # Define color properties that can be themed
+        normal_surface_color = ColorProperty([1, 1, 1, 1])
+        normal_content_color = ColorProperty([0, 0, 0, 1])
+        normal_border_color = ColorProperty([0, 0, 0, 0])
+        disabled_surface_color = ColorProperty([0.5, 0.5, 0.5, 1])
+        disabled_content_color = ColorProperty([0.3, 0.3, 0.3, 1])
+        disabled_border_color = ColorProperty([0.3, 0.3, 0.3, 1])
+        hovered_content_color = ColorProperty([0, 0, 0, 1])
+        surface_color = ColorProperty([1, 1, 1, 1])
+        content_color = ColorProperty([0, 0, 0, 1])
+        border_color = ColorProperty([0, 0, 0, 0])
+        
         def __init__(self, **kwargs):
-            # Mock properties to avoid Kivy property issues
-            self.surface_color = [1, 1, 1, 1]
-            self.color = [0, 0, 0, 1]
-            self.border_color = [0, 0, 0, 0]
-            self.content_color = [0, 0, 0, 1]
             Widget.__init__(self, **kwargs)
             MorphColorThemeBehavior.__init__(self, **kwargs)
 
@@ -2018,7 +2037,9 @@ class TestMorphColorThemeBehavior:
         # Configure the mock to return our mock theme manager
         mock_app_theme_manager.configure_mock(**{
             'primary_color': [1.0, 0.0, 0.0, 1.0],
+            'primary_container_color': [1.0, 0.8, 0.8, 1.0],
             'content_primary_color': [1.0, 1.0, 1.0, 1.0],
+            'content_primary_container_color': [0.5, 0.0, 0.0, 1.0],
             'secondary_color': [0.0, 1.0, 0.0, 1.0],
             'content_secondary_color': [0.8, 0.8, 0.8, 1.0],
             'normal_surface_color': [0.9, 0.9, 0.9, 1.0],
@@ -2026,7 +2047,9 @@ class TestMorphColorThemeBehavior:
             'error_color': [1.0, 0.0, 0.0, 1.0],
             'content_error_color': [1.0, 1.0, 1.0, 1.0],
             'outline_color': [0.5, 0.5, 0.5, 1.0],
+            'outline_variant_color': [0.6, 0.6, 0.6, 1.0],
             'content_on_surface_color': [0.1, 0.1, 0.1, 1.0],
+            'transparent_color': [0.0, 0.0, 0.0, 0.0],
         })
         
         with patch.object(self.TestWidget, 'register_event_type'), \

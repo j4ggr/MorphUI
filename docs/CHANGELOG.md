@@ -14,6 +14,32 @@ __Types of changes__:
 - _Fixed_ for any bug fixes.
 - _Security_ in case of vulnerabilities.
 
+## [0.8.0] - 2026-02-12
+
+### Added
+
+- Added container theme style to `THEME.STYLES` constant.
+- Added `_clear_active` and `set_active_by_text` methods to BaseDatePickerListView for updating each item when showing the view.
+- Added getter and setter methods for `disabled_content_color` in MorphContentLayerBehavior.
+- Added default `pos_hint={'center_y': 0.5}` for labels and buttons used within containers.
+
+### Changed
+
+- Changed buttons to use 'container' as `theme_style`.
+- Changed MorphContentLayerBehavior's `disabled_content_color` to an AliasProperty to handle kivy native disabled colors.
+- Changed MorphListItemFlat to also call refreshing state and interaction in `refresh_view_attrs` method.
+- Changed MorphTextField where setting y position for leading and trailing widget is obsolete since widgets are centered by pos_hint.
+- Changed MorphDropdownList to remove obsolete checking for children length within `set_focus_by_text` method.
+
+### Removed
+
+- Removed obsolete `get_resolved_content_color` method from MorphContentLayerBehavior since `_get_content_color` method exists for the `content_color` AliasProperty.
+
+### Fixed
+
+- Fixed MorphContentLayerBehavior where resetting `disabled_content_color` was done in `refresh_content` method with outdated color. Now resetting is done in `_update_content_layer` method.
+- Fixed MorphDropdownMenu where dropdown reopened when clicking a caller. Now it checks if a ripple is in progress and only sets caller active state to False if no ripple is in progress.
+
 ## [0.7.0] - 2026-02-11
 
 ### Added
