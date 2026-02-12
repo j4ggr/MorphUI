@@ -32,11 +32,11 @@ from morphui.uix.button import MorphSimpleIconButton
 from morphui.uix.button import MorphDatePickerDayButton
 from morphui.uix.button import MorphTextIconToggleButton
 from morphui.uix.boxlayout import MorphBoxLayout
+from morphui.uix.boxlayout import MorphElevationBoxLayout
 from morphui.uix.textfield import MorphTextField
 from morphui.uix.textfield import MorphTextFieldFilled
 from morphui.uix.textfield import MorphTextFieldRounded
 from morphui.uix.textfield import MorphTextFieldOutlined
-from morphui.uix.behaviors import MorphElevationBehavior
 from morphui.uix.behaviors import MorphRoundSidesBehavior
 from morphui.uix.behaviors import MorphMenuMotionBehavior
 from morphui.uix.behaviors import MorphSizeBoundsBehavior
@@ -515,9 +515,8 @@ class MorphDatePickerCalendarView(
 
 class MorphDockedDatePickerMenu(
         MorphSizeBoundsBehavior,
-        MorphElevationBehavior,
         MorphMenuMotionBehavior,
-        MorphBoxLayout):
+        MorphElevationBoxLayout,):
     
     calendar: Calendar = Calendar(firstweekday=0)
     """The calendar instance used for date calculations.
@@ -555,12 +554,13 @@ class MorphDockedDatePickerMenu(
     
     default_config: Dict[str, Any] = dict(
         theme_color_bindings=dict(
-            normal_surface_color='surface_container_high_color',),
+            normal_surface_color='surface_container_color',),
         orientation='vertical',
         size_hint=(None, None),
         padding=dp(4),
         spacing=dp(8),
-        radius=[dp(8)],)
+        radius=[dp(8)],
+        elevation=2,)
     
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
