@@ -175,26 +175,6 @@ class MorphToggleListItemFlat(
     grouped with other toggle items.
     """
 
-    def refresh_view_attrs(
-            self,
-            rv: RecycleView,
-            index: int,
-            data: Dict[str, Any]
-            ) -> None:
-        """Refreshes the view attributes of this top list item.
-
-        Parameters
-        ----------
-        rv : RecycleView
-            The RecycleView instance managing this list item.
-        index : int
-            The index of this menu item within the RecycleView data.
-        data : Dict[str, Any]
-            The data list containing the attributes for all menu items.
-        """
-        super().refresh_view_attrs(rv, index, data)
-        self.leading_widget.active = self.active
-
 
 class MorphListItem(
         RecycleDataViewBehavior,

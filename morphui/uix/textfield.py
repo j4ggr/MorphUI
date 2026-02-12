@@ -1031,14 +1031,12 @@ class MorphTextField(
         
         if NAME.LEADING_WIDGET in self.identities:
             self.leading_widget.x = self.x + self._horizontal_padding
-            self.leading_widget.center_y = self.y + self.height / 2
             x_input = self.leading_widget.x + self.leading_widget.width
             w_input -= (x_input - self.x)
 
         if NAME.TRAILING_WIDGET in self.identities:
             self.trailing_widget.right = (
                 self.x + self.width - self._horizontal_padding)
-            self.trailing_widget.center_y = self.y + self.height / 2
             w_input -= (self.x + self.width - self.trailing_widget.x)
 
         if NAME.SUPPORTING_WIDGET in self.identities:
@@ -1236,9 +1234,9 @@ class MorphTextField(
             self.label_widget.theme_color_bindings = color_bindings
             Animation(
                 font_size=font_size,
-                color=self.label_widget.get_resolved_content_color(),
-                d=self.focus_animation_duration,
-                t=self.focus_animation_transition,
+                color=self.label_widget.content_color,
+                duration=self.focus_animation_duration,
+                transition=self.focus_animation_transition,
             ).start(self.label_widget)
             return
         
@@ -1246,8 +1244,8 @@ class MorphTextField(
             x=target_pos[0],
             y=target_pos[1],
             font_size=font_size,
-            d=self.focus_animation_duration,
-            t=self.focus_animation_transition,)
+            duration=self.focus_animation_duration,
+            transition=self.focus_animation_transition,)
 
         if self.label_focus_behavior == 'float_to_border':
             border_open_x, border_open_length = (
@@ -1255,14 +1253,14 @@ class MorphTextField(
             self.border_open_x = border_open_x
             Animation(
                 border_open_length=border_open_length,
-                d=self.focus_animation_duration,
-                t=self.focus_animation_transition
+                duration=self.focus_animation_duration,
+                transition=self.focus_animation_transition
             ).start(self)
         elif self.label_focus_behavior == 'move_above':
             input_animation = Animation(
                 padding=self._resolve_text_input_padding(),
-                d=self.focus_animation_duration,
-                t=self.focus_animation_transition)
+                duration=self.focus_animation_duration,
+                transition=self.focus_animation_transition)
             label_animation.bind(
                 on_complete=lambda *args: input_animation.start(self._text_input))
 
