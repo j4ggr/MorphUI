@@ -109,6 +109,30 @@ class BaseDatePickerListView(
         'active_leading_icon': 'check',
         'label_text': '',
         'visible_edges': [],})
+    
+    def _clear_active(self) -> None:
+        """Clear the active state of all items in the list view."""
+        for child in self.layout_manager.children:
+            child.active = False
+            child.leading_widget._update_icon()
+
+    def set_active_by_text(self, text: str) -> None:
+        """Set the active item based on the label text.
+
+        This method iterates through the list items and sets the active
+        state of the item whose label text matches the provided text.
+
+        Parameters
+        ----------
+        text : str
+            The label text of the item to set as active.
+        """
+        self._clear_active()
+        for child in self.layout_manager.children:
+            if getattr(child, 'label_text', '') == text:
+                child.active = True
+                self.refresh_from_viewport()
+                return
 
 
 class MorphDatePickerYearView(
@@ -544,12 +568,12 @@ class MorphDockedDatePickerMenu(
             theme_color_bindings=dict(
                 normal_surface_color='transparent_color',
                 normal_content_color='content_surface_color',
-                disabled_content_color='content_surface_variant_color',
-                hovered_content_color='content_surface_variant_color',),
+                disabled_content_color='outline_color',
+                hovered_content_color='inverse_surface_color',),
             auto_size=(True, True),
             disabled_state_opacity=0.0,
             round_sides=True,)
-            
+
         self.add_widgets(
             MorphBoxLayout(
                 MorphSimpleIconButton(
@@ -649,6 +673,7 @@ class MorphDockedDatePickerMenu(
             + self.padding[1]
             + self.padding[3]
             + self.spacing * 2)
+        self.pos = self._resolve_pos()
     
     def change_view(
             self, button: MorphTextIconToggleButton, screen_name: str) -> None:
@@ -657,6 +682,7 @@ class MorphDockedDatePickerMenu(
             self.identities.screen_manager.transition.direction = 'right'
             self.identities.screen_manager.current = 'calendar_view_screen'
         else:
+            self._refresh_list_views()
             self.identities.screen_manager.transition.direction = 'left'
             self.identities.screen_manager.current = screen_name
         
@@ -665,6 +691,19 @@ class MorphDockedDatePickerMenu(
             identity = getattr(other_button, 'identity', '')
             if kind in identity:
                 other_button.disabled = button.active
+    
+    def _refresh_list_views(self, *args) -> None:
+        """Refresh the month and year list views to reflect the current
+        selection.
+
+        This method updates the active state of the items in the month
+        and year list views based on the currently selected month and
+        year.
+        """
+        self.identities.month_view.set_active_by_text(
+            self.identities.month_view.current_month_name)
+        self.identities.year_view.set_active_by_text(
+            str(self.current_year))
     
     def _on_year_selected(
             self, item: MorphToggleListItemFlat, index: int) -> None:
@@ -679,8 +718,13 @@ class MorphDockedDatePickerMenu(
         index : int
             The index of the selected year item.
         """
+        for data in self.identities.year_view.data:
+            if data.get('label_text') == item.label_text:
+                data['active'] = True
+            else:
+                data['active'] = False
+
         self._change_year(int(item.label_text) - self.current_year)
-        self.identities.year_button.trigger_action()
     
     def _change_year(self, delta: int) -> None:
         """Change the current year by the specified delta.
@@ -692,6 +736,8 @@ class MorphDockedDatePickerMenu(
             negative).
         """
         self.current_year += delta
+        if self.identities.year_button.active:
+            self.identities.year_button.trigger_action()
 
     def _on_month_selected(
             self, item: MorphToggleListItemFlat, index: int) -> None:
@@ -709,7 +755,6 @@ class MorphDockedDatePickerMenu(
         self.current_month = (
             self.identities.month_view.month_names.index(item.label_text)
             + 1)
-        self.identities.month_button.trigger_action()
     
     def _change_month(self, delta: int) -> None:
         """Change the current month by the specified delta.
@@ -729,6 +774,9 @@ class MorphDockedDatePickerMenu(
             self._change_year(1)
         else:
             self.current_month = new_month
+            
+        if self.identities.month_button.active:
+            self.identities.month_button.trigger_action()
     
 
 class MorphDockedDatePickerField(MorphTextField):

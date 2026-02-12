@@ -20,22 +20,23 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).parents[1].resolve()))
 
 from morphui.app import MorphApp
+from morphui.uix.pickers import MorphDockedDatePickerField
 from morphui.uix.floatlayout import MorphFloatLayout
-from morphui.uix.dropdown import MorphDropdownSelect
 
 class MyApp(MorphApp):
 
     def build(self) -> MorphFloatLayout:
         self.theme_manager.theme_mode = 'Dark'
         self.theme_manager.seed_color = 'morphui_teal'
-        layout = MorphFloatLayout(
-            MorphDropdownSelect(
-                identity='dropdown_button',
-                items=[
-                    {'label_text': f'Item {i}'} for i in range(10)],
-                pos_hint={'center_x': 0.5, 'center_y': 0.9},))
-        self.dropdown_button = layout.identities.dropdown_button
-        return layout
 
-if __name__ == '__main__':
+        self.layout = MorphFloatLayout(
+            MorphDockedDatePickerField(
+                kind='range',
+                identity='date_picker_field',
+                pos_hint={'center_x': 0.5, 'center_y': 0.8},
+                size_hint_x= 0.6,))
+
+        return self.layout
+
+if __name__ == "__main__":
     MyApp().run()
