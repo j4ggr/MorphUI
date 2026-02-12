@@ -453,6 +453,7 @@ class MorphTextFieldTrailingIconButton(MorphIconButton):
         valign='center',
         round_sides=True,
         ripple_enabled=False,
+        pos_hint={'center_y': 0.5},
         size_hint=(None, None),
         size=(dp(24), dp(24)),
         padding=dp(0),)

@@ -385,7 +385,7 @@ class MorphTextLabel(
         MorphSimpleLabel.default_config.copy() | dict(
         auto_size=(True, True),
         size_hint=(1, None),
-        padding=dp(0),
+        padding=[dp(4), 0],
         pos_hint={'center_y': 0.5},))
 
 
@@ -401,7 +401,7 @@ class MorphHeadingLabel(
         MorphSimpleLabel.default_config.copy() | dict(
         auto_size=(True, True),
         size_hint=(1, None),
-        padding=dp(0),
+        padding=[dp(4), 0],
         pos_hint={'center_y': 0.5},
         bold=True,))
 
@@ -421,9 +421,10 @@ class MorphTertiaryLabel(
         MorphSimpleLabel.default_config.copy() | dict(
         auto_size=(True, True),
         size_hint=(1, None),
-        padding=dp(0),
+        padding=[dp(4), 0],
         pos_hint={'center_y': 0.5},
         italic=True,))
+
 
 class MorphTrailingIconLabel(
         MorphScaleBehavior,
@@ -466,6 +467,8 @@ class MorphButtonTextLabel(
     """
     default_config: Dict[str, Any] = (
         MorphTextLabel.default_config.copy() | dict(
+        padding=[dp(4), 0],
+        pos_hint={'center_y': 0.5},
         auto_size=(True, True),))
     
 
@@ -696,6 +699,7 @@ class MorphTextFieldLeadingIconLabel(MorphSimpleIconLabel):
         typography_size=MorphSimpleIconLabel.default_config['typography_size'],
         halign='center',
         valign='center',
+        pos_hint={'center_y': 0.5},
         size_hint=(None, None),
         size=(dp(24), dp(24)),
         padding=dp(0),)
