@@ -413,7 +413,6 @@ class MorphDropdownSelect(
         self.dropdown_menu = MorphDropdownMenu(**kw_dropdown)
         super().__init__(**kwargs)
         self.label_widget.auto_width = False
-        self.dropdown_menu.bind(is_open=self.setter('active'))
         self.bind(active=self._toggle_menu_on_active)
 
     def _toggle_menu_on_active(self, *args) -> None:

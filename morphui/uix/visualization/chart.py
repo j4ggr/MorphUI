@@ -129,7 +129,9 @@ class MorphChartToolbarMenu(
             self.caller.active = False
 
 
-class MorphChartToolbar(MorphChartNavigationButton):
+class MorphChartToolbar(
+        MorphToggleButtonBehavior,
+        MorphChartNavigationButton):
     """Toolbar button for MorphChartCard that opens a menu.
     """
 
@@ -202,9 +204,21 @@ class MorphChartToolbar(MorphChartNavigationButton):
                     icon='content-save-outline',),
                 identity='chart_toolbar_menu',
                 caller=self))
-        super().__init__(
-            on_release=kwargs.pop('on_release', self.menu.toggle),
-            **kwargs)
+        super().__init__(**kwargs)
+        self.bind(active=self._toggle_menu_on_active)
+
+    def _toggle_menu_on_active(self, *args) -> None:
+        """Toggle the dropdown menu when the button's active state 
+        changes.
+        
+        This method is called whenever the `active` property of the
+        button changes. If the button becomes active, it opens the
+        dropdown menu. If the button becomes inactive, it dismisses the
+        dropdown menu."""
+        if self.active:
+            self.menu.open()
+        else:
+            self.menu.dismiss()
     
     def on_plot_widget(self, instance: Any, plot_widget: MorphPlotWidget) -> None:
         """Bind the toolbar buttons to the plot widget actions.
