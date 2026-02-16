@@ -16,13 +16,14 @@ from kivy.core.text import Label as CoreLabel
 from kivy.uix.relativelayout import RelativeLayout
 
 __all__ = [
+    'timeit',
     'calculate_text_size',
     'clamp',
     'get_effective_pos',
     'calculate_widget_local_pos',
     'get_edges_params',
-    'FrozenGeometry',
-    'timeit',]
+    'refresh_widget',
+    'FrozenGeometry',]
 
 
 def timeit(func):
@@ -312,6 +313,7 @@ def calculate_widget_local_pos(
     y_offset = widget.y - y_absolute
     return (x_coord + x_offset, y_coord + y_offset)
 
+
 @lru_cache(maxsize=128)
 def get_edges_params(
             left: float,
@@ -352,6 +354,25 @@ def get_edges_params(
         'right': [right - offset, top, right - offset, bottom],
         'bottom': [right, bottom + offset, left, bottom + offset],
         'left': [left + offset, bottom, left + offset, top],}
+
+
+def refresh_widget(widget: Any) -> None:
+    """Refresh a widget by calling its refresh methods.
+
+    This function iterates through all attributes of the given widget 
+    and calls any method that starts with 'refresh_' to update the
+    widget's appearance or state.
+
+    Parameters
+    ----------
+    widget : Any
+        The widget to refresh.
+    """
+    for prop in dir(widget):
+        if prop.startswith('refresh_'):
+            refresh_method = getattr(widget, prop)
+            if callable(refresh_method):
+                refresh_method()
 
 
 @dataclass(frozen=True)

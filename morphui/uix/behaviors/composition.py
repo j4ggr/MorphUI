@@ -11,6 +11,7 @@ from kivy.properties import StringProperty
 from kivy.properties import ObjectProperty
 from kivy.properties import BooleanProperty
 
+from morphui.utils import refresh_widget
 from morphui.uix.label import MorphTextLabel
 from morphui.uix.label import MorphLeadingIconLabel
 from morphui.uix.label import MorphTrailingIconLabel
@@ -247,6 +248,7 @@ class MorphLeadingWidgetBehavior:
         and any other relevant properties.
         """
         self.on_leading_widget(self, self.leading_widget)
+        refresh_widget(self.leading_widget)
 
 
 class MorphLabelWidgetBehavior:
@@ -341,6 +343,7 @@ class MorphLabelWidgetBehavior:
         and any other relevant properties.
         """
         self.on_label_widget(self, self.label_widget)
+        refresh_widget(self.label_widget)
 
 
 class MorphTripleLabelBehavior:
@@ -585,8 +588,14 @@ class MorphTripleLabelBehavior:
         relevant properties.
         """
         self.on_heading_widget(self, self.heading_widget)
+        refresh_widget(self.heading_widget)
+
         self.on_supporting_widget(self, self.supporting_widget)
+        refresh_widget(self.supporting_widget)
+
         self.on_tertiary_widget(self, self.tertiary_widget)
+        refresh_widget(self.tertiary_widget)
+
 
 
 class MorphTrailingWidgetBehavior:
@@ -814,3 +823,4 @@ class MorphTrailingWidgetBehavior:
         and any other relevant properties.
         """
         self.on_trailing_widget(self, self.trailing_widget)
+        refresh_widget(self.trailing_widget)
