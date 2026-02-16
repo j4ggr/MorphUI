@@ -30,7 +30,6 @@ from kivy.graphics.texture import Texture
 from kivy.input.motionevent import MotionEvent
 from kivy.core.window.window_sdl2 import WindowSDL
 
-from morphui.utils import clean_config
 from morphui.uix.behaviors import MorphThemeBehavior
 from morphui.uix.behaviors import MorphSurfaceLayerBehavior
 from morphui.uix.behaviors import MorphIdentificationBehavior
@@ -179,7 +178,7 @@ class MorphPlotWidget(
     """Default configuration for the plot widget."""
 
     def __init__(self, *args, **kwargs) -> None:
-        config = clean_config(self.default_config, kwargs)
+        config = self.default_config.copy() | kwargs
         super().__init__(*args, **config)
         
         self._flipped_textures = weakref.WeakSet()

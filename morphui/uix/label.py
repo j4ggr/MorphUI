@@ -7,8 +7,6 @@ from kivy.properties import AliasProperty
 from kivy.properties import BooleanProperty
 from kivy.properties import NumericProperty
 
-from morphui.utils import clean_config
-
 from morphui.uix.behaviors import MorphIconBehavior
 from morphui.uix.behaviors import MorphScaleBehavior
 from morphui.uix.behaviors import MorphThemeBehavior
@@ -88,7 +86,7 @@ class BaseLabel(Label):
     """
 
     def __init__(self, **kwargs) -> None:
-        config = clean_config(self.default_config, kwargs)
+        config = self.default_config.copy() | kwargs
         super().__init__(**config)
         typography = getattr(self, 'typography', None)
         if typography is not None:

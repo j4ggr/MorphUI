@@ -23,7 +23,6 @@ from kivy.properties import VariableListProperty
 from kivy.uix.textinput import TextInput
 
 from morphui.utils import clamp
-from morphui.utils import clean_config
 
 from morphui.uix.behaviors import MorphThemeBehavior
 from morphui.uix.behaviors import MorphHoverBehavior
@@ -440,7 +439,7 @@ class MorphTextInput(
             'cursor_color': 'secondary_color',}) # TODO: not working yet
 
     def __init__(self, **kwargs) -> None:
-        config = clean_config(self.default_config, kwargs)
+        config = self.default_config.copy() | kwargs
         super().__init__(**config)
 
         for child in self.canvas.before.children:
@@ -849,7 +848,7 @@ class MorphTextField(
             text_length_widget=MorphTextFieldTextLengthLabel,
             leading_widget=MorphTextFieldLeadingIconLabel,
             trailing_widget=MorphTextFieldTrailingIconButton,)
-        config = clean_config(self.default_config, kwargs)
+        config = self.default_config.copy() | kwargs
         for attr, cls in child_classes.items():
             if attr not in config:
                 config[attr] = cls()

@@ -10,7 +10,6 @@ from typing import Dict
 from kivy.metrics import dp
 from kivy.properties import BooleanProperty
 
-from morphui.utils import clean_config
 from morphui.uix.label import MorphTextLabel
 from morphui.uix.label import MorphLeadingIconLabel
 from morphui.uix.label import MorphTrailingIconLabel
@@ -87,7 +86,7 @@ class _MorphBaseContainer(MorphSimpleBoxLayout):
             The final configuration dictionary with defaults applied
             and child widgets instantiated.
         """
-        config = clean_config(self.default_config, kwargs)
+        config = self.default_config.copy() | kwargs
         for key, widget_cls in self.default_child_classes.items():
             if key not in config and widget_cls is not None:
                 config[key] = widget_cls()

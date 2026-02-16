@@ -3,7 +3,6 @@ from kivy.properties import AliasProperty
 from kivy.uix.screenmanager import Screen
 from kivy.uix.screenmanager import ScreenManager
 
-from morphui.utils.helpers import clean_config
 from morphui.uix.behaviors import MorphAutoSizingBehavior
 from morphui.uix.behaviors import MorphColorThemeBehavior
 from morphui.uix.behaviors import MorphDeclarativeBehavior
@@ -140,7 +139,7 @@ class MorphScreen(
     default_config: dict = dict()
     
     def __init__(self, *widgets, **kwargs) -> None:
-        config = clean_config(self.default_config, kwargs)
+        config = self.default_config.copy() | kwargs
         if 'name' in config and 'identity' not in config:
             config['identity'] = config['name']
         elif 'identity' in config and 'name' not in config:
@@ -256,5 +255,5 @@ class MorphScreenManager(
     default_config: dict = dict()
     
     def __init__(self, *widgets, **kwargs) -> None:
-        config = clean_config(self.default_config, kwargs)
+        config = self.default_config.copy() | kwargs
         super().__init__(*widgets, **config)

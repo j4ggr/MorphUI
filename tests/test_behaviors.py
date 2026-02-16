@@ -2070,6 +2070,179 @@ class TestMorphColorThemeBehavior:
                 assert property_name in widget.effective_color_bindings
                 assert widget.effective_color_bindings[property_name] == theme_color
 
+    @patch('morphui.app.MorphApp._theme_manager')
+    def test_explicit_property_setting(self, mock_app_theme_manager):
+        """Test setting explicit properties that won't follow theme changes."""
+        # Configure the mock
+        mock_app_theme_manager.configure_mock(**{
+            'primary_color': [1.0, 0.0, 0.0, 1.0],
+            'content_primary_color': [1.0, 1.0, 1.0, 1.0],
+            'outline_color': [0.5, 0.5, 0.5, 1.0],
+        })
+        
+        with patch.object(self.TestWidget, 'register_event_type'), \
+             patch.object(self.TestWidget, 'dispatch'):
+            
+            # Create widget with explicit property set in kwargs
+            explicit_color = [0.2, 0.5, 0.8, 1.0]
+            widget = self.TestWidget(
+                theme_color_bindings={
+                    'normal_surface_color': 'primary_color',
+                    'normal_content_color': 'content_primary_color',
+                    'normal_border_color': 'outline_color'
+                },
+                normal_surface_color=explicit_color  # Explicitly set
+            )
+            
+            # Check that property is marked as explicit
+            assert 'normal_surface_color' in widget.explicit_color_properties
+            assert 'normal_content_color' not in widget.explicit_color_properties
+            
+            # Check that the value was set
+            assert widget.normal_surface_color == explicit_color
+            
+            # Check that it's excluded from effective bindings
+            effective = widget.effective_color_bindings
+            assert 'normal_surface_color' not in effective
+            assert 'normal_content_color' in effective
+            assert 'normal_border_color' in effective
+
+    @patch('morphui.app.MorphApp._theme_manager')
+    def test_reset_to_theme_binding(self, mock_app_theme_manager):
+        """Test resetting an explicit property back to theme binding."""
+        # Configure the mock
+        mock_app_theme_manager.configure_mock(**{
+            'primary_color': [1.0, 0.0, 0.0, 1.0],
+            'content_primary_color': [1.0, 1.0, 1.0, 1.0],
+        })
+        
+        with patch.object(self.TestWidget, 'register_event_type'), \
+             patch.object(self.TestWidget, 'dispatch'):
+            
+            # Create widget with explicit property
+            explicit_color = [0.2, 0.5, 0.8, 1.0]
+            widget = self.TestWidget(
+                theme_color_bindings={
+                    'normal_surface_color': 'primary_color',
+                },
+                normal_surface_color=explicit_color
+            )
+            
+            assert 'normal_surface_color' in widget.explicit_color_properties
+            
+            # Remove from explicit set
+            widget.explicit_color_properties.discard('normal_surface_color')
+            
+            # Check that it's no longer explicit
+            assert 'normal_surface_color' not in widget.explicit_color_properties
+            
+            # Check that it's back in effective bindings
+            assert 'normal_surface_color' in widget.effective_color_bindings
+
+    @patch('morphui.app.MorphApp._theme_manager')
+    def test_explicit_properties_not_updated_on_theme_change(self, mock_app_theme_manager):
+        """Test that explicit properties don't change when theme updates."""
+        # Initial colors
+        mock_app_theme_manager.configure_mock(**{
+            'primary_color': [1.0, 0.0, 0.0, 1.0],
+            'content_primary_color': [1.0, 1.0, 1.0, 1.0],
+        })
+        
+        with patch.object(self.TestWidget, 'register_event_type'), \
+             patch.object(self.TestWidget, 'dispatch'):
+            
+            explicit_color = [0.2, 0.5, 0.8, 1.0]
+            widget = self.TestWidget(
+                theme_color_bindings={
+                    'normal_surface_color': 'primary_color',
+                    'normal_content_color': 'content_primary_color',
+                },
+                normal_surface_color=explicit_color  # Explicit
+            )
+            
+            # Simulate theme color change
+            mock_app_theme_manager.primary_color = [0.0, 1.0, 0.0, 1.0]
+            mock_app_theme_manager.content_primary_color = [0.0, 0.0, 0.0, 1.0]
+            
+            # Update colors (simulating theme change)
+            widget._update_colors()
+            
+            # Explicit property should stay the same
+            assert widget.normal_surface_color == explicit_color
+            # Non-explicit property should update
+            assert widget.normal_content_color == [0.0, 0.0, 0.0, 1.0]
+
+    @patch('morphui.app.MorphApp._theme_manager')
+    def test_effective_color_bindings_excludes_explicit(self, mock_app_theme_manager):
+        """Test that effective_color_bindings excludes explicit properties."""
+        mock_app_theme_manager.configure_mock(**{
+            'primary_color': [1.0, 0.0, 0.0, 1.0],
+            'primary_container_color': [1.0, 0.8, 0.8, 1.0],
+            'content_primary_color': [1.0, 1.0, 1.0, 1.0],
+            'content_primary_container_color': [0.5, 0.0, 0.0, 1.0],
+            'outline_color': [0.5, 0.5, 0.5, 1.0],
+            'outline_variant_color': [0.6, 0.6, 0.6, 1.0],
+            'transparent_color': [0.0, 0.0, 0.0, 0.0],
+        })
+        
+        with patch.object(self.TestWidget, 'register_event_type'), \
+             patch.object(self.TestWidget, 'dispatch'):
+            
+            from morphui.constants import THEME
+            first_property = list(THEME.STYLES['primary'].keys())[0]
+            
+            widget = self.TestWidget(
+                theme_style='primary',
+                theme_color_bindings={
+                    'custom_property': 'outline_color',
+                },
+                **{first_property: [1, 1, 1, 1]}  # Explicitly set a property from theme_style
+            )
+            
+            # Get initial count
+            initial_bindings = {**THEME.STYLES['primary'], 'custom_property': 'outline_color'}
+            expected_count = len(initial_bindings) - 1  # -1 for the explicit property
+            
+            # Effective bindings should have one less
+            assert len(widget.effective_color_bindings) == expected_count
+            assert first_property not in widget.effective_color_bindings
+            assert 'custom_property' in widget.effective_color_bindings
+    
+    @patch('morphui.app.MorphApp._theme_manager')
+    def test_manual_explicit_property_control(self, mock_app_theme_manager):
+        """Test manually adding/removing properties from explicit_color_properties."""
+        mock_app_theme_manager.configure_mock(**{
+            'primary_color': [1.0, 0.0, 0.0, 1.0],
+            'content_primary_color': [1.0, 1.0, 1.0, 1.0],
+        })
+        
+        with patch.object(self.TestWidget, 'register_event_type'), \
+             patch.object(self.TestWidget, 'dispatch'):
+            
+            widget = self.TestWidget(
+                theme_color_bindings={
+                    'normal_surface_color': 'primary_color',
+                    'normal_content_color': 'content_primary_color',
+                }
+            )
+            
+            # Initially all properties should follow theme
+            assert len(widget.effective_color_bindings) == 2
+            
+            # Manually mark one as explicit
+            widget.explicit_color_properties.add('normal_surface_color')
+            
+            # Now it should be excluded
+            assert len(widget.effective_color_bindings) == 1
+            assert 'normal_surface_color' not in widget.effective_color_bindings
+            
+            # Remove from explicit
+            widget.explicit_color_properties.discard('normal_surface_color')
+            
+            # Now it should be back
+            assert len(widget.effective_color_bindings) == 2
+            assert 'normal_surface_color' in widget.effective_color_bindings
+
 
 class TestMorphTypographyBehavior:
     """Test suite for MorphTypographyBehavior class."""

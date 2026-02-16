@@ -10,7 +10,6 @@ from morphui.utils.dotdict import DotDict
 from morphui.utils.helpers import clamp
 from morphui.utils.helpers import FrozenGeometry
 from morphui.utils.helpers import calculate_text_size
-from morphui.utils.helpers import clean_config
 
 
 class TestDotDict:
@@ -43,57 +42,6 @@ class TestDotDict:
         assert data.get('nonexistent', 'default') == 'default'
         data.update({'city': 'New York'})
         assert data.city == 'New York'
-
-
-class TestCleanDefaultConfig:
-    """Test cases for the clean_config function."""
-
-    def test_no_theme_bindings(self) -> None:
-        """Test config without theme_color_bindings."""
-        config = {'width': 100, 'height': 50}
-        result = clean_config(config, {})
-        assert result == config
-        assert result is not config  # Should return a copy
-
-    def test_theme_bindings_filtered_by_explicit_config(self) -> None:
-        """Test that explicit config removes items from theme_color_bindings."""
-        config = {
-            'theme_color_bindings': {'color': 'primary', 'background': 'surface'},
-            'color': 'red',  # Explicit override
-            'width': 100
-        }
-        result = clean_config(config, {})
-        expected = {
-            'theme_color_bindings': {'background': 'surface'},
-            'color': 'red',
-            'width': 100
-        }
-        assert result == expected
-
-    def test_empty_theme_bindings(self) -> None:
-        """Test with empty theme_color_bindings."""
-        config = {
-            'theme_color_bindings': {},
-            'width': 100
-        }
-        result = clean_config(config, {})
-        expected = {'theme_color_bindings': {}, 'width': 100}
-        assert result == expected
-
-    def test_all_bindings_overridden(self) -> None:
-        """Test when all theme bindings are explicitly overridden."""
-        config = {
-            'theme_color_bindings': {'color': 'primary', 'background': 'surface'},
-            'color': 'red',
-            'background': 'blue'
-        }
-        result = clean_config(config, {})
-        expected = {
-            'theme_color_bindings': {},
-            'color': 'red',
-            'background': 'blue'
-        }
-        assert result == expected
 
 
 class TestCalculateTextSize:

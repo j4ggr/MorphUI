@@ -11,7 +11,6 @@ from morphui.uix.behaviors import MorphColorThemeBehavior
 from morphui.uix.behaviors import MorphDeclarativeBehavior
 from morphui.uix.behaviors import MorphSurfaceLayerBehavior
 
-from morphui.utils import clean_config
 
 __all__ = [
     'MorphTooltip',]
@@ -77,7 +76,7 @@ class MorphTooltip(
     """Default configuration for MorphTooltip."""
     
     def __init__(self, *widgets, **kwargs: Any) -> None:
-        config = clean_config(self.default_config, kwargs)
+        config = self.default_config.copy() | kwargs
         super().__init__(*widgets, **config)
 
     def _update_caller_bindings(self, *args) -> None:

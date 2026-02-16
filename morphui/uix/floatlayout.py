@@ -4,7 +4,6 @@ from morphui.uix.behaviors import MorphElevationBehavior
 from morphui.uix.behaviors import MorphColorThemeBehavior
 from morphui.uix.behaviors import MorphSurfaceLayerBehavior
 from morphui.uix.behaviors import MorphDeclarativeBehavior
-from morphui.utils.helpers import clean_config
 
 
 __all__ = [
@@ -54,5 +53,5 @@ class MorphFloatLayout(
     """Default configuration for the MorphFloatLayout."""
 
     def __init__(self, *widgets, **kwargs) -> None:
-        config = clean_config(self.default_config, kwargs)
+        config = self.default_config.copy() | kwargs
         super().__init__(*widgets, **config)

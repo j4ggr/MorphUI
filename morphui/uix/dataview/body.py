@@ -11,7 +11,6 @@ from kivy.properties import AliasProperty
 from kivy.properties import ObjectProperty
 from kivy.uix.recycleview import RecycleView
 
-from morphui.utils import clean_config
 from morphui.uix.dataview import BaseDataView
 from morphui.uix.dataview import BaseDataViewLabel
 from morphui.uix.dataview import MorphDataViewIndex
@@ -146,7 +145,7 @@ class MorphDataViewBodyLayout(MorphRecycleGridLayout):
     """Default configuration for the MorphDataViewBodyLayout."""
 
     def __init__(self, **kwargs) -> None:
-        config = clean_config(self.default_config, kwargs)
+        config = self.default_config.copy() | kwargs
         super().__init__(**config)
 
 
@@ -248,7 +247,7 @@ class MorphDataViewBody(BaseDataView):
     
     def __init__(self, **kwargs) -> None:
         self.register_event_type('on_values_updated')
-        config = clean_config(self.default_config, kwargs)
+        config = self.default_config.copy() | kwargs
         super().__init__(**config)
     
     def on_header(self, instance: Any, header: Any) -> None:

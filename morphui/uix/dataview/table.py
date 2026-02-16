@@ -8,7 +8,6 @@ from kivy.properties import AliasProperty
 from kivy.properties import BoundedNumericProperty
 from kivy.uix.widget import Widget
 
-from morphui.utils import clean_config
 from morphui.uix.dataview import MorphDataViewBody
 from morphui.uix.dataview import MorphDataViewIndex
 from morphui.uix.dataview import MorphDataViewHeader
@@ -41,7 +40,7 @@ class TopLeftCorner(
             'normal_overlay_edge_color': 'outline_color'},)
     
     def __init__(self, **kwargs) -> None:
-        config = clean_config(self.default_config, kwargs)
+        config = self.default_config.copy() | kwargs
         super().__init__(**config)
 
 
@@ -54,7 +53,7 @@ class BottomLeftCorner(
         size_hint=(None, None),)
     
     def __init__(self, **kwargs) -> None:
-        config = clean_config(self.default_config, kwargs)
+        config = self.default_config.copy() | kwargs
         super().__init__(**config)
 
 
@@ -362,7 +361,7 @@ class MorphDataViewTable(MorphGridLayout):
             kw_navigation: Dict[str, Any] = {},
             **kwargs) -> None:
         """Initialize the data view table component."""
-        config = clean_config(self.default_config, kwargs)
+        config = self.default_config.copy() | kwargs
         self.header =MorphDataViewHeader(
             identity='header', **kw_header)
         self.index = MorphDataViewIndex(

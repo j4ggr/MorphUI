@@ -6,6 +6,7 @@ all widget colors when switching between light and dark themes.
 """
 from typing import Any
 from typing import Dict
+from typing import List
 from typing import Tuple
 from typing import Literal
 
@@ -217,7 +218,7 @@ class ThemeManager(MorphDynamicColorPalette):
             color.capitalize() for color in self.hex_colormap.keys())
     
     @property
-    def colormap(self) -> dict:
+    def colormap(self) -> Dict[str, List[float]]:
         """RGBA colormap derived from hex_colormap (read-only).
         
         Returns a dictionary mapping color names to RGBA values.

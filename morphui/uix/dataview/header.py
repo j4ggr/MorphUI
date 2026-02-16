@@ -9,7 +9,6 @@ from kivy.lang import Builder
 from kivy.metrics import dp
 from kivy.properties import AliasProperty
 
-from morphui.utils import clean_config
 from morphui.uix.dataview.base import BaseDataViewLabel
 from morphui.uix.dataview.base import BaseDataView
 from morphui.uix.recycleboxlayout import MorphRecycleBoxLayout
@@ -63,7 +62,7 @@ class MorphDataViewHeaderLayout(MorphRecycleBoxLayout):
     """Default configuration for the MorphDataViewHeaderLayout."""
 
     def __init__(self, **kwargs) -> None:
-        config = clean_config(self.default_config, kwargs)
+        config = self.default_config.copy() | kwargs
         super().__init__(**config)
 
 
@@ -154,7 +153,7 @@ class MorphDataViewHeader(BaseDataView):
 
     def __init__(self, **kwargs) -> None:
         self.register_event_type('on_columns_updated')
-        config = clean_config(self.default_config, kwargs)
+        config = self.default_config.copy() | kwargs
         super().__init__(**config)
         self.layout_manager.bind(height=self.setter('height'))
         self.height = self.layout_manager.height

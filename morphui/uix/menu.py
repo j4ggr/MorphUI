@@ -14,7 +14,6 @@ from kivy.properties import NumericProperty
 from kivy.uix.recycleview import RecycleView
 from kivy.uix.recycleboxlayout import RecycleBoxLayout
 
-from morphui.utils import clean_config
 from morphui.uix.behaviors import MorphHoverBehavior
 from morphui.uix.behaviors import MorphRippleBehavior
 from morphui.uix.behaviors import MorphButtonBehavior
@@ -68,7 +67,7 @@ class MorphDropdownMenuItem(
         MorphIconLabelIconContainer.default_config.copy() | dict())
 
     def __init__(self, **kwargs) -> None:
-        config = clean_config(self.default_config, kwargs)
+        config = self.default_config.copy() | kwargs
         super().__init__(**config)
 
     def refresh_view_attrs(
@@ -108,7 +107,7 @@ class MenuRecycleBoxLayout(
         size=(500, 200),)
     
     def __init__(self, **kwargs) -> None:
-        config = clean_config(self.default_config, kwargs)
+        config = self.default_config.copy() | kwargs
         super().__init__(**config)
 
 
@@ -228,7 +227,7 @@ class MorphDropdownMenu(
     """Default configuration for the `MorphDropdownMenu` widget."""
 
     def __init__(self, **kwargs) -> None:
-        config = clean_config(self.default_config, kwargs)
+        config = self.default_config.copy() | kwargs
         super().__init__(**config)
         self.bind(items=self.setter('data'))
         self.data = self.items

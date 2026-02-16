@@ -11,7 +11,6 @@ from kivy.properties import ColorProperty
 from kivy.properties import ObjectProperty
 from kivy.properties import BooleanProperty
 
-from morphui.utils import clean_config
 from morphui.uix.label import MorphIconLabel
 from morphui.uix.label import MorphSimpleIconLabel
 from morphui.uix.label import MorphButtonTextLabel
@@ -103,7 +102,7 @@ class MorphSimpleIconButton(
     """
 
     def __init__(self, **kwargs) -> None:
-        config = clean_config(self.default_config, kwargs)
+        config = self.default_config.copy() | kwargs
         super().__init__(**config)
 
 
@@ -147,7 +146,7 @@ class MorphButton(
     instantiation."""
 
     def __init__(self, **kwargs) -> None:
-        config = clean_config(self.default_config, kwargs)
+        config = self.default_config.copy() | kwargs
         super().__init__(**config)
 
 
@@ -311,7 +310,7 @@ class MorphIconTextButton(
     """
 
     def __init__(self, **kwargs) -> None:
-        config = clean_config(self.default_config, kwargs)
+        config = self.default_config.copy() | kwargs
         if 'leading_icon' in kwargs:
             warn(
                 "`leading_icon` is not supported. Use `normal_icon` instead.",
@@ -364,7 +363,7 @@ class MorphTextIconButton(
     """
 
     def __init__(self, **kwargs) -> None:
-        config = clean_config(self.default_config, kwargs)
+        config = self.default_config.copy() | kwargs
         if 'trailing_icon' in kwargs:
             warn(
                 "`trailing_icon` is not supported. Use `normal_icon` instead.",
@@ -393,6 +392,10 @@ class MorphTextIconToggleButton(
         MorphTextIconButton.default_config.copy() | dict(
         normal_icon='menu-down',
         active_icon='menu-up',))
+    
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.theme_color_bindings
 
 
 class MorphChipTrailingIconButton(
@@ -555,7 +558,7 @@ class MorphDatePickerDayButton(
         round_sides=True,)
 
     def __init__(self, **kwargs) -> None:
-        config = clean_config(self.default_config, kwargs)
+        config = self.default_config.copy() | kwargs
         super().__init__(**config)
             
         self.bind(

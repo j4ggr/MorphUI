@@ -1,6 +1,7 @@
 import warnings
 
 from typing import Any
+from typing import Set
 from typing import Dict
 from typing import Literal
 
@@ -10,6 +11,7 @@ from kivy.properties import StringProperty
 from kivy.properties import OptionProperty
 from kivy.properties import BooleanProperty
 from kivy.properties import ListProperty
+from kivy.properties import ObjectProperty
 
 from .appreference import MorphAppReferenceBehavior
 
@@ -123,6 +125,37 @@ class MorphColorThemeBehavior(BaseThemeBehavior):
                 self.apply_theme_color('surface_color', 'surface_bright_color')
     ```
     
+    Explicit property control:
+    
+    ```python
+    class MixedThemeWidget(MorphColorThemeBehavior, MorphSurfaceLayerBehavior, Label):
+        def __init__(self, **kwargs):
+            super().__init__(**kwargs)
+            # Some properties follow theme
+            self.theme_color_bindings = {
+                'normal_surface_color': 'primary_color',
+                'normal_content_color': 'content_primary_color',
+                'normal_border_color': 'outline_color'
+            }
+            # But if you pass a property explicitly in kwargs, it won't follow theme
+            # This is detected automatically during __init__
+    
+    # Usage that automatically detects explicit properties:
+    widget = MixedThemeWidget(
+        theme_color_bindings={
+            'normal_surface_color': 'primary_color',
+            'normal_content_color': 'content_primary_color',
+        },
+        normal_surface_color=[0.2, 0.5, 0.8, 1]  # Explicit - won't follow theme
+    )
+    # normal_surface_color is now in widget.explicit_color_properties
+    # and won't change with theme updates
+    
+    # Later, allow it to follow theme again:
+    widget.explicit_color_properties.discard('normal_surface_color')
+    widget.refresh_theme_colors()  # Apply theme color
+    ```
+    
     See Also
     --------
     - MorphSurfaceLayerBehavior : Provides surface and border styling 
@@ -224,11 +257,51 @@ class MorphColorThemeBehavior(BaseThemeBehavior):
     :class:`~kivy.properties.DictProperty` and defaults to {}.
     """
 
+    explicit_color_properties: set = ObjectProperty(set())
+    """Set of property names that are explicitly set and should not be 
+    updated by theme changes.
+    
+    Properties in this set will not be automatically updated when the 
+    theme changes, preserving user-specified values. This allows 
+    fine-grained control over which properties follow the theme and 
+    which remain static.
+    
+    During initialization, any color properties passed in kwargs that 
+    match keys in :attr:`theme_color_bindings` or 
+    :attr:`_theme_style_color_bindings` are automatically added to this 
+    set. You can also manually add or remove property names from this 
+    set at any time.
+    
+    Examples
+    --------
+    Manually control which properties are explicit:
+    
+    ```python
+    # Mark a property as explicit
+    widget.explicit_color_properties.add('normal_surface_color')
+    
+    # Remove from explicit set to follow theme again
+    widget.explicit_color_properties.discard('normal_surface_color')
+    
+    # Check if property is explicit
+    if 'normal_surface_color' in widget.explicit_color_properties:
+        print("This property won't follow theme changes")
+    ```
+    
+    :attr:`explicit_color_properties` is a 
+    :class:`~kivy.properties.ObjectProperty` and defaults to set().
+    """
+
     _theme_bound: bool = False
     """Track if theme manager events are bound."""
     
     def __init__(self, **kwargs) -> None:
         self.register_event_type('on_colors_updated')
+        
+        explicit_props = self._detect_explicit_properties(kwargs)
+        if explicit_props:
+            kwargs['explicit_color_properties'] = explicit_props
+        
         super().__init__(**kwargs)
 
         self.bind(
@@ -253,12 +326,65 @@ class MorphColorThemeBehavior(BaseThemeBehavior):
         current :attr:`theme_style`, giving precedence to explicit
         :attr:`theme_color_bindings`. When both define the same widget
         property, the values from :attr:`theme_style` have priority.
+        
+        Properties in :attr:`explicit_color_properties` are excluded from
+        the effective bindings, ensuring that explicitly set colors
+        are not overridden by theme updates.
         """
-        merged = {
-            **self._theme_style_color_bindings,
-            **self.theme_color_bindings,}
-        return merged
+        merged = (
+            self._theme_style_color_bindings.copy()
+            | self.theme_color_bindings.copy())
+        
+        return {
+            k: v for k, v in merged.items() 
+            if k not in self.explicit_color_properties}
 
+    def _detect_explicit_properties(self, kwargs: Dict[str, Any]) -> Set[str]:
+        """Detect which color properties are explicitly set in kwargs.
+        
+        This method identifies properties that should not be 
+        automatically updated by theme changes by comparing kwargs
+        against potential theme bindings from both :attr:`theme_style`
+        and :attr:`theme_color_bindings`.
+        
+        The detection process follows these steps:
+        1. If 'explicit_color_properties' is already in kwargs, return 
+           it directly
+        2. Build a set of potential theme-bound properties from:
+           - theme_style mappings (if theme_style is provided)
+           - theme_color_bindings (if provided)
+        3. Check which of these potential bindings are also present in 
+           kwargs
+        4. Return the set of explicitly provided properties
+        
+        Parameters
+        ----------
+        kwargs : Dict[str, Any]
+            The keyword arguments passed to __init__.
+            
+        Returns
+        -------
+        Set[str]
+            A set of property names that were explicitly set in kwargs
+            and should be excluded from automatic theme updates.
+        """
+        explicit_props = kwargs.get('explicit_color_properties', set())
+        if explicit_props:
+            return explicit_props
+        
+        potential_bindings = set()
+        theme_style = kwargs.get('theme_style', '')
+        if theme_style and theme_style in self.theme_style_mappings:
+            potential_bindings.update(self.theme_style_mappings[theme_style].keys())
+        if 'theme_color_bindings' in kwargs:
+            potential_bindings.update(kwargs['theme_color_bindings'].keys())
+        
+        for prop_name in potential_bindings:
+            if prop_name in kwargs:
+                explicit_props.add(prop_name)
+        
+        return explicit_props
+    
     def apply_theme_color(self, property_name: str, theme_color: str) -> bool:
         """Apply a specific theme color to a widget property.
         
@@ -509,6 +635,15 @@ class MorphColorThemeBehavior(BaseThemeBehavior):
         
         This method forces an update of all bound theme colors,
         useful when you want to ensure colors are up to date.
+
+        Notes
+        -----
+        The explicit set of properties in 
+        :attr:`explicit_color_properties` is respected during this 
+        refresh, so any properties marked as explicit will not be 
+        updated by this method. This allows you to refresh theme colors 
+        while preserving any manually set values that should not follow 
+        the theme.
         """
         auto_theme = self.auto_theme
         self.auto_theme = True

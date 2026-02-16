@@ -6,7 +6,6 @@ from kivy.properties import AliasProperty
 from kivy.properties import NumericProperty
 from kivy.uix.widget import Widget
 
-from morphui.utils import clean_config
 from morphui.uix.label import MorphSimpleLabel
 from morphui.uix.button import MorphSimpleIconButton
 from morphui.uix.boxlayout import MorphBoxLayout
@@ -139,7 +138,7 @@ class MorphDataViewNavigation(
 
     def __init__(self, **kwargs) -> None:
         """Initialize the navigation component."""
-        config = clean_config(self.default_config, kwargs)
+        config = self.default_config.copy() | kwargs
         self.first_page_button = MorphDataViewNavigationButton(
             identity='first_page_button',
             icon='chevron-double-left',

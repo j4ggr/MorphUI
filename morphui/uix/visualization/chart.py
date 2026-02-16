@@ -12,7 +12,6 @@ from kivy.metrics import dp
 from kivy.properties import ObjectProperty
 from kivy.properties import VariableListProperty
 
-from morphui.utils import clean_config
 from morphui.uix.label import MorphSimpleLabel
 from morphui.uix.button import MorphIconButton
 from morphui.uix.boxlayout import MorphBoxLayout
@@ -104,7 +103,7 @@ class MorphChartToolbarMenu(
     """Container for toolbar menu items in MorphChartCard."""
 
     def __init__(self, *args, caller: MorphChartNavigationButton, **kwargs) -> None:
-        config = clean_config(self.default_config, kwargs)
+        config = self.default_config.copy() | kwargs
         super().__init__(caller=caller, **config)
         for child in args:
             self.add_widget(child)
@@ -462,7 +461,7 @@ class MorphChart(MorphFloatLayout):
             self,
             kw_savefig: Dict[str, Any] = {},
             **kwargs) -> None:
-        config = clean_config(self.default_config, kwargs)
+        config = self.default_config.copy() | kwargs
 
         self.kw_savefig = kw_savefig
         super().__init__(**config)

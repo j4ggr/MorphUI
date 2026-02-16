@@ -16,7 +16,6 @@ from kivy.core.text import Label as CoreLabel
 from kivy.uix.relativelayout import RelativeLayout
 
 __all__ = [
-    'clean_config',
     'calculate_text_size',
     'clamp',
     'get_effective_pos',
@@ -65,41 +64,6 @@ def timeit(func):
             print(f"{func.__qualname__}: {elapsed:.2f}ms")
         return result
     return wrapper
-
-
-def clean_config(
-        default_config: Dict[str, Any],
-        new_config: Dict[str, Any]
-        ) -> Dict[str, Any]:
-    """Clean default config by removing conflicting entries
-    
-    This function takes a default configuration dictionary and a new
-    configuration dictionary (mostly keyword arguments), and removes any 
-    entries from the default config that would conflict with the new
-    config.
-
-    If a color is explicitly set in the new config, any theme color
-    bindings in the default config are removed to prevent conflicts.
-
-    Parameters
-    ----------
-    config : Dict[str, Any]
-        The default configuration dictionary.
-    new_config : Dict[str, Any]
-        The new configuration dictionary, typically from keyword args.
-    
-    Returns
-    -------
-    Dict[str, Any]
-        The cleaned configuration dictionary.
-    """
-    config = default_config.copy() | new_config
-    if 'theme_color_bindings' in config:
-        bound_color = config['theme_color_bindings'].copy()
-        config['theme_color_bindings'] = {
-            k: v for k, v in bound_color.items() if k not in config}
-
-    return config
 
 
 def calculate_text_size(text, font_size=16, font_name=None):

@@ -23,8 +23,6 @@ from morphui.uix.behaviors import MorphToggleButtonBehavior
 from morphui.uix.behaviors import MorphIdentificationBehavior
 from morphui.uix.behaviors import MorphInteractionLayerBehavior
 
-from morphui.utils import clean_config
-
 
 __all__ = [
     'MorphCheckbox',
@@ -213,7 +211,7 @@ class MorphSwitch(
     """Default configuration for the MorphSwitch widget."""
 
     def __init__(self, kw_thumb: Dict[str, Any] = {}, **kwargs) -> None:
-        config = clean_config(self.default_config, kwargs)
+        config = self.default_config.copy() | kwargs
         self.thumb = ThumbSwitch(**kw_thumb)
         super().__init__(**config)
         self.add_widget(self.thumb)

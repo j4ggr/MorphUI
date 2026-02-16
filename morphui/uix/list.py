@@ -13,7 +13,6 @@ from kivy.properties import NumericProperty
 from kivy.uix.recycleview import RecycleView
 from kivy.uix.recycleview.views import RecycleDataViewBehavior
 
-from morphui.utils import clean_config
 from morphui.uix.label import MorphHeadingLabel
 from morphui.uix.label import MorphTertiaryLabel
 from morphui.uix.label import MorphSupportingLabel
@@ -119,7 +118,7 @@ class MorphListItemFlat(
             delegate_content_color=True,))
 
     def __init__(self, **kwargs) -> None:
-        config = clean_config(self.default_config, kwargs)
+        config = self.default_config.copy() | kwargs
         super().__init__(**config)
         self.delegated_children = [
             self.leading_widget,
@@ -235,7 +234,7 @@ class MorphListItem(
         delegate_content_color=True,))
 
     def __init__(self, **kwargs) -> None:
-        config = clean_config(self.default_config, kwargs)
+        config = self.default_config.copy() | kwargs
         self.leading_widget = self.default_child_classes['leading_widget']()
         self.heading_widget = self.default_child_classes['heading_widget']()
         self.supporting_widget = self.default_child_classes['supporting_widget']()
@@ -351,7 +350,7 @@ class MorphListLayout(
     """Default configuration for the MorphDataViewHeaderLayout."""
 
     def __init__(self, **kwargs) -> None:
-        config = clean_config(self.default_config, kwargs)
+        config = self.default_config.copy() | kwargs
         super().__init__(**config)
 
 
@@ -524,7 +523,7 @@ class BaseListView(
         **kwargs : dict
             Additional keyword arguments to customize the list view.
         """
-        config = clean_config(self.default_config, kwargs)
+        config = self.default_config.copy() | kwargs
         super().__init__(**config)
         self.bind(items=self.refresh_data) # type: ignore
         self.refresh_data()

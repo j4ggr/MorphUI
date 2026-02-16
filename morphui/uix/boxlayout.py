@@ -10,7 +10,6 @@ from morphui.uix.behaviors import MorphDeclarativeBehavior
 from morphui.uix.behaviors import MorphSurfaceLayerBehavior
 from morphui.uix.behaviors import MorphIdentificationBehavior
 
-from morphui.utils import clean_config
 
 __all__ = [
     'MorphSimpleBoxLayout',
@@ -60,7 +59,7 @@ class MorphSimpleBoxLayout(
     configuration."""
     
     def __init__(self, *widgets, **kwargs) -> None:
-        config = clean_config(self.default_config, kwargs)
+        config = self.default_config.copy() | kwargs
         super().__init__(*widgets, **config)
 
 
@@ -122,7 +121,7 @@ class MorphBoxLayout(
     """Initialize the MorphBoxLayout with the provided configuration."""
     
     def __init__(self, *widgets, **kwargs) -> None:
-        config = clean_config(self.default_config, kwargs)
+        config = self.default_config.copy() | kwargs
         super().__init__(*widgets, **config)
 
 
@@ -186,5 +185,5 @@ class MorphElevationBoxLayout(
     configuration."""
 
     def __init__(self, *widgets, **kwargs) -> None:
-        config = clean_config(self.default_config, kwargs)
+        config = self.default_config.copy() | kwargs
         super().__init__(*widgets, **config)

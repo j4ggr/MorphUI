@@ -6,18 +6,14 @@ eliminating code duplication across header, index, and body components.
 
 from typing import Any
 from typing import Dict
-from typing import List
-from typing import Sequence
 from typing import TYPE_CHECKING
 
 from kivy.metrics import dp
-from kivy.properties import AliasProperty
 from kivy.properties import ObjectProperty
 from kivy.properties import NumericProperty
 from kivy.uix.recycleview import RecycleView
 from kivy.uix.recycleview.views import RecycleDataViewBehavior
 
-from morphui.utils import clean_config
 from morphui.uix.label import BaseLabel
 from morphui.uix.behaviors import MorphThemeBehavior
 from morphui.uix.behaviors import MorphScrollSyncBehavior
@@ -125,5 +121,5 @@ class BaseDataView(
         **kwargs : dict
             Additional keyword arguments for configuration.
         """
-        config = clean_config(self.default_config, kwargs)
+        config = self.default_config.copy() | kwargs
         super().__init__(**config)
