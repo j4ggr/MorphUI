@@ -123,10 +123,10 @@ class MorphDropdownMenu(
     menu. Inherits from multiple behaviors to provide a rich set of 
     features including elevation, color theming, and auto-sizing.
     """
-    Builder.load_string(dedent('''
+    Builder.load_string(dedent(f'''
         <MorphDropdownMenu>:
-            viewclass: 'MorphDropdownMenuItem'
-            MenuRecycleBoxLayout:
+            viewclass: '{MorphDropdownMenuItem.__name__}'
+            {MenuRecycleBoxLayout.__name__}:
                 default_size: None, dp(48)
                 default_size_hint: 1, None
                 size_hint_y: None

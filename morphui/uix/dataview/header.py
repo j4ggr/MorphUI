@@ -98,10 +98,10 @@ class MorphDataViewHeader(BaseDataView):
     ```
     """
     
-    Builder.load_string(dedent('''
+    Builder.load_string(dedent(f'''
         <MorphDataViewHeader>:
-            viewclass: 'MorphDataViewHeaderLabel'
-            MorphDataViewHeaderLayout:
+            viewclass: '{MorphDataViewHeaderLabel.__name__}'
+            {MorphDataViewHeaderLayout.__name__}:
         '''))
 
     def _get_column_names(self) -> List[str]:

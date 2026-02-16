@@ -93,10 +93,10 @@ class MorphDataViewIndex(BaseDataView):
     ```
     """
     
-    Builder.load_string(dedent('''
+    Builder.load_string(dedent(f'''
         <MorphDataViewIndex>:
-            viewclass: 'MorphDataViewIndexLabel'
-            MorphDataViewIndexLayout:
+            viewclass: '{MorphDataViewIndexLabel.__name__}'
+            {MorphDataViewIndexLayout.__name__}:
         '''))
 
     def _get_row_names(self) -> List[str]:

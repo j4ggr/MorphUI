@@ -7,6 +7,7 @@ from typing import Any
 from typing import List
 from typing import Dict
 from typing import Literal
+from time import sleep
 
 from datetime import date
 from dateutil.parser import parse as parse_date
@@ -23,7 +24,7 @@ from kivy.properties import NumericProperty
 from kivy.uix.widget import Widget
 
 from morphui.uix.list import BaseListView
-from morphui.uix.list import MorphListLayout # noqa F401
+from morphui.uix.list import MorphListLayout
 from morphui.uix.list import MorphToggleListItemFlat
 from morphui.uix.label import MorphSimpleLabel
 from morphui.uix.label import MorphSimpleIconLabel
@@ -97,10 +98,10 @@ class BaseDatePickerListView(
     such as year and month views.
     """
     
-    Builder.load_string(dedent('''
+    Builder.load_string(dedent(f'''
         <BaseDatePickerListView>:
-            viewclass: '_ToggleListItemFlat'
-            MorphListLayout:
+            viewclass: '{_ToggleListItemFlat.__name__}'
+            {MorphListLayout.__name__}:
         '''))
 
     default_data: Dict[str, Any] = DictProperty(
@@ -752,9 +753,11 @@ class MorphDockedDatePickerMenu(
         index : int
             The index of the selected month item.
         """
-        self.current_month = (
+        delta = (
             self.identities.month_view.month_names.index(item.label_text)
+            - self.current_month
             + 1)
+        self._change_month(delta)
     
     def _change_month(self, delta: int) -> None:
         """Change the current month by the specified delta.
@@ -1036,22 +1039,22 @@ class MorphDockedDatePickerField(MorphTextField):
         if self.error:
             if not text:
                 self.calendar_view.clear_selection()
-            return
         
-        date_grid = self.picker_menu.identities.date_grid_layout
         texts = [t.strip() for t in text.split(self.range_sep)]
-        parsed_dates = [self._parse_date_text(_text) for _text in texts]
-        parsed_dates = [d for d in parsed_dates if d is not None]
+        parsed_dates = [
+            date for date in 
+            (self._parse_date_text(t) for t in texts if len(t) >= 10)
+            if date is not None]
         if len(parsed_dates) >= 2 and parsed_dates[0] > parsed_dates[1]:
             self.text = f'{texts[1]}{self.range_sep}{texts[0]}'
             return
         
-        self.calendar_view.clear_selection()
         for parsed_date in parsed_dates:
             self.picker_menu.current_year = parsed_date.year
             self.picker_menu.current_month = parsed_date.month
+            date_grid = self.picker_menu.identities.date_grid_layout
             for button in date_grid.children:
-                if button.date_value == parsed_date:
+                if button.date_value == parsed_date and not button.active:
                     button.trigger_action()
 
     def _set_text_by_selected_dates(self, *args) -> None:

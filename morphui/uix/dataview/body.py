@@ -156,10 +156,10 @@ class MorphDataViewBody(BaseDataView):
     suitable for displaying tabular data in a data view.
     """
     
-    Builder.load_string(dedent('''
+    Builder.load_string(dedent(f'''
         <MorphDataViewBody>:
-            viewclass: 'MorphDataViewBodyLabel'
-            MorphDataViewBodyLayout:
+            viewclass: '{MorphDataViewBodyLabel.__name__}'
+            {MorphDataViewBodyLayout.__name__}:
         '''))
 
     header: MorphDataViewHeader = ObjectProperty(None)

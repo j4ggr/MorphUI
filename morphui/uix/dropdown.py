@@ -13,7 +13,7 @@ from kivy.properties import StringProperty
 from kivy.properties import ObjectProperty
 
 from morphui.uix.list import BaseListView
-from morphui.uix.list import MorphListLayout # noqa F401
+from morphui.uix.list import MorphListLayout
 from morphui.uix.list import MorphListItemFlat
 from morphui.uix.button import MorphTextIconButton
 from morphui.uix.boxlayout import MorphElevationBoxLayout
@@ -48,10 +48,10 @@ class MorphDropdownList(
     :class:`~morphui.uix.dropdown.MorphDropdownFilterField`.
     """
     
-    Builder.load_string(dedent('''
+    Builder.load_string(dedent(f'''
         <MorphDropdownList>:
-            viewclass: 'MorphListItemFlat'
-            MorphListLayout:
+            viewclass: '{MorphListItemFlat.__name__}'
+            {MorphListLayout.__name__}:
         '''))
 
     default_data: Dict[str, Any] = DictProperty(
