@@ -854,14 +854,13 @@ class MorphTextField(
                 config[attr] = cls()
 
         super().__init__(**config)
-        text_input_color_bindings = {
-            prop: color 
-            for prop, color in config.get('theme_color_bindings', {}).items()
-            if 'content' in prop}
+        color_bindings = config.get('theme_color_bindings') or {}
+        color_bindings = {
+            p: c  for p, c in color_bindings.items() if 'content' in p}
         self._text_input = MorphTextInput(
             theme_color_bindings=dict(
                 normal_surface_color='transparent_color',
-                **text_input_color_bindings),
+                **color_bindings),
             identity=NAME.INPUT,
             size_hint=(None, None),
             padding=dp(0),

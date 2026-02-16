@@ -570,7 +570,6 @@ class MorphDockedDatePickerMenu(
                 normal_content_color='content_surface_color',
                 disabled_content_color='outline_color',
                 hovered_content_color='inverse_surface_color',),
-            normal_content_color=[1, 0.8, 0, 0.8],
             auto_size=(True, True),
             disabled_state_opacity=0.0,
             round_sides=True,)
