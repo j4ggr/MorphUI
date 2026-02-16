@@ -14,6 +14,43 @@ __Types of changes__:
 - _Fixed_ for any bug fixes.
 - _Security_ in case of vulnerabilities.
 
+## [0.9.0] - 2026-02-16
+
+### Added
+
+- Added `explicit_color_properties` set to MorphColorThemeBehavior for tracking user-specified colors that should not be automatically updated by theme changes.
+- Added `_detect_explicit_properties()` method to MorphColorThemeBehavior to auto-detect explicitly set color properties from kwargs during initialization.
+- Added `_refresh_list_views()` method to MorphDockedDatePickerMenu for refreshing list views before displaying.
+- Added 'disabled' theme style to `THEME.STYLES` constant.
+
+### Changed
+
+- Changed MorphColorThemeBehavior to give `theme_color_bindings` precedence over `theme_style`, allowing override of predefined theme style bindings.
+- Changed all widgets to use `default_config.copy() | kwargs` pattern in `__init__`, replacing clean_config usage.
+- Changed MorphDockedDatePickerMenu to inherit from MorphElevationBoxLayout.
+- Changed MorphDockedDatePickerMenu to return to calendar view when a month is selected in month view.
+- Changed MorphDockedDatePickerMenu to reposition menu when size changes to ensure it connects to caller.
+- Changed MorphDockedDatePickerMenu to return to calendar view when using arrow keys while in list view (year or month).
+- Changed MorphChartToolbar to inherit from MorphToggleButtonBehavior class.
+- Changed MorphChartToolbar menu toggling to use active state instead of manual open/close.
+- Changed composition behaviors to call `_update_icon` within refreshing leading or trailing widget methods.
+- Changed ListView classes to use f-strings for Builder.load_string and define tree using `__name__` attribute.
+- Changed all THEME.STYLES to have consistent disabled colors across all styles.
+
+### Removed
+
+- Removed `clean_config()` function from morphui.utils.helpers, replaced with dynamic explicit property tracking system.
+- Removed obsolete `_update_content_layer` override from MorphDelegatedThemeBehavior.
+
+### Fixed
+
+- Fixed MorphDockedDatePickerMenu where highlighting and marking selected buttons when using text input instead of clicking on a button now works correctly.
+- Fixed MorphDockedDatePickerMenu where wrong item had check mark when switching to list view; list view is now refreshed before entering.
+- Fixed MorphDockedDatePickerMenu to set the correct item active when changing year or month using arrow buttons.
+- Fixed MorphChartToolbar where menu was closed and reopened when clicking on button while menu was already open.
+- Fixed MorphContentLayerBehavior where resetting `disabled_content_color` is now done in `_update_content_layer` method instead of `refresh_content` method with outdated color.
+- Fixed MorphDelegatedThemeBehavior where delegating states are now done in `_update_current_state` method override instead of using bindings which didn't work properly.
+
 ## [0.8.0] - 2026-02-12
 
 ### Added

@@ -7,7 +7,6 @@ from typing import Any
 from typing import List
 from typing import Dict
 from typing import Literal
-from time import sleep
 
 from datetime import date
 from dateutil.parser import parse as parse_date
