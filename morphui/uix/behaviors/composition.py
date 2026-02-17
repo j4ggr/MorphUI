@@ -24,6 +24,28 @@ __all__ = [
     'MorphTrailingWidgetBehavior',]
 
 
+def _is_widget_visible(widget: Any) -> bool:
+    """Determine if a widget is currently visible and should be shown.
+
+    This function checks if the widget is not None, has a parent (is in
+    the widget tree), and is not explicitly set to be hidden.
+
+    Parameters
+    ----------
+    widget : Any
+        The widget to check for visibility
+
+    Returns
+    -------
+    bool
+        True if the widget should be shown, False otherwise
+    """
+    return (
+        widget is not None and
+        widget.parent is not None and
+        getattr(widget, 'text', False))
+
+
 class MorphLeadingWidgetBehavior:
     """Behavior for managing a leading icon widget.
     
@@ -97,6 +119,21 @@ class MorphLeadingWidgetBehavior:
 
     :attr:`leading_icon` is a :class:`~kivy.properties.AliasProperty`
     and is bound to changes in the `leading_widget`.
+    """
+
+    shows_leading_icon: bool = AliasProperty(
+        lambda self: _is_widget_visible(self.leading_widget),
+        bind=['leading_widget', '_leading_icon',])
+    """Whether the leading icon is currently visible.
+
+    This property returns True if the `leading_widget` is not None, has
+    a parent (is in the widget tree), and is not explicitly set to be
+    hidden. It is a read-only property that provides a convenient way to 
+    check the visibility of the leading icon.
+
+    :attr:`shows_leading_icon` is a 
+    :class:`~kivy.properties.AliasProperty` that is bound to changes in 
+    the `leading_widget` and its icon.
     """
 
     def _get_normal_leading_icon(self) -> str:
@@ -323,6 +360,21 @@ class MorphLabelWidgetBehavior:
     :attr:`label_widget` is by default an instance of
     :class:`~morphui.uix.label.MorphTextLabel`.
     """
+
+    shows_label: bool = AliasProperty(
+        lambda self: _is_widget_visible(self.label_widget),
+        bind=['label_widget', '_label_text'])
+    """Whether the label is currently visible.
+
+    This property returns True if the `label_widget` is not None, has
+    a parent (is in the widget tree), and has text content. It is a 
+    read-only property that provides a convenient way to check the 
+    visibility of the label.
+
+    :attr:`shows_label` is a :class:`~kivy.properties.AliasProperty` 
+    that is bound to changes in the `label_widget` and its text.
+    """
+
     def on_label_widget(self, instance: Any, label_widget: Any) -> None:
         """Called when the label widget is changed.
 
@@ -538,6 +590,49 @@ class MorphTripleLabelBehavior:
 
     :attr:`tertiary_widget` is by default an instance of
     :class:`~morphui.uix.label.MorphTextLabel`.
+    """
+
+    shows_heading: bool = AliasProperty(
+        lambda self: _is_widget_visible(self.heading_widget),
+        bind=['heading_widget', '_heading_text'])
+    """Whether the heading label is currently visible.
+
+    This property returns True if the `heading_widget` is not None, has
+    a parent (is in the widget tree), and has text content. It is a 
+    read-only property that provides a convenient way to check the 
+    visibility of the heading label.
+
+    :attr:`shows_heading` is a :class:`~kivy.properties.AliasProperty` 
+    that is bound to changes in the `heading_widget` and its text.
+    """
+
+    shows_supporting: bool = AliasProperty(
+        lambda self: _is_widget_visible(self.supporting_widget),
+        bind=['supporting_widget', '_supporting_text'])
+    """Whether the supporting label is currently visible.
+
+    This property returns True if the `supporting_widget` is not None, 
+    has a parent (is in the widget tree), and has text content. It is a 
+    read-only property that provides a convenient way to check the 
+    visibility of the supporting label.
+
+    :attr:`shows_supporting` is a 
+    :class:`~kivy.properties.AliasProperty` that is bound to changes in 
+    the `supporting_widget` and its text.
+    """
+
+    shows_tertiary: bool = AliasProperty(
+        lambda self: _is_widget_visible(self.tertiary_widget),
+        bind=['tertiary_widget', '_tertiary_text'])
+    """Whether the tertiary label is currently visible.
+
+    This property returns True if the `tertiary_widget` is not None, has
+    a parent (is in the widget tree), and has text content. It is a 
+    read-only property that provides a convenient way to check the 
+    visibility of the tertiary label.
+
+    :attr:`shows_tertiary` is a :class:`~kivy.properties.AliasProperty` 
+    that is bound to changes in the `tertiary_widget` and its text.
     """
 
     def on_heading_widget(
@@ -779,6 +874,21 @@ class MorphTrailingWidgetBehavior:
     :attr:`active_trailing_icon` is a 
     :class:`~kivy.properties.AliasProperty` and is bound to changes in
     the `trailing_widget`.
+    """
+
+    shows_trailing_icon: bool = AliasProperty(
+        lambda self: _is_widget_visible(self.trailing_widget),
+        bind=['trailing_widget', '_trailing_icon',])
+    """Whether the trailing icon is currently visible.
+
+    This property returns True if the `trailing_widget` is not None, has
+    a parent (is in the widget tree), and is not explicitly set to be
+    hidden. It is a read-only property that provides a convenient way to
+    check the visibility of the trailing icon.
+
+    :attr:`shows_trailing_icon` is a 
+    :class:`~kivy.properties.AliasProperty` that is bound to changes in 
+    the `trailing_widget` and its icon.
     """
 
     trailing_scale_enabled: bool = BooleanProperty(False)
