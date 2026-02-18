@@ -34,9 +34,9 @@ __all__ = [
     'MorphButtonTextLabel',
     'MorphChipLeadingIconLabel',
     'MorphChipTextLabel',
-    'MorphTextFieldLabel',
+    'MorphTextFieldHeadingLabel',
     'MorphTextFieldSupportingLabel',
-    'MorphTextFieldTextLengthLabel',
+    'MorphTextFieldTertiaryLabel',
     'MorphTextFieldLeadingIconLabel',]
 
 
@@ -490,8 +490,8 @@ class MorphChipTextLabel(
             auto_size=(True, True),))
 
 
-class MorphTextFieldLabel(MorphSimpleLabel):
-    """Label for text fields with state properties.
+class MorphTextFieldHeadingLabel(MorphSimpleLabel):
+    """Heading for text fields with state properties.
 
     This label is specifically designed for use within text field
     components. It includes properties to indicate whether the label
@@ -605,8 +605,8 @@ class MorphTextFieldSupportingLabel(MorphSimpleLabel):
         auto_size=True,)
 
 
-class MorphTextFieldTextLengthLabel(MorphSimpleLabel):
-    """Text length label for text fields with state properties.
+class MorphTextFieldTertiaryLabel(MorphSimpleLabel):
+    """Tertiary label for text fields with state properties.
 
     This label is specifically designed for use within text field
     components to display the current text length. It includes

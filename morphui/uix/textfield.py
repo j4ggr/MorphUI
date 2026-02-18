@@ -15,7 +15,6 @@ from kivy.properties import DictProperty
 from kivy.properties import ColorProperty
 from kivy.properties import AliasProperty
 from kivy.properties import StringProperty
-from kivy.properties import ObjectProperty
 from kivy.properties import OptionProperty
 from kivy.properties import BooleanProperty
 from kivy.properties import NumericProperty
@@ -30,16 +29,20 @@ from morphui.uix.behaviors import MorphSizeBoundsBehavior
 from morphui.uix.behaviors import MorphAutoSizingBehavior
 from morphui.uix.behaviors import MorphTypographyBehavior
 from morphui.uix.behaviors import MorphRoundSidesBehavior
+from morphui.uix.behaviors import MorphTripleLabelBehavior
 from morphui.uix.behaviors import MorphSurfaceLayerBehavior
 from morphui.uix.behaviors import MorphContentLayerBehavior
+from morphui.uix.behaviors import MorphLeadingWidgetBehavior
+from morphui.uix.behaviors import MorphTrailingWidgetBehavior
+from morphui.uix.behaviors import MorphDelegatedThemeBehavior
 from morphui.uix.behaviors import MorphIdentificationBehavior
 from morphui.uix.behaviors import MorphInteractionLayerBehavior
 
 from morphui.uix.floatlayout import MorphFloatLayout
 
-from morphui.uix.label import MorphTextFieldLabel
+from morphui.uix.label import MorphTextFieldHeadingLabel
+from morphui.uix.label import MorphTextFieldTertiaryLabel
 from morphui.uix.label import MorphTextFieldSupportingLabel
-from morphui.uix.label import MorphTextFieldTextLengthLabel
 from morphui.uix.label import MorphTextFieldLeadingIconLabel
 
 from morphui.uix.button import MorphTextFieldTrailingIconButton
@@ -490,11 +493,41 @@ class MorphTextInput(
 class MorphTextField(
         MorphTextValidator,
         MorphHoverBehavior,
+        MorphDelegatedThemeBehavior,
+        MorphLeadingWidgetBehavior,
+        MorphTripleLabelBehavior,
+        MorphTrailingWidgetBehavior,
         MorphTypographyBehavior,
         MorphContentLayerBehavior,
         MorphInteractionLayerBehavior,
         MorphFloatLayout,):
-    
+    """A versatile text field widget with validation, theming, and 
+    flexible layout. Designed for various text input scenarios, it 
+    supports single-line and multi-line input, password fields, and 
+    real-time validation.
+
+    It consists of an internal :class:`MorphTextInput` for handling text 
+    input and additional widgets for labels, supporting text, and icons.
+    These child widgets are managed internally and can be customized or
+    replaced as needed. The main child widgets include:
+    - :attr:`heading_widget`: Internal widget for the main label of the 
+      text field. It displays the primary label that describes the 
+      purpose of the text field.
+    - :attr:`supporting_widget`: Displays supporting text for the 
+      text field. This is typically used to show error messages or 
+      additional information.
+    - :attr:`tertiary_widget`: Displays the current text length and
+      character count for the text field.
+    - :attr:`leading_icon_widget`: Displays a leading icon for the text 
+      field. This icon is positioned at the start of the text field and 
+      can be used to indicate the purpose of the text field or provide
+      visual context.
+    - :attr:`trailing_icon_widget`: Displays a trailing icon for the
+      text field. This icon is positioned at the end of the text field 
+      and can be used to indicate additional actions or provide visual
+      context.
+    """
+
     text: str = StringProperty('')
     """The text content of the text field.
 
@@ -504,7 +537,8 @@ class MorphTextField(
     internal :class:`MorphTextInput`.
 
     :attr:`text` is a :class:`~kivy.properties.StringProperty` and 
-    defaults to ''."""
+    defaults to ''.
+    """
     
     disabled: bool = BooleanProperty(False)
     """Indicates whether the text field is disabled.
@@ -567,26 +601,6 @@ class MorphTextField(
     :attr:`selected_text_color_opacity` is a
     :class:`~kivy.properties.NumericProperty` and defaults to 0.4."""
 
-    label_text: str = StringProperty('')
-    """The main label text displayed above the text input area.
-
-    When set, this text appears as a label above the input field,
-    providing context for the expected input. On focus, the label may
-    animate or change style to indicate active input state.
-
-    :attr:`label_text` is a :class:`~kivy.properties.StringProperty`
-    and defaults to ''."""
-
-    supporting_text: str = StringProperty('')
-    """The supporting text displayed below the text input area.
-
-    This text provides additional information or instructions related
-    to the input field. It appears below the main input area and can
-    change style based on the input state.
-
-    :attr:`supporting_text` is a :class:`~kivy.properties.StringProperty`
-    and defaults to ''."""
-
     supporting_error_texts: Dict[str, str] = DictProperty({})
     """Mapping of error types to supporting error messages.
 
@@ -600,82 +614,6 @@ class MorphTextField(
     :attr:`supporting_error_texts` is a
     :class:`~kivy.properties.DictProperty` and defaults to an empty 
     dictionary."""
-
-    leading_icon: str = StringProperty('')
-    """The icon displayed to the leading (left) side of the text input 
-    area.
-
-    This icon can be used to visually represent the purpose of the input
-    field or to provide additional context. It appears to the left of
-    the main input area and can change style based on the input state.
-
-    :attr:`leading_icon` is a :class:`~kivy.properties.StringProperty`
-    and defaults to ''."""
-
-    trailing_icon: str = StringProperty('')
-    """The icon displayed to the trailing (right) side of the text input
-    area.
-
-    This icon can be used to visually represent the action associated
-    with the input field or to provide additional context. It appears to
-    the right of the main input area and can change style based on the
-    input state.
-
-    :attr:`trailing_icon` is a :class:`~kivy.properties.StringProperty`
-    and defaults to ''."""
-
-    label_widget: MorphTextFieldLabel = ObjectProperty()
-    """The main label widget displayed above the text input area.
-
-    This widget represents the label associated with the text field.
-    It is automatically created and managed by the MorphTextField class.
-
-    :attr:`label_widget` is by default an instance of
-    :class:`~morphui.uix.label.MorphTextFieldLabel`."""
-
-    supporting_widget: MorphTextFieldSupportingLabel = ObjectProperty()
-    """The supporting label widget displayed below the text input area.
-
-    This widget represents the supporting text associated with the text
-    field. It is automatically created and managed by the MorphTextField
-    class.
-
-    :attr:`supporting_widget` is by default an instance of
-    :class:`~morphui.uix.label.MorphTextFieldSupportingLabel`."""
-
-    text_length_widget: MorphTextFieldTextLengthLabel = ObjectProperty()
-    """The text length label widget displayed to the right of the
-    supporting text area.
-
-    This widget shows the current length of the text input, useful for
-    fields with maximum length constraints. It is automatically created
-    and managed by the :class:`MorphTextField` class.
-
-    :attr:`text_length_widget` is a 
-    :class:`~kivy.properties.ObjectProperty` and defaults to a
-    MorphTextFieldTextLengthLabel instance."""
-
-    leading_widget: MorphTextFieldLeadingIconLabel = ObjectProperty()
-    """The leading icon widget displayed to the left of the text input
-    area.
-
-    This widget represents the leading icon associated with the text
-    field. It is automatically created and managed by the MorphTextField
-    class.
-
-    :attr:`leading_widget` is by default an instance of
-    :class:`~morphui.uix.label.MorphTextFieldLeadingIconLabel`."""
-
-    trailing_widget: MorphTextFieldTrailingIconButton = ObjectProperty()
-    """The trailing icon button widget displayed to the right of the text input
-    area.
-
-    This widget represents the trailing icon button associated with the text
-    field. It is automatically created and managed by the MorphTextField
-    class.
-
-    :attr:`trailing_widget` is by default an instance of
-    :class:`~morphui.uix.button.MorphTextFieldTrailingIconButton`."""
 
     maximum_height: float = NumericProperty(dp(100))
     """The maximum height of the text field. 
@@ -709,22 +647,22 @@ class MorphTextField(
     :class:`~kivy.properties.StringProperty` and defaults to 'out_sine'.
     """
 
-    label_focus_behavior: str = OptionProperty(
+    heading_focus_behavior: str = OptionProperty(
         'float_to_border',
         options=['hide', 'float_to_border', 'move_above'])
-    """Controls how the label widget behaves when the text field gains 
+    """Controls how the heading widget behaves when the text field gains 
     focus.
 
     This property determines the animation and positioning behavior of 
-    the label widget during focus transitions:
+    the heading widget during focus transitions:
 
-    - 'hide': The label disappears when the text field is focused
-    - 'float_to_border': The label moves up and floats over the border 
+    - 'hide': The heading disappears when the text field is focused
+    - 'float_to_border': The heading moves up and floats over the border 
     (current Material Design implementation)
-    - 'move_above': The label moves completely above the input area, 
+    - 'move_above': The heading moves completely above the input area, 
     pushing the input field down slightly
 
-    :attr:`label_focus_behavior` is a 
+    :attr:`heading_focus_behavior` is a 
     :class:`~kivy.properties.OptionProperty` and defaults to 
     'float_to_border'."""
 
@@ -814,6 +752,8 @@ class MorphTextField(
             focus_border_color='primary_color',
             disabled_border_color='outline_variant_color',
             normal_content_color='content_surface_color',
+            error_content_color='error_color',
+            disabled_content_color='outline_variant_color',
             selected_text_color='secondary_color',),
         size_hint_y=None,)
     """Default configuration values for MorphTextField.
@@ -829,29 +769,29 @@ class MorphTextField(
     This widget handles the actual text input functionality and is
     managed internally by the MorphTextField class."""
 
-    _label_initial_color_bindings: dict[str, str] = {}
-    """Stores the initial color bindings of the label widget for
+    _heading_initial_color_bindings: dict[str, str] = {}
+    """Stores the initial color bindings of the heading widget for
     restoration after focus changes."""
 
-    _label_initial_font_size: float = sp(1)
-    """Stores the initial font size of the label widget for
+    _heading_initial_font_size: float = sp(1)
+    """Stores the initial font size of the heading widget for
     restoration after focus changes."""
 
-    _label_size_factor: float = 1.0
-    """Stores the size factor of the label widget for scaling purposes."""
+    _heading_size_factor: float = 1.0
+    """Stores the size factor of the heading widget for scaling purposes."""
 
     def __init__(self, **kwargs) -> None:
+        config = self.default_config.copy() | kwargs
 
-        child_classes = dict(
-            label_widget=MorphTextFieldLabel,
+        child_widgets = dict(
+            heading_widget=MorphTextFieldHeadingLabel,
             supporting_widget=MorphTextFieldSupportingLabel,
-            text_length_widget=MorphTextFieldTextLengthLabel,
+            tertiary_widget=MorphTextFieldTertiaryLabel,
             leading_widget=MorphTextFieldLeadingIconLabel,
             trailing_widget=MorphTextFieldTrailingIconButton,)
-        config = self.default_config.copy() | kwargs
-        for attr, cls in child_classes.items():
-            if attr not in config:
-                config[attr] = cls()
+        config |= {
+            prop_name: widget() for prop_name, widget in child_widgets.items() 
+            if prop_name not in config}
 
         super().__init__(**config)
         color_bindings = config.get('theme_color_bindings') or {}
@@ -865,11 +805,21 @@ class MorphTextField(
             size_hint=(None, None),
             padding=dp(0),
             auto_height=True)
-        
         self.add_widget(self._text_input)
-        self._label_initial_color_bindings = (
-            self.label_widget.theme_color_bindings.copy())
-        self._label_initial_font_size = self.label_widget.font_size
+        
+        children = [
+            self.leading_widget,
+            self.heading_widget,
+            self.tertiary_widget,
+            self.supporting_widget,
+            self.trailing_widget,]
+        self.delegated_children = [c for c in children if c is not None]
+        for child in self.delegated_children:
+            self.add_widget(child)
+
+        self._heading_initial_color_bindings = (
+            self.heading_widget.theme_color_bindings.copy())
+        self._heading_initial_font_size = self.heading_widget.font_size
         if self.selected_text_color is None:
             self.selected_text_color = self._text_input.selection_color
 
@@ -894,89 +844,22 @@ class MorphTextField(
             pos=self._update_layout,
             size=self._update_layout,
             declarative_children=self._update_layout,
+            leading_widget=self._update_layout,
+            trailing_widget=self._update_layout,
             focus=lambda *args: Clock.schedule_once(self._animate_on_focus),
             selected_text_color=self._update_selection_color,
             selected_text_color_opacity=self._update_selection_color,
             error_type=self._update_supporting_error_text,
             supporting_error_texts=self._update_supporting_error_text,
-            current_content_state=self._update_children_states,
             minimum_height=self.setter('height'),
             maximum_height=self._text_input.setter('maximum_height'),)
-        self.fbind(
-            'label_text',
-            self._update_child_widget,
-            identity=NAME.LABEL_WIDGET)
-        self.fbind(
-            'supporting_text',
-            self._update_child_widget,
-            identity=NAME.SUPPORTING_WIDGET)
-        self.fbind(
-            'leading_icon',
-            self._update_child_widget,
-            identity=NAME.LEADING_WIDGET)
-        self.fbind(
-            'trailing_icon',
-            self._update_child_widget,
-            identity=NAME.TRAILING_WIDGET)
-        self.fbind(
-            'max_text_length',
-            self._update_text_length_widget,
-            identity=NAME.TEXT_LENGTH_WIDGET)
 
         self.refresh_textfield_content()
-
-    def _update_child_widget(
-            self, instance: Any, text: str, identity: str) -> None:
-        """Add, update, or remove a child widget based on the provided 
-        text and identity.
-
-        This method manages the presence and content of child widgets
-        (labels, icons) within the text field. It adds the widget if
-        text is provided and the widget is not already present. It
-        updates the widget's content if it exists. If no text is
-        provided, the widget is removed.
-
-        Parameters
-        ----------
-        instance : Any
-            The instance of the widget being updated.
-        text : str
-            The text content to set for the child widget.
-        identity : str
-            The identity of the child widget being updated.
-        """
-        add_widget = bool(text)
-        match identity:
-            case NAME.LABEL_WIDGET:
-                widget = self.label_widget
-            case NAME.SUPPORTING_WIDGET:
-                widget = self.supporting_widget
-                add_widget = bool(self.supporting_error_texts)
-            case NAME.LEADING_WIDGET:
-                widget = self.leading_widget
-            case NAME.TRAILING_WIDGET:
-                widget = self.trailing_widget
-            case _:
-                raise ValueError(
-                    f'Widget not found for identity: {identity!r}')
-
-        if hasattr(widget, 'icon'):
-            widget.icon = text
-        else:
-            widget.text = text
-        
-        if add_widget and identity not in self.identities:
-            widget.identity = identity
-            self.add_widget(widget)
-        elif not add_widget and identity in self.identities:
-            self.remove_widget(widget)
-        self._update_layout()
     
-    def _update_text_length_widget(
-            self, instance: Any, max_length: int, identity: str) -> None:
-        """Update the text length widget based on the maximum length.
+    def _update_tertiary_text(self, instance: Any, max_length: int) -> None:
+        """Update the tertiary text based on the maximum length.
 
-        This method sets the maximum length for the text length widget
+        This method sets the maximum length for the tertiary widget
         and updates its visibility based on the current content state.
 
         Parameters
@@ -984,21 +867,15 @@ class MorphTextField(
         instance : Any
             The instance of the widget being updated.
         max_length : int
-            The maximum length to set for the text length widget.
-        identity : str
-            The identity of the child widget being updated.
+            The maximum length to set for the tertiary widget.
         """
-        if identity != NAME.TEXT_LENGTH_WIDGET or not self.text_length_widget:
+        if self.tertiary_widget is None:
             return
 
-        show_length = max_length > 0
-        if not show_length and identity in self.identities:
-            self.remove_widget(self.text_length_widget)
-        elif show_length and identity not in self.identities:
-            self.text_length_widget.identity = identity
-            self.add_widget(self.text_length_widget)
-
-        self.text_length_widget.text = f'{len(self.text)}/{max_length}'
+        if max_length > 0:
+            self.tertiary_text = f'{len(self.text)}/{max_length}'
+        else:
+            self.tertiary_text = ''
         self._update_layout()
 
     def _update_layout(self, *args) -> None:
@@ -1018,43 +895,41 @@ class MorphTextField(
         transitions. 
         """
         spacing = dp(4)
+        left_alignment = self.x + self._horizontal_padding
+        right_alignment = self.x + self.width - self._horizontal_padding
+        bottom_alignment = self.y - spacing
         x_input, y_input = self.pos
         w_input, h_input = self.size
         if w_input <= 0 or h_input <= 0: # ScreenManager issue when widget was not visible yet.
             return
         
-        Animation.stop_all(self.label_widget)
+        Animation.stop_all(self.heading_widget)
         Animation.stop_all(self._text_input)
         Animation.stop_all(self)
         
-        if NAME.LEADING_WIDGET in self.identities:
-            self.leading_widget.x = self.x + self._horizontal_padding
+        if self.shows_leading_icon:
+            self.leading_widget.x = left_alignment
             x_input = self.leading_widget.x + self.leading_widget.width
             w_input -= (x_input - self.x)
 
-        if NAME.TRAILING_WIDGET in self.identities:
-            self.trailing_widget.right = (
-                self.x + self.width - self._horizontal_padding)
+        if self.shows_trailing_icon:
+            self.trailing_widget.right = right_alignment
             w_input -= (self.x + self.width - self.trailing_widget.x)
 
-        if NAME.SUPPORTING_WIDGET in self.identities:
-            self.supporting_widget.x = self.x + self._horizontal_padding
-            self.supporting_widget.y = (
-                self.y - self.supporting_widget.height - spacing)
+        if self.shows_supporting:
+            self.supporting_widget.x = left_alignment
+            self.supporting_widget.top = bottom_alignment
             self.supporting_widget.maximum_width = (
                 self.width - 2 * self._horizontal_padding)
         
-        if NAME.TEXT_LENGTH_WIDGET in self.identities:
-            self.text_length_widget.right = (
-                self.x + self.width - self._horizontal_padding)
-            self.text_length_widget.y = (
-                    self.y - self.text_length_widget.height - spacing)
-            if NAME.SUPPORTING_WIDGET in self.identities:
-                self.supporting_widget.y = self.text_length_widget.y
+        if self.shows_tertiary:
+            self.tertiary_widget.right = right_alignment
+            self.tertiary_widget.top = bottom_alignment
+            if self.shows_supporting:
                 self.supporting_widget.maximum_width = (
                     self.width
                     - 2 * self._horizontal_padding
-                    - self.text_length_widget.width
+                    - self.tertiary_widget.width
                     - spacing)
 
         self._text_input.pos = x_input, y_input
@@ -1065,9 +940,9 @@ class MorphTextField(
         self.width = max(self.width, self.minimum_width)
         self.height = max(self._text_input.height, self.minimum_height)
 
-        if NAME.LABEL_WIDGET in self.identities:
-            self.label_widget.font_size = self._resolve_label_font_size()
-            self.label_widget.pos = self._resolve_label_position()
+        if self.shows_heading:
+            self.heading_widget.font_size = self._resolve_heading_font_size()
+            self.heading_widget.pos = self._resolve_heading_position()
             self.border_open_x, self.border_open_length = (
                 self._resolve_border_open_params())
         
@@ -1080,55 +955,30 @@ class MorphTextField(
         self._text_input_height = self._text_input.height
         self._text_input_min_width = self._text_input.minimum_width
 
-        self._update_text_length_widget(
-            self, self.max_text_length, NAME.TEXT_LENGTH_WIDGET)
         self._update_supporting_error_text()
-
-        self._update_child_widget(
-            self, self.label_text, NAME.LABEL_WIDGET)
-        self._update_child_widget(
-            self, self.supporting_text, NAME.SUPPORTING_WIDGET)
-        self._update_child_widget(
-            self, self.leading_icon, NAME.LEADING_WIDGET)
-        self._update_child_widget(
-            self, self.trailing_icon, NAME.TRAILING_WIDGET)
-    
         self._update_layout()
+
         self.validate(self.text)
+        self.refresh_leading_widget()
+        self.refresh_trailing_widget()
+        self.refresh_triple_labels()
         self._text_input.refresh_content()
 
-    def _update_children_states(self, *args) -> None:
-        """Handle changes to the current content state of the text field.
-
-        This method updates the appearance of the text field and its
-        child widgets based on the current content state (e.g., normal,
-        focused, error).
-
-        Parameters
-        ----------
-        state : str
-            The new content state of the text field.
-        """
-        for child in self.declarative_children:
-            for state in self.available_states:
-                if hasattr(child, state):
-                    child.setter(state)(self, getattr(self, state, False))
-
-    def _resolve_label_position(self) -> Tuple[float, float]:
-        """Get the position of the main label widget.
+    def _resolve_heading_position(self) -> Tuple[float, float]:
+        """Get the position of the heading widget.
 
         Returns
         -------
         Tuple[float, float]
-            The (x, y) position of the main label widget.
+            The (x, y) position of the heading widget.
         """
         padding = self._resolve_text_input_padding()
         x = self._text_input.x + padding[0]
-        y = self.y + self.height / 2 - self.label_widget.height / 2
+        y = self.y + self.height / 2 - self.heading_widget.height / 2
         if not self.focus and not self.text:
             return (x, y)
         
-        match self.label_focus_behavior:
+        match self.heading_focus_behavior:
             case 'hide':
                 pass
             case 'move_above':
@@ -1146,32 +996,35 @@ class MorphTextField(
             
         return (x, y)
     
-    def _resolve_label_font_size(self) -> float:
-        """Get the font size for the main label widget.
+    def _resolve_heading_font_size(self) -> float:
+        """Get the font size for the heading widget.
 
         Returns
         -------
         float
-            The font size for the main label widget.
+            The font size for the heading widget.
         """
         if self.focus or self.text:
+            if self.heading_focus_behavior == 'hide':
+                return 0
+            
             font_size = self.typography.get_font_size(
-                role=self.label_widget.typography_role,
+                role=self.heading_widget.typography_role,
                 size='small')
         else:
-            font_size = self._label_initial_font_size
+            font_size = self._heading_initial_font_size
 
         if isinstance(font_size, str):
             font_size = sp(int(font_size.replace('sp', '')))
-        self._label_size_factor = font_size / self._label_initial_font_size
+        self._heading_size_factor = font_size / self._heading_initial_font_size
         return font_size
 
     def _resolve_border_open_params(self) -> Tuple[float | None, float]:
         """Get the open border segment parameters for the text field.
 
-        The open border segment is used when the label floats over
+        The open border segment is used when the heading floats over
         the border. It defines where the border should be open to
-        accommodate the label.
+        accommodate the heading.
 
         Returns
         -------
@@ -1180,14 +1033,14 @@ class MorphTextField(
         """
         open_x = None
         open_length = 0.0
-        if self.label_focus_behavior != 'float_to_border':
+        if self.heading_focus_behavior != 'float_to_border':
             pass
         
         elif self.focus or self.text:
-            open_x = self._resolve_label_position()[0]
+            open_x = self._resolve_heading_position()[0]
             open_length = (
-                self.label_widget.width
-                * self._label_size_factor)
+                self.heading_widget.width
+                * self._heading_size_factor)
         return open_x, open_length
 
     def _resolve_text_input_padding(self) -> List[float]:
@@ -1200,7 +1053,7 @@ class MorphTextField(
             internal text input widget.
         """
         padding = self.text_input_default_padding.copy()
-        if self.label_focus_behavior == 'move_above' and (self.focus or self.text):
+        if self.heading_focus_behavior == 'move_above' and (self.focus or self.text):
             padding[1] = dp(24)
             padding[3] = dp(4)
         return padding
@@ -1208,44 +1061,42 @@ class MorphTextField(
     def _animate_on_focus(self, *args) -> None:
         """Handle focus changes for the text field.
 
-        This method animates the main label widget to a new position
+        This method animates the heading widget to a new position
         and font size when the text field gains or loses focus.
         """
-        if NAME.LABEL_WIDGET not in self.identities:
+        if self.heading_widget is None:
             return
 
-        Animation.cancel_all(self.label_widget)
+        Animation.cancel_all(self.heading_widget)
         Animation.cancel_all(self._text_input)
         Animation.cancel_all(self)
 
-        font_size = self._resolve_label_font_size()
-        target_pos = self._resolve_label_position()
+        font_size = self._resolve_heading_font_size()
+        target_pos = self._resolve_heading_position()
 
         self.border_width = dp(1.5) if self.focus else dp(1)
 
-        if self.label_focus_behavior == 'hide':
-            color_bindings = self._label_initial_color_bindings.copy()
-            if self.focus or self.text:
-                _colors = (k for k in color_bindings if 'content' in k)
-                color_bindings.update(
-                    {c: 'transparent_color' for c in _colors})
-            self.label_widget.theme_color_bindings = color_bindings
-            Animation(
+        if self.heading_focus_behavior == 'hide':
+            heading_animation = Animation(
                 font_size=font_size,
-                color=self.label_widget.content_color,
                 duration=self.focus_animation_duration,
-                transition=self.focus_animation_transition,
-            ).start(self.label_widget)
-            return
-        
-        label_animation = Animation(
-            x=target_pos[0],
-            y=target_pos[1],
-            font_size=font_size,
-            duration=self.focus_animation_duration,
-            transition=self.focus_animation_transition,)
+                transition=self.focus_animation_transition,)
+            if self.heading_widget.parent is None:
+                self.add_widget(self.heading_widget)
+                self.heading_widget.font_size = 0
+            else:
+                heading_animation.bind(
+                    on_complete=(
+                        lambda *args: self.remove_widget(self.heading_widget)))
+        else:
+            heading_animation = Animation(
+                x=target_pos[0],
+                y=target_pos[1],
+                font_size=font_size,
+                duration=self.focus_animation_duration,
+                transition=self.focus_animation_transition,)
 
-        if self.label_focus_behavior == 'float_to_border':
+        if self.heading_focus_behavior == 'float_to_border':
             border_open_x, border_open_length = (
                 self._resolve_border_open_params())
             self.border_open_x = border_open_x
@@ -1254,15 +1105,15 @@ class MorphTextField(
                 duration=self.focus_animation_duration,
                 transition=self.focus_animation_transition
             ).start(self)
-        elif self.label_focus_behavior == 'move_above':
+        elif self.heading_focus_behavior == 'move_above':
             input_animation = Animation(
                 padding=self._resolve_text_input_padding(),
                 duration=self.focus_animation_duration,
                 transition=self.focus_animation_transition)
-            label_animation.bind(
+            heading_animation.bind(
                 on_complete=lambda *args: input_animation.start(self._text_input))
 
-        label_animation.start(self.label_widget)
+        heading_animation.start(self.heading_widget)
 
     def _update_selection_color(self, instance: Any, color: List[float]) -> None:
         """Fired when the selected text color changes.
@@ -1300,7 +1151,7 @@ class MorphTextField(
     def on_text(self, instance: Any, text: str) -> None:
         """Fired when the text content changes.
 
-        This method updates the text length widget to reflect the
+        This method updates the tertiary text to reflect the
         current length of the text input.
 
         Parameters
@@ -1311,8 +1162,7 @@ class MorphTextField(
             The new text content of the text field.
         """
         self.validate(text)
-        self._update_text_length_widget(
-            self, self.max_text_length, NAME.TEXT_LENGTH_WIDGET)
+        self._update_tertiary_text(self, self.max_text_length)
 
 
 class MorphTextFieldOutlined(
@@ -1325,7 +1175,7 @@ class MorphTextFieldOutlined(
 
     default_config: Dict[str, Any] = (
         MorphTextField.default_config.copy() | dict(
-            label_focus_behavior='float_to_border',
+            heading_focus_behavior='float_to_border',
             border_bottom_line_only=False,
             multiline=False,
             radius=[dp(4), dp(4), dp(4), dp(4)],))
@@ -1342,7 +1192,7 @@ class MorphTextFieldRounded(
 
     default_config: Dict[str, Any] = (
         MorphTextField.default_config.copy() | dict(
-            label_focus_behavior='hide',
+            heading_focus_behavior='hide',
             round_sides=True,
             elevation=1,))
 
@@ -1357,7 +1207,7 @@ class MorphTextFieldFilled(
 
     default_config: Dict[str, Any] = (
         MorphTextField.default_config.copy() | dict(            
-            label_focus_behavior='move_above',
+            heading_focus_behavior='move_above',
             border_bottom_line_only=True,
             text_input_default_padding=[dp(8), dp(8), dp(18), dp(18)],
             multiline=False,
