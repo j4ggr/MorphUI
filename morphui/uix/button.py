@@ -403,7 +403,9 @@ class MorphChipTrailingIconButton(
     
     Inherits from :class:`~morphui.uix.button.MorphTrailingIconButton`.
     """
-    pass
+    default_config: Dict[str, Any] = (
+        MorphTrailingIconButton.default_config.copy() | dict(
+        padding=[dp(4), 0, 0, 0],))
 
 
 class MorphTextFieldTrailingIconButton(MorphIconButton):

@@ -476,7 +476,9 @@ class MorphChipLeadingIconLabel(
     
     Inherits from :class:`~morphui.uix.label.MorphLeadingIconLabel`.
     """
-    pass
+    default_config: Dict[str, Any] = (
+        MorphLeadingIconLabel.default_config.copy() | dict(
+        padding=[0, 0, dp(4), 0],))
 
 
 class MorphChipTextLabel(
@@ -487,7 +489,8 @@ class MorphChipTextLabel(
     """
     default_config: Dict[str, Any] = (
         MorphTextLabel.default_config.copy() | dict(
-            auto_size=(True, True),))
+        padding=[0, 0],
+        auto_size=(True, True),))
 
 
 class MorphTextFieldHeadingLabel(MorphSimpleLabel):
@@ -539,7 +542,7 @@ class MorphTextFieldHeadingLabel(MorphSimpleLabel):
         typography_weight='Regular',
         halign='left',
         valign='center',
-        padding=[4, 0],
+        padding=[dp(4), 0],
         auto_size=True,)
 
 

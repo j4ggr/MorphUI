@@ -3,7 +3,6 @@ from typing import Dict
 
 from kivy.metrics import dp
 
-from morphui.uix.behaviors import MorphIconBehavior
 from morphui.uix.behaviors import MorphHoverBehavior
 from morphui.uix.behaviors import MorphRippleBehavior
 from morphui.uix.behaviors import MorphButtonBehavior
@@ -124,7 +123,7 @@ class MorphChip(
         orientation='horizontal',
         auto_size=True,
         padding=dp(8),
-        spacing=dp(8),
+        spacing=dp(4),
         radius=dp(8),
         round_sides=False,)
     """Default configuration for the :class:`MorphChip` component."""
