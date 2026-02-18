@@ -233,9 +233,9 @@ class MorphIconBehavior(
             active_icon=self._update_icon,
             normal_icon=self._update_icon,)
         if icon:
-            self.icon = icon
+            self._set_icon(icon)
         else:
-            self._update_icon()
+            self.refresh_icon()
     
     def _update_icon(self, *args) -> None:
         """Update the displayed icon based on the `active` state.
@@ -246,4 +246,13 @@ class MorphIconBehavior(
         Bind this method to the `active` property to automatically
         update the icon when the state changes.
         """
-        self.icon = self._get_icon()
+        self._set_icon(self._get_icon())
+    
+    def refresh_icon(self) -> None:
+        """Refresh the displayed icon.
+
+        This method can be called to manually refresh the icon, for
+        example, if the typography or icon mapping has changed. It will
+        re-apply the current icon name to update the displayed character.
+        """
+        self._update_icon()

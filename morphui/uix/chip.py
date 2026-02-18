@@ -116,9 +116,11 @@ class MorphChip(
 
     default_config: Dict[str, Any] = dict(
         theme_color_bindings=dict(
-            normal_content_color='content_surface_color',
             normal_surface_color='transparent_color',
+            normal_content_color='content_surface_color',
             normal_border_color='outline_variant_color',),
+        leading_scale_enabled=True,
+        trailing_scale_enabled=True,
         orientation='horizontal',
         auto_size=True,
         padding=dp(8),
@@ -161,7 +163,6 @@ class MorphChip(
 
 
 class MorphFilterChip(
-        MorphIconBehavior,
         MorphToggleButtonBehavior,
         MorphChip):
     """Morph Filter Chip component.
@@ -200,20 +201,20 @@ class MorphFilterChip(
             active_border_color='transparent_color',
             disabled_surface_color='transparent_color',
             disabled_content_color='outline_color',),
-        normal_icon='',
-        active_icon='check',))
+        normal_leading_icon='',
+        active_leading_icon='check',))
     """Default configuration for the :class:`MorphFilterChip` component."""
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
     
-    def _update_icon(self, *args) -> None:
-        """Update the leading icon based on the toggle state.
+    # def _update_icon(self, *args) -> None:
+    #     """Update the leading icon based on the toggle state.
 
-        This method switches the leading icon between `normal_icon` and
-        `active_icon` depending on whether the chip is active or not.
-        """
-        self.leading_icon = self.icon
+    #     This method switches the leading icon between `normal_icon` and
+    #     `active_icon` depending on whether the chip is active or not.
+    #     """
+    #     self.leading_icon = self.icon
 
 
 class MorphInputChip(MorphChip):
@@ -244,7 +245,7 @@ class MorphInputChip(MorphChip):
 
     default_config: Dict[str, Any] = (
         MorphChip.default_config.copy() | dict(
-            trailing_icon='close',))
+        trailing_icon='close',))
     """Default configuration for the :class:`MorphInputChip` component."""
 
     def __init__(self, **kwargs) -> None:

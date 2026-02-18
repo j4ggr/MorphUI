@@ -97,14 +97,14 @@ class MyApp(MorphApp):
             MorphTextFieldRounded(
                 identity='rounded_textfield',
                 leading_icon='magnify',
-                label_text='Search in Rounded TextField',
+                heading_text='Search in Rounded TextField',
                 pos_hint={'center_x': 0.5, 'top': 0.9},
                 size_hint_x=None,
                 width=width,),
             MorphTextFieldOutlined(
                 identity='outlined_textfield',
                 leading_icon='account',
-                label_text='User in Outlined TextField',
+                heading_text='User in Outlined TextField',
                 pos_hint={'center_x': 0.5, 'top': 0.8},
                 supporting_error_texts={
                     'none': 'No errors.',
@@ -117,8 +117,8 @@ class MyApp(MorphApp):
                 required=True,),
             MorphTextFieldFilled(
                 identity='filled_textfield',
-                leading_icon='lock',
-                label_text='Password in Filled TextField',
+                normal_leading_icon='lock',
+                heading_text='Password in Filled TextField',
                 password=True,
                 pos_hint={'center_x': 0.5, 'top': 0.7},
                 size_hint_x=None,
@@ -139,6 +139,7 @@ class MyApp(MorphApp):
                     identity='switch',),
                 orientation='horizontal',
                 spacing=20,),
+            theme_color_bindings={},
             theme_style='surface',
             orientation='vertical',
             padding=50,

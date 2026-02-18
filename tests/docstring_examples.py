@@ -19,24 +19,47 @@ from pathlib import Path
 
 sys.path.append(str(Path(__file__).parents[1].resolve()))
 
+from kivy.clock import Clock
 from morphui.app import MorphApp
-from morphui.uix.pickers import MorphDockedDatePickerField
+from morphui.uix.chip import MorphChip
+from morphui.uix.chip import MorphInputChip
+from morphui.uix.chip import MorphFilterChip
 from morphui.uix.floatlayout import MorphFloatLayout
 
 class MyApp(MorphApp):
-
     def build(self) -> MorphFloatLayout:
-        self.theme_manager.theme_mode = 'Dark'
         self.theme_manager.seed_color = 'morphui_teal'
-
+        self.theme_manager.switch_to_dark()
         self.layout = MorphFloatLayout(
-            MorphDockedDatePickerField(
-                kind='range',
-                identity='date_picker_field',
-                pos_hint={'center_x': 0.5, 'center_y': 0.8},
-                size_hint_x= 0.6,))
-
+            MorphChip(
+                identity='chip',
+                leading_icon='language-python',
+                trailing_icon='close',
+                label_text='Python Chip',
+                pos_hint={'center_x': 0.5, 'center_y': 0.6},
+                theme_color_bindings=dict(
+                    normal_content_color='primary_color',
+                    normal_surface_color='transparent_color',
+                    normal_border_color='outline_variant_color',),),
+            MorphFilterChip(
+                identity='filter',
+                label_text='Filter Chip',
+                pos_hint={'center_x': 0.5, 'center_y': 0.5}),
+            MorphInputChip(
+                identity='input_chip',
+                label_text='Input Chip',
+                pos_hint={'center_x': 0.5, 'center_y': 0.4},),
+            theme_color_bindings={
+                'normal_surface_color': 'surface_container_low_color',})
+        self.input_chip = self.layout.identities.input_chip
+        self.input_chip.bind(on_trailing_widget_release=self.re_add_chip)
         return self.layout
+        
+    def re_add_chip(self, dt: float) -> None:
+        def _re_add(dt):
+            if not self.input_chip.parent:
+                self.layout.add_widget(self.input_chip)
+        Clock.schedule_once(_re_add, 2)
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     MyApp().run()

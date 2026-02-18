@@ -395,7 +395,6 @@ class MorphTextIconToggleButton(
     
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
-        self.theme_color_bindings
 
 
 class MorphChipTrailingIconButton(
