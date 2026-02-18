@@ -14,6 +14,37 @@ __Types of changes__:
 - _Fixed_ for any bug fixes.
 - _Security_ in case of vulnerabilities.
 
+## [0.10.0] - 2026-02-18
+
+### Added
+
+- Added `_bound_leading_widget` property to MorphLeadingWidgetBehavior to store references to widgets with active property bindings.
+- Added `_bound_trailing_widget` property to MorphTrailingWidgetBehavior to store references to widgets with active property bindings.
+- Added unbinding of properties to previous leading/trailing widgets when they change.
+- Added `refresh_widget()` function to morphui.utils.helpers that iterates through all attributes of a given widget and calls any method that starts with `'refresh_'`.
+- Added visibility properties to composition behaviors.
+
+### Changed
+
+- Changed all composition behavior classes to inherit from EventDispatcher.
+- Changed state-sensitive properties in composition behaviors from AliasProperties to StringProperty.
+- Changed child widgets' state-sensitive properties to be bound to their behavior properties instead of using getter/setter methods.
+- Changed MorphTextField to inherit from MorphDelegatedThemeBehavior, MorphLeadingWidgetBehavior, MorphTripleLabelBehavior, and MorphTrailingWidgetBehavior.
+- Changed MorphFilterChip to no longer inherit from MorphIconBehavior due to changes in composition behaviors.
+- Changed default spacing and padding of chips and their child widget classes.
+- Changed defining the leading icon for recycled widgets to be done via `normal_leading_icon` instead of `leading_icon` (which only works at init).
+- Improved naming in composition behaviors.
+
+### Removed
+
+- Removed obsolete getter and setter methods used for AliasProperties in composition behaviors.
+- Removed obsolete `_update_icon` method from MorphFilterChip.
+- Removed obsolete reinvented code from MorphTextField that is now covered by new behavior inheritance.
+
+### Fixed
+
+- Fixed bug where `label_text` was used instead of `heading_text` where needed.
+
 ## [0.9.0] - 2026-02-16
 
 ### Added

@@ -313,6 +313,7 @@ if __name__ == '__main__':
 ### Interactive Features
 
 MorphChart automatically includes:
+
 - Zoom and pan controls
 - Home/back/forward navigation
 - Save figure option

@@ -4839,56 +4839,56 @@ class TestMorphTripleLabelBehavior:
         # Getter should retrieve from widget
         assert widget.tertiary_text == 'Widget Tertiary'
 
-    def test_on_heading_widget_none(self):
-        """Test on_heading_widget when widget is None."""
+    def test_update_heading_widget_none(self):
+        """Test _update_heading_widget when widget is None."""
         widget = self.TestWidget()
-        widget.on_heading_widget(widget, None)
+        widget._update_heading_widget(widget, None)
         # Should not raise an error
 
-    def test_on_heading_widget_updates_widget(self):
-        """Test on_heading_widget updates widget text."""
+    def test_update_heading_widget_updates_widget(self):
+        """Test update_heading_widget updates widget text."""
         widget = self.TestWidget()
         widget.heading_text = 'Pre-set Heading'
         heading_widget = MorphTextLabel()
         
         widget.heading_widget = heading_widget
-        # on_heading_widget should be called automatically
+        # update_heading_widget should be called automatically
         Clock.tick()  # Allow property binding to process
         
         assert heading_widget.text == 'Pre-set Heading'
 
-    def test_on_supporting_widget_none(self):
-        """Test on_supporting_widget when widget is None."""
+    def test_update_supporting_widget_none(self):
+        """Test _update_supporting_widget when widget is None."""
         widget = self.TestWidget()
-        widget.on_supporting_widget(widget, None)
+        widget._update_supporting_widget(widget, None)
         # Should not raise an error
 
-    def test_on_supporting_widget_updates_widget(self):
-        """Test on_supporting_widget updates widget text."""
+    def test_update_supporting_widget_updates_widget(self):
+        """Test update_supporting_widget updates widget text."""
         widget = self.TestWidget()
         widget.supporting_text = 'Pre-set Supporting'
         supporting_widget = MorphTextLabel()
         
         widget.supporting_widget = supporting_widget
-        # on_supporting_widget should be called automatically
+        # update_supporting_widget should be called automatically
         Clock.tick()  # Allow property binding to process
         
         assert supporting_widget.text == 'Pre-set Supporting'
 
-    def test_on_tertiary_widget_none(self):
-        """Test on_tertiary_widget when widget is None."""
+    def test_update_tertiary_widget_none(self):
+        """Test _update_tertiary_widget when widget is None."""
         widget = self.TestWidget()
-        widget.on_tertiary_widget(widget, None)
+        widget._update_tertiary_widget(widget, None)
         # Should not raise an error
 
-    def test_on_tertiary_widget_updates_widget(self):
-        """Test on_tertiary_widget updates widget text."""
+    def test_update_tertiary_widget_updates_widget(self):
+        """Test update_tertiary_widget updates widget text."""
         widget = self.TestWidget()
         widget.tertiary_text = 'Pre-set Tertiary'
         tertiary_widget = MorphTextLabel()
         
         widget.tertiary_widget = tertiary_widget
-        # on_tertiary_widget should be called automatically
+        # update_tertiary_widget should be called automatically
         Clock.tick()  # Allow property binding to process
         
         assert tertiary_widget.text == 'Pre-set Tertiary'
