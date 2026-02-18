@@ -238,9 +238,9 @@ Searchable dropdown with filtering:
 from morphui.uix.dropdown import MorphDropdownFilterField
 
 items = [
-    {'label_text': 'Apple', 'leading_icon': 'apple'},
-    {'label_text': 'Banana', 'leading_icon': 'fruit-citrus'},
-    {'label_text': 'Cherry', 'leading_icon': 'fruit-cherries'}
+    {'label_text': 'Apple', 'normal_leading_icon': 'apple'},
+    {'label_text': 'Banana', 'normal_leading_icon': 'fruit-citrus'},
+    {'label_text': 'Cherry', 'normal_leading_icon': 'fruit-cherries'}
 ]
 
 dropdown = MorphDropdownFilterField(

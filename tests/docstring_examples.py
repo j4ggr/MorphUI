@@ -31,7 +31,7 @@ class MyApp(MorphApp):
         icon_items = [
             {
                 'label_text': icon_name,
-                'leading_icon': icon_name,}
+                'normal_leading_icon': icon_name,}
             for icon_name in sorted(self.typography.icon_map.keys())]
         layout = MorphFloatLayout(
             MorphDropdownFilterField(

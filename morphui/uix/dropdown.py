@@ -56,8 +56,8 @@ class MorphDropdownList(
 
     default_data: Dict[str, Any] = DictProperty(
         MorphListItemFlat.default_config.copy() | {
-        'leading_icon': '',
-        'trailing_icon': '',
+        'normal_leading_icon': '',
+        'normal_trailing_icon': '',
         'label_text': '',
         })
     
