@@ -212,6 +212,17 @@ class MorphLeadingWidgetBehavior(EventDispatcher):
     :class:`~morphui.uix.label.MorphLeadingIconLabel`.
     """
 
+    _bound_leading_widget: MorphLeadingIconLabel | None = None
+    """The widget on which property bindings are currently active.
+
+    This property stores a reference to the widget that has active
+    property bindings set up by this behavior. It is used internally
+    to track which widget the bindings are applied to.
+
+    :attr:`_bound_leading_widget` is an internal property and should not
+    be modified directly.
+    """
+
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         if self._leading_icon and not self.normal_leading_icon:
@@ -227,15 +238,26 @@ class MorphLeadingWidgetBehavior(EventDispatcher):
         the current state of the parent widget, including icon names
         and any other relevant properties.
         """
+        self.leading_icon = self._get_leading_icon()
         if self.leading_widget is None:
             return
         
-        self.bind(
-            normal_leading_icon=self.leading_widget.setter('normal_icon'),
-            disabled_leading_icon=self.leading_widget.setter('disabled_icon'),
-            focus_leading_icon=self.leading_widget.setter('focus_icon'),
-            active_leading_icon=self.leading_widget.setter('active_icon'),
-            leading_scale_enabled=self.leading_widget.setter('scale_enabled'),)
+        icons_to_bind = {
+            'normal_leading_icon': 'normal_icon',
+            'disabled_leading_icon': 'disabled_icon',
+            'focus_leading_icon': 'focus_icon',
+            'active_leading_icon': 'active_icon',
+            'leading_scale_enabled': 'scale_enabled',}
+
+        if leading_widget is not self._bound_leading_widget:
+            for icon_parent, icon_child in icons_to_bind.items():
+                if self._bound_leading_widget:
+                    self.unbind(**{
+                        icon_parent: self._bound_leading_widget.setter(icon_child)})
+                self.bind(
+                    **{icon_parent: self.leading_widget.setter(icon_child)})
+            self._bound_leading_widget = self.leading_widget
+
         self.leading_widget.scale_enabled = self.leading_scale_enabled
         self.leading_widget.normal_icon = self.normal_leading_icon
         self.leading_widget.disabled_icon = self.disabled_leading_icon
@@ -249,7 +271,6 @@ class MorphLeadingWidgetBehavior(EventDispatcher):
         the current state of the parent widget, including icon names
         and any other relevant properties.
         """
-        self.leading_icon = self._get_leading_icon()
         self._update_leading_widget(self, self.leading_widget)
         refresh_widget(self.leading_widget)
 
@@ -821,6 +842,17 @@ class MorphTrailingWidgetBehavior(EventDispatcher):
     :class:`~morphui.uix.label.MorphTrailingIconLabel`.
     """
 
+    _bound_trailing_widget: MorphTrailingIconLabel | None = None
+    """The widget on which property bindings are currently active.
+
+    This property stores a reference to the widget that has active
+    property bindings set up by this behavior. It is used internally
+    to track which widget the bindings are applied to.
+
+    :attr:`_bound_trailing_widget` is an internal property and should 
+    not be modified directly.
+    """
+
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         if self._trailing_icon and not self.normal_trailing_icon:
@@ -837,15 +869,26 @@ class MorphTrailingWidgetBehavior(EventDispatcher):
         the current state of the parent widget, including icon names
         and any other relevant properties.
         """
+        self.trailing_icon = self._get_trailing_icon()
         if self.trailing_widget is None:
             return
         
-        self.bind(
-            normal_trailing_icon=self.trailing_widget.setter('normal_icon'),
-            disabled_trailing_icon=self.trailing_widget.setter('disabled_icon'),
-            focus_trailing_icon=self.trailing_widget.setter('focus_icon'),
-            active_trailing_icon=self.trailing_widget.setter('active_icon'),
-            trailing_scale_enabled=self.trailing_widget.setter('scale_enabled'),)
+        icons_to_bind = {
+            'normal_trailing_icon': 'normal_icon',
+            'disabled_trailing_icon': 'disabled_icon',
+            'focus_trailing_icon': 'focus_icon',
+            'active_trailing_icon': 'active_icon',
+            'trailing_scale_enabled': 'scale_enabled',}
+        
+        if self.trailing_widget is not self._bound_trailing_widget:
+            for icon_parent, icon_child in icons_to_bind.items():
+                if self._bound_trailing_widget:
+                    self.unbind(**{
+                        icon_parent: self._bound_trailing_widget.setter(icon_child)})
+                self.bind(
+                    **{icon_parent: self.trailing_widget.setter(icon_child)})
+            self._bound_trailing_widget = self.trailing_widget
+        
         self.trailing_widget.scale_enabled = self.trailing_scale_enabled
         self.trailing_widget.normal_icon = self.normal_trailing_icon
         self.trailing_widget.disabled_icon = self.disabled_trailing_icon
@@ -859,6 +902,5 @@ class MorphTrailingWidgetBehavior(EventDispatcher):
         the current state of the parent widget, including icon names
         and any other relevant properties.
         """
-        self.trailing_icon = self._get_trailing_icon()
         self._update_trailing_widget(self, self.trailing_widget)
         refresh_widget(self.trailing_widget)
