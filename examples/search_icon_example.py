@@ -21,7 +21,7 @@ class MyApp(MorphApp):
                 identity='icon_picker',
                 items=icon_items,
                 item_release_callback=self.icon_selected_callback,
-                label_text='Search icons...',
+                heading_text='Search icons...',
                 leading_icon='magnify',
                 pos_hint={'center_x': 0.5, 'center_y': 0.9},
                 size_hint=(0.8, None),))

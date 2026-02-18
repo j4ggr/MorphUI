@@ -202,7 +202,7 @@ Modern text input with validation:
 from morphui.uix.textfield import MorphTextField
 
 text_field = MorphTextField(
-    label_text="Email",
+    heading_text="Email",
     hint_text="Enter your email",
     required=True,
     validator='email'  # Built-in validators: email, url, int, float
@@ -221,7 +221,7 @@ Outlined variant:
 from morphui.uix.textfield import MorphTextFieldOutlined
 
 email_field = MorphTextFieldOutlined(
-    label_text="Email Address",
+    heading_text="Email Address",
     leading_icon='email',
     validator='email',
     required=True
@@ -245,7 +245,7 @@ items = [
 
 dropdown = MorphDropdownFilterField(
     items=items,
-    label_text='Select Fruit',
+    heading_text='Select Fruit',
     leading_icon='magnify',
     item_release_callback=lambda item, index: print(f"Selected: {item.label_text}")
 )
@@ -381,7 +381,7 @@ class IconPickerApp(MorphApp):
                 identity='icon_picker',
                 items=icon_items,
                 item_release_callback=self.icon_selected,
-                label_text='Search icons...',
+                heading_text='Search icons...',
                 leading_icon='magnify',
                 pos_hint={'center_x': 0.5, 'center_y': 0.9},
                 size_hint=(0.8, None),
