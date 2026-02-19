@@ -13,18 +13,21 @@ __Types of changes__:
 - _Removed_ for now removed features.
 - _Fixed_ for any bug fixes.
 - _Security_ in case of vulnerabilities.
-MorphDockedDatePickerField
-- changed, property names that still had the old designation 'label_text' were changed to 'heading_text'.
-- bugfix, setting the heading_text failed because of old designations
-## [0.10.2] - 2026-02-19
+
+## [0.11.0] - 2026-02-20
+
+### Removed
+
+- Removed `dismiss_allowed` property from MorphMenuMotionBehavior since the dismissing is now handled by the on_touch_up() method. If the caller has a ripple in progress or a touch collides the caller widget, it will not call dismiss.
 
 ### Changed
 
-- Changed property name from `label_text` to `heading_text` in MorphDockedDatePickerField to better reflect its purpose and to align with common terminology for form fields. This change also involved updating internal logic to ensure that the correct property is used for setting the heading text of the date picker field.
 - Changed MorphDropdownSelect to set its active state to False when the dropdown menu is dismissed, ensuring that the button's visual state correctly reflects the menu's visibility.
 - Changed MorphMenuMotionBehavior to not call dismiss in on_touch_up() method if the caller's on_touch_up() method returns True, which indicates that the touch event was handled by the caller and should not trigger dismissing the menu. This allows for more flexible interactions where the caller can choose to handle touch events without automatically dismissing the menu.
-- Changed MorphMenuMotionBehavior's dismiss_allowed property to be an OptionProperty with options {'always', True, False} instead of a BooleanProperty. This allows for more flexible control over when the menu can be dismissed, with 'always' meaning it can always be dismissed, True meaning it can be dismissed when active, and False meaning it cannot be dismissed by clicking outside.
-- Changed the default value of dismiss_allowed in MorphMenuMotionBehavior to 'always' to maintain the previous behavior where the menu could always be dismissed by clicking outside, while allowing for more specific control when needed.
+
+### Fixed
+
+- Fixed property name from `label_text` to `heading_text` in MorphDockedDatePickerField to better reflect its purpose and to align with common terminology for form fields. This change also involved updating internal logic to ensure that the correct property is used for setting the heading text of the date picker field.
 
 ## [0.10.0] - 2026-02-18
 
