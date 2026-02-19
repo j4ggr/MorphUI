@@ -415,9 +415,43 @@ class MorphMenuMotionBehavior(MorphScaleBehavior,):
         caller_x, caller_y = self._resolve_caller_pos()
         caller_width, caller_height = self._resolve_caller_size()
 
-        self.scale_origin = [
-            caller_x + caller_width / 2,
-            caller_y + caller_height / 2]
+        match self.menu_anchor_position, self.menu_opening_direction:
+            case 'left', 'up':
+                self.scale_origin = [
+                    caller_x,
+                    caller_y + caller_height]
+            case 'left', 'center':
+                self.scale_origin = [
+                    caller_x,
+                    caller_y + caller_height / 2]
+            case 'left', 'down':
+                self.scale_origin = [
+                    caller_x,
+                    caller_y]
+            case 'center', 'up':
+                self.scale_origin = [
+                    caller_x + caller_width / 2,
+                    caller_y + caller_height]
+            case 'center', 'center':
+                self.scale_origin = [
+                    caller_x + caller_width / 2,
+                    caller_y + caller_height / 2]
+            case 'center', 'down':
+                self.scale_origin = [
+                    caller_x + caller_width / 2,
+                    caller_y]
+            case 'right', 'up':
+                self.scale_origin = [
+                    caller_x + caller_width,
+                    caller_y + caller_height]
+            case 'right', 'center':
+                self.scale_origin = [
+                    caller_x + caller_width,
+                    caller_y + caller_height / 2]
+            case 'right', 'down':
+                self.scale_origin = [
+                    caller_x + caller_width,
+                    caller_y]
 
     def _add_to_window(self, *args) -> None:
         """Add the menu to the window.

@@ -910,8 +910,8 @@ class MorphDockedDatePickerField(MorphTextField):
     defaults to `' - '`.
     """
 
-    _label_text_provided: bool = False
-    """Internal flag to track if label_text was provided during
+    _heading_text_provided: bool = False
+    """Internal flag to track if heading_text was provided during
     initialization."""
 
     _format_strings: Dict[str, str] = dict(
@@ -931,13 +931,13 @@ class MorphDockedDatePickerField(MorphTextField):
         kwargs['picker_menu'] = MorphDockedDatePickerMenu(caller=self)
         kwargs['trailing_icon'] = kwargs.get(
             'trailing_icon', self.normal_trailing_icon)
-        self._label_text_provided = 'label_text' in kwargs
+        self._heading_text_provided = 'heading_text' in kwargs
         super().__init__(**kwargs)
         self.bind(
             kind=self._on_kind_changed,
             text=self._on_text_changed,
             focus=self._on_focus_changed,
-            range_sep=self._update_label_text,
+            range_sep=self._update_heading_text,
             normal_trailing_icon=self.trailing_widget.setter('normal_icon'),
             focus_trailing_icon=self.trailing_widget.setter('focus_icon'),)
         self.calendar_view.bind(
@@ -1007,11 +1007,11 @@ class MorphDockedDatePickerField(MorphTextField):
         """
         self.picker_menu.kind = kind
         self.validator = 'daterange' if kind == 'range' else 'date'
-        self._update_label_text()
+        self._update_heading_text()
 
-    def _update_label_text(self, *args) -> None:
+    def _update_heading_text(self, *args) -> None:
 
-        if self._label_text_provided:
+        if self._heading_text_provided:
             return
 
         input_format = {
@@ -1020,7 +1020,7 @@ class MorphDockedDatePickerField(MorphTextField):
             'eu': 'DD.MM.YYYY',}[self.date_format]
         if self.kind == 'range':
             input_format = f'{input_format}{self.range_sep}{input_format}'
-        self.label_text = input_format
+        self.heading_text = input_format
 
     def _on_text_changed(
             self,
