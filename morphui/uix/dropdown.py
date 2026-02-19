@@ -415,6 +415,8 @@ class MorphDropdownSelect(
         super().__init__(**kwargs)
         self.label_widget.auto_width = False
         self.bind(active=self._toggle_menu_on_active)
+        self.dropdown_menu.bind(
+            on_dismiss=lambda *_: setattr(self, 'active', False))
 
     def _toggle_menu_on_active(self, *args) -> None:
         """Toggle the dropdown menu when the button's active state 

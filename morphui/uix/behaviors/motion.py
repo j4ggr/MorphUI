@@ -16,6 +16,7 @@ from kivy.input.motionevent import MotionEvent
 
 from morphui.utils import clamp
 from morphui.uix.behaviors import MorphScaleBehavior
+from requests import get
 
 
 __all__ = [
@@ -429,9 +430,43 @@ class MorphMenuMotionBehavior(MorphScaleBehavior,):
         caller_x, caller_y = self._resolve_caller_pos()
         caller_width, caller_height = self._resolve_caller_size()
 
-        self.scale_origin = [
-            caller_x + caller_width / 2,
-            caller_y + caller_height / 2]
+        match self.menu_anchor_position, self.menu_opening_direction:
+            case 'left', 'up':
+                self.scale_origin = [
+                    caller_x,
+                    caller_y + caller_height]
+            case 'left', 'center':
+                self.scale_origin = [
+                    caller_x,
+                    caller_y + caller_height / 2]
+            case 'left', 'down':
+                self.scale_origin = [
+                    caller_x,
+                    caller_y]
+            case 'center', 'up':
+                self.scale_origin = [
+                    caller_x + caller_width / 2,
+                    caller_y + caller_height]
+            case 'center', 'center':
+                self.scale_origin = [
+                    caller_x + caller_width / 2,
+                    caller_y + caller_height / 2]
+            case 'center', 'down':
+                self.scale_origin = [
+                    caller_x + caller_width / 2,
+                    caller_y]
+            case 'right', 'up':
+                self.scale_origin = [
+                    caller_x + caller_width,
+                    caller_y + caller_height]
+            case 'right', 'center':
+                self.scale_origin = [
+                    caller_x + caller_width,
+                    caller_y + caller_height / 2]
+            case 'right', 'down':
+                self.scale_origin = [
+                    caller_x + caller_width,
+                    caller_y]
 
     def _add_to_window(self, *args) -> None:
         """Add the menu to the window.
@@ -507,10 +542,14 @@ class MorphMenuMotionBehavior(MorphScaleBehavior,):
         close the date picker menu if a touch event occurs outside
         its bounds.
         """
-        if not self.collide_point(*touch.pos):
-            Clock.schedule_once(self.dismiss, 0)
-            return None
-        return super().on_touch_up(touch)
+        if self.caller and self.caller.on_touch_up(touch):
+            return True
+            
+        if self.collide_point(*touch.pos):
+            return super().on_touch_up(touch)
+        
+        Clock.schedule_once(self.dismiss, 0)
+        return None
 
     def on_pre_open(self, *args) -> None:
         """Event fired before the menu is opened."""
