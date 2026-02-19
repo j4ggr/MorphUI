@@ -1089,7 +1089,6 @@ class MorphDockedDatePickerField(MorphTextField):
         gains focus and closes it when the field loses focus.
         """
         self.trailing_widget.focus = focus
-        self.picker_menu.dismiss_allowed = not focus
         if focus:
             self.picker_menu.open()
 

@@ -72,8 +72,7 @@ class MorphTooltip(
         spacing=dp(5),
         elevation=2,
         scale_enabled=False,
-        auto_size=(True, True),
-        dismiss_allowed='always',)
+        auto_size=(True, True),)
     """Default configuration for MorphTooltip."""
     
     def __init__(self, *widgets, **kwargs: Any) -> None:

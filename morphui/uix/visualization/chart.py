@@ -99,8 +99,7 @@ class MorphChartToolbarMenu(
         orientation='vertical',
         auto_size=True,
         spacing=dp(4),
-        padding=[dp(0), dp(4)],
-        dismiss_allowed='always',)
+        padding=[dp(0), dp(4)],)
     """Container for toolbar menu items in MorphChartCard."""
 
     def __init__(self, *args, caller: MorphChartNavigationButton, **kwargs) -> None:

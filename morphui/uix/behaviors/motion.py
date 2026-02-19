@@ -174,20 +174,6 @@ class MorphMenuMotionBehavior(MorphScaleBehavior,):
     :class:`~kivy.properties.NumericProperty` and defaults to `100`.
     """
 
-    dismiss_allowed: Literal['always', True, False] = OptionProperty(
-        'always', options=['always', True, False])
-    """Whether dismissing the menu by touching outside is allowed.
-
-    This property determines if the menu can be dismissed or not. If set
-    to `True` or `'always'`, the menu will be dismissed when a touch 
-    event occurs outside its bounds. If set to `False`, the menu cannot 
-    be dismissed by touching outside and will require an explicit action 
-    to close.
-
-    :attr:`dismiss_allowed` is a
-    :class:`~kivy.properties.OptionProperty` and defaults to `'always'`.
-    """
-
     def __init__(self, **kwargs) -> None:
         self.register_event_type('on_pre_open')
         self.register_event_type('on_pre_dismiss')
@@ -476,9 +462,6 @@ class MorphMenuMotionBehavior(MorphScaleBehavior,):
 
     def dismiss(self, *args) -> None:
         """Dismiss the menu with animation."""
-        if self.dismiss_allowed is False:
-            return
-        
         if not self.is_open:
             Animation.cancel_all(self)
             return
@@ -505,12 +488,29 @@ class MorphMenuMotionBehavior(MorphScaleBehavior,):
 
         This method overrides the default touch up behavior to
         close the date picker menu if a touch event occurs outside
-        its bounds.
+        its bounds. If the touch is within the menu or the caller 
+        button, it allows the event to propagate.
+
+        Parameters
+        ----------
+        touch : MotionEvent
+            The touch event that occurred.
+
+        Returns
+        -------
+        Literal[True] | None
+            Returns `True` if the touch event was handled (i.e., the
+            menu was dismissed), or `None` to allow the event to
+            propagate if the touch was within the menu or caller.
         """
-        if not self.collide_point(*touch.pos):
-            Clock.schedule_once(self.dismiss, 0)
-            return None
-        return super().on_touch_up(touch)
+        if (self.collide_point(*touch.pos)
+                or self.caller is None
+                or self.caller.collide_point(*touch.pos)
+                or getattr(self.caller, '_ripple_in_progress', False)):
+            return super().on_touch_up(touch)
+        
+        Clock.schedule_once(self.dismiss, 0)
+        return None
 
     def on_pre_open(self, *args) -> None:
         """Event fired before the menu is opened."""

@@ -293,8 +293,6 @@ class MorphDropdownMenu(
             return
         
         super()._update_caller_bindings()
-        self.caller.bind(
-            focus=lambda _, focus: setattr(self, 'dismiss_allowed', not focus))
     
     def on_pre_open(self, *args) -> None:
         """Handle actions before the dropdown menu opens.
@@ -406,7 +404,6 @@ class MorphDropdownSelect(
         kw_dropdown = dict(
             caller=self,
             items=kwargs.pop('items', []),
-            dismiss_allowed='always',
             item_release_callback=kwargs.pop(
                 'item_release_callback',
                 lambda item, index: self.dispatch('on_item_release', item, index))

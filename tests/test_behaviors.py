@@ -4613,7 +4613,6 @@ class TestMorphMenuMotionBehavior:
         
         widget = TestWidget()
         widget.scale_enabled = False  # Disable animation for immediate event dispatch
-        widget.dismiss_allowed = True  # Allow dismissing
         
         # Mock Window and add widget
         mock_window.remove_widget = Mock()
