@@ -14,6 +14,13 @@ __Types of changes__:
 - _Fixed_ for any bug fixes.
 - _Security_ in case of vulnerabilities.
 
+## [0.10.1] - 2026-02-19
+
+### Changed
+
+- Changed MorphMenuMotionBehavior's dismiss_allowed property to be an OptionProperty with options {'always', True, False} instead of a BooleanProperty. This allows for more flexible control over when the menu can be dismissed, with 'always' meaning it can always be dismissed, True meaning it can be dismissed when active, and False meaning it cannot be dismissed by clicking outside.
+- Changed the default value of dismiss_allowed in MorphMenuMotionBehavior to 'always' to maintain the previous behavior where the menu could always be dismissed by clicking outside, while allowing for more specific control when needed.
+
 ## [0.10.0] - 2026-02-18
 
 ### Added
