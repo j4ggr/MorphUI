@@ -16,7 +16,6 @@ from kivy.input.motionevent import MotionEvent
 
 from morphui.utils import clamp
 from morphui.uix.behaviors import MorphScaleBehavior
-from requests import get
 
 
 __all__ = [
