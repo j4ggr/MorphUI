@@ -99,7 +99,8 @@ class MorphChartToolbarMenu(
         orientation='vertical',
         auto_size=True,
         spacing=dp(4),
-        padding=[dp(0), dp(4)],)
+        padding=[dp(0), dp(4)],
+        dismiss_allowed='always',)
     """Container for toolbar menu items in MorphChartCard."""
 
     def __init__(self, *args, caller: MorphChartNavigationButton, **kwargs) -> None:
@@ -107,14 +108,6 @@ class MorphChartToolbarMenu(
         super().__init__(caller=caller, **config)
         for child in args:
             self.add_widget(child)
-    
-    def on_pre_open(self, *args) -> None:
-        """Called before the menu is opened.
-        
-        This method is used to prepare the menu for opening, such as
-        allowing it to be dismissed when clicking outside the menu area.
-        """
-        self.dismiss_allowed = True
 
     def on_dismiss(self, *args) -> None:
         """Handle actions after the dropdown menu is dismissed.

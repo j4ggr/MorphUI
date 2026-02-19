@@ -174,15 +174,18 @@ class MorphMenuMotionBehavior(MorphScaleBehavior,):
     :class:`~kivy.properties.NumericProperty` and defaults to `100`.
     """
 
-    dismiss_allowed: bool = BooleanProperty(True)
+    dismiss_allowed: Literal['always', True, False] = OptionProperty(
+        'always', options=['always', True, False])
     """Whether dismissing the menu by touching outside is allowed.
 
-    This property determines if the menu can be dismissed by touching
-    outside its bounds. If set to `True`, touching outside the menu
-    will close it.
+    This property determines if the menu can be dismissed or not. If set
+    to `True` or `'always'`, the menu will be dismissed when a touch 
+    event occurs outside its bounds. If set to `False`, the menu cannot 
+    be dismissed by touching outside and will require an explicit action 
+    to close.
 
     :attr:`dismiss_allowed` is a
-    :class:`~kivy.properties.BoolProperty` and defaults to `True`.
+    :class:`~kivy.properties.OptionProperty` and defaults to `'always'`.
     """
 
     def __init__(self, **kwargs) -> None:
@@ -460,7 +463,6 @@ class MorphMenuMotionBehavior(MorphScaleBehavior,):
             Animation.cancel_all(self)
             return
         
-        self.dismiss_allowed = False
         self.dispatch('on_pre_open')
         self._add_to_window()
         self._adjust_and_reposition()
@@ -474,7 +476,7 @@ class MorphMenuMotionBehavior(MorphScaleBehavior,):
 
     def dismiss(self, *args) -> None:
         """Dismiss the menu with animation."""
-        if not self.dismiss_allowed:
+        if self.dismiss_allowed is False:
             return
         
         if not self.is_open:

@@ -72,7 +72,8 @@ class MorphTooltip(
         spacing=dp(5),
         elevation=2,
         scale_enabled=False,
-        auto_size=(True, True),)
+        auto_size=(True, True),
+        dismiss_allowed='always',)
     """Default configuration for MorphTooltip."""
     
     def __init__(self, *widgets, **kwargs: Any) -> None:
@@ -92,5 +93,4 @@ class MorphTooltip(
         super()._update_caller_bindings()
         self.caller.bind(
             on_enter=self.open,
-            on_leave=self.dismiss,
-            hovered=lambda _, hover: setattr(self, 'dismiss_allowed', not hover),)
+            on_leave=self.dismiss,)

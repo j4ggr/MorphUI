@@ -406,6 +406,7 @@ class MorphDropdownSelect(
         kw_dropdown = dict(
             caller=self,
             items=kwargs.pop('items', []),
+            dismiss_allowed='always',
             item_release_callback=kwargs.pop(
                 'item_release_callback',
                 lambda item, index: self.dispatch('on_item_release', item, index))
@@ -425,7 +426,6 @@ class MorphDropdownSelect(
         dropdown menu."""
         if self.active:
             self.dropdown_menu.open()
-            self.dropdown_menu.dismiss_allowed = True
         else:
             self.dropdown_menu.dismiss()
 
