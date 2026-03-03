@@ -279,8 +279,6 @@ class MorphDropdownMenu(
         super().__init__(**kwargs)
         self.layout_manager = self.dropdown_list.layout_manager
         self.add_widget(self.dropdown_list)
-        self.bind(is_open=self.dropdown_list.setter('key_press_enabled'))
-        self.key_press_enabled = self.is_open
 
     def _update_caller_bindings(self, *args) -> None:
         """Update bindings to the caller button's position and size.
@@ -311,16 +309,26 @@ class MorphDropdownMenu(
 
         This method is called just after the dropdown menu is
         dismissed. It clears the focus and hover states from all items
-        in the dropdown list. If the caller button has an `active` 
-        property and is not in the middle of a ripple animation, it 
-        sets `active` to `False` to indicate that the dropdown is no 
-        longer active.
+        in the dropdown list.
         """
         self.dropdown_list._clear_focus()
         self.dropdown_list._clear_hover()
-        if (hasattr(self.caller, 'active') 
-                and not getattr(self.caller, '_ripple_in_progress', False)):
-            self.caller.active = False
+    
+    def on_is_open(self, instance: Any, value: bool) -> None:
+        """Handle changes to the `is_open` property.
+
+        This method is called whenever the `is_open` property changes.
+        It updates the `key_press_enabled` property of the dropdown list
+        to match the new state of `is_open`.
+
+        Parameters
+        ----------
+        instance : Any
+            The instance of the dropdown menu where the change occurred.
+        value : bool
+            The new value of the `is_open` property.
+        """
+        self.dropdown_list.key_press_enabled = value
 
 
 class MorphDropdownSelect(
@@ -411,22 +419,11 @@ class MorphDropdownSelect(
         self.dropdown_menu = MorphDropdownMenu(**kw_dropdown)
         super().__init__(**kwargs)
         self.label_widget.auto_width = False
-        self.bind(active=self._toggle_menu_on_active)
-        self.dropdown_menu.bind(
-            on_dismiss=lambda *_: setattr(self, 'active', False))
-
-    def _toggle_menu_on_active(self, *args) -> None:
-        """Toggle the dropdown menu when the button's active state 
-        changes.
-        
-        This method is called whenever the `active` property of the
-        button changes. If the button becomes active, it opens the
-        dropdown menu. If the button becomes inactive, it dismisses the
-        dropdown menu."""
-        if self.active:
-            self.dropdown_menu.open()
-        else:
-            self.dropdown_menu.dismiss()
+        self.dropdown_menu.bind(is_open=self.setter('active'))
+    
+    def on_release(self) -> None:
+        """Toggle the dropdown menu when the button is released."""
+        self.dropdown_menu.toggle()
 
     def on_item_release(
             self,

@@ -516,6 +516,37 @@ class MorphMenuMotionBehavior(MorphScaleBehavior,):
         else:
             self.open()
     
+    def caller_collide_point(self, x: float, y: float) -> bool:
+        """Check if the given point collides with the caller button.
+        
+        This method checks if the specified (x, y) coordinates collide
+        with the caller button's area. It is used to determine if a
+        touch event occurred within the caller button. This method is
+        a workaround for the fact that the native `collide_point` method 
+        does not work correctly for the caller button when the menu is 
+        open.
+
+        Parameters
+        ----------
+        x : float
+            The x-coordinate of the point to check.
+        y : float
+            The y-coordinate of the point to check.
+
+        Returns
+        -------
+        bool
+            `True` if the point collides with the caller button, `False`
+            otherwise.
+        """
+        if self.caller is None:
+            return False
+        
+        x, y = self.caller.to_widget(x, y)
+        collide_x = self.caller.x <= x <= self.caller.right
+        collide_y = self.caller.y <= y <= self.caller.top
+        return (collide_x and collide_y)
+    
     def on_touch_up(self, touch: MotionEvent) -> Literal[True] | None:
         """Handle touch up events to close the menu when touching
         outside.
@@ -538,8 +569,7 @@ class MorphMenuMotionBehavior(MorphScaleBehavior,):
             propagate if the touch was within the menu or caller.
         """
         if (self.collide_point(*touch.pos)
-                or self.caller is None
-                or self.caller.collide_point(*touch.pos)
+                or self.caller_collide_point(*touch.pos)
                 or getattr(self.caller, '_ripple_in_progress', False)):
             return super().on_touch_up(touch)
         

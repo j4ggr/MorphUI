@@ -183,9 +183,7 @@ class MorphButtonBehavior(EventDispatcher):
         self._do_press()
 
         if getattr(self, 'ripple_enabled', False):
-            assert hasattr(self, 'show_ripple_effect'), (
-                'Ripple behavior expected but not found.')
-            Clock.schedule_once(lambda dt: self.show_ripple_effect(touch.pos), 0)
+            self.show_ripple_effect(touch.pos)
 
         self.dispatch('on_press')
         return True
