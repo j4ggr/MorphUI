@@ -14,6 +14,18 @@ __Types of changes__:
 - _Fixed_ for any bug fixes.
 - _Security_ in case of vulnerabilities.
 
+## [0.11.1] - 2026-03-03
+
+### Added
+
+- Added `caller_collide_point` method to MorphMenuMotionBehavior as a workaround for the fact that the native `collide_point` method does not work correctly for the caller button when the menu is open.
+- Added `on_release` method to MorphDropdownSelect that toggles the dropdown menu.
+
+### Changed
+
+- Changed MorphDropdownMenu to no longer handle the `active` state of the caller button, simplifying state management.
+- Changed MorphDropdownSelect to bind `is_open` property to setter of `active` state for better state synchronization.
+
 ## [0.11.0] - 2026-02-20
 
 ### Removed
