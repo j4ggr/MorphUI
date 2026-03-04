@@ -295,8 +295,10 @@ class MorphColorThemeBehavior(BaseThemeBehavior):
     _theme_bound: bool = False
     """Track if theme manager events are bound."""
     
+    __events__ = (
+        'on_colors_updated',)
+
     def __init__(self, **kwargs) -> None:
-        self.register_event_type('on_colors_updated')
         
         explicit_props = self._detect_explicit_properties(kwargs)
         if explicit_props:
@@ -775,8 +777,10 @@ class MorphTypographyBehavior(BaseThemeBehavior):
     :class:`~kivy.properties.BooleanProperty` and defaults to True.
     """
     
+    __events__ = (
+        'on_typography_updated',)
+
     def __init__(self, **kwargs) -> None:
-        self.register_event_type('on_typography_updated')
         super().__init__(**kwargs)
         assert self.typography._registered_fonts, (
             "No fonts registered in Typography system. "

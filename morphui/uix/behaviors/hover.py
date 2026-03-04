@@ -119,20 +119,18 @@ class MorphHoverBehavior(EventDispatcher):
     and defaults to False.
     """
 
+    __events__ = (
+        'on_enter',
+        'on_leave',)
+
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         
-        # Position tracking
         self.enter_pos: Tuple[float, float] = (0, 0)
         self.leave_pos: Tuple[float, float] = (0, 0)
         self.current_pos: Tuple[float, float] = (0, 0)
         
-        # Bind to window mouse position
         Window.bind(mouse_pos=self.on_mouse_pos)
-        
-        # Register events
-        self.register_event_type('on_enter')
-        self.register_event_type('on_leave')
 
     @property
     def is_displayed(self) -> bool:
@@ -325,11 +323,13 @@ class MorphHoverEnhancedBehavior(MorphHoverBehavior):
     _last_hovered_corner: str | None = None
     """Internal tracking of last hovered corner for event dispatching."""
 
+    __events__ = (
+        'on_enter_edge',
+        'on_leave_edge',
+        'on_enter_corner',
+        'on_leave_corner',)
+
     def __init__(self, **kwargs) -> None:
-        self.register_event_type('on_enter_edge')
-        self.register_event_type('on_leave_edge')
-        self.register_event_type('on_enter_corner')
-        self.register_event_type('on_leave_corner')
         super().__init__(**kwargs)
 
     def get_hovered_corner(self) -> str | None:

@@ -17,10 +17,10 @@ from kivy.graphics import Rectangle
 from kivy.graphics import SmoothLine
 from kivy.graphics import SmoothRoundedRectangle
 from kivy.properties import ListProperty
+from kivy.properties import AliasProperty
 from kivy.properties import ColorProperty
 from kivy.properties import NumericProperty
 from kivy.properties import BooleanProperty
-from kivy.properties import AliasProperty
 from kivy.properties import VariableListProperty
 from kivy.properties import BoundedNumericProperty
 from kivy.graphics.tesselator import Tesselator
@@ -446,8 +446,10 @@ class MorphHighlightLayerBehavior(EventDispatcher):
     _highlight_instruction: Rectangle
     """Internal canvas rectangle instruction for the highlight effect."""
 
+    __events__ = (
+        'on_highlight_updated',)
+
     def __init__(self, **kwargs) -> None:
-        self.register_event_type('on_highlight_updated')
         super().__init__(**kwargs)
 
         with self.canvas.before:
@@ -786,6 +788,9 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
     _border_instruction: SmoothLine
     """Kivy SmoothLine instruction for the border."""
 
+    __events__ = (
+        'on_surface_updated',)
+
     def __init__(self, **kwargs) -> None:
         """Initialize the surface behavior with canvas graphics 
         instructions.
@@ -795,7 +800,6 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
         **kwargs
             Additional keyword arguments passed to the parent class.
         """
-        self.register_event_type('on_surface_updated')
         super().__init__(**kwargs)
 
         with self.canvas.before:
@@ -1202,8 +1206,10 @@ class MorphInteractionLayerBehavior(BaseLayerBehavior):
     _interaction_instruction: SmoothRoundedRectangle
     """Kivy SmoothRoundedRectangle instruction for the state layer shape."""
 
+    __events__ = (
+        'on_interaction_updated',)
+
     def __init__(self, **kwargs) -> None:
-        self.register_event_type('on_interaction_updated')
         super().__init__(**kwargs)
 
         group = NAME.INTERACTION
@@ -1550,8 +1556,10 @@ class MorphContentLayerBehavior(BaseLayerBehavior):
     and defaults to the resolved content color based on the current
     state."""
 
+    __events__ = (
+        'on_content_updated',)
+
     def __init__(self, **kwargs) -> None:
-        self.register_event_type('on_content_updated')
         super().__init__(**kwargs)
         if self.normal_content_color is None:
             self.normal_content_color = self._get_content_color()
@@ -2017,8 +2025,10 @@ class MorphOverlayLayerBehavior(BaseLayerBehavior):
     
     The edges are drawn in the order: top, right, bottom, left."""
 
+    __events__ = (
+        'on_overlay_updated',)
+
     def __init__(self, **kwargs) -> None:
-        self.register_event_type('on_overlay_updated')
         super().__init__(**kwargs)
 
         self._overlay_edges_color_instructions = {}

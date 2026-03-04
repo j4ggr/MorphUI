@@ -173,7 +173,7 @@ class MorphIconButton(
         ripple_layer='interaction',
         auto_size=True,
         padding=dp(8),
-        radius=[5] * 4,
+        radius=[dp(5)] * 4,
         )
     """Default configuration values for MorphIconButton.
 

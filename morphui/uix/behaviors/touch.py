@@ -129,9 +129,11 @@ class MorphButtonBehavior(EventDispatcher):
     how long the widget was in the pressed state.
     """
 
+    __events__ = (
+        'on_press',
+        'on_release',)
+
     def __init__(self, **kwargs) -> None:
-        self.register_event_type('on_press')
-        self.register_event_type('on_release')
         super().__init__(**kwargs)
         self.bind(pressed=self._update_press_timing)
 

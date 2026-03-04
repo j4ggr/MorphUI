@@ -1,9 +1,9 @@
-from textwrap import dedent
-
 from typing import Any
 from typing import List
 from typing import Dict
 from typing import Literal
+
+from textwrap import dedent
 
 from kivy.lang import Builder
 from kivy.metrics import dp
@@ -17,10 +17,10 @@ from morphui.uix.list import MorphListLayout
 from morphui.uix.list import MorphListItemFlat
 from morphui.uix.button import MorphTextIconButton
 from morphui.uix.boxlayout import MorphElevationBoxLayout
-from morphui.uix.behaviors import MorphToggleButtonBehavior
 from morphui.uix.behaviors import MorphMenuMotionBehavior
 from morphui.uix.behaviors import MorphSizeBoundsBehavior
 from morphui.uix.behaviors import MorphRoundSidesBehavior
+from morphui.uix.behaviors import MorphToggleButtonBehavior
 
 from morphui.uix.textfield import MorphTextField
 from morphui.uix.textfield import MorphTextFieldFilled
@@ -406,9 +406,11 @@ class MorphDropdownSelect(
         auto_size=(False, True),
         size_hint_x=None,
         width=dp(150),))
+    
+    __events__ = (
+        'on_item_release',)
 
     def __init__(self, kw_dropdown: Dict[str, Any] = {}, **kwargs) -> None:
-        self.register_event_type('on_item_release')
         kw_dropdown = dict(
             caller=self,
             items=kwargs.pop('items', []),
@@ -571,8 +573,10 @@ class MorphDropdownFilterField(MorphTextField):
         MorphTextField.default_config.copy() | dict())
     """Default configuration for the MorphDropdownFilterField."""
 
+    __events__ = (
+        'on_item_release',)
+
     def __init__(self, kw_dropdown: Dict[str, Any] = {}, **kwargs) -> None:
-        self.register_event_type('on_item_release')
         kw_dropdown = dict(
             caller=self,
             items=kwargs.pop('items', []),

@@ -173,12 +173,13 @@ class MorphMenuMotionBehavior(MorphScaleBehavior,):
     :attr:`min_space_required` is a
     :class:`~kivy.properties.NumericProperty` and defaults to `100`.
     """
+    __events__ = (
+        'on_pre_open',
+        'on_pre_dismiss',
+        'on_open',
+        'on_dismiss',)
 
     def __init__(self, **kwargs) -> None:
-        self.register_event_type('on_pre_open')
-        self.register_event_type('on_pre_dismiss')
-        self.register_event_type('on_open')
-        self.register_event_type('on_dismiss')
         super().__init__(**kwargs)
         self.bind(
             caller=self._update_caller_bindings)

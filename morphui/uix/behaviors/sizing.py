@@ -437,8 +437,10 @@ class MorphAutoSizingBehavior(EventDispatcher):
     texture_size for auto sizing.
     """
 
+    __events__ = (
+        'on_auto_size_updated',)
+
     def __init__(self, **kwargs) -> None:
-        self.register_event_type('on_auto_size_updated')
         super().__init__(**kwargs)
         
         self._original_size_hint = tuple(self.size_hint)
@@ -746,10 +748,12 @@ class MorphResizeBehavior(
     _resize_in_progress: bool = False
     """Internal flag indicating if a resize operation is in progress."""
 
+    __events__ = (
+        'on_resize_start',
+        'on_resize_progress',
+        'on_resize_end',)
+
     def __init__(self, **kwargs) -> None:
-        self.register_event_type('on_resize_start')
-        self.register_event_type('on_resize_progress')
-        self.register_event_type('on_resize_end')
         super().__init__(**kwargs)
         
         self.bind(

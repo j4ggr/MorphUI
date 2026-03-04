@@ -151,8 +151,10 @@ class MorphDataViewHeader(BaseDataView):
         bar_width=0,)
     """Default configuration for the :class:`MorphDataViewHeader`."""
 
+    __events__ = (
+        'on_columns_updated',)
+
     def __init__(self, **kwargs) -> None:
-        self.register_event_type('on_columns_updated')
         config = self.default_config.copy() | kwargs
         super().__init__(**config)
         self.layout_manager.bind(height=self.setter('height'))

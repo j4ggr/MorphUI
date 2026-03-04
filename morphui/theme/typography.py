@@ -260,8 +260,10 @@ class Typography(EventDispatcher):
     _registered_fonts: Tuple[str, ...]
     """Tuple of currently registered font family names."""
 
+    __events__ = (
+        'on_typography_changed',)
+
     def __init__(self, **kwargs) -> None:
-        self.register_event_type('on_typography_changed')
         super().__init__(**kwargs)
 
         self._registered_fonts = ()

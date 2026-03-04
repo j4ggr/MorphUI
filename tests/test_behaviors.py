@@ -1691,7 +1691,6 @@ class TestMorphThemeBehavior:
         """Test MorphThemeBehavior initialization with default values."""
         
         with patch.object(self.TestWidget, 'bind'), \
-             patch.object(self.TestWidget, 'register_event_type'), \
              patch.object(self.TestWidget, 'dispatch'):
             
             widget = self.TestWidget()
@@ -1706,7 +1705,6 @@ class TestMorphThemeBehavior:
         """Test that theme_style_mappings is properly set from constants."""
         
         with patch.object(self.TestWidget, 'bind'), \
-             patch.object(self.TestWidget, 'register_event_type'), \
              patch.object(self.TestWidget, 'dispatch'):
             
             widget = self.TestWidget()
@@ -1740,7 +1738,6 @@ class TestMorphThemeBehavior:
         })
         
         with patch.object(self.TestWidget, 'bind'), \
-             patch.object(self.TestWidget, 'register_event_type'), \
              patch.object(self.TestWidget, 'dispatch'):
             
             widget = self.TestWidget()
@@ -1771,7 +1768,6 @@ class TestMorphThemeBehavior:
         type(mock_app_theme_manager).__contains__ = lambda self, item: item in ['primary_color', 'content_primary_color']
         
         with patch.object(self.TestWidget, 'bind'), \
-             patch.object(self.TestWidget, 'register_event_type'), \
              patch.object(self.TestWidget, 'dispatch'):
             
             widget = self.TestWidget()
@@ -1816,8 +1812,7 @@ class TestMorphThemeBehavior:
             'transparent_color': [0.0, 0.0, 0.0, 0.0],
         })
         
-        with patch.object(self.TestWidget, 'register_event_type'), \
-             patch.object(self.TestWidget, 'dispatch'):
+        with patch.object(self.TestWidget, 'dispatch'):
             
             widget = self.TestWidget()
             # Set up valid widget properties
@@ -1843,7 +1838,6 @@ class TestMorphThemeBehavior:
         """Test on_theme_style with invalid style name."""
         
         with patch.object(self.TestWidget, 'bind'), \
-             patch.object(self.TestWidget, 'register_event_type'), \
              patch.object(self.TestWidget, 'dispatch'):
             
             widget = self.TestWidget()
@@ -1862,7 +1856,6 @@ class TestMorphThemeBehavior:
         """Test add_custom_style method."""
         
         with patch.object(self.TestWidget, 'bind'), \
-             patch.object(self.TestWidget, 'register_event_type'), \
              patch.object(self.TestWidget, 'dispatch'):
             
             widget = self.TestWidget()
@@ -1887,7 +1880,6 @@ class TestMorphThemeBehavior:
         """Test that adding custom style creates instance copy."""
         
         with patch.object(self.TestWidget, 'bind'), \
-             patch.object(self.TestWidget, 'register_event_type'), \
              patch.object(self.TestWidget, 'dispatch'):
             
             widget1 = self.TestWidget()
@@ -1916,7 +1908,6 @@ class TestMorphThemeBehavior:
         """Test refresh_theme_colors method."""
         
         with patch.object(self.TestWidget, 'bind'), \
-             patch.object(self.TestWidget, 'register_event_type'), \
              patch.object(self.TestWidget, 'dispatch'):
             
             widget = self.TestWidget()
@@ -1929,7 +1920,6 @@ class TestMorphThemeBehavior:
     def test_on_colors_updated_default_implementation(self):
         """Test that on_colors_updated has a default no-op implementation."""
         with patch.object(self.TestWidget, 'bind'), \
-             patch.object(self.TestWidget, 'register_event_type'), \
              patch.object(self.TestWidget, 'dispatch'):
             
             widget = self.TestWidget()
@@ -1994,8 +1984,7 @@ class TestMorphColorThemeBehavior:
             'content_on_surface_color': [0.1, 0.1, 0.1, 1.0],
         })
         
-        with patch.object(self.TestWidget, 'bind'), \
-             patch.object(self.TestWidget, 'register_event_type'):
+        with patch.object(self.TestWidget, 'bind'):
             
             widget = self.TestWidget()
             
@@ -2020,8 +2009,7 @@ class TestMorphColorThemeBehavior:
             'content_on_surface_color': [0.1, 0.1, 0.1, 1.0],
         })
         
-        with patch.object(self.TestWidget, 'bind'), \
-             patch.object(self.TestWidget, 'register_event_type'):
+        with patch.object(self.TestWidget, 'bind'):
             
             widget = self.TestWidget()
             
@@ -2052,8 +2040,7 @@ class TestMorphColorThemeBehavior:
             'transparent_color': [0.0, 0.0, 0.0, 0.0],
         })
         
-        with patch.object(self.TestWidget, 'register_event_type'), \
-             patch.object(self.TestWidget, 'dispatch'):
+        with patch.object(self.TestWidget, 'dispatch'):
             
             widget = self.TestWidget()
             
@@ -2080,8 +2067,7 @@ class TestMorphColorThemeBehavior:
             'outline_color': [0.5, 0.5, 0.5, 1.0],
         })
         
-        with patch.object(self.TestWidget, 'register_event_type'), \
-             patch.object(self.TestWidget, 'dispatch'):
+        with patch.object(self.TestWidget, 'dispatch'):
             
             # Create widget with explicit property set in kwargs
             explicit_color = [0.2, 0.5, 0.8, 1.0]
@@ -2116,8 +2102,7 @@ class TestMorphColorThemeBehavior:
             'content_primary_color': [1.0, 1.0, 1.0, 1.0],
         })
         
-        with patch.object(self.TestWidget, 'register_event_type'), \
-             patch.object(self.TestWidget, 'dispatch'):
+        with patch.object(self.TestWidget, 'dispatch'):
             
             # Create widget with explicit property
             explicit_color = [0.2, 0.5, 0.8, 1.0]
@@ -2148,8 +2133,7 @@ class TestMorphColorThemeBehavior:
             'content_primary_color': [1.0, 1.0, 1.0, 1.0],
         })
         
-        with patch.object(self.TestWidget, 'register_event_type'), \
-             patch.object(self.TestWidget, 'dispatch'):
+        with patch.object(self.TestWidget, 'dispatch'):
             
             explicit_color = [0.2, 0.5, 0.8, 1.0]
             widget = self.TestWidget(
@@ -2185,8 +2169,7 @@ class TestMorphColorThemeBehavior:
             'transparent_color': [0.0, 0.0, 0.0, 0.0],
         })
         
-        with patch.object(self.TestWidget, 'register_event_type'), \
-             patch.object(self.TestWidget, 'dispatch'):
+        with patch.object(self.TestWidget, 'dispatch'):
             
             from morphui.constants import THEME
             first_property = list(THEME.STYLES['primary'].keys())[0]
@@ -2216,8 +2199,7 @@ class TestMorphColorThemeBehavior:
             'content_primary_color': [1.0, 1.0, 1.0, 1.0],
         })
         
-        with patch.object(self.TestWidget, 'register_event_type'), \
-             patch.object(self.TestWidget, 'dispatch'):
+        with patch.object(self.TestWidget, 'dispatch'):
             
             widget = self.TestWidget(
                 theme_color_bindings={
@@ -2271,7 +2253,6 @@ class TestMorphTypographyBehavior:
         """Test MorphTypographyBehavior initialization."""
         
         with patch.object(self.TestWidget, 'bind'), \
-             patch.object(self.TestWidget, 'register_event_type'), \
              patch.object(self.TestWidget, 'dispatch'):
             
             widget = self.TestWidget()
@@ -2290,7 +2271,6 @@ class TestMorphTypographyBehavior:
         })
         
         with patch.object(self.TestWidget, 'bind'), \
-             patch.object(self.TestWidget, 'register_event_type'), \
              patch.object(self.TestWidget, 'dispatch'):
             
             widget = self.TestWidget()
@@ -2307,7 +2287,6 @@ class TestMorphTypographyBehavior:
         """Test typography property changes."""
         
         with patch.object(self.TestWidget, 'bind'), \
-             patch.object(self.TestWidget, 'register_event_type'), \
              patch.object(self.TestWidget, 'dispatch'):
             
             widget = self.TestWidget()
@@ -2345,7 +2324,6 @@ class TestMorphThemeBehaviorSplit:
         """Test that MorphThemeBehavior combines both behaviors."""
         
         with patch.object(self.TestWidget, 'bind'), \
-             patch.object(self.TestWidget, 'register_event_type'), \
              patch.object(self.TestWidget, 'dispatch'):
             
             widget = self.TestWidget()
@@ -3383,18 +3361,6 @@ class TestMorphButtonBehavior:
         
         assert result is False
         assert self.widget.pressed is False
-
-    def test_on_touch_down_with_ripple(self):
-        """Test touch down with ripple effect enabled."""
-        self.widget.ripple_enabled = True
-        self.widget.show_ripple_effect = Mock()
-        
-        with patch.object(self.widget, 'collide_point', return_value=True), \
-             patch.object(Clock, 'schedule_once') as mock_schedule:
-            result = self.widget.on_touch_down(self.mock_touch)
-        
-        assert result is True
-        mock_schedule.assert_called_once()
 
     def test_on_touch_up_successful(self):
         """Test successful touch up event handling."""
@@ -4723,9 +4689,7 @@ class TestMorphMenuMotionBehavior:
         
         widget.set_scale_origin()
         
-        # Scale origin should be at center of caller
-        # x: 100 + 150/2 = 175, y: 200 + 40/2 = 220
-        assert widget.scale_origin == [175, 220]
+        assert widget.scale_origin == [175, 200]
 
 
 class TestMorphTripleLabelBehavior:

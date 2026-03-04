@@ -146,8 +146,10 @@ class MorphDataViewIndex(BaseDataView):
         bar_width=0,)
     """Default configuration for the :class:`MorphDataViewIndex`."""
 
+    __events__ = (
+        'on_rows_updated',)
+
     def __init__(self, **kwargs) -> None:
-        self.register_event_type('on_rows_updated')
         config = self.default_config.copy() | kwargs
         super().__init__(**config)
         self.layout_manager.bind(width=self.setter('width'))

@@ -148,9 +148,10 @@ class MorphStateBehavior(EventDispatcher):
     actually implements. It is determined dynamically based on which
     state properties are currently active.
     """
+    __events__ = (
+        'on_current_state_changed',)
 
     def __init__(self, **kwargs) -> None:
-        self.register_event_type('on_current_state_changed')
         self._available_states = {'normal'}
         super().__init__(**kwargs)
         self.refresh_state()

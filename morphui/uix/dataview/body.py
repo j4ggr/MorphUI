@@ -245,8 +245,10 @@ class MorphDataViewBody(BaseDataView):
         bar_width=dp(3),)
     """Default configuration for the MorphDataViewBody."""
     
+    __events__ = (
+        'on_values_updated',)
+
     def __init__(self, **kwargs) -> None:
-        self.register_event_type('on_values_updated')
         config = self.default_config.copy() | kwargs
         super().__init__(**config)
     

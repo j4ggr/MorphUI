@@ -247,9 +247,11 @@ class MorphInputChip(MorphChip):
         trailing_icon='close',))
     """Default configuration for the :class:`MorphInputChip` component."""
 
+    __events__ = (
+        'on_trailing_widget_press',
+        'on_trailing_widget_release',)
+
     def __init__(self, **kwargs) -> None:
-        self.register_event_type('on_trailing_widget_press')
-        self.register_event_type('on_trailing_widget_release')
         super().__init__(**kwargs)
         self.trailing_widget.bind(
             on_press=lambda *_: self._on_trailing_widget_touch(release=False),
