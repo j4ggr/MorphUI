@@ -60,8 +60,8 @@ class BaseLabel(Label):
     """
 
     minimum_height: float = AliasProperty(
-        lambda self: self.texture_size[1] + self.padding[1] + self.padding[3],
-        bind=['texture_size', 'padding',])
+        lambda self: self.texture_size[1],
+        bind=['texture_size'])
     """The minimum height required to display the label's content.
 
     This property calculates the minimum height based on the label's
@@ -71,8 +71,8 @@ class BaseLabel(Label):
     """
 
     minimum_width: float = AliasProperty(
-        lambda self: self.texture_size[0] + self.padding[0] + self.padding[2],
-        bind=['texture_size', 'padding',])
+        lambda self: self.texture_size[0],
+        bind=['texture_size'])
     """The minimum width required to display the label's content.
 
     This property calculates the minimum width based on the label's
@@ -140,7 +140,8 @@ class MorphSimpleLabel(
         typography_size='medium',
         typography_weight='Regular',
         halign='left',
-        valign='center',)
+        valign='center',
+        auto_size=True,)
     """Default configuration values for MorphSimpleLabel instances.
     
     Provides minimal label appearance settings:
@@ -268,6 +269,7 @@ class MorphLabel(
         typography_weight='Regular',
         halign='left',
         valign='center',
+        auto_size=True,
         padding=dp(8),)
     """Default configuration values for MorphLabel instances.
     
