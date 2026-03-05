@@ -40,6 +40,7 @@ from .shape import MorphScaleBehavior
 from .shape import MorphRoundSidesBehavior
 
 from .motion import MorphMenuMotionBehavior
+from .motion import MorphDialogMotionBehavior
 
 from .icon import MorphIconBehavior
 
@@ -86,6 +87,7 @@ __all__ = [
     'MorphScaleBehavior',               # Scaling behavior
     'MorphRoundSidesBehavior',          # Automatic rounded sides
     'MorphMenuMotionBehavior',          # Menu motion behavior
+    'MorphDialogMotionBehavior',        # Dialog motion behavior
     'MorphIconBehavior',                # Icon functionality
     'MorphScrollSyncBehavior',          # Scroll synchronization behavior
     'MorphTooltipBehavior',             # Tooltip functionality
