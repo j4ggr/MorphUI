@@ -4,6 +4,7 @@ from typing import Literal
 
 from kivy.clock import Clock
 from kivy.metrics import dp
+
 from kivy.animation import Animation
 from kivy.properties import AliasProperty
 from kivy.properties import BooleanProperty
@@ -19,10 +20,237 @@ from morphui.uix.behaviors import MorphScaleBehavior
 
 
 __all__ = [
-    'MorphMenuMotionBehavior']
+    'MorphMotionBaseBehavior',
+    'MorphMenuMotionBehavior',
+    'MorphDialogMotionBehavior']
 
 
-class MorphMenuMotionBehavior(MorphScaleBehavior,):
+class MorphMotionBaseBehavior(MorphScaleBehavior):
+    """Base class for motion-related behaviors.
+
+    This class serves as a common base for behaviors that involve motion
+    or animation, such as menu motion. It can be extended to provide
+    shared functionality or properties related to motion.
+    """
+
+    is_open: bool = AliasProperty(
+        lambda self: bool(self.parent),
+        bind=['parent'])
+    """Flag indicating whether the menu is currently open.
+
+    This property is `True` when the menu is visible and `False`
+    when it is closed.
+
+    :attr:`is_open` is a :class:`~kivy.properties.AliasProperty` and is
+    read-only."""
+
+    window_margin: float = NumericProperty(dp(8))
+    """Margin from the window edges in pixels.
+
+    This property defines the minimum distance (in pixels) that the
+    widget should maintain from the edges of the window. This ensures 
+    this widget remains fully visible and doesn't extend beyond the 
+    window bounds.
+
+    :attr:`window_margin` is a
+    :class:`~kivy.properties.NumericProperty` and defaults to `8`."""
+
+    opening_duration: float = NumericProperty(0.15)
+    """Duration of the opening animation in seconds.
+
+    This property defines how long the animation takes when the is 
+    opened. It is specified in seconds.
+    
+    :attr:`opening_duration` is a
+    :class:`~kivy.properties.NumericProperty` and defaults to `0.15`."""
+
+    opening_transition: str = StringProperty('out_sine')
+    """Transition type for the opening animation.
+
+    This property defines the type of transition used during the
+    opening animation. It should be a valid Kivy transition name.
+
+    :attr:`opening_transition` is a
+    :class:`~kivy.properties.StringProperty` and defaults to 
+    `'out_sine'`."""
+
+    dismissing_duration: float = NumericProperty(0.15)
+    """Duration of the dismiss animation in seconds.
+
+    This property defines how long the animation takes when the
+    is dismissed. It is specified in seconds.
+
+    :attr:`dismissing_duration` is a
+    :class:`~kivy.properties.NumericProperty` and defaults to `0.1`."""
+
+    dismissing_transition: str = StringProperty('in_sine')
+    """Transition type for the dismiss animation.
+
+    This property defines the type of transition used during the
+    dismiss animation. It should be a valid Kivy transition name.
+
+    :attr:`dismissing_transition` is a
+    :class:`~kivy.properties.StringProperty` and defaults to 
+    `'in_sine'`."""
+
+    backdrop_dismiss: bool = BooleanProperty(True)
+    """Whether to dismiss the widget when the backdrop is touched.
+    
+    If set to `True`, touching the backdrop (the area outside the 
+    widget) will dismiss the widget. If set to `False`, the widget will 
+    not be dismissed when the backdrop is touched.
+
+    :attr:`backdrop_dismiss` is a
+    :class:`~kivy.properties.BooleanProperty` and defaults to `True`.
+    """
+    
+    __events__ = (
+        'on_pre_open',
+        'on_pre_dismiss',
+        'on_open',
+        'on_dismiss',)
+
+    def _adjust_and_reposition(self, *args) -> None:
+        """Adjust the widget position and size to fit within the window.
+
+        This method should be implemented by subclasses to adjust the
+        widget's position and size based on the available space in the
+        window. It ensures that the widget fits within the window bounds
+        while respecting any specified margins or constraints.
+        """
+        raise NotImplementedError(
+            'Subclasses must implement _adjust_and_reposition method. '
+            f'{self.__class__} does not implement this method.')
+
+    def _add_to_window(self, *args) -> None:
+        """Add the widget to the window.
+        
+        This method adds the widget to the window and updates its
+        position based on the caller button. If the widget also inherits
+        from :class:`MorphSizeBoundsBehavior`, it will set the
+        `size_upper_bound` property to ensure the fits within the
+        window bounds, respecting the :attr:`window_margin`.
+        """
+        if self.is_open:
+            return
+        Window.add_widget(self)
+
+    def _remove_from_window(self, *args) -> None:
+        """Remove the widget from the window."""
+        if self.is_open:
+            Window.remove_widget(self)
+        self.dispatch('on_dismiss')
+
+    def open(self, *args) -> None:
+        """Open the widget with animation.
+        
+        This method opens the widget with an animation. If the widget is 
+        already open, it does nothing. The widget position is adjusted 
+        to fit within the window bounds before opening.
+        """
+        if self.is_open:
+            Animation.cancel_all(self)
+            return
+        
+        self.dispatch('on_pre_open')
+        self._add_to_window()
+        self._adjust_and_reposition()
+        if self.scale_enabled:
+            self.scale_animation_duration = self.opening_duration
+            self.scale_animation_transition = self.opening_transition
+            self.set_scale_origin()
+            self.animate_scale_in(lambda *_: self.dispatch('on_open'))
+        else:
+            self.dispatch('on_open')
+
+    def dismiss(self, *args) -> None:
+        """Dismiss the menu with animation."""
+        if not self.is_open:
+            Animation.cancel_all(self)
+            return
+        
+        self.dispatch('on_pre_dismiss')
+        if self.scale_enabled:
+            self.scale_animation_duration = self.dismissing_duration
+            self.scale_animation_transition = self.dismissing_transition
+            self.set_scale_origin()
+            self.animate_scale_out(callback=self._remove_from_window)
+        else:
+            self._remove_from_window()
+
+    def toggle(self, *args) -> None:
+        """Toggle the menu open/closed state with animation."""
+        if self.is_open:
+            self.dismiss()
+        else:
+            self.open()
+    
+    def on_pre_open(self, *args) -> None:
+        """Event fired before the widget is opened."""
+        pass
+
+    def on_pre_dismiss(self, *args) -> None:
+        """Event fired before the widget is dismissed."""
+        pass
+
+    def on_open(self, *args) -> None:
+        """Event fired when the widget is opened."""
+        pass
+
+    def on_dismiss(self, *args) -> None:
+        """Event fired when the widget is dismissed."""
+        pass
+
+    def _should_dismiss(self, touch: MotionEvent) -> bool:
+        """Check if the widget should be dismissed.
+        
+        This method determines whether the widget should be dismissed based 
+        on the touch event. It checks the :attr:`backdrop_dismiss` property 
+        and whether the touch occurred outside the widget's bounds. 
+        Subclasses can override this method to implement custom dismissal 
+        logic.
+        
+        Parameters
+        ----------
+        touch : MotionEvent
+            The touch event that occurred.
+        
+        Returns
+        -------
+        bool
+            `True` if the widget should be dismissed, `False` otherwise.
+        """
+        if not self.backdrop_dismiss:
+            return False
+        
+        return not self.collide_point(*touch.pos)
+    
+    def on_touch_up(self, touch: MotionEvent) -> Literal[True] | None:
+        """Handle touch up events to dismiss the widget when touching 
+        outside.
+        
+        This method handles touch up events and dismisses the widget if 
+        :meth:`_should_dismiss` returns `True`. 
+        Otherwise, it allows the event to propagate to the parent class.
+        
+        Parameters
+        ----------
+        touch : MotionEvent
+            The touch event that occurred.
+        
+        Returns
+        -------
+        Literal[True] | None
+            Returns result from parent class if dismissal is not needed, 
+            or `None` if the widget was dismissed.
+        """
+        if not self._should_dismiss(touch):
+            return super().on_touch_up(touch)
+        
+        Clock.schedule_once(self.dismiss, 0) 
+
+
+class MorphMenuMotionBehavior(MorphMotionBaseBehavior):
     """Behavior class that adds menu motion functionality to a widget.
     
     This behavior provides properties and methods to manage a menu
@@ -45,17 +273,6 @@ class MorphMenuMotionBehavior(MorphScaleBehavior,):
     
     :attr:`caller` is a :class:`~kivy.properties.ObjectProperty`
     and defaults to `None`."""
-
-    is_open: bool = AliasProperty(
-        lambda self: bool(self.parent),
-        bind=['parent'])
-    """Flag indicating whether the menu is currently open.
-
-    This property is `True` when the menu is visible and `False`
-    when it is closed.
-
-    :attr:`is_open` is a :class:`~kivy.properties.AliasProperty` and is
-    read-only."""
 
     same_width_as_caller: bool = BooleanProperty(False)
     """Whether the menu should match the caller button's width.
@@ -93,54 +310,6 @@ class MorphMenuMotionBehavior(MorphScaleBehavior,):
     :class:`~kivy.properties.OptionProperty` and defaults to `'down'`.
     """
 
-    menu_opening_duration: float = NumericProperty(0.15)
-    """Duration of the menu opening animation in seconds.
-
-    This property defines how long the animation takes when the menu
-    is opened. It is specified in seconds.
-    
-    :attr:`menu_opening_duration` is a
-    :class:`~kivy.properties.NumericProperty` and defaults to `0.15`."""
-
-    menu_opening_transition: str = StringProperty('out_sine')
-    """Transition type for the menu opening animation.
-
-    This property defines the type of transition used during the menu
-    opening animation. It should be a valid Kivy transition name.
-
-    :attr:`menu_opening_transition` is a
-    :class:`~kivy.properties.StringProperty` and defaults to 
-    `'out_sine'`."""
-
-    menu_dismissing_duration: float = NumericProperty(0.15)
-    """Duration of the menu dismiss animation in seconds.
-
-    This property defines how long the animation takes when the menu
-    is dismissed. It is specified in seconds.
-
-    :attr:`menu_dismiss_duration` is a
-    :class:`~kivy.properties.NumericProperty` and defaults to `0.1`."""
-
-    menu_dismissing_transition: str = StringProperty('in_sine')
-    """Transition type for the menu dismiss animation.
-
-    This property defines the type of transition used during the menu
-    dismiss animation. It should be a valid Kivy transition name.
-
-    :attr:`menu_dismiss_transition` is a
-    :class:`~kivy.properties.StringProperty` and defaults to 
-    `'in_sine'`."""
-
-    menu_window_margin: float = NumericProperty(dp(8))
-    """Margin from the window edges in pixels.
-
-    This property defines the minimum distance (in pixels) that the menu
-    should maintain from the edges of the window. This ensures the menu
-    remains fully visible and doesn't extend beyond the window bounds.
-
-    :attr:`menu_window_margin` is a
-    :class:`~kivy.properties.NumericProperty` and defaults to `8`."""
-
     menu_caller_spacing: float = NumericProperty(dp(2))
     """Spacing between the menu and the caller button in pixels.
 
@@ -173,11 +342,6 @@ class MorphMenuMotionBehavior(MorphScaleBehavior,):
     :attr:`min_space_required` is a
     :class:`~kivy.properties.NumericProperty` and defaults to `100`.
     """
-    __events__ = (
-        'on_pre_open',
-        'on_pre_dismiss',
-        'on_open',
-        'on_dismiss',)
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
@@ -262,7 +426,7 @@ class MorphMenuMotionBehavior(MorphScaleBehavior,):
 
         caller_x, caller_y = self._resolve_caller_pos()
         caller_width, caller_height = self._resolve_caller_size()
-        margin = self.menu_window_margin
+        margin = self.window_margin
         padding = getattr(self, 'padding', [0]*4)
         w, h = self.size
         
@@ -343,8 +507,8 @@ class MorphMenuMotionBehavior(MorphScaleBehavior,):
             case 'right':
                 x = caller_x + caller_width + self.menu_caller_spacing
         
-        x = max(x, self.menu_window_margin)
-        y = max(y, self.menu_window_margin)
+        x = max(x, self.window_margin)
+        y = max(y, self.window_margin)
         return (x, y)
     
     def _resolve_size(self) -> Tuple[float, float]:
@@ -369,7 +533,7 @@ class MorphMenuMotionBehavior(MorphScaleBehavior,):
         we can assume that the position (self.x and self.y) always has 
         at least the necessary margin.
         """
-        margin = self.menu_window_margin
+        margin = self.window_margin
         caller_x, caller_y = self._resolve_caller_pos()
         caller_width, caller_height = self._resolve_caller_size()
 
@@ -453,69 +617,6 @@ class MorphMenuMotionBehavior(MorphScaleBehavior,):
                 self.scale_origin = [
                     caller_x + caller_width,
                     caller_y]
-
-    def _add_to_window(self, *args) -> None:
-        """Add the menu to the window.
-        
-        This method adds the menu widget to the window and updates its
-        position based on the caller button. If the widget also inherits
-        from :class:`MorphSizeBoundsBehavior`, it will set the
-        `size_upper_bound` property to ensure the menu fits within the
-        window bounds, respecting the :attr:`menu_window_margin`.
-        """
-        if self.parent:
-            return
-        Window.add_widget(self)
-
-    def _remove_from_window(self, *args) -> None:
-        """Remove the menu from the window."""
-        if self.is_open:
-            Window.remove_widget(self)
-        self.dispatch('on_dismiss')
-
-    def open(self, *args) -> None:
-        """Open the menu with animation.
-        
-         This method opens the menu with an animation. If the menu is
-         already open, it does nothing. The menu position is adjusted to
-         fit within the window bounds before opening.
-        """
-        if self.is_open:
-            Animation.cancel_all(self)
-            return
-        
-        self.dispatch('on_pre_open')
-        self._add_to_window()
-        self._adjust_and_reposition()
-        if self.scale_enabled:
-            self.scale_animation_duration = self.menu_opening_duration
-            self.scale_animation_transition = self.menu_opening_transition
-            self.set_scale_origin()
-            self.animate_scale_in(lambda *_: self.dispatch('on_open'))
-        else:
-            self.dispatch('on_open')
-
-    def dismiss(self, *args) -> None:
-        """Dismiss the menu with animation."""
-        if not self.is_open:
-            Animation.cancel_all(self)
-            return
-        
-        self.dispatch('on_pre_dismiss')
-        if self.scale_enabled:
-            self.scale_animation_duration = self.menu_dismissing_duration
-            self.scale_animation_transition = self.menu_dismissing_transition
-            self.set_scale_origin()
-            self.animate_scale_out(callback=self._remove_from_window)
-        else:
-            self._remove_from_window()
-
-    def toggle(self, *args) -> None:
-        """Toggle the menu open/closed state with animation."""
-        if self.is_open:
-            self.dismiss()
-        else:
-            self.open()
     
     def caller_collide_point(self, x: float, y: float) -> bool:
         """Check if the given point collides with the caller button.
@@ -548,47 +649,89 @@ class MorphMenuMotionBehavior(MorphScaleBehavior,):
         collide_y = self.caller.y <= y <= self.caller.top
         return (collide_x and collide_y)
     
-    def on_touch_up(self, touch: MotionEvent) -> Literal[True] | None:
-        """Handle touch up events to close the menu when touching
-        outside.
-
-        This method overrides the default touch up behavior to
-        close the date picker menu if a touch event occurs outside
-        its bounds. If the touch is within the menu or the caller 
-        button, it allows the event to propagate.
-
+    def _should_dismiss(self, touch: MotionEvent) -> bool:
+        """Check if the menu should be dismissed.
+        
+        This method checks if the menu should be dismissed based on the 
+        touch event. It considers the :attr:`backdrop_dismiss` property, 
+        whether the touch occurred outside the menu's bounds, the caller 
+        button, and whether the caller has a ripple in progress.
+        
         Parameters
         ----------
         touch : MotionEvent
             The touch event that occurred.
-
+        
         Returns
         -------
-        Literal[True] | None
-            Returns `True` if the touch event was handled (i.e., the
-            menu was dismissed), or `None` to allow the event to
-            propagate if the touch was within the menu or caller.
+        bool
+            `True` if the menu should be dismissed, `False` otherwise.
         """
-        if (self.collide_point(*touch.pos)
+        
+        if (not self.backdrop_dismiss
+                or self.collide_point(*touch.pos)
                 or self.caller_collide_point(*touch.pos)
                 or getattr(self.caller, '_ripple_in_progress', False)):
-            return super().on_touch_up(touch)
+            return False
+        return True
+
+
+class MorphDialogMotionBehavior(MorphMotionBaseBehavior):
+    """Behavior class that adds dialog motion functionality to a widget.
+    
+    This behavior extends :class:`MorphMotionBaseBehavior` to provide
+    motion functionality specific to dialogs. It can be used to create
+    dialogs that open and close with animations, while ensuring they fit
+    within the window bounds.
+
+    Notes
+    -----
+    This behavior is designed for dialog widgets and may include
+    additional properties or methods specific to dialog behavior in the
+    future.
+    """
+    
+    window_margin: float = NumericProperty(dp(48))
+    """Margin from the window edges in pixels.
+
+    This property defines the minimum distance (in pixels) that the
+    widget should maintain from the edges of the window. This ensures 
+    this widget remains fully visible and doesn't extend beyond the 
+    window bounds.
+
+    :attr:`window_margin` is a
+    :class:`~kivy.properties.NumericProperty` and defaults to `48`."""
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.bind(
+            size=self._adjust_and_reposition,)
+        Window.bind(
+            size=self._adjust_and_reposition,)
+
+    def _adjust_and_reposition(self, *args) -> None:
+        """Adjust the dialog position and size to fit within the window.
         
-        Clock.schedule_once(self.dismiss, 0)
-        return None
+        This method adjusts the dialog's position and size based on the
+        available space in the window. It ensures that the dialog fits
+        within the window bounds while respecting the specified margin.
 
-    def on_pre_open(self, *args) -> None:
-        """Event fired before the menu is opened."""
-        pass
+        Notes
+        -----
+        Call this method after the dialog size has changed to ensure
+        correct positioning.
+        """
+        if not self.is_open:
+            return
+        
+        self.set_scale_origin()
+        center = self.scale_origin
+        margin = self.window_margin
+        self.width = min(self.width, Window.width - 2 * margin)
+        self.height = min(self.height, Window.height - 2 * margin)
+        self.x = max(center[0] - self.width / 2, margin)
+        self.y = max(center[1] - self.height / 2, margin)
 
-    def on_pre_dismiss(self, *args) -> None:
-        """Event fired before the menu is dismissed."""
-        pass
-
-    def on_open(self, *args) -> None:
-        """Event fired when the menu is opened."""
-        pass
-
-    def on_dismiss(self, *args) -> None:
-        """Event fired when the menu is dismissed."""
-        pass
+    def set_scale_origin(self, *args) -> None:
+        """Set the scale origin to the center of the dialog."""
+        self.scale_origin = [Window.width / 2, Window.height / 2]
