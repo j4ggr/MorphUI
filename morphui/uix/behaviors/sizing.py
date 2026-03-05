@@ -485,17 +485,16 @@ class MorphAutoSizingBehavior(EventDispatcher):
 
     def _update_text_size(
             self, instance: Any, texture_size: Tuple[float, float]) -> None:
-        """Update text_size to match current width when auto_width is 
-        enabled. Only applies if the widget has a text_size attribute.
+        """Update :attr:`text_size` to match current size when 
+        :attr:`texture_size` changes.
 
-        This method adjusts the text_size property of the widget to
-        ensure that the height is calculated correctly when auto_height
-        is enabled. It sets the text_size to (current width, None) to
-        allow the height to adjust based on the text content.
-
-        The method is triggered whenever the texture_size property
-        changes, ensuring that the text_size remains consistent with
-        the current width of the widget.
+        This method adjusts the :attr:`text_size` property to match the 
+        current size of the widget whenever the :attr:`texture_size`
+        changes. First, it stores the original :attr:`text_size` to 
+        preserve the non-auto-sized dimensions. Then it sets 
+        :attr:`text_size` to (None, None) to allow the texture to update 
+        its native dimensions. Finally, it restores :attr:`text_size` 
+        with the new texture size.
 
         Parameters
         ----------
@@ -508,24 +507,20 @@ class MorphAutoSizingBehavior(EventDispatcher):
         -----
         This method is only relevant for widgets that have a text_size
         attribute, such as Label. It is triggered whenever the
-        `texture_size` property changes. It must also provide a 
-        `texture_update()` method to refresh the texture size after
+        :attr:`texture_size` property changes. It must also provide a 
+        :meth:`texture_update()` method to refresh the texture size after
         changing text_size.
         """
         if not self.auto_width and not self.auto_height:
             return
         
-        w_text, h_text = None, None
-
-        if self.auto_height:
-            h_text = self.texture_size[1]
-            self.text_size = (None, h_text) # update height first and let width adjust
-            self.texture_update() # ensure texture_size is updated coming from kivy.uix.label.Label class
-
-        if self.auto_width:
-            w_text = self.texture_size[0]
+        w_orig, h_orig = tuple(self.text_size)
+        self.text_size = (None, None)
+        self.texture_update()
         
-        self.text_size = (w_text, h_text)
+        self.text_size = (
+            self.texture_size[0] if self.auto_width else w_orig,
+            self.texture_size[1] if self.auto_height else h_orig)
         self.texture_update()
 
     def _update_auto_sizing(self, *args) -> None:
