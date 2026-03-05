@@ -4099,11 +4099,11 @@ class TestMorphMenuMotionBehavior:
         assert widget.is_open is False
         assert widget.menu_anchor_position == 'center'
         assert widget.menu_opening_direction == 'down'
-        assert widget.menu_opening_duration == 0.15
-        assert widget.menu_opening_transition == 'out_sine'
-        assert widget.menu_dismissing_duration == 0.15
-        assert widget.menu_dismissing_transition == 'in_sine'
-        assert widget.menu_window_margin == 8
+        assert widget.opening_duration == 0.15
+        assert widget.opening_transition == 'out_sine'
+        assert widget.dismissing_duration == 0.15
+        assert widget.dismissing_transition == 'in_sine'
+        assert widget.window_margin == 8
         assert widget.auto_adjust_position is True
         assert widget.min_space_required == 100
 
@@ -4127,20 +4127,20 @@ class TestMorphMenuMotionBehavior:
         widget.menu_opening_direction = 'up'
         assert widget.menu_opening_direction == 'up'
         
-        widget.menu_opening_duration = 0.3
-        assert widget.menu_opening_duration == 0.3
+        widget.opening_duration = 0.3
+        assert widget.opening_duration == 0.3
         
-        widget.menu_opening_transition = 'linear'
-        assert widget.menu_opening_transition == 'linear'
+        widget.opening_transition = 'linear'
+        assert widget.opening_transition == 'linear'
         
-        widget.menu_dismissing_duration = 0.2
-        assert widget.menu_dismissing_duration == 0.2
+        widget.dismissing_duration = 0.2
+        assert widget.dismissing_duration == 0.2
         
-        widget.menu_dismissing_transition = 'out_cubic'
-        assert widget.menu_dismissing_transition == 'out_cubic'
+        widget.dismissing_transition = 'out_cubic'
+        assert widget.dismissing_transition == 'out_cubic'
         
-        widget.menu_window_margin = 16
-        assert widget.menu_window_margin == 16
+        widget.window_margin = 16
+        assert widget.window_margin == 16
         
         widget.auto_adjust_position = False
         assert widget.auto_adjust_position is False
@@ -4253,7 +4253,7 @@ class TestMorphMenuMotionBehavior:
         widget = TestWidget()
         widget.size = (200, 400)  # Large menu height
         widget.menu_opening_direction = 'down'
-        widget.menu_window_margin = 8
+        widget.window_margin = 8
         
         # Setup caller near bottom of screen
         caller = Widget()
@@ -4294,7 +4294,7 @@ class TestMorphMenuMotionBehavior:
         widget = TestWidget()
         widget.size = (300, 200)  # Wide menu
         widget.menu_anchor_position = 'left'
-        widget.menu_window_margin = 8
+        widget.window_margin = 8
         
         # Setup caller with anchor 'left' and check adjustment
         caller = Widget()
@@ -4361,7 +4361,7 @@ class TestMorphMenuMotionBehavior:
         widget.size = (200, 300)
         widget.menu_anchor_position = 'center'
         widget.menu_opening_direction = 'down'
-        widget.menu_window_margin = 8
+        widget.window_margin = 8
         
         caller = Widget()
         caller.pos = (400, 500)
@@ -4388,7 +4388,7 @@ class TestMorphMenuMotionBehavior:
         widget.size = (200, 300)
         widget.menu_anchor_position = 'left'
         widget.menu_opening_direction = 'up'
-        widget.menu_window_margin = 8
+        widget.window_margin = 8
         
         caller = Widget()
         caller.pos = (400, 500)
@@ -4415,7 +4415,7 @@ class TestMorphMenuMotionBehavior:
         widget.size = (200, 300)
         widget.menu_anchor_position = 'right'
         widget.menu_opening_direction = 'down'
-        widget.menu_window_margin = 8
+        widget.window_margin = 8
         
         caller = Widget()
         caller.pos = (400, 500)
@@ -4442,7 +4442,7 @@ class TestMorphMenuMotionBehavior:
         widget.size = (200, 300)
         widget.menu_anchor_position = 'center'
         widget.menu_opening_direction = 'center'
-        widget.menu_window_margin = 8
+        widget.window_margin = 8
         
         caller = Widget()
         caller.pos = (400, 500)
@@ -4469,7 +4469,7 @@ class TestMorphMenuMotionBehavior:
         widget.size = (200, 300)
         widget.menu_anchor_position = 'center'
         widget.menu_opening_direction = 'down'
-        widget.menu_window_margin = 20
+        widget.window_margin = 20
         
         # Position caller at edge of window
         caller = Widget()
