@@ -450,11 +450,13 @@ class MorphScaleBehavior(EventDispatcher):
         Animation.stop_all(
             self, 'scale_factor_x', 'scale_factor_y', 'scale_factor_z')
         
+        self.opacity = 0.0
         self.scale_factor_x = 0.0
         self.scale_factor_y = 0.0
         self.scale_factor_z = 0.0
         
         anim = Animation(
+            opacity=1.0,
             scale_factor_x=1.0,
             scale_factor_y=1.0,
             scale_factor_z=1.0,
@@ -503,11 +505,13 @@ class MorphScaleBehavior(EventDispatcher):
         Animation.stop_all(
             self, 'scale_factor_x', 'scale_factor_y', 'scale_factor_z')
         
+        self.opacity = 1.0
         self.scale_factor_x = 1.0
         self.scale_factor_y = 1.0
         self.scale_factor_z = 1.0
-        
+
         anim = Animation(
+            opacity=0.0,
             scale_factor_x=0.0,
             scale_factor_y=0.0,
             scale_factor_z=0.0,
