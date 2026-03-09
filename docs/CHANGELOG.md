@@ -14,6 +14,29 @@ __Types of changes__:
 - _Fixed_ for any bug fixes.
 - _Security_ in case of vulnerabilities.
 
+## [0.12.0] - 2026-03-09
+
+### Added
+
+- Added `MorphMotionBaseBehavior` class holding all base properties and methods used for motion behavior classes.
+- Added `MorphDialogMotionBehavior` class which extends `MorphMotionBaseBehavior` to provide motion functionality specific to dialogs.
+- Added `MorphScrimLayer` class that provides a semi-transparent overlay appearing behind dialogs to focus user attention.
+- Added `MorphDialog` class that provides a customizable dialog component for displaying information, prompting user input, or presenting interactive content in modal overlays.
+- Added `animate_opacity` during scale in and out animations to `MorphScaleBehavior`.
+- Added `__events__` properties to behavior classes instead of calling `self.register_event_type()` in `__init__`.
+- Added comprehensive test suite for motion behaviors (15 tests for `MorphMotionBaseBehavior`, 13 tests for `MorphDialogMotionBehavior`, 4 tests for `MorphMenuMotionBehavior`).
+
+### Changed
+
+- Changed `MorphMenuMotionBehavior` to extend `MorphMotionBaseBehavior` class for better code organization.
+- Changed property names in `MorphMotionBaseBehavior` by removing the `menu_` prefix since they are used for multiple behavior types, not just menus.
+- Changed `MorphAutoSizingBehavior` to first set `text_size` to `(None, None)` and update texture to ensure correct dimensions before setting `text_size` to match `texture_size`.
+
+### Removed
+
+- Removed adding padding to `texture_size` for calculating minimum size properties in `BaseLabel` since `texture_size` already includes padding.
+- Removed calling `self.register_event_type()` method in behavior `__init__` methods in favor of using `__events__` properties.
+
 ## [0.11.1] - 2026-03-03
 
 ### Added
