@@ -128,9 +128,9 @@ class MorphDialog(
         theme_color_bindings={
             'normal_surface_color': 'surface_container_highest_color',},
         orientation='vertical',
-        radius=[dp(24)] * 4,
-        spacing=dp(20),
-        padding=dp(24),
+        radius=dp(12),
+        spacing=dp(8),
+        padding=dp(16),
         size_hint_x=None,
         auto_size=(True, True),
         width=dp(560),))

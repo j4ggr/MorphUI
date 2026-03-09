@@ -62,9 +62,7 @@ class DialogExampleApp(MorphApp):
                 text="Simple Dialog",),
             MorphLabel(
                 text="This is a simple dialog with a title and message.\nClick outside to dismiss.",
-                size_hint=(None, None),
-                auto_size=True,
-                auto_size_once=True),)
+                auto_size=True,),)
         dialog.open()
 
     def show_confirmation_dialog(self, *args) -> None:
@@ -85,7 +83,9 @@ class DialogExampleApp(MorphApp):
                         print("Action confirmed!"),
                         dialog.dismiss())),
                 orientation='horizontal',
-                spacing=dp(10),),)
+                spacing=dp(10),
+                size_hint=(1, None),
+                auto_size=(False, True)),)
         dialog.open()
 
     def show_alert_dialog(self, *args) -> None:
@@ -101,7 +101,7 @@ class DialogExampleApp(MorphApp):
                 orientation='horizontal',
                 spacing=dp(10),
                 size_hint=(1, None),
-                height=dp(48)),
+                auto_size=(False, True)),
             MorphLabel(
                 text="This is an alert message. Something requires your attention.",
                 auto_size=(True, True),),
@@ -135,7 +135,6 @@ class DialogExampleApp(MorphApp):
                 text="No Backdrop Dismiss",),
             MorphLabel(
                 text="This dialog won't close when you click outside. You must click the Close button.",
-                size_hint=(None, None),
                 auto_size=(True, True)),
             MorphButton(
                 text="Close",
@@ -165,7 +164,6 @@ class DialogExampleApp(MorphApp):
                 text="Large Content Dialog",),
             MorphLabel(
                 text="\n".join(lines),
-                size_hint=(None, None),
                 auto_size=True,),
             MorphBoxLayout(
                 MorphButton(
@@ -177,7 +175,9 @@ class DialogExampleApp(MorphApp):
                         print("Accepted!"),
                         dialog.dismiss())),
                 orientation='horizontal',
-                spacing=dp(10),),)
+                spacing=dp(10),
+                size_hint=(1, None),
+                auto_size=(False, True)),)
         dialog.open()
 
 

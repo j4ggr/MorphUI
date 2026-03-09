@@ -39,6 +39,7 @@ from .touch import MorphToggleButtonBehavior
 from .shape import MorphScaleBehavior
 from .shape import MorphRoundSidesBehavior
 
+from .motion import MorphMotionBaseBehavior
 from .motion import MorphMenuMotionBehavior
 from .motion import MorphDialogMotionBehavior
 
@@ -86,6 +87,7 @@ __all__ = [
     'MorphToggleButtonBehavior',        # Toggle button behavior
     'MorphScaleBehavior',               # Scaling behavior
     'MorphRoundSidesBehavior',          # Automatic rounded sides
+    'MorphMotionBaseBehavior',          # Base motion behavior
     'MorphMenuMotionBehavior',          # Menu motion behavior
     'MorphDialogMotionBehavior',        # Dialog motion behavior
     'MorphIconBehavior',                # Icon functionality
