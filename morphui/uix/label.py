@@ -37,7 +37,9 @@ __all__ = [
     'MorphTextFieldHeadingLabel',
     'MorphTextFieldSupportingLabel',
     'MorphTextFieldTertiaryLabel',
-    'MorphTextFieldLeadingIconLabel',]
+    'MorphTextFieldLeadingIconLabel',
+    'MorphTooltipLabel',
+    'MorphTooltipHeadingLabel',]
 
 
 class BaseLabel(Label):
@@ -706,3 +708,26 @@ class MorphTextFieldLeadingIconLabel(MorphSimpleIconLabel):
         size_hint=(None, None),
         size=(dp(24), dp(24)),
         padding=dp(0),)
+
+
+class MorphTooltipLabel(MorphSimpleLabel):
+    """A label variant tailored for use inside tooltip widgets.
+
+    Subclass of :class:`MorphSimpleLabel` with tooltip-specific defaults.
+    Override ``default_config`` in a further subclass to adapt the
+    appearance without touching the generic label.
+    """
+
+    default_config: Dict[str, Any] = MorphSimpleLabel.default_config | dict(
+        typography_role='Label',
+        typography_size='small',)
+    """Default configuration for MorphTooltipLabel."""
+
+
+class MorphTooltipHeadingLabel(MorphTooltipLabel):
+    """A bold, medium-sized label for the heading row of a rich tooltip."""
+
+    default_config: Dict[str, Any] = MorphTooltipLabel.default_config | dict(
+        typography_size='medium',
+        bold=True,)
+    """Default configuration for MorphTooltipHeadingLabel."""
