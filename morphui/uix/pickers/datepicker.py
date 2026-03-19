@@ -896,10 +896,6 @@ class MorphDockedDatePickerField(MorphTextField):
     defaults to `' - '`.
     """
 
-    _heading_text_provided: bool = False
-    """Internal flag to track if heading_text was provided during
-    initialization."""
-
     _format_strings: Dict[str, str] = dict(
         iso=r'%Y-%m-%d',
         us=r'%m/%d/%Y',
@@ -917,13 +913,13 @@ class MorphDockedDatePickerField(MorphTextField):
         kwargs['picker_menu'] = MorphDockedDatePickerMenu(caller=self)
         kwargs['trailing_icon'] = kwargs.get(
             'trailing_icon', self.normal_trailing_icon)
-        self._heading_text_provided = 'heading_text' in kwargs
         super().__init__(**kwargs)
         self.bind(
             kind=self._on_kind_changed,
             text=self._on_text_changed,
             focus=self._on_focus_changed,
-            range_sep=self._update_heading_text,
+            date_format=self._update_format_error_texts,
+            range_sep=self._update_format_error_texts,
             normal_trailing_icon=self.trailing_widget.setter('normal_icon'),
             focus_trailing_icon=self.trailing_widget.setter('focus_icon'),)
         self.calendar_view.bind(
@@ -932,9 +928,11 @@ class MorphDockedDatePickerField(MorphTextField):
         self.trailing_widget.focus_icon = self.focus_trailing_icon
         self.trailing_widget.bind(
             on_release=self._on_trailing_release)
-        self._on_kind_changed(self,self.kind)
+        self._on_kind_changed(self, self.kind)
         self._on_text_changed(self, self.text)
         self._on_focus_changed(self, self.focus)
+        self._update_format_error_texts()
+        self.refresh_textfield_content()
 
     @property
     def calendar_view(self) -> MorphDatePickerCalendarView:
@@ -993,20 +991,23 @@ class MorphDockedDatePickerField(MorphTextField):
         """
         self.picker_menu.kind = kind
         self.validator = 'daterange' if kind == 'range' else 'date'
-        self._update_heading_text()
+        self._update_format_error_texts()
 
-    def _update_heading_text(self, *args) -> None:
+    def _update_format_error_texts(self, *args) -> None:
+        """Update supporting_error_texts with the expected format hint.
 
-        if self._heading_text_provided:
-            return
-
+        The hint is shown under the field only when the user has typed
+        something invalid, replacing any previous format-based hint.
+        """
         input_format = {
             'iso': 'YYYY-MM-DD',
             'us': 'MM/DD/YYYY',
             'eu': 'DD.MM.YYYY',}[self.date_format]
         if self.kind == 'range':
-            input_format = f'{input_format}{self.range_sep}{input_format}'
-        self.heading_text = input_format
+            hint = f'{input_format}{self.range_sep}{input_format}'
+            self.supporting_error_texts = {'daterange': hint}
+        else:
+            self.supporting_error_texts = {'date': input_format}
 
     def _on_text_changed(
             self,
