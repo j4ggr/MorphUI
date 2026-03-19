@@ -313,11 +313,11 @@ class MorphDatePickerCalendarView(
     defaults to `'single'`.
     """
 
-    selected_day_buttons: List[MorphDatePickerDayButton] = ListProperty([])
-    """List of currently selected day buttons.
+    selected_dates: List[date] = ListProperty([])
+    """List of currently selected dates.
 
-    This property holds the list of day button instances that are
-    currently selected in the calendar view.
+    This property holds the list of :class:`datetime.date` values that
+    are currently selected in the calendar view.
 
     :attr:`selected_dates` is a :class:`kivy.properties.ListProperty`
     and defaults to an empty list.
@@ -345,6 +345,7 @@ class MorphDatePickerCalendarView(
             normal_surface_color='transparent_color',),)
 
     def __init__(self, **kwargs) -> None:
+        self._updating_buttons = False
         super().__init__(
             MorphBoxLayout(
                 *[
@@ -366,7 +367,7 @@ class MorphDatePickerCalendarView(
         self.bind(
             weekday_headers=self._populate_weekday_headers,
             date_values=self._populate_date_values,
-            selected_day_buttons=self._highlight_selected_days,)
+            selected_dates=self._apply_selection_to_buttons,)
         self._populate_weekday_headers()
         self._populate_date_values()
 
@@ -389,42 +390,24 @@ class MorphDatePickerCalendarView(
         date_grid = self.identities.date_grid_layout
         for child in date_grid.children[:]:
             child.unbind(active=self._on_day_button_active)
-
         date_grid.clear_widgets()
-        is_start_day = False
-        is_end_day = False
         for date_value in self.date_values:
-            if len(self.selected_day_buttons) == 2:
-                start_date = self.selected_day_buttons[0].date_value
-                end_date = self.selected_day_buttons[1].date_value
-                is_start_day = date_value == start_date
-                is_end_day = date_value == end_date
             day_button = MorphDatePickerDayButton(
                 typography_size='large',
-                is_today= date_value == date.today(),
-                disabled= date_value is None,
-                is_start_day= is_start_day,
-                is_end_day= is_end_day,
-                active= is_start_day or is_end_day,
+                is_today=date_value == date.today(),
+                disabled=date_value is None,
                 date_value=date_value,)
-            if is_start_day:
-                is_start_day = False
-                self.selected_day_buttons = [
-                    day_button, self.selected_day_buttons[1]]
-            if is_end_day:
-                is_end_day = False
-                self.selected_day_buttons = [
-                    self.selected_day_buttons[0], day_button]
             day_button.bind(active=self._on_day_button_active)
             date_grid.add_widget(day_button)
-        self._highlight_selected_days()
+        self._apply_selection_to_buttons()
     
     def _on_day_button_active(
             self, instance: MorphDatePickerDayButton, active: bool) -> None:
         """Handle changes to the active state of day buttons.
 
         This method is called when a day button's active state
-        changes.
+        changes. It updates :attr:`selected_dates` based on which
+        date was activated or deactivated.
 
         Parameters
         ----------
@@ -433,84 +416,86 @@ class MorphDatePickerCalendarView(
         active : bool
             The new active state of the button.
         """
-        if self.kind == 'single':
-            if self.selected_day_buttons:
-                self.selected_day_buttons[0].active = False
-            if active and instance.date_value:
-                self.selected_day_buttons = [instance]
-            else:
-                self.selected_day_buttons = []
+        if self._updating_buttons:
             return
-        
-        if active and instance.date_value:
-            match len(self.selected_day_buttons):
+
+        dv = instance.date_value
+        if dv is None:
+            return
+
+        if self.kind == 'single':
+            self.selected_dates = [dv] if active else []
+            return
+
+        # range mode
+        dates = list(self.selected_dates)
+        if active:
+            match len(dates):
                 case 0:
-                    self.selected_day_buttons = [instance]
+                    self.selected_dates = [dv]
                 case 1:
-                    first_date = self.selected_day_buttons[0].date_value
-                    second_date = instance.date_value
-                    if second_date < first_date:
-                        self.selected_day_buttons = [
-                            instance, self.selected_day_buttons[0]]
+                    if dv < dates[0]:
+                        self.selected_dates = [dv, dates[0]]
                     else:
-                        self.selected_day_buttons = [
-                            self.selected_day_buttons[0], instance]
+                        self.selected_dates = [dates[0], dv]
                 case 2:
-                    first_date = self.selected_day_buttons[0].date_value
-                    second_date = self.selected_day_buttons[1].date_value
-                    delta_first = abs((instance.date_value - first_date).days)
-                    delta_second = abs((instance.date_value - second_date).days)
-                    if delta_first < delta_second:
-                        self.selected_day_buttons[0].active = False
-                        self.selected_day_buttons = [
-                            instance, self.selected_day_buttons[-1]]
+                    delta_first = abs((dv - dates[0]).days)
+                    delta_second = abs((dv - dates[1]).days)
+                    if delta_first <= delta_second:
+                        self.selected_dates = sorted([dv, dates[1]])
                     else:
-                        self.selected_day_buttons[1].active = False
-                        self.selected_day_buttons = [
-                            self.selected_day_buttons[0], instance]
-
-        elif instance in self.selected_day_buttons:
-            self.selected_day_buttons.remove(instance)
+                        self.selected_dates = sorted([dates[0], dv])
+        else:
+            if dv in dates:
+                dates.remove(dv)
+                self.selected_dates = dates
         
-    def _highlight_selected_days(self, *args) -> None:
-        """Highlight the selected day buttons in the calendar view.
+    def _apply_selection_to_buttons(self, *args) -> None:
+        """Apply the current :attr:`selected_dates` state to all day
+        buttons in the grid.
 
-        This method updates the visual state of the day buttons
-        based on the currently selected day buttons.
+        This method iterates all day buttons and sets their ``active``,
+        ``is_start_day``, ``is_end_day``, and ``is_in_range`` properties
+        to reflect the current :attr:`selected_dates`.
         """
-        if self.kind == 'single':
-            return
-        
-        if len(self.selected_day_buttons) != 2:
-            for button in self.identities.date_grid_layout.children:
-                button.is_in_range = False
-                button.is_start_day = False
-                button.is_end_day = False
-            return
-        
-        start_button, end_button = self.selected_day_buttons
-        start_button.is_start_day = True
-        end_button.is_end_day = True
-
-        start_value = start_button.date_value
-        end_value = end_button.date_value
-        for button in self.identities.date_grid_layout.children:
-            if button.date_value is None:
-                continue
-            if start_value <= button.date_value <= end_value:
-                button.is_in_range = True
-            else:
-                button.is_in_range = False
+        self._updating_buttons = True
+        try:
+            date_grid = self.identities.date_grid_layout
+            dates = self.selected_dates
+            start = dates[0] if len(dates) >= 1 else None
+            end = dates[1] if len(dates) == 2 else None
+            for btn in date_grid.children:
+                dv = btn.date_value
+                is_selected = dv is not None and dv in dates
+                is_start = (
+                    self.kind == 'range'
+                    and dv is not None
+                    and dv == start)
+                is_end = (
+                    self.kind == 'range'
+                    and dv is not None
+                    and dv == end)
+                is_in_range = (
+                    self.kind == 'range'
+                    and start is not None
+                    and end is not None
+                    and dv is not None
+                    and start <= dv <= end)
+                btn.active = is_selected
+                # Set range flags after active (active triggers _reset_flags)
+                btn.is_start_day = is_start
+                btn.is_end_day = is_end
+                btn.is_in_range = is_in_range
+        finally:
+            self._updating_buttons = False
     
     def clear_selection(self) -> None:
         """Clear the current date selection in the calendar view.
 
         This method resets the selection state, removing any selected
-        day buttons.
+        dates.
         """
-        for button in self.selected_day_buttons:
-            button.trigger_action()
-        self.selected_day_buttons = []
+        self.selected_dates = []
 
 
 class MorphDockedDatePickerMenu(
@@ -941,7 +926,7 @@ class MorphDockedDatePickerField(MorphTextField):
             normal_trailing_icon=self.trailing_widget.setter('normal_icon'),
             focus_trailing_icon=self.trailing_widget.setter('focus_icon'),)
         self.calendar_view.bind(
-            selected_day_buttons=self._set_text_by_selected_dates)
+            selected_dates=self._set_text_by_selected_dates)
         self.trailing_widget.normal_icon = self.normal_trailing_icon
         self.trailing_widget.focus_icon = self.focus_trailing_icon
         self.trailing_widget.bind(
@@ -1034,47 +1019,50 @@ class MorphDockedDatePickerField(MorphTextField):
         """
         if not self.focus:
             return
-        
-        if self.error:
-            if not text:
-                self.calendar_view.clear_selection()
-        
+
+        if self.error and not text:
+            self.calendar_view.clear_selection()
+            return
+
         texts = [t.strip() for t in text.split(self.range_sep)]
         parsed_dates = [
-            date for date in 
+            d for d in
             (self._parse_date_text(t) for t in texts if len(t) >= 10)
-            if date is not None]
+            if d is not None]
+
         if len(parsed_dates) >= 2 and parsed_dates[0] > parsed_dates[1]:
             self.text = f'{texts[1]}{self.range_sep}{texts[0]}'
             return
-        
-        for parsed_date in parsed_dates:
-            self.picker_menu.current_year = parsed_date.year
-            self.picker_menu.current_month = parsed_date.month
-            date_grid = self.picker_menu.identities.date_grid_layout
-            for button in date_grid.children:
-                if button.date_value == parsed_date and not button.active:
-                    button.trigger_action()
+
+        if parsed_dates:
+            last_date = parsed_dates[-1]
+            self.picker_menu.current_year = last_date.year
+            self.picker_menu.current_month = last_date.month
+
+        if self.kind == 'single':
+            self.calendar_view.selected_dates = parsed_dates[:1]
+        else:
+            self.calendar_view.selected_dates = sorted(parsed_dates[:2])
 
     def _set_text_by_selected_dates(self, *args) -> None:
         """Set the text field's text based on selected dates.
-        
+
         This method updates the text field's content to reflect the
         currently selected dates in the calendar view. It formats the
         dates according to the specified date format and selection mode.
         """
         if self.focus:
             return
-        
-        selected_buttons = self.calendar_view.selected_day_buttons
-        if not selected_buttons:
+
+        selected = self.calendar_view.selected_dates
+        if not selected:
             return
-        
-        date_string = self._get_date_string(selected_buttons[0].date_value)
-        if len(selected_buttons) == 2 and self.kind == 'range':
+
+        date_string = self._get_date_string(selected[0])
+        if len(selected) == 2 and self.kind == 'range':
             date_string = self.range_sep.join((
                 date_string,
-                self._get_date_string(selected_buttons[1].date_value)))
+                self._get_date_string(selected[1])))
         self.text = date_string
 
     def _on_focus_changed(
