@@ -352,7 +352,8 @@ class MorphDatePickerCalendarView(
                     MorphSimpleLabel(
                         typography_size='large',
                         halign='center',
-                        valign='middle',)
+                        valign='middle',
+                        auto_size=False,)
                     for _ in range(7)],
                 theme_color_bindings=dict(
                     normal_surface_color='transparent_color',),
