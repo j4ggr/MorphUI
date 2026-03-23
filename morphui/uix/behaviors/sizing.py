@@ -300,28 +300,6 @@ class MorphAutoSizingBehavior(EventDispatcher):
             super().__init__(**kwargs)
             self.auto_width = True  # Only adjust width
     ```
-    
-    One-time auto-sizing widget:
-    
-    ```python
-    from kivy.uix.label import Label
-    from morphui.uix.behaviors.sizing import MorphAutoSizingBehavior
-    
-    class OnceAutoLabel(MorphAutoSizingBehavior, Label):
-        def __init__(self, **kwargs):
-            super().__init__(**kwargs)
-            # Size both dimensions once, then maintain fixed size
-            self.auto_width = True
-            self.auto_height = True
-            self.auto_size_once = True
-    
-    class OnceAutoWidthButton(MorphAutoSizingBehavior, Button):
-        def __init__(self, **kwargs):
-            super().__init__(**kwargs)
-            # Size width once based on text, keep height flexible
-            self.auto_width = True  # Only width will be calculated once
-            self.auto_size_once = True
-    ```
     """
 
     auto_width: bool = BooleanProperty(False)
@@ -397,30 +375,6 @@ class MorphAutoSizingBehavior(EventDispatcher):
     defaults to (False, False).
     """
 
-    auto_size_once: bool = BooleanProperty(False)
-    """Automatically adjust size once during initialization based on
-    current auto_width and auto_height settings, then disable.
-    
-    When True, the widget will automatically calculate and set its size
-    based on the current values of :attr:`auto_width` and
-    :attr:`auto_height` during initialization, then disable those auto
-    sizing properties while keeping the corresponding size_hint
-    dimensions set to None. This is useful for widgets that need to be
-    sized based on their content initially but should maintain a fixed
-    size afterward.
-    
-    The behavior respects the individual settings:
-    - If :attr:`auto_width` is True, width will be calculated once then 
-      disabled
-    - If :attr:`auto_height` is True, height will be calculated once
-      then disabled
-    - If both are True, both dimensions will be calculated once then
-      disabled
-    
-    :attr:`auto_size_once` is a
-    :class:`~kivy.properties.BooleanProperty` and defaults to False.
-    """
-
     _original_size_hint: Tuple[float | None, float | None] = (1.0, 1.0)
     """Internal storage for the original size_hint before auto sizing.
     This is used to restore the size_hint when auto sizing is disabled.
@@ -431,10 +385,16 @@ class MorphAutoSizingBehavior(EventDispatcher):
     This is used to restore the size when auto sizing is disabled.
     """
 
-    _has_texture_size: bool | None = None
-    """Cache whether the widget has a texture_size attribute. This is
-    used to optimize checks for text-based widgets that can use
-    texture_size for auto sizing.
+    _has_text_layout: bool | None = None
+    """Internal flag to determine if the widget has both texture_size
+    and text_size attributes (i.e. uses Kivy's text layout system).
+    Initialized on demand to avoid unnecessary attribute checks.
+    """
+
+    _auto_sizing_active: bool = False
+    """Re-entrancy guard. Prevents nested calls to :meth:`apply_auto_sizing`
+    that would otherwise be triggered by intermediate property changes
+    (e.g. setting text_size fires texture_size which fires minimum_width).
     """
 
     __events__ = (
@@ -444,20 +404,15 @@ class MorphAutoSizingBehavior(EventDispatcher):
         super().__init__(**kwargs)
         
         self._original_size_hint = tuple(self.size_hint)
-        if self.auto_size_once:
-            self.apply_auto_sizing(self.auto_width, self.auto_width)
-            self.auto_width = False
-            self.auto_height = False
         self._original_size = tuple(self.size)
-        
-        if self.has_texture_size and hasattr(self, 'text_size'):
-            self.bind(text=self._update_text_size)
-            self.bind(texture_size=self._update_text_size)
+
+        if self.has_text_layout:
+            self.bind(text=self._update_auto_sizing)
 
         if hasattr(self, 'minimum_width') and hasattr(self, 'minimum_height'):
             self.fbind('minimum_width', self._update_auto_sizing)
             self.fbind('minimum_height', self._update_auto_sizing)
-        elif self.has_texture_size:
+        elif self.has_text_layout:
             self.fbind('texture_size', self._update_auto_sizing)
 
         for prop in (
@@ -471,68 +426,31 @@ class MorphAutoSizingBehavior(EventDispatcher):
         self.refresh_auto_sizing()
     
     @property
-    def has_texture_size(self) -> bool:
-        """Check if the widget has a texture_size attribute.
+    def has_text_layout(self) -> bool:
+        """Check if the widget uses Kivy's text layout system.
 
-        This property is used to determine if the widget can use
-        texture_size for auto sizing. It returns True if the widget
-        has a texture_size attribute, which is common for text-based
-        widgets like Label.
+        Returns True if the widget has both ``texture_size`` and
+        ``text_size`` attributes, which is the case for text-based
+        widgets like Label. Used to decide whether to measure and
+        constrain text dimensions during auto sizing.
         """
-        if self._has_texture_size is None:
-            self._has_texture_size = hasattr(self, 'texture_size')
-        return self._has_texture_size
-
-    def _update_text_size(
-            self, instance: Any, texture_size: Tuple[float, float]) -> None:
-        """Update :attr:`text_size` to match current size when 
-        :attr:`texture_size` changes.
-
-        This method adjusts the :attr:`text_size` property to match the 
-        current size of the widget whenever the :attr:`texture_size`
-        changes. First, it stores the original :attr:`text_size` to 
-        preserve the non-auto-sized dimensions. Then it sets 
-        :attr:`text_size` to (None, None) to allow the texture to update 
-        its native dimensions. Finally, it restores :attr:`text_size` 
-        with the new texture size.
-
-        Parameters
-        ----------
-        instance : Any
-            The widget instance that triggered the event.
-        texture_size : Tuple[float, float]
-            The current texture size of the widget.
-
-        Notes
-        -----
-        This method is only relevant for widgets that have a text_size
-        attribute, such as Label. It is triggered whenever the
-        :attr:`texture_size` property changes. It must also provide a 
-        :meth:`texture_update()` method to refresh the texture size after
-        changing text_size.
-        """
-        if not self.auto_width and not self.auto_height:
-            return
-        
-        w_orig, h_orig = tuple(self.text_size)
-        self.text_size = (None, None)
-        self.texture_update()
-        
-        self.text_size = (
-            self.texture_size[0] if self.auto_width else w_orig,
-            self.texture_size[1] if self.auto_height else h_orig)
-        self.texture_update()
+        if self._has_text_layout is None:
+            self._has_text_layout = (
+                hasattr(self, 'texture_size')
+                and hasattr(self, 'text_size'))
+        return self._has_text_layout
 
     def _update_auto_sizing(self, *args) -> None:
         """Update auto sizing based on property changes.
 
         This method is called whenever the relevant size properties
         change, ensuring that the widget's size remains consistent with
-        its content.It ensures that the appropriate sizing adjustments are
-        made to the widget. If :attr:`auto_size` is changed, it sets
-        both :attr:`auto_width` and :attr:`auto_height` to the same
-        value, triggering their respective handlers.
+        its content. The re-entrancy guard prevents recursive calls
+        triggered by intermediate property changes inside
+        :meth:`apply_auto_sizing`.
         """
+        if self._auto_sizing_active:
+            return
         self.apply_auto_sizing(self.auto_width, self.auto_height)
 
     def apply_auto_sizing(self, auto_width: bool, auto_height: bool) -> None:
@@ -553,27 +471,51 @@ class MorphAutoSizingBehavior(EventDispatcher):
             Whether to apply auto width sizing.
         auto_height : bool
             Whether to apply auto height sizing.
+
+        Notes
+        -----
+        For text-based widgets, :attr:`text_size` is temporarily set to
+        (None, None) to allow the texture to update to its natural
+        (unconstrained) size before applying the new dimensions. This
+        prevents a previously set text_size from wrapping longer text
+        before we have a chance to measure the natural width.
         """
-        width, height = self._original_size
-        if auto_width:
-            self.size_hint_x = None
-            if self.has_texture_size:
-                width = self.texture_size[0]
-            self.width = min(
-                getattr(self, 'minimum_width', width),
-                getattr(self, 'maximum_width', float('inf')),)
-        else:
-            self.size_hint_x = self._original_size_hint[0]
-        
-        if auto_height:
-            self.size_hint_y = None
-            if self.has_texture_size:
-                height = self.texture_size[1]
-            self.height = min(
-                getattr(self, 'minimum_height', height),
-                getattr(self, 'maximum_height', float('inf')),)
-        else:
-            self.size_hint_y = self._original_size_hint[1]
+        self._auto_sizing_active = True
+        try:
+            width, height = self._original_size
+
+            if (auto_width or auto_height) and self.has_text_layout:
+                self.text_size = (None, None)
+                self.texture_update()
+
+            if auto_width:
+                self.size_hint_x = None
+                if self.has_text_layout:
+                    width = self.texture_size[0]
+                self.width = min(
+                    getattr(self, 'minimum_width', width),
+                    getattr(self, 'maximum_width', float('inf')),)
+                if self.has_text_layout:
+                    self.text_size = (self.width, self.text_size[1])
+            else:
+                self.size_hint_x = self._original_size_hint[0]
+
+            if auto_height:
+                self.size_hint_y = None
+                if self.has_text_layout:
+                    height = self.texture_size[1]
+                self.height = min(
+                    getattr(self, 'minimum_height', height),
+                    getattr(self, 'maximum_height', float('inf')),)
+                if self.has_text_layout:
+                    self.text_size = (self.text_size[0], self.height)
+            else:
+                self.size_hint_y = self._original_size_hint[1]
+
+            if self.has_text_layout:
+                self.texture_update()
+        finally:
+            self._auto_sizing_active = False
 
         self.dispatch('on_auto_size_updated')
 
@@ -590,8 +532,6 @@ class MorphAutoSizingBehavior(EventDispatcher):
         widget can return to its original size if needed.
         """
         self.apply_auto_sizing(self.auto_width, self.auto_height)
-        if self.has_texture_size and hasattr(self, 'text_size'):
-            self._update_text_size(self, self.texture_size)
 
     def on_auto_size_updated(self, *args) -> None:
         """Event fired after auto sizing has been applied or refreshed.

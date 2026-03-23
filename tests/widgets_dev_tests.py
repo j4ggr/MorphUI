@@ -46,7 +46,7 @@ class DisabledButton(MorphButton):
         self.elevation = 0 if self.disabled else 3
 
     def on_disabled(self, instance, disabled) -> None:
-        self.text = "Disabled" if disabled else "Enabled"
+        self.text = "Now Disabled" if disabled else "Enabled"
 
 class AutoSizeIcon(MorphIconLabel):
 
@@ -66,7 +66,6 @@ class MyApp(MorphApp):
                 theme_style='secondary',
                 disabled=True,),
             AutoSizeIcon(
-                auto_size_once=False,
                 size_hint=(1, 1),
                 identity='icon_label',
                 normal_icon='language-python',
