@@ -13,7 +13,6 @@ The sizing behaviors support:
 - Aspect ratio preservation
 - Event system for resize and auto-size operations
 """
-from typing import Any
 from typing import List
 from typing import Tuple
 

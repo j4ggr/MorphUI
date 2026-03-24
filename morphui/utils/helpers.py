@@ -7,6 +7,7 @@ from typing import Dict
 from typing import List
 from typing import Tuple
 from typing import overload
+from typing import Generator
 
 from functools import lru_cache
 from functools import wraps
@@ -19,6 +20,7 @@ __all__ = [
     'timeit',
     'calculate_text_size',
     'clamp',
+    'linspace',
     'get_effective_pos',
     'calculate_widget_local_pos',
     'get_edges_params',
@@ -65,6 +67,44 @@ def timeit(func):
             print(f"{func.__qualname__}: {elapsed:.2f}ms")
         return result
     return wrapper
+
+
+def linspace(start: float, stop: float, num: int) -> Generator[float, None, None]:
+    """Yield ``num`` evenly spaced values over ``[start, stop]`` inclusive.
+
+    A pure-Python generator equivalent of ``numpy.linspace``.
+
+    Parameters
+    ----------
+    start : float
+        The starting value of the sequence.
+    stop : float
+        The ending value of the sequence (inclusive).
+    num : int
+        Number of values to generate.  Must be non-negative.
+
+    Yields
+    ------
+    float
+        Evenly spaced floats from ``start`` to ``stop``.
+
+    Examples
+    --------
+    ```python
+    from morphui.utils import linspace
+
+    list(linspace(0.0, 1.0, 5))   # [0.0, 0.25, 0.5, 0.75, 1.0]
+    list(linspace(-90.0, 270.0, 9))  # [-90.0, -45.0, 0.0, ..., 270.0]
+    ```
+    """
+    if num <= 0:
+        return
+    if num == 1:
+        yield float(start)
+        return
+    step = (stop - start) / (num - 1)
+    for i in range(num):
+        yield start + step * i
 
 
 def calculate_text_size(text, font_size=16, font_name=None):

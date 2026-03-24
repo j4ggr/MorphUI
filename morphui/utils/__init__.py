@@ -6,6 +6,7 @@ from .dotdict import DotDict
 from .dotdict import dotdict
 
 from .helpers import clamp
+from .helpers import linspace
 from .helpers import timeit
 from .helpers import refresh_widget
 from .helpers import FrozenGeometry
@@ -18,6 +19,7 @@ __all__ = [
     'DotDict',
     'dotdict',
     'clamp',
+    'linspace',
     'timeit',
     'refresh_widget',
     'FrozenGeometry',
