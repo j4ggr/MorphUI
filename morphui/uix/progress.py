@@ -141,60 +141,194 @@ class MorphLinearProgress(_MorphProgressBase):
     Supports both determinate (value-driven) and indeterminate
     (animated) modes.  The ends of the active indicator are always
     rounded, and a small gap separates the indicator from the track.
+
+    In indeterminate mode a bar of fixed width slides continuously from
+    left to right.  Clamping the bar to the track bounds creates a
+    natural grow/shrink effect at each edge without requiring clipping.
     """
+
+    _INDETERMINATE_BAR_FRACTION: float = 0.35
+    """Width of the animated bar as a fraction of the track width in
+    indeterminate mode.  Defaults to ``0.35`` (35 %).
+    """
+
+    def on_indeterminate(self, _instance, value: bool) -> None:
+        """Start or stop the indeterminate sliding animation.
+
+        Called automatically by Kivy whenever :attr:`indeterminate`
+        changes.  Switching modes also refreshes the canvas so the
+        correct geometry is drawn immediately.
+        """
+        if value:
+            self._start_indeterminate_anim()
+        else:
+            self._stop_indeterminate_anim()
+        self._refresh_canvas()
+
+    def _start_indeterminate_anim(self) -> None:
+        """Start the indeterminate animation.
+
+        A :class:`~kivy.clock.Clock` interval advances a positional
+        offset every frame so the bar slides continuously from left to
+        right with no frame gap between cycles.
+        """
+        self._stop_indeterminate_anim()
+        self._ind_offset = 0.0
+        self._ind_event = Clock.schedule_interval(self._offset_step, 0)
+
+    def _offset_step(self, dt: float) -> None:
+        """Advance the bar position by one frame and redraw.
+
+        ``_ind_offset`` increases from ``0`` to ``1`` over
+        :attr:`indeterminate_duration` seconds, then wraps.  At ``0``
+        the bar's leading edge is at the left boundary of the track;
+        at ``1`` it exits the right boundary.
+        """
+        self._ind_offset = (
+            self._ind_offset + dt / self.indeterminate_duration) % 1.0
+        self._refresh_canvas()
+
+    def _stop_indeterminate_anim(self) -> None:
+        """Stop the sliding animation and reset position state."""
+        if hasattr(self, '_ind_event') and self._ind_event:
+            self._ind_event.cancel()
+            self._ind_event = None
+        self._ind_offset = 0.0
+        self.value = 0.0
+
+    def _get_bar_bounds(self) -> tuple[float, float] | None:
+        """Return ``(draw_left, draw_right)`` of the indeterminate bar.
+
+        Both values are already clamped to the track bounds.  Returns
+        ``None`` when the bar is fully outside the visible track area.
+        """
+        x0 = self.x + self.thickness / 2
+        x1 = self.right - self.thickness / 2
+        track_w = x1 - x0
+        if track_w <= 0:
+            return None
+        
+        bar_w = track_w * self._INDETERMINATE_BAR_FRACTION
+        offset = getattr(self, '_ind_offset', 0.0)
+        bar_left = x0 - bar_w + offset * (track_w + bar_w)
+        draw_left = max(bar_left, x0)
+        draw_right = min(bar_left + bar_w, x1)
+        if draw_right <= draw_left:
+            return None
+        
+        return (draw_left, draw_right)
 
     def _get_indicator_points(self) -> List[float]:
         """Return a flat list of points for the active indicator.
 
-        Points are inset by half :attr:`thickness` from each edge so the
-        rounded caps stay within the widget bounds.  Returns an empty list
-        when :attr:`value` is at or below :attr:`_VALUE_EPSILON`.
+        In indeterminate mode the bar bounds come from
+        :meth:`_get_bar_bounds`.  In determinate mode points are inset
+        by half :attr:`thickness` so rounded caps stay within bounds.
         """
         y = self.center_y
-        x_start = self.x + self.thickness / 2
-        x_end = self.right - self.thickness / 2
+        x0 = self.x + self.thickness / 2
+        x1 = self.right - self.thickness / 2
+        track_w = x1 - x0
+        if track_w <= 0:
+            return []
+
+        if self.indeterminate:
+            bounds = self._get_bar_bounds()
+            if bounds is None:
+                return []
+            
+            draw_left, draw_right = bounds
+            return [draw_left, y, draw_right, y]
+        
         if self.value >= 1.0 - self._VALUE_EPSILON:
-            return [x_start, y, x_end, y]
+            return [x0, y, x1, y]
+        
         if self.value <= self._VALUE_EPSILON:
             return []
-        x_indicator_end = x_start + (x_end - x_start) * self.value
-        if x_indicator_end <= x_start:
+
+        x_indicator_end = x0 + track_w * self.value
+        if x_indicator_end <= x0:
             return []
-        return [x_start, y, x_indicator_end, y]
+        
+        return [x0, y, x_indicator_end, y]
 
     def _get_track_points(self) -> List[float]:
-        """Return a flat list of points for the background track.
+        """Return points for the left track segment.
 
-        The track starts after a small gap following the indicator end.
+        In indeterminate mode the track is split around the sliding bar
+        with the same gap as determinate mode; this method returns the
+        left segment and :meth:`_get_track_points_right` the right one.
+        In determinate mode returns the segment after the indicator gap.
         Returns an empty list when :attr:`value` is at or above
         ``1 - _VALUE_EPSILON`` (fully complete).
         """
         y = self.center_y
-        x_start = self.x + self.thickness / 2
-        x_end = self.right - self.thickness / 2
+        x0 = self.x + self.thickness / 2
+        x1 = self.right - self.thickness / 2
+        gap = 2 * self.thickness + dp(2)
+        if self.indeterminate:
+            bounds = self._get_bar_bounds()
+            if bounds is None:
+                return [x0, y, x1, y]
+            draw_left, _draw_right = bounds
+            x_left_end = draw_left - gap
+            if x_left_end <= x0:
+                return []
+            return [x0, y, x_left_end, y]
         if self.value >= 1.0 - self._VALUE_EPSILON:
             return []
         if self.value <= self._VALUE_EPSILON:
-            return [x_start, y, x_end, y]
-        x_indicator_end = x_start + (x_end - x_start) * self.value
-        x_track_start = x_indicator_end + 2 * self.thickness + dp(2)
-        if x_track_start >= x_end:
+            return [x0, y, x1, y]
+        x_indicator_end = x0 + (x1 - x0) * self.value
+        x_track_start = x_indicator_end + gap
+        if x_track_start >= x1:
             return []
-        return [x_track_start, y, x_end, y]
+        return [x_track_start, y, x1, y]
+
+    def _get_track_points_right(self) -> List[float]:
+        """Return points for the right track segment in indeterminate mode.
+
+        Returns an empty list in determinate mode.  The segment starts
+        after a gap following the indicator bar's right edge.
+        """
+        if not self.indeterminate:
+            return []
+        y = self.center_y
+        x1 = self.right - self.thickness / 2
+        gap = 2 * self.thickness + dp(2)
+        bounds = self._get_bar_bounds()
+        if bounds is None:
+            return []
+        _draw_left, draw_right = bounds
+        x_right_start = draw_right + gap
+        if x_right_start >= x1:
+            return []
+        return [x_right_start, y, x1, y]
 
     def _refresh_canvas(self, *args) -> None:
         """Redraw the track and indicator lines."""
+        if not hasattr(self, '_track_line'):
+            return
+        
         self._indicator_line.points = self._get_indicator_points()
         self._track_line.points = self._get_track_points()
+        self._track_line_2.points = self._get_track_points_right()
 
     def _setup_canvas(self) -> None:
-        """Create the two ``Line`` canvas instructions for track and
-        indicator with rounded caps.
+        """Create the ``Line`` canvas instructions for track and indicator.
+
+        Two track lines are created so that in indeterminate mode the
+        track can be split into a left and a right segment around the
+        sliding bar.  Both share the same ``Color`` instruction.
         """
         self.canvas.clear()
         with self.canvas:
             self._track_color_instruction = Color(*self.track_color)
             self._track_line = Line(
+                points=[],
+                width=self.thickness,
+                cap='round')
+            self._track_line_2 = Line(
                 points=[],
                 width=self.thickness,
                 cap='round')
