@@ -24,7 +24,6 @@ from morphui.uix.floatlayout import MorphFloatLayout
 from morphui.uix.progress import MorphLinearProgress
 from morphui.uix.progress import MorphCircularProgress
 
-
 class ProgressExampleApp(MorphApp):
 
     def build(self) -> MorphFloatLayout:
