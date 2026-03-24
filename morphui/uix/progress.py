@@ -152,6 +152,16 @@ class MorphLinearProgress(_MorphProgressBase):
     indeterminate mode.  Defaults to ``0.35`` (35 %).
     """
 
+    default_config: Dict[str, Any] = (
+        _MorphProgressBase.default_config.copy() | dict(
+        size_hint=(1, None),
+        height=dp(8),))
+    """Default configuration for the linear progress indicator.
+    Inherits from :attr:`_MorphProgressBase.default_config` and adds
+    ``size_hint=(1, None)`` to make the widget expand horizontally by 
+    default.
+    """
+
     def on_indeterminate(self, _instance, value: bool) -> None:
         """Start or stop the indeterminate sliding animation.
 
@@ -381,6 +391,17 @@ class MorphCircularProgress(_MorphProgressBase):
     read-only and bound to the size and thickness of the widget.
     """
 
+    default_config: Dict[str, Any] = (
+        _MorphProgressBase.default_config.copy() | dict(
+        size_hint=(None, None),
+        size=(dp(48), dp(48)),))
+    """Default configuration for the circular progress indicator.
+
+    Inherits from :attr:`_MorphProgressBase.default_config` and adds
+    ``size_hint=(None, None)`` and ``size=(dp(48), dp(48))`` to set a
+    default fixed size.
+    """
+
     def __init__(self, **kwargs) -> None:
         """Initialise the circular progress widget.
 
@@ -569,3 +590,169 @@ class MorphCircularProgress(_MorphProgressBase):
                 joint='round',
                 close=False)
             PopMatrix()
+
+
+class MorphWavyLinearProgress(MorphLinearProgress):
+    """A horizontal linear progress indicator with a sinusoidal wave stroke.
+
+    Inherits all behaviour (including indeterminate mode) from
+    :class:`MorphLinearProgress`.  The indicator and track segments are
+    rendered as dense polylines tracing a sine wave instead of a straight
+    line.
+
+    Because the wave phase is tied to the absolute x coordinate, the
+    indicator and track together form one continuous wave pattern with only
+    the gap separating them.  In indeterminate mode the sliding bar reveals
+    a travelling-wave effect as different x positions scroll into view.
+    """
+
+    _LINEAR_WAVELENGTH: float = dp(40)
+    """Spatial wavelength of the sine wave in pixels.  Defaults to ``dp(40)``."""
+
+    _WAVE_AMPLITUDE: float = dp(3)
+    """Half-height of the wave in pixels (peak to centre).
+    Defaults to ``dp(3)``.
+    """
+
+    _SAMPLES_PER_WAVELENGTH: int = 8
+    """Number of polyline vertices per full wavelength.  ``8`` gives a
+    smooth appearance while remaining cheap to compute each frame.
+    """
+
+    def _make_wave_points(
+            self,
+            x_start: float,
+            x_end: float,
+            y_center: float,
+            ) -> List[float]:
+        """Return a flat ``[x, y, x, y, …]`` polyline tracing a sine wave.
+
+        Phase is derived from the absolute x coordinate so that adjacent
+        segments always share a single continuous wave pattern.
+        """
+        length = x_end - x_start
+        if length <= 0:
+            return []
+        n = max(2, math.ceil(
+            length / self._LINEAR_WAVELENGTH * self._SAMPLES_PER_WAVELENGTH))
+        pts: List[float] = []
+        for i in range(n + 1):
+            x = x_start + (i / n) * length
+            y = y_center + self._WAVE_AMPLITUDE * math.sin(
+                2 * math.pi * x / self._LINEAR_WAVELENGTH)
+            pts.extend((x, y))
+        return pts
+
+    def _get_indicator_points(self) -> List[float]:
+        y = self.center_y
+        x0 = self.x + self.thickness / 2
+        x1 = self.right - self.thickness / 2
+        track_w = x1 - x0
+        if track_w <= 0:
+            return []
+        if self.indeterminate:
+            bounds = self._get_bar_bounds()
+            if bounds is None:
+                return []
+            return self._make_wave_points(bounds[0], bounds[1], y)
+        if self.value >= 1.0 - self._VALUE_EPSILON:
+            return self._make_wave_points(x0, x1, y)
+        if self.value <= self._VALUE_EPSILON:
+            return []
+        return self._make_wave_points(x0, x0 + track_w * self.value, y)
+
+
+class MorphWavyCircularProgress(MorphCircularProgress):
+    """A circular arc progress indicator with a sinusoidal radial wave stroke.
+
+    Inherits all behaviour (including indeterminate mode) from
+    :class:`MorphCircularProgress`.  The indicator and track arcs are
+    rendered as dense polylines with a radial sine perturbation instead of
+    using the built-in ``Line.circle`` primitive.
+
+    Phase is based on arc length measured from 0° so indicator and track
+    share a single continuous global wave pattern around the circle.  The
+    entire polyline group is still rotated by the canvas
+    :class:`~kivy.graphics.context_instructions.Rotate` instruction during
+    indeterminate mode.
+    """
+
+    _CIRCULAR_WAVELENGTH: float = dp(15)
+    """Arc-length wavelength of the sine wave in pixels.
+    Defaults to ``dp(15)``.
+    """
+
+    _WAVE_AMPLITUDE: float = dp(2)
+    """Radial amplitude of the wave in pixels (peak deviation from the base
+    radius).  Defaults to ``dp(2)``.
+    """
+
+    _SAMPLES_PER_WAVELENGTH: int = 8
+    """Number of polyline vertices per full wavelength."""
+
+    def _make_wave_arc_points(
+            self,
+            cx: float,
+            cy: float,
+            r: float,
+            angle_start: float,
+            angle_end: float,
+            ) -> List[float]:
+        """Return a wavy arc as a flat ``[x, y, …]`` polyline.
+
+        The wave oscillates radially around ``r``.  Phase is computed as
+        arc length from 0° (``angle * π/180 * r``) so all arc segments
+        on the same circle share a continuous wave pattern.
+        """
+        arc_length = abs(angle_end - angle_start) * math.pi / 180 * r
+        if arc_length <= 0:
+            return []
+        
+        n = max(2, math.ceil(
+            arc_length / self._CIRCULAR_WAVELENGTH * self._SAMPLES_PER_WAVELENGTH))
+        pts: List[float] = []
+        for i in range(n + 1):
+            angle_deg = angle_start + (i / n) * (angle_end - angle_start)
+            angle_rad = math.radians(90.0 - angle_deg)
+            arc_pos = angle_deg * math.pi / 180 * r  # phase from 0°
+            radius = r + self._WAVE_AMPLITUDE * math.sin(
+                2 * math.pi * arc_pos / self._CIRCULAR_WAVELENGTH)
+            pts.extend((
+                cx + radius * math.cos(angle_rad),
+                cy + radius * math.sin(angle_rad),
+            ))
+        return pts
+
+    def _circle_to_points(self, circle: Tuple[float, ...]) -> List[float]:
+        """Convert a ``(cx, cy, r)`` or ``(cx, cy, r, a_start, a_end)``
+        circle tuple into wavy arc polyline points.
+        """
+        if len(circle) == 3:
+            cx, cy, r = circle
+            return self._make_wave_arc_points(cx, cy, r, 0.0, 360.0)
+        
+        cx, cy, r, a_start, a_end = circle
+        return self._make_wave_arc_points(cx, cy, r, a_start, a_end)
+
+    def _refresh_canvas(self, *args) -> None:
+        """Redraw the wavy indicator and the straight track arc.
+
+        The indicator is rendered as a dense wavy polyline via
+        :meth:`_circle_to_points`.  The track uses the parent's
+        ``Line.circle`` primitive so it remains a plain arc.
+        The :class:`~kivy.graphics.context_instructions.Rotate` pivot is
+        updated on every call.
+        """
+        if not hasattr(self, '_rotation_instruction'):
+            return
+        
+        self._rotation_instruction.origin = (self.center_x, self.center_y)
+        indicator = self._get_indicator_circle()
+        self._indicator_line.points = (
+            self._circle_to_points(indicator) if indicator else [])
+
+        track = self._get_track_circle()
+        if track:
+            self._track_line.circle = track
+        else:
+            self._track_line.points = []

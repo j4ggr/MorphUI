@@ -1,5 +1,7 @@
 """Example application demonstrating MorphLinearProgress and
-MorphCircularProgress in both determinate and indeterminate modes.
+MorphCircularProgress in both determinate and indeterminate modes,
+plus the wavy variants MorphWavyLinearProgress and
+MorphWavyCircularProgress.
 
 Run this file directly to launch the demo:
 
@@ -23,6 +25,8 @@ from morphui.uix.boxlayout import MorphBoxLayout
 from morphui.uix.floatlayout import MorphFloatLayout
 from morphui.uix.progress import MorphLinearProgress
 from morphui.uix.progress import MorphCircularProgress
+from morphui.uix.progress import MorphWavyLinearProgress
+from morphui.uix.progress import MorphWavyCircularProgress
 
 class ProgressExampleApp(MorphApp):
 
@@ -32,21 +36,31 @@ class ProgressExampleApp(MorphApp):
 
         # --- determinate indicators ---
         self.linear_det = MorphLinearProgress(
-            value=0.4,
-            size_hint_x=1,)
+            value=0.4,)
 
         self.circular_det = MorphCircularProgress(
-            value=0.4,
-            size=(dp(64), dp(64)),)
+            value=0.4,)
 
         # --- indeterminate indicators ---
         self.linear_ind = MorphLinearProgress(
-            indeterminate=True,
-            size_hint_x=1,)
+            indeterminate=True,)
 
         self.circular_ind = MorphCircularProgress(
             indeterminate=True,
-            size=(dp(64), dp(64)),
+            thickness=dp(4),)
+
+        # --- wavy indicators ---
+        self.wavy_linear_det = MorphWavyLinearProgress(
+            value=0.4,)
+
+        self.wavy_linear_ind = MorphWavyLinearProgress(
+            indeterminate=True,)
+
+        self.wavy_circular_det = MorphWavyCircularProgress(
+            value=0.4,)
+
+        self.wavy_circular_ind = MorphWavyCircularProgress(
+            indeterminate=True,
             thickness=dp(4),)
 
         # --- value label ---
@@ -89,38 +103,41 @@ class ProgressExampleApp(MorphApp):
                 text=text,
                 auto_size=True,)
 
+        def circ_cell(label, widget):
+            return MorphBoxLayout(
+                section(label),
+                widget,
+                orientation='vertical',
+                spacing=dp(4),
+                size_hint=(None, None),
+                size=(dp(120), dp(120)),)
+
         circular_row = MorphBoxLayout(
-            MorphBoxLayout(
-                section('Determinate'),
-                self.circular_det,
-                orientation='vertical',
-                spacing=dp(8),
-                size_hint=(None, None),
-                size=(dp(120), dp(120)),),
-            MorphBoxLayout(
-                section('Indeterminate'),
-                self.circular_ind,
-                orientation='vertical',
-                spacing=dp(8),
-                size_hint=(None, None),
-                size=(dp(120), dp(120)),),
+            circ_cell('Det.', self.circular_det),
+            circ_cell('Indet.', self.circular_ind),
+            circ_cell('Wavy Det.', self.wavy_circular_det),
+            circ_cell('Wavy Indet.', self.wavy_circular_ind),
             orientation='horizontal',
             spacing=dp(24),
             size_hint_y=None,
-            height=dp(120),)
+            height=dp(140),)
 
         content = MorphBoxLayout(
             section('Linear — Determinate'),
             self.linear_det,
             section('Linear — Indeterminate'),
             self.linear_ind,
+            section('Wavy Linear — Determinate'),
+            self.wavy_linear_det,
+            section('Wavy Linear — Indeterminate'),
+            self.wavy_linear_ind,
             section('Circular'),
             circular_row,
             control_row,
             orientation='vertical',
             spacing=dp(16),
-            padding=dp(40),
-            size_hint=(0.9, None),)
+            padding=dp(8),
+            size_hint=(0.8, None),)
 
         content.bind(minimum_height=content.setter('height'))
 
@@ -140,12 +157,16 @@ class ProgressExampleApp(MorphApp):
         new_val = min(1.0, self.linear_det.value + 0.1)
         self.linear_det.value = new_val
         self.circular_det.value = new_val
+        self.wavy_linear_det.value = new_val
+        self.wavy_circular_det.value = new_val
         self.value_label.text = f'Value: {new_val:.0%}'
 
     def _decrement(self, *args) -> None:
         new_val = max(0, self.linear_det.value - 0.1)
         self.linear_det.value = new_val
         self.circular_det.value = new_val
+        self.wavy_linear_det.value = new_val
+        self.wavy_circular_det.value = new_val
         self.value_label.text = f'Value: {new_val:.0%}'
 
     def _toggle_theme(self, *args) -> None:
