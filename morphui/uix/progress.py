@@ -20,6 +20,7 @@ from kivy.properties import ColorProperty
 from kivy.properties import NumericProperty
 from kivy.properties import BooleanProperty
 from kivy.properties import BoundedNumericProperty
+from kivy.properties import StringProperty
 
 from morphui.uix.behaviors import MorphColorThemeBehavior
 from morphui.uix.behaviors import MorphIdentificationBehavior
@@ -38,13 +39,39 @@ class _MorphProgressBase(
     """
 
     value: float = BoundedNumericProperty(0.0, min=0.0, max=1.0)
-    """Progress value between 0 and 1, where 0 means no progress and 
-    1 means complete.
+    """Target progress value between 0 and 1.
 
-    Ignored while :attr:`indeterminate` is True.
+    Setting this in determinate mode triggers a smooth animation of
+    :attr:`_display_value` to the new target.  Ignored while
+    :attr:`indeterminate` is ``True``.
 
     :attr:`value` is a :class:`~kivy.properties.BoundedNumericProperty`
     and defaults to 0.
+    """
+
+    _display_value: float = BoundedNumericProperty(0.0, min=0.0, max=1.0)
+    """Internal animated value that drives all canvas rendering.
+
+    Smoothly tweened toward :attr:`value` by :meth:`on_value`.
+    Indeterminate animations write directly to this property.
+
+    :attr:`_display_value` is a
+    :class:`~kivy.properties.BoundedNumericProperty` and defaults to 0.
+    """
+
+    value_animation_duration: float = NumericProperty(0.2)
+    """Duration in seconds of the :attr:`value` transition animation.
+
+    :attr:`value_animation_duration` is a
+    :class:`~kivy.properties.NumericProperty` and defaults to ``0.4``.
+    """
+
+    value_animation_transition: str = StringProperty('out_quad')
+    """Kivy easing name used when animating :attr:`value` changes.
+
+    :attr:`value_animation_transition` is a
+    :class:`~kivy.properties.StringProperty` and defaults to
+    ``'out_quad'``.
     """
 
     indeterminate: bool = BooleanProperty(False)
@@ -113,7 +140,7 @@ class _MorphProgressBase(
         self.bind(
             pos=self._refresh_canvas,
             size=self._refresh_canvas,
-            value=self._refresh_canvas,
+            _display_value=self._refresh_canvas,
             thickness=self._refresh_canvas,
             indicator_color=self._refresh_canvas_color,
             track_color=self._refresh_canvas_color,)
@@ -121,6 +148,7 @@ class _MorphProgressBase(
             self.bind(_wave_phase=self._refresh_canvas)
         self._setup_canvas()
         self.redraw()
+        self._initialized = True
 
     def _setup_canvas(self) -> None:
         """Initialise canvas instructions.  Called once in ``__init__``."""
@@ -148,6 +176,22 @@ class _MorphProgressBase(
         self._refresh_canvas()
         self._refresh_canvas_color()
 
+    def on_value(self, _instance, target: float) -> None:
+        """Animate :attr:`_display_value` toward *target*.
+
+        Ignored before the widget is fully initialised and while
+        :attr:`indeterminate` is ``True`` (indeterminate mode writes
+        :attr:`_display_value` directly).
+        """
+        if not getattr(self, '_initialized', False) or self.indeterminate:
+            return
+        Animation.cancel_all(self, '_display_value')
+        Animation(
+            _display_value=target,
+            duration=self.value_animation_duration,
+            t=self.value_animation_transition,
+        ).start(self)
+
 
 class MorphLinearProgress(_MorphProgressBase):
     """A horizontal linear progress indicator.
@@ -161,9 +205,38 @@ class MorphLinearProgress(_MorphProgressBase):
     natural grow/shrink effect at each edge without requiring clipping.
     """
 
-    _INDETERMINATE_BAR_FRACTION: float = 0.35
-    """Width of the animated bar as a fraction of the track width in
-    indeterminate mode.  Defaults to ``0.35`` (35 %).
+    _ind_speed: float = NumericProperty(1.0)
+    """Current speed multiplier for the indeterminate animation.
+
+    Animated by Kivy's :class:`~kivy.animation.Animation` during
+    indeterminate mode.  At ``1.0`` the bar traverses the track in
+    :attr:`indeterminate_duration` seconds; at ``3.0`` it travels
+    three times as fast.
+
+    :attr:`_ind_speed` is a :class:`~kivy.properties.NumericProperty`
+    and defaults to ``1.0``.
+    """
+
+    _ind_event: Any = None
+    """Internal reference to the scheduled Clock event for advancing 
+    the indeterminate animation. Used to start and stop the animation 
+    cleanly.
+    """
+
+    _ind_offset: float = 0.0
+    """Current positional offset of the sliding bar in indeterminate 
+    mode.
+    """
+
+    _track_line: Line | None = None
+    """Canvas instruction for the track line.  Created in 
+    :meth:`_setup_canvas` and updated in :meth:`_refresh_canvas`.
+    """
+
+    _track_line_2: Line | None = None
+    """Canvas instruction for the right track segment in indeterminate 
+    mode.  Created in :meth:`_setup_canvas` and updated in 
+    :meth:`_refresh_canvas`.
     """
 
     default_config: Dict[str, Any] = (
@@ -192,54 +265,97 @@ class MorphLinearProgress(_MorphProgressBase):
     def _start_indeterminate_anim(self) -> None:
         """Start the indeterminate animation.
 
-        A :class:`~kivy.clock.Clock` interval advances a positional
-        offset every frame so the bar slides continuously from left to
-        right with no frame gap between cycles.
+        A :class:`~kivy.clock.Clock` interval advances the positional
+        offset every frame proportional to :attr:`_ind_speed`, while a
+        4-phase :class:`~kivy.animation.Animation` cycle animates both
+        the bar width (:attr:`value`) and the speed multiplier.
         """
         self._stop_indeterminate_anim()
         self._ind_offset = 0.0
+        self._ind_speed = 1.0
+        self._display_value = 1 / 7
         self._ind_event = Clock.schedule_interval(self._offset_step, 0)
+        self._restart_cycle_anim()
 
     def _offset_step(self, dt: float) -> None:
         """Advance the bar position by one frame and redraw.
 
-        ``_ind_offset`` increases from ``0`` to ``1`` over
-        :attr:`indeterminate_duration` seconds, then wraps.  At ``0``
-        the bar's leading edge is at the left boundary of the track;
-        at ``1`` it exits the right boundary.
+        ``_ind_offset`` increases by ``_ind_speed * dt / D`` each frame
+        and wraps at ``1``.  At ``0`` the bar's leading edge is at the
+        left track boundary; at ``1`` it exits the right boundary.
         """
         self._ind_offset = (
-            self._ind_offset + dt / self.indeterminate_duration) % 1.0
+            self._ind_offset
+            + self._ind_speed * dt / self.indeterminate_duration
+        ) % 1.0
         self._refresh_canvas()
 
+    def _restart_cycle_anim(self) -> None:
+        """Build and start one 4-phase bar-width/speed animation cycle.
+
+        Phases
+        ------
+        1. ``value`` 1/7 → 3/7 (linear), ``_ind_speed`` 1 → 2 (linear)
+        2. ``value`` 3/7 → 5/7 (linear), ``_ind_speed`` 2 → 3 (out_sine)
+        3. ``value`` → 0 and ``_ind_speed`` → 1, both immediate
+        4. ``value`` stays 0 for ``2 × indeterminate_duration`` (pause)
+        """
+        Animation.cancel_all(self, '_display_value', '_ind_speed')
+        self._ind_offset = 0.0
+        self._display_value = 0.0
+        self._ind_speed = 1.0
+        D = self.indeterminate_duration
+        cycle = (
+            Animation(
+                _display_value=1/2, _ind_speed=2, duration=2/3*D, transition='linear')
+            + Animation(
+                _display_value=5/6, _ind_speed=2, duration=4/9*D, transition='linear')
+            + Animation(
+                _display_value=0, _ind_speed=1, duration=0)
+            + Animation(
+                _display_value=0, _ind_speed=1, duration=D))
+        cycle.bind(on_complete=self._on_cycle_complete)
+        cycle.start(self)
+
+    def _on_cycle_complete(self, _anim, _widget) -> None:
+        """Restart the cycle animation after each 4-phase run completes.
+
+        Offset advancement continues uninterrupted via the Clock event.
+        """
+        if self.indeterminate:
+            self._restart_cycle_anim()
+
     def _stop_indeterminate_anim(self) -> None:
-        """Stop the sliding animation and reset position state."""
-        if hasattr(self, '_ind_event') and self._ind_event:
+        """Stop both the Clock event and the Kivy animation cycle."""
+        if self._ind_event is not None:
             self._ind_event.cancel()
             self._ind_event = None
+        Animation.cancel_all(self, '_display_value', '_ind_speed')
         self._ind_offset = 0.0
-        self.value = 0.0
+        self._display_value = self.value
 
     def _get_bar_bounds(self) -> tuple[float, float] | None:
         """Return ``(draw_left, draw_right)`` of the indeterminate bar.
 
-        Both values are already clamped to the track bounds.  Returns
-        ``None`` when the bar is fully outside the visible track area.
+        The bar width is ``value × track_width``; ``value`` is animated
+        by :meth:`_restart_cycle_anim`.  Returns ``None`` when the bar
+        is invisible (``value`` ≤ epsilon or fully outside the track).
         """
+        if self._display_value <= self._VALUE_EPSILON:
+            return None
         x0 = self.x + self.thickness / 2
         x1 = self.right - self.thickness / 2
         track_w = x1 - x0
         if track_w <= 0:
             return None
-        
-        bar_w = track_w * self._INDETERMINATE_BAR_FRACTION
-        offset = getattr(self, '_ind_offset', 0.0)
-        bar_left = x0 - bar_w + offset * (track_w + bar_w)
+
+        bar_w = track_w * self._display_value
+        bar_left = x0 - bar_w + self._ind_offset * (track_w + bar_w)
         draw_left = max(bar_left, x0)
         draw_right = min(bar_left + bar_w, x1)
         if draw_right <= draw_left:
             return None
-        
+
         return (draw_left, draw_right)
 
     def _get_indicator_points(self) -> List[float]:
@@ -264,13 +380,13 @@ class MorphLinearProgress(_MorphProgressBase):
             draw_left, draw_right = bounds
             return [draw_left, y, draw_right, y]
         
-        if self.value >= 1.0 - self._VALUE_EPSILON:
+        if self._display_value >= 1.0 - self._VALUE_EPSILON:
             return [x0, y, x1, y]
         
-        if self.value <= self._VALUE_EPSILON:
+        if self._display_value <= self._VALUE_EPSILON:
             return []
 
-        x_indicator_end = x0 + track_w * self.value
+        x_indicator_end = x0 + track_w * self._display_value
         if x_indicator_end <= x0:
             return []
         
@@ -299,11 +415,11 @@ class MorphLinearProgress(_MorphProgressBase):
             if x_left_end <= x0:
                 return []
             return [x0, y, x_left_end, y]
-        if self.value >= 1.0 - self._VALUE_EPSILON:
+        if self._display_value >= 1.0 - self._VALUE_EPSILON:
             return []
-        if self.value <= self._VALUE_EPSILON:
+        if self._display_value <= self._VALUE_EPSILON:
             return [x0, y, x1, y]
-        x_indicator_end = x0 + (x1 - x0) * self.value
+        x_indicator_end = x0 + (x1 - x0) * self._display_value
         x_track_start = x_indicator_end + gap
         if x_track_start >= x1:
             return []
@@ -331,7 +447,9 @@ class MorphLinearProgress(_MorphProgressBase):
 
     def _refresh_canvas(self, *args) -> None:
         """Redraw the track and indicator lines."""
-        if not hasattr(self, '_track_line'):
+        if (self._track_line is None 
+                or self._track_line_2 is None 
+                or self._indicator_line is None):
             return
         
         self._indicator_line.points = self._get_indicator_points()
@@ -395,6 +513,23 @@ class MorphCircularProgress(_MorphProgressBase):
     :class:`~kivy.graphics.context_instructions.Rotate` instruction.
     """
 
+    _rotation_event: Any = None
+    """Internal reference to the scheduled Clock event for advancing the
+    indeterminate rotation. Used to start and stop the animation cleanly.
+    """
+
+    _turn_elapsed: float = 0.0
+    """Time in seconds since the current indeterminate turn started.
+    Used to compute the current rotation speed and span during 
+    indeterminate animation.
+    """
+
+    _rotation_instruction: Rotate | None = None
+    """Canvas instruction for rotating the entire indicator group. 
+    Created in :meth:`_setup_canvas` and updated in 
+    :meth:`_on_anim_rotation`.
+    """
+
     _circle_radius: float = AliasProperty(
         lambda self: (min(self.width, self.height) - self.thickness) / 2,
         cache=True,
@@ -445,9 +580,8 @@ class MorphCircularProgress(_MorphProgressBase):
         This is the only per-frame operation during indeterminate mode —
         no ``Line`` geometry is touched.
         """
-        if not hasattr(self, '_rotation_instruction'):
-            return
-        self._rotation_instruction.angle = angle
+        if self._rotation_instruction is not None:
+            self._rotation_instruction.angle = angle
 
     def _start_indeterminate_anim(self) -> None:
         """Start the indeterminate animation.
@@ -459,7 +593,7 @@ class MorphCircularProgress(_MorphProgressBase):
         at ``1/6`` between cycle end and the next phase start.
         """
         self._stop_indeterminate_anim()
-        self.value = 1 / 6
+        self._display_value = 1 / 6
         self._turn_elapsed = 0.0
         self._rotation_event = Clock.schedule_interval(self._rotate_step, 0)
         self._restart_span_anim()
@@ -486,14 +620,14 @@ class MorphCircularProgress(_MorphProgressBase):
 
     def _restart_span_anim(self) -> None:
         """Build and start one 4-phase arc-span animation cycle."""
-        Animation.cancel_all(self, 'value')
-        self.value = 1 / 6
+        Animation.cancel_all(self, '_display_value')
+        self._display_value = 1 / 6
         D = self.indeterminate_duration
         span = (
-            Animation(value=1 / 6, duration=D)
-            + Animation(value=5 / 6, duration=D, transition='out_sine')
-            + Animation(value=5 / 6, duration=D)
-            + Animation(value=1 / 6, duration=D, transition='out_sine'))
+            Animation(_display_value=1 / 6, duration=D)
+            + Animation(_display_value=5 / 6, duration=D, transition='out_sine')
+            + Animation(_display_value=5 / 6, duration=D)
+            + Animation(_display_value=1 / 6, duration=D, transition='out_sine'))
         span.bind(on_complete=self._on_indeterminate_cycle_complete)
         span.start(self)
 
@@ -507,12 +641,12 @@ class MorphCircularProgress(_MorphProgressBase):
 
     def _stop_indeterminate_anim(self) -> None:
         """Stop the rotation clock event and cancel the span animation."""
-        if hasattr(self, '_rotation_event') and self._rotation_event:
+        if self._rotation_event is not None:
             self._rotation_event.cancel()
             self._rotation_event = None
-        Animation.cancel_all(self, 'value')
+        Animation.cancel_all(self, '_display_value')
         self._anim_rotation = 0.0
-        self.value = 0.0
+        self._display_value = self.value
 
     def _refresh_canvas(self, *args) -> None:
         """Redraw the track and indicator arcs and update the rotation origin.
@@ -521,8 +655,9 @@ class MorphCircularProgress(_MorphProgressBase):
         track the widget centre whenever position or size changes.
         Uses Kivy's built-in ``Line.circle`` primitive for arc tessellation.
         """
-        if not hasattr(self, '_rotation_instruction'):
+        if self._rotation_instruction is None:
             return
+        
         self._rotation_instruction.origin = (self.center_x, self.center_y)
 
         indicator = self._get_indicator_circle()
@@ -547,12 +682,14 @@ class MorphCircularProgress(_MorphProgressBase):
         In determinate mode the arc spans ``value × 360°`` driven by the caller.
         """
         cx, cy, r = self.center_x, self.center_y, self._circle_radius
-        if self.value <= self._VALUE_EPSILON:
+        if self._display_value <= self._VALUE_EPSILON:
             return None
-        if self.value >= 1.0 - self._VALUE_EPSILON:
+        
+        if self._display_value >= 1.0 - self._VALUE_EPSILON:
             return (cx, cy, r)
+        
         angle_start = self._START_ANGLE
-        angle_end = angle_start + self.value * 360
+        angle_end = angle_start + self._display_value * 360
         return (cx, cy, r, angle_start, angle_end)
 
     def _get_track_circle(self) -> None | Tuple[float, ...]:
@@ -564,12 +701,14 @@ class MorphCircularProgress(_MorphProgressBase):
         small angular gap separates the track from the indicator.
         """
         cx, cy, r = self.center_x, self.center_y, self._circle_radius
-        if self.value >= 1.0 - self._VALUE_EPSILON:
+        if self._display_value >= 1.0 - self._VALUE_EPSILON:
             return None
-        if self.value <= self._VALUE_EPSILON:
+        
+        if self._display_value <= self._VALUE_EPSILON:
             return (cx, cy, r)
+        
         space = (2 * self.thickness + dp(2)) / r * (180 / math.pi)
-        track_start = self._START_ANGLE + self.value * 360 + space
+        track_start = self._START_ANGLE + self._display_value * 360 + space
         track_end = self._START_ANGLE + 360 - space
         return (cx, cy, r, track_start, track_end)
 
@@ -636,7 +775,7 @@ class _WavePhaseAnimMixin:
 
     _wave_event: Any = None
     """Internal reference to the scheduled Clock event for advancing the 
-    wave animation.  Used to start and stop the animation cleanly.
+    wave animation. Used to start and stop the animation cleanly.
     """
 
     def __init__(self, **kwargs) -> None:
@@ -708,7 +847,7 @@ class MorphWavyLinearProgress(_WavePhaseAnimMixin, MorphLinearProgress):
         for i in range(n + 1):
             x = x_start + (i / n) * length
             y = y_center + self._WAVE_AMPLITUDE * math.sin(
-                2 * math.pi * x / self._LINEAR_WAVELENGTH - self._wave_phase)
+                2 * math.pi * x / self._LINEAR_WAVELENGTH + self._wave_phase)
             yield x
             yield y
 
@@ -726,13 +865,13 @@ class MorphWavyLinearProgress(_WavePhaseAnimMixin, MorphLinearProgress):
                 return []
             return list(self._wave_points_generator(bounds[0], bounds[1], y))
 
-        if self.value >= 1.0 - self._VALUE_EPSILON:
+        if self._display_value >= 1.0 - self._VALUE_EPSILON:
             return list(self._wave_points_generator(x0, x1, y))
 
-        if self.value <= self._VALUE_EPSILON:
+        if self._display_value <= self._VALUE_EPSILON:
             return []
 
-        return list(self._wave_points_generator(x0, x0 + track_w * self.value, y))
+        return list(self._wave_points_generator(x0, x0 + track_w * self._display_value, y))
 
 
 class MorphWavyCircularProgress(_WavePhaseAnimMixin, MorphCircularProgress):
@@ -750,9 +889,12 @@ class MorphWavyCircularProgress(_WavePhaseAnimMixin, MorphCircularProgress):
     indeterminate mode.
     """
 
-    _CIRCULAR_WAVELENGTH: float = dp(15)
-    """Arc-length wavelength of the sine wave in pixels.
-    Defaults to ``dp(15)``.
+    _CIRCULAR_WAVE_COUNT: int = 9
+    """Number of complete sine waves around the full circumference.
+
+    Because the wavelength is derived as ``2π·r / N``, the wave always
+    completes an integer number of cycles and joins seamlessly at 360°,
+    regardless of the widget size.
     """
 
     _WAVE_AMPLITUDE: float = dp(2)
@@ -773,23 +915,26 @@ class MorphWavyCircularProgress(_WavePhaseAnimMixin, MorphCircularProgress):
             ) -> Generator[float, None, None]:
         """Yield a sequence of x, y points tracing a wavy arc.
 
-        The wave oscillates radially around ``r``.  Phase is computed as
-        arc length from 0° (``angle * π/180 * r``) so all arc segments
-        on the same circle share a continuous wave pattern.
+        The wave oscillates radially around ``r``.  The wavelength is
+        ``2π·r / N`` (where ``N`` is :attr:`_CIRCULAR_WAVE_COUNT`), so
+        the wave always completes exactly ``N`` cycles around the full
+        circle and connects seamlessly at the join point.
+
+        Phase simplifies to ``N · angle_deg · π/180``.
         """
-        arc_length = abs(angle_end - angle_start) * math.pi / 180 * r
-        if arc_length <= 0:
+        angle_span = angle_end - angle_start
+        if angle_span == 0:
             return
 
+        arc_fraction = abs(angle_span) / 360.0
         n = max(2, math.ceil(
-            arc_length / self._CIRCULAR_WAVELENGTH * self._SAMPLES_PER_WAVELENGTH))
-        angle_span = angle_end - angle_start
+            arc_fraction * self._CIRCULAR_WAVE_COUNT * self._SAMPLES_PER_WAVELENGTH))
+        N = self._CIRCULAR_WAVE_COUNT
         for i in range(n + 1):
             angle_deg = angle_start + (i / n) * angle_span
             angle_rad = math.radians(90.0 - angle_deg)
-            arc_pos = angle_deg * math.pi / 180 * r  # phase from 0°
             radius = r + self._WAVE_AMPLITUDE * math.sin(
-                2 * math.pi * arc_pos / self._CIRCULAR_WAVELENGTH + self._wave_phase)
+                N * angle_deg * math.pi / 180 + self._wave_phase)
             yield cx + radius * math.cos(angle_rad)
             yield cy + radius * math.sin(angle_rad)
 
@@ -813,7 +958,7 @@ class MorphWavyCircularProgress(_WavePhaseAnimMixin, MorphCircularProgress):
         The :class:`~kivy.graphics.context_instructions.Rotate` pivot is
         updated on every call.
         """
-        if not hasattr(self, '_rotation_instruction'):
+        if self._rotation_instruction is None:
             return
         
         self._rotation_instruction.origin = (self.center_x, self.center_y)
