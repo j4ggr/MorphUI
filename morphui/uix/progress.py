@@ -1,8 +1,11 @@
 import math
+
 from typing import Any
 from typing import Dict
 from typing import List
 from typing import Tuple
+from typing import Generator
+
 from kivy.animation import Animation
 from kivy.clock import Clock
 from kivy.metrics import dp
@@ -114,8 +117,10 @@ class _MorphProgressBase(
             thickness=self._refresh_canvas,
             indicator_color=self._refresh_canvas_color,
             track_color=self._refresh_canvas_color,)
+        if hasattr(self, '_wave_phase'):
+            self.bind(_wave_phase=self._refresh_canvas)
         self._setup_canvas()
-        self._refresh_canvas()
+        self.redraw()
 
     def _setup_canvas(self) -> None:
         """Initialise canvas instructions.  Called once in ``__init__``."""
@@ -133,6 +138,15 @@ class _MorphProgressBase(
         :attr:`track_color` changes."""
         self._track_color_instruction.rgba = self.track_color
         self._indicator_color_instruction.rgba = self.indicator_color
+    
+    def redraw(self) -> None:
+        """Public method to trigger a canvas refresh, including colors.
+        Useful for external code to update the display immediately after
+        changing properties that affect appearance but aren't directly 
+        bound to canvas instructions.
+        """
+        self._refresh_canvas()
+        self._refresh_canvas_color()
 
 
 class MorphLinearProgress(_MorphProgressBase):
@@ -592,7 +606,61 @@ class MorphCircularProgress(_MorphProgressBase):
             PopMatrix()
 
 
-class MorphWavyLinearProgress(MorphLinearProgress):
+class _WavePhaseAnimMixin:
+    """Mixin that advances a wave phase offset every frame to produce a
+    slow travelling-wave effect.  Mix in *before* the concrete progress
+    class so that ``__init__`` chains correctly.
+    """
+
+    wave_speed: float = NumericProperty(4.0)
+    """Angular speed of the travelling wave in radians per second.
+
+    At the default of ``4.0`` rad/s one full cycle takes roughly
+    1.6 seconds, giving a gentle, slow wave.  Set to ``0`` to freeze
+    the wave in place.
+
+    :attr:`wave_speed` is a :class:`~kivy.properties.NumericProperty`
+    and defaults to ``4.0``.
+    """
+
+    _wave_phase: float = NumericProperty(0.0)
+    """Current phase offset of the travelling wave in radians.
+
+    Binding this property to the canvas refresh method causes the wave
+    to update every frame.  The phase is advanced by ``wave_speed * dt``
+    each frame, where ``dt`` is the time since the last frame.
+
+    :attr:`_wave_phase` is a :class:`~kivy.properties.NumericProperty`
+    and defaults to ``0.0``.
+    """
+
+    _wave_event: Any = None
+    """Internal reference to the scheduled Clock event for advancing the 
+    wave animation.  Used to start and stop the animation cleanly.
+    """
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self._start_wave_anim()
+
+    def _start_wave_anim(self) -> None:
+        """Start (or restart) the per-frame phase-advance clock."""
+        self._stop_wave_anim()
+        self._wave_event = Clock.schedule_interval(self._wave_step, 0)
+
+    def _stop_wave_anim(self) -> None:
+        """Cancel the phase-advance clock."""
+        if self._wave_event is not None:
+            self._wave_event.cancel()
+            self._wave_event = None
+
+    def _wave_step(self, dt: float) -> None:
+        """Advance the phase by ``wave_speed * dt`` radians and redraw."""
+        self._wave_phase = (
+            self._wave_phase + self.wave_speed * dt) % (2 * math.pi)
+
+
+class MorphWavyLinearProgress(_WavePhaseAnimMixin, MorphLinearProgress):
     """A horizontal linear progress indicator with a sinusoidal wave stroke.
 
     Inherits all behaviour (including indeterminate mode) from
@@ -619,29 +687,30 @@ class MorphWavyLinearProgress(MorphLinearProgress):
     smooth appearance while remaining cheap to compute each frame.
     """
 
-    def _make_wave_points(
+    def _wave_points_generator(
             self,
             x_start: float,
             x_end: float,
             y_center: float,
-            ) -> List[float]:
-        """Return a flat ``[x, y, x, y, …]`` polyline tracing a sine wave.
+            ) -> Generator[float, None, None]:
+        """Yield x, y points tracing a sine wave between two x coordinates.
 
-        Phase is derived from the absolute x coordinate so that adjacent
-        segments always share a single continuous wave pattern.
+        The spatial argument is the absolute x coordinate so that indicator
+        and track always share one continuous wave pattern.  :attr:`_wave_phase`
+        is subtracted to make the wave travel rightward over time.
         """
         length = x_end - x_start
         if length <= 0:
-            return []
+            return
+
         n = max(2, math.ceil(
             length / self._LINEAR_WAVELENGTH * self._SAMPLES_PER_WAVELENGTH))
-        pts: List[float] = []
         for i in range(n + 1):
             x = x_start + (i / n) * length
             y = y_center + self._WAVE_AMPLITUDE * math.sin(
-                2 * math.pi * x / self._LINEAR_WAVELENGTH)
-            pts.extend((x, y))
-        return pts
+                2 * math.pi * x / self._LINEAR_WAVELENGTH - self._wave_phase)
+            yield x
+            yield y
 
     def _get_indicator_points(self) -> List[float]:
         y = self.center_y
@@ -650,19 +719,23 @@ class MorphWavyLinearProgress(MorphLinearProgress):
         track_w = x1 - x0
         if track_w <= 0:
             return []
+
         if self.indeterminate:
             bounds = self._get_bar_bounds()
             if bounds is None:
                 return []
-            return self._make_wave_points(bounds[0], bounds[1], y)
+            return list(self._wave_points_generator(bounds[0], bounds[1], y))
+
         if self.value >= 1.0 - self._VALUE_EPSILON:
-            return self._make_wave_points(x0, x1, y)
+            return list(self._wave_points_generator(x0, x1, y))
+
         if self.value <= self._VALUE_EPSILON:
             return []
-        return self._make_wave_points(x0, x0 + track_w * self.value, y)
+
+        return list(self._wave_points_generator(x0, x0 + track_w * self.value, y))
 
 
-class MorphWavyCircularProgress(MorphCircularProgress):
+class MorphWavyCircularProgress(_WavePhaseAnimMixin, MorphCircularProgress):
     """A circular arc progress indicator with a sinusoidal radial wave stroke.
 
     Inherits all behaviour (including indeterminate mode) from
@@ -690,15 +763,15 @@ class MorphWavyCircularProgress(MorphCircularProgress):
     _SAMPLES_PER_WAVELENGTH: int = 8
     """Number of polyline vertices per full wavelength."""
 
-    def _make_wave_arc_points(
+    def _wave_arc_points_generator(
             self,
             cx: float,
             cy: float,
             r: float,
             angle_start: float,
             angle_end: float,
-            ) -> List[float]:
-        """Return a wavy arc as a flat ``[x, y, …]`` polyline.
+            ) -> Generator[float, None, None]:
+        """Yield a sequence of x, y points tracing a wavy arc.
 
         The wave oscillates radially around ``r``.  Phase is computed as
         arc length from 0° (``angle * π/180 * r``) so all arc segments
@@ -706,22 +779,19 @@ class MorphWavyCircularProgress(MorphCircularProgress):
         """
         arc_length = abs(angle_end - angle_start) * math.pi / 180 * r
         if arc_length <= 0:
-            return []
-        
+            return
+
         n = max(2, math.ceil(
             arc_length / self._CIRCULAR_WAVELENGTH * self._SAMPLES_PER_WAVELENGTH))
-        pts: List[float] = []
+        angle_span = angle_end - angle_start
         for i in range(n + 1):
-            angle_deg = angle_start + (i / n) * (angle_end - angle_start)
+            angle_deg = angle_start + (i / n) * angle_span
             angle_rad = math.radians(90.0 - angle_deg)
             arc_pos = angle_deg * math.pi / 180 * r  # phase from 0°
             radius = r + self._WAVE_AMPLITUDE * math.sin(
-                2 * math.pi * arc_pos / self._CIRCULAR_WAVELENGTH)
-            pts.extend((
-                cx + radius * math.cos(angle_rad),
-                cy + radius * math.sin(angle_rad),
-            ))
-        return pts
+                2 * math.pi * arc_pos / self._CIRCULAR_WAVELENGTH + self._wave_phase)
+            yield cx + radius * math.cos(angle_rad)
+            yield cy + radius * math.sin(angle_rad)
 
     def _circle_to_points(self, circle: Tuple[float, ...]) -> List[float]:
         """Convert a ``(cx, cy, r)`` or ``(cx, cy, r, a_start, a_end)``
@@ -729,10 +799,10 @@ class MorphWavyCircularProgress(MorphCircularProgress):
         """
         if len(circle) == 3:
             cx, cy, r = circle
-            return self._make_wave_arc_points(cx, cy, r, 0.0, 360.0)
-        
+            return list(self._wave_arc_points_generator(cx, cy, r, 0.0, 360.0))
+
         cx, cy, r, a_start, a_end = circle
-        return self._make_wave_arc_points(cx, cy, r, a_start, a_end)
+        return list(self._wave_arc_points_generator(cx, cy, r, a_start, a_end))
 
     def _refresh_canvas(self, *args) -> None:
         """Redraw the wavy indicator and the straight track arc.
