@@ -14,6 +14,43 @@ __Types of changes__:
 - _Fixed_ for any bug fixes.
 - _Security_ in case of vulnerabilities.
 
+## [0.13.0] - 2026-03-25
+
+### Added
+
+- Added `MorphLinearProgress` widget: horizontal progress indicator with determinate and indeterminate modes, rounded caps, split-track gap animation, and `default_config` sizing (`size_hint=(1, None)`, `height=dp(8)`).
+- Added `MorphCircularProgress` widget: circular arc progress indicator with determinate and indeterminate modes; indeterminate mode rotates the canvas group with a sinusoidal speed pulse and animates the arc span between 1/6 and 5/6 of the circle (Material Design comet effect).
+- Added `MorphWavyLinearProgress` widget: extends `MorphLinearProgress` with a continuous sine-wave polyline stroke; phase is tied to absolute x coordinate so indicator and track share one seamless wave pattern.
+- Added `MorphWavyCircularProgress` widget: extends `MorphCircularProgress` with a radial sine-wave stroke; wave count is derived from the circumference (`_CIRCULAR_WAVE_COUNT = 9`) so all 9 cycles connect seamlessly at 360° regardless of widget size.
+- Added `_WavePhaseAnimMixin`: mixin class providing `wave_speed` and `_wave_phase` properties and a per-frame `Clock` event that produces a travelling-wave animation on all wavy progress widgets.
+- Added `_display_value` internal property to `_MorphProgressBase` that drives all canvas rendering and is smoothly animated by `on_value`.
+- Added `value_animation_duration` (default `0.2` s) and `value_animation_transition` (default `'out_quad'`) properties to `_MorphProgressBase` for configuring the automatic value transition animation.
+- Added `redraw()` public method to `_MorphProgressBase` for triggering an immediate canvas and color refresh from external code.
+- Added `indeterminate_duration` property to `_MorphProgressBase` (default `1.33` s, matching the Material Design specification).
+- Added 4-phase Material Design indeterminate animation to `MorphLinearProgress`: bar grows from 1/7 to 5/6 of the track width while accelerating, then pauses before repeating; driven by an animatable `_ind_speed` property.
+- Added `MorphSimpleTooltip` subclass of `MorphTooltip` encapsulating a single text label.
+- Added `MorphRichTooltip` subclass with `heading` (bold title) and `supporting` (detail text) string properties; the supporting label is added and removed from the widget tree dynamically.
+- Added `MorphTooltipLabel` and `MorphTooltipHeadingLabel` to `uix/label.py`.
+- Added `update_tooltip_text(text)` interface method on `MorphTooltip`, overridden in `MorphSimpleTooltip` and `MorphRichTooltip`.
+- Added `linspace` generator to `morphui/utils/helpers.py` (pure-Python, no NumPy dependency).
+
+### Changed
+
+- Changed `value` property on `_MorphProgressBase` from a direct render trigger to a target property; setting it now starts an animated transition of `_display_value` rather than updating the canvas immediately.
+- Changed `MorphCircularProgress` canvas to use `Line.circle` primitive for arc tessellation, removing manual point generation.
+- Changed `MorphCircularProgress._refresh_canvas` to use a `PushMatrix`/`Rotate`/`PopMatrix` wrapper so only `Rotate.angle` is updated per frame during indeterminate mode (no geometry recalculation per frame).
+- Changed `MorphTooltipBehavior.update_tooltip_text` to delegate to `tooltip.update_tooltip_text()` instead of walking the tooltip's children list.
+- Changed `MorphDatePickerCalendarView` to store `selected_dates: ListProperty` (plain `datetime.date` values) instead of `selected_day_buttons` (widget references) so selection state survives month navigation.
+
+### Refactored
+
+- Introduced `_MorphProgressBase` as a shared base class for all progress indicators, consolidating common properties (`value`, `indeterminate`, `indicator_color`, `track_color`, `thickness`), canvas bindings, and the abstract `_setup_canvas`/`_refresh_canvas` interface.
+
+### Fixed
+
+- Fixed `MorphAutoSizingBehavior` text label growing horizontally beyond its container.
+- Fixed `MorphDatePickerCalendarView` weekday header alignment and improved format hint UX.
+
 ## [0.12.0] - 2026-03-09
 
 ### Added
