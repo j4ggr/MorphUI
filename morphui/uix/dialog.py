@@ -131,9 +131,9 @@ class MorphDialog(
         radius=dp(12),
         spacing=dp(8),
         padding=dp(16),
-        size_hint_x=None,
-        auto_size=(True, True),
-        width=dp(560),))
+        size_hint=(None, None),
+        auto_size=(False, True),
+        size=(dp(500), dp(360)),))
 
     def __init__(self, *widgets, **kwargs) -> None:
         self._scrim_widget = MorphScrimLayer()
