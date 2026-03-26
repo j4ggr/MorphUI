@@ -14,6 +14,22 @@ __Types of changes__:
 - _Fixed_ for any bug fixes.
 - _Security_ in case of vulnerabilities.
 
+## [0.13.1] - 2026-03-26
+
+### Changed
+
+- Changed `MorphDialog` `default_config` `auto_size` to `(False, True)`.
+
+### Fixed
+
+- Fixed `MorphAutoSizingBehavior` initialization by deferring `refresh_auto_sizing()` to the next frame via `Clock.schedule_once`, preventing layout timing issues on widget construction.
+
+### Refactored
+
+- Consolidated pressed-state management, ripple trigger, and `on_press`/`on_release` dispatch into `_do_press(pos)` and `_do_release()` in `MorphButtonBehavior`, removing redundant `Clock.schedule_once` call for `on_release` in `on_touch_up`.
+- Removed `MorphToggleButtonBehavior._do_press` override (no longer needed); added `super()._do_release()` call in `MorphToggleButtonBehavior._do_release`.
+- Simplified `trigger_action` to delegate directly to `_do_press`/`_do_release`.
+
 ## [0.13.0] - 2026-03-25
 
 ### Added
