@@ -181,13 +181,7 @@ class MorphButtonBehavior(EventDispatcher):
         self.last_touch = touch
         touch.grab(self)
         touch.ud[self] = True
-        self.pressed = True
-        self._do_press()
-
-        if getattr(self, 'ripple_enabled', False):
-            self.show_ripple_effect(touch.pos)
-
-        self.dispatch('on_press')
+        self._do_press(touch.pos)
         return True
 
     def on_touch_move(self, touch: MotionEvent) -> bool:
@@ -267,8 +261,8 @@ class MorphButtonBehavior(EventDispatcher):
             return False
 
         touch.ungrab(self)
-        self.pressed = False
         self.last_touch = touch
+
         if getattr(self, 'disabled', False):
             return None
         
@@ -287,8 +281,6 @@ class MorphButtonBehavior(EventDispatcher):
             release_delay = max(
                 release_delay, self.min_state_time - self._press_duration)
         Clock.schedule_once(self._do_release, release_delay)
-        Clock.schedule_once(
-            lambda dt: self.dispatch('on_release'), release_delay)
         return True
 
     def _update_press_timing(self, *args) -> None:
@@ -311,21 +303,44 @@ class MorphButtonBehavior(EventDispatcher):
                 self._press_duration = time() - self._press_start_time
             self._press_start_time = None
 
-    def _do_press(self, *args) -> None:
+    def _do_press(self, pos: Tuple[float, float]) -> None:
         """Internal method to handle press logic.
 
-        This method sets the :attr:`active` state to True. Override this 
-        method to implement custom press behavior.
+        This method sets the :attr:`pressed` state to True. If 
+        ripple behavior is enabled, it also triggers the ripple effect 
+        at the specified position.
+
+        Parameters
+        ----------
+        pos : Tuple[float, float]
+            The position where the press action occurred, used for
+            triggering the ripple effect if enabled.
+        Notes
+        -----
+        This implementation is based on Kivy button behavior's, see
+        :meth:`~kivy.uix.behaviors.ButtonBehavior._do_press`
+
         """
-        self.active = True
+        self.pressed = True
+        if getattr(self, 'ripple_enabled', False):
+            self.show_ripple_effect(pos)
+
+        self.dispatch('on_press')
 
     def _do_release(self, *args) -> None:
         """Internal method to handle release logic.
 
-        This method sets the :attr:`active` state to False. Override 
-        this method to implement custom release behavior.
+        This method sets the :attr:`pressed` state to False. If 
+        ripple behavior is enabled, it also triggers the ripple effect 
+        at the specified position.
+
+        Notes
+        -----
+        This implementation is based on Kivy button behavior's, see
+        :meth:`~kivy.uix.behaviors.ButtonBehavior._do_release`
         """
-        self.active = False
+        self.pressed = False
+        self.dispatch('on_release')
     
     def trigger_action(self, duration=0.1) -> None:
         """Programmatically trigger a press and release action.
@@ -345,17 +360,8 @@ class MorphButtonBehavior(EventDispatcher):
         This implementation is based on Kivy button behavior's, see
         :meth:`~kivy.uix.behaviors.ButtonBehavior.trigger_action`
         """
-        self._do_press()
-        self.dispatch('on_press')
-
-        def trigger_release(dt) -> None:
-            self._do_release()
-            self.dispatch('on_release')
-
-        if not duration:
-            trigger_release(0)
-        else:
-            Clock.schedule_once(trigger_release, duration)
+        self._do_press(self.center)
+        Clock.schedule_once(lambda dt: self._do_release(), duration)
     
     def on_press(self) -> None:
         """Event fired when the widget is pressed.
@@ -1013,16 +1019,6 @@ class MorphToggleButtonBehavior(MorphButtonBehavior):
                 continue
             else:
                 widget.active = False
-
-    def _do_press(self, *args) -> None:
-        """Handle the press action for the toggle button.
-
-        This method overrides the base press behavior to ensure that the
-        active state is handled at the release action instead.
-
-        For more details, see :meth:`_do_release`.
-        """
-        pass
     
     def _do_release(self, *args) -> None:
         """Handle the release action for the toggle button.
@@ -1043,3 +1039,4 @@ class MorphToggleButtonBehavior(MorphButtonBehavior):
             self.active = True
         elif self.group is None or self.allow_no_selection:
             self.active = False
+        super()._do_release()

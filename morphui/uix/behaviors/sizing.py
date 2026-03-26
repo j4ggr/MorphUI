@@ -16,6 +16,7 @@ The sizing behaviors support:
 from typing import List
 from typing import Tuple
 
+from kivy.clock import Clock
 from kivy.event import EventDispatcher
 from kivy.metrics import dp
 from kivy.properties import ListProperty
@@ -422,7 +423,7 @@ class MorphAutoSizingBehavior(EventDispatcher):
                 'identities'):
             if hasattr(self, prop):
                 self.fbind(prop, self._update_auto_sizing)
-        self.refresh_auto_sizing()
+        Clock.schedule_once(lambda dt: self.refresh_auto_sizing(), 0)
     
     @property
     def has_text_layout(self) -> bool:
