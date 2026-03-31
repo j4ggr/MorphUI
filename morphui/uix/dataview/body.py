@@ -195,8 +195,12 @@ class MorphDataViewBody(BaseDataView):
         """
         if not self.layout_manager or not self.layout_manager.children:
             return []
-        children = self.layout_manager.children[::-1]
+        
         n_cols = self.layout_manager.cols
+        if n_cols < 1:
+            return []
+        
+        children = self.layout_manager.children[::-1]
         return [
             [children[i + j * n_cols].text for i in range(n_cols)]
             for j in range(len(children) // n_cols)]
