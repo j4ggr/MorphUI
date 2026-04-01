@@ -12,20 +12,30 @@ requires-python = ">=3.13"
 readme = "README.md"
 license = {text = "MIT"}
 
+[project.urls]
+Repository = "https://github.com/j4ggr/MorphUI"
+Documentation = "https://j4ggr.github.io/MorphUI/"
+Changelog = "https://j4ggr.github.io/MorphUI/docs/CHANGELOG"
+
 [build-system]
 requires = ["pdm-backend"]
 build-backend = "pdm.backend"
-
 
 [tool.pdm]
 distribution = true
 
 [dependency-groups]
 test = [
-  "pytest>=8.4.2",]
+  "pytest>=8.4.2",
+]
 visualization = [
     "matplotlib>=3.10.7",
 ]
 profiling = [
     "py-spy>=0.4.1",
+]
+doc = [
+    "mkdocs>=1.6.1",
+    "mkdocstrings[python]>=1.0.3",
+    "mkdocs-material>=9.7.6",
 ]
