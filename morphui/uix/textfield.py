@@ -1,3 +1,26 @@
+"""
+Text field widgets for MorphUI.
+
+This module provides single-line text input components with built-in
+validation, error state display, leading icon support, trailing icon
+button support, heading labels, and supporting text. Three visual
+styles are available: filled, outlined, and rounded.
+
+Classes
+-------
+MorphTextValidator
+    Standalone validator that tracks error state and type.
+MorphTextInput
+    Internal ``TextInput`` subclass with MorphUI theming.
+MorphTextField
+    Filled text field (default style).
+MorphTextFieldFilled
+    Explicit alias for the filled style.
+MorphTextFieldOutlined
+    Outlined border style.
+MorphTextFieldRounded
+    Fully rounded border style.
+"""
 from typing import Any
 from typing import Dict
 from typing import List

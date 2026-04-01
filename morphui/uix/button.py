@@ -1,3 +1,29 @@
+"""
+Button widgets for MorphUI.
+
+This module provides button and icon button widgets built on top of
+Kivy's ``Label`` with a full set of MorphUI behaviors: ripple effects,
+hover states, elevation, theming, and optional tooltips.
+
+Classes
+-------
+MorphSimpleIconButton
+    Lightweight icon button — no elevation, designed for use inside
+    other components such as chips or text fields.
+MorphButton
+    Full-featured text button with theming, ripple, hover, and
+    optional leading/trailing icons.
+MorphIconButton
+    Icon-only button variant.
+MorphTrailingIconButton
+    Icon-only button variant for trailing positions.
+MorphIconTextButton
+    Icon on the left, text label on the right.
+MorphTextIconButton
+    Text label on the left, icon on the right.
+MorphTextIconToggleButton
+    Toggleable version of ``MorphTextIconButton``.
+"""
 from typing import Any
 from typing import Dict
 from typing import List

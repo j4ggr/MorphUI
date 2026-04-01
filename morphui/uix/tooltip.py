@@ -1,3 +1,19 @@
+"""
+Tooltip widgets for MorphUI.
+
+Tooltips appear on hover and provide brief contextual information about
+a UI element. Attach a tooltip to any widget that uses
+``MorphTooltipBehavior`` via its ``tooltip`` property.
+
+Classes
+-------
+MorphTooltip
+    Base tooltip container — extend this to build custom tooltips.
+MorphSimpleTooltip
+    Ready-to-use tooltip with a single plain-text label.
+MorphRichTooltip
+    Tooltip with a bold heading and a supporting detail line.
+"""
 from typing import Any
 from typing import Dict
 

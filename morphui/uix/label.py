@@ -1,3 +1,14 @@
+"""
+Label widgets for MorphUI.
+
+This module provides themed label variants built on Kivy's ``Label``.
+All labels support auto-sizing, icon rendering via the Material icon
+font, and full theme integration.
+
+Key classes include ``MorphLabel`` for general text, ``MorphIconLabel``
+for icon glyphs, and a variety of specialized labels used internally by
+button, chip, text field, tooltip, and data view components.
+"""
 from typing import Any
 from typing import Dict
 

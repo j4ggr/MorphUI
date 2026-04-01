@@ -1,3 +1,25 @@
+"""
+Dropdown menu and filter field widgets for MorphUI.
+
+Dropdowns present a selectable list of options anchored below a trigger
+widget. Filter field variants combine a text input with the dropdown for
+in-place searchable selection.
+
+Classes
+-------
+MorphDropdownList
+    Scrollable list of selectable options.
+MorphDropdownMenu
+    Animated dropdown menu that opens below a trigger widget.
+MorphDropdownFilterField
+    Text field with attached dropdown for filtered selection (filled).
+MorphDropdownFilterFieldOutlined
+    Outlined variant of the filter field.
+MorphDropdownFilterFieldRounded
+    Rounded variant of the filter field.
+MorphDropdownFilterFieldFilled
+    Explicit filled variant of the filter field.
+"""
 from typing import Any
 from typing import List
 from typing import Dict

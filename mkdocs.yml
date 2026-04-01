@@ -1,4 +1,7 @@
 site_name: MorphUI
+site_description: A creative and flexible UI extension for Kivy with dynamic theming and modern components.
+site_author: j4ggr
+site_url: https://j4ggr.github.io/MorphUI/
 
 theme:
   name: material
@@ -24,41 +27,57 @@ theme:
       accent: amber
 
   features:
-  - search.suggest
-  - search.highlight
-  - content.tabs.link
-  - navigation.indexes
-  - content.tooltips
-  - navigation.path
-  - content.code.annotate
-  - content.code.copy
-  - content.code.select
-  - navigation.tabs
+    - search.suggest
+    - search.highlight
+    - search.share
+    - content.tabs.link
+    - content.tooltips
+    - content.code.annotate
+    - content.code.copy
+    - content.code.select
+    - navigation.indexes
+    - navigation.tabs
+    - navigation.sections
+    - navigation.path
+    - navigation.top
+    - navigation.footer
+    - toc.follow
 
 repo_name: j4ggr/MorphUI
 repo_url: https://github.com/j4ggr/MorphUI
 
-plugins: 
+plugins:
   search: null
   mkdocstrings:
     handlers:
       python:
         options:
           docstring_style: numpy
-          docstring_section_style: list
-          heading_level: 1
-          merge_init_into_class: false
+          docstring_section_style: spacy
+          heading_level: 2
+          merge_init_into_class: true
           show_bases: true
           show_source: false
           show_root_heading: true
           show_symbol_type_heading: true
           show_symbol_type_toc: true
           show_docstring_functions: true
-          inherited_members: true
-          members_order: alphabetical
+          inherited_members: false
+          members_order: source
           group_by_category: true
+          show_if_no_docstring: false
+          filters:
+            - "!^_"
+            - "^__init__"
 
 markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
   - pymdownx.highlight:
       anchor_linenums: true
       line_spans: __span
@@ -66,23 +85,28 @@ markdown_extensions:
   - pymdownx.inlinehilite
   - pymdownx.snippets
   - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
   - pymdownx.arithmatex:
       generic: true
 
 extra_javascript:
   - javascripts/mathjax.js
   - https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js
-    
+
 extra_css:
   - css/custom-colors.css
 
 nav:
   - Home:
-    - MorphUI: index.md
+    - Welcome: index.md
     - Changelog: CHANGELOG.md
-  - User Guide:
-    - guides/index.md
+  - Getting Started: guides/index.md
   - Components:
+    - Overview: components/index.md
     - Button: components/button.md
     - Chip: components/chip.md
     - Dialog: components/dialog.md
@@ -96,6 +120,7 @@ nav:
     - Text Field: components/textfield.md
     - Tooltip: components/tooltip.md
   - Layouts:
+    - Overview: layouts/index.md
     - Anchor Layout: layouts/anchorlayout.md
     - Box Layout: layouts/boxlayout.md
     - Container: layouts/container.md
@@ -110,16 +135,31 @@ nav:
     - Stack Layout: layouts/stacklayout.md
     - Widget: layouts/widget.md
   - Data View:
-    - Base: dataview/base.md
+    - Overview: dataview/overview.md
+    - Table: dataview/table.md
     - Header: dataview/header.md
-    - Index: dataview/index.md
+    - Row Index: dataview/index.md
     - Body: dataview/body.md
     - Navigation: dataview/navigation.md
-    - Table: dataview/table.md
+    - Base Classes: dataview/base.md
   - Pickers:
     - Date Picker: pickers/datepicker.md
   - Visualization:
     - Chart: visualization/chart.md
     - Plotting: visualization/plotting.md
-  - API:
-    - api/index.md
+  - Behaviors:
+    - Overview: behaviors/index.md
+    - Theming: behaviors/theming.md
+    - Hover: behaviors/hover.md
+    - Layer: behaviors/layer.md
+    - Touch & Ripple: behaviors/touch.md
+    - Motion: behaviors/motion.md
+    - Sizing: behaviors/sizing.md
+    - Composition: behaviors/composition.md
+  - Theme:
+    - Overview: theme/index.md
+    - Manager: theme/manager.md
+    - Palette: theme/palette.md
+    - Typography: theme/typography.md
+  - Application: app.md
+  - API Reference: api/index.md

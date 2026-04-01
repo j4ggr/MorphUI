@@ -1,3 +1,22 @@
+"""
+Progress indicator widgets for MorphUI.
+
+This module provides linear and circular progress indicators with
+support for both determinate (0–1 value) and indeterminate (continuous
+animation) modes. Value changes animate smoothly. Optional wavy
+variants apply a sinusoidal stroke for visual interest.
+
+Classes
+-------
+MorphLinearProgress
+    Horizontal bar progress indicator.
+MorphCircularProgress
+    Circular arc progress indicator.
+MorphWavyLinearProgress
+    Linear progress with a travelling sine-wave stroke.
+MorphWavyCircularProgress
+    Circular progress with a radial sine-wave stroke.
+"""
 import math
 
 from typing import Any

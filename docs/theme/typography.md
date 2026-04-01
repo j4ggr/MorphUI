@@ -1,0 +1,3 @@
+# Typography
+
+::: morphui.theme.typography

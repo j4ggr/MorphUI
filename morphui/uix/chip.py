@@ -1,3 +1,19 @@
+"""
+Chip widgets for MorphUI.
+
+Chips are compact interactive elements that represent actions, filter
+criteria, or user-entered input tokens. All chip variants support
+leading icons, toggling, and full MorphUI theming.
+
+Classes
+-------
+MorphChip
+    Basic action chip.
+MorphFilterChip
+    Toggleable filter chip for multi-select filtering scenarios.
+MorphInputChip
+    Input token chip with a trailing close/remove button.
+"""
 from typing import Any
 from typing import Dict
 

@@ -1,3 +1,17 @@
+"""
+Dialog widget for MorphUI.
+
+This module provides a modal dialog component with an animated entry/exit
+and a semi-transparent scrim layer that appears behind the dialog to
+draw focus away from the underlying UI.
+
+Classes
+-------
+MorphScrimLayer
+    Semi-transparent overlay rendered behind the dialog.
+MorphDialog
+    Modal dialog container with open/dismiss animation.
+"""
 from typing import List
 
 from textwrap import dedent
