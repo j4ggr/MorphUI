@@ -9,8 +9,8 @@ theme:
     # Palette toggle for light mode
     - media: "(prefers-color-scheme: light)"
       scheme: default
-      primary: '#00b8c2'
-      accent: '#fbc02d'
+      primary: teal
+      accent: amber
       toggle:
         icon: material/weather-night
         name: Switch to dark mode
@@ -20,8 +20,8 @@ theme:
       toggle:
         icon: material/weather-sunny
         name: Switch to light mode
-      primary: '#00b8c2'
-      accent: '#fbc02d'
+      primary: teal
+      accent: amber
 
   features:
   - search.suggest
