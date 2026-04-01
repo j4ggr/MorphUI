@@ -77,10 +77,49 @@ extra_css:
   - css/custom-colors.css
 
 nav:
-  - Home: 
+  - Home:
     - MorphUI: index.md
     - Changelog: CHANGELOG.md
   - User Guide:
     - guides/index.md
+  - Components:
+    - Button: components/button.md
+    - Chip: components/chip.md
+    - Dialog: components/dialog.md
+    - Divider: components/divider.md
+    - Dropdown: components/dropdown.md
+    - Label: components/label.md
+    - List: components/list.md
+    - Menu: components/menu.md
+    - Progress: components/progress.md
+    - Selection: components/selection.md
+    - Text Field: components/textfield.md
+    - Tooltip: components/tooltip.md
+  - Layouts:
+    - Anchor Layout: layouts/anchorlayout.md
+    - Box Layout: layouts/boxlayout.md
+    - Container: layouts/container.md
+    - Float Layout: layouts/floatlayout.md
+    - Grid Layout: layouts/gridlayout.md
+    - Recycle Box Layout: layouts/recycleboxlayout.md
+    - Recycle Grid Layout: layouts/recyclegridlayout.md
+    - Recycle View: layouts/recycleview.md
+    - Relative Layout: layouts/relativelayout.md
+    - Screen Manager: layouts/screenmanager.md
+    - Scroll View: layouts/scrollview.md
+    - Stack Layout: layouts/stacklayout.md
+    - Widget: layouts/widget.md
+  - Data View:
+    - Base: dataview/base.md
+    - Header: dataview/header.md
+    - Index: dataview/index.md
+    - Body: dataview/body.md
+    - Navigation: dataview/navigation.md
+    - Table: dataview/table.md
+  - Pickers:
+    - Date Picker: pickers/datepicker.md
+  - Visualization:
+    - Chart: visualization/chart.md
+    - Plotting: visualization/plotting.md
   - API:
     - api/index.md
