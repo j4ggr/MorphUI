@@ -1,0 +1,4832 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A creative and flexible UI extension for Kivy with dynamic theming and modern components.">
+      
+      
+        <meta name="author" content="j4ggr">
+      
+      
+        <link rel="canonical" href="https://j4ggr.github.io/MorphUI/CHANGELOG/">
+      
+      
+        <link rel="prev" href="..">
+      
+      
+        <link rel="next" href="../guides/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Changelog - MorphUI</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../css/custom-colors.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#changelog" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="MorphUI" class="md-header__button md-logo" aria-label="MorphUI" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            MorphUI
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Changelog
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="amber"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="teal" data-md-color-accent="amber"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/j4ggr/MorphUI" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    j4ggr/MorphUI
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href=".." class="md-tabs__link">
+          
+  
+  
+    
+  
+  Home
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../guides/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Getting Started
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../components/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Components
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../layouts/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Layouts
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../dataview/overview/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Data View
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../pickers/datepicker/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Pickers
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../visualization/chart/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Visualization
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../behaviors/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Behaviors
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../theme/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Theme
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../app/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Application
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../utils/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Utilities
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../constants/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Constants
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../api/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  API Reference
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="MorphUI" class="md-nav__button md-logo" aria-label="MorphUI" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    MorphUI
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/j4ggr/MorphUI" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    j4ggr/MorphUI
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1" checked>
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href=".." class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_1" id="__nav_1_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Home
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#0131-2026-03-26" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.13.1] - 2026-03-26
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.13.1] - 2026-03-26">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#changed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#refactored" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Refactored
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0130-2026-03-25" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.13.0] - 2026-03-25
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.13.0] - 2026-03-25">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#refactored_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Refactored
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0120-2026-03-09" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.12.0] - 2026-03-09
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.12.0] - 2026-03-09">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#removed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Removed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0111-2026-03-03" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.11.1] - 2026-03-03
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.11.1] - 2026-03-03">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0110-2026-02-20" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.11.0] - 2026-02-20
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.11.0] - 2026-02-20">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#removed_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Removed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0100-2026-02-18" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.10.0] - 2026-02-18
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.10.0] - 2026-02-18">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#removed_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Removed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#090-2026-02-16" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.9.0] - 2026-02-16
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.9.0] - 2026-02-16">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#removed_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Removed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#080-2026-02-12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.8.0] - 2026-02-12
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.8.0] - 2026-02-12">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#removed_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Removed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#070-2026-02-11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.7.0] - 2026-02-11
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.7.0] - 2026-02-11">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#060-2026-02-10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.6.0] - 2026-02-10
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.6.0] - 2026-02-10">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#050-2026-02-05" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.5.0] - 2026-02-05
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.5.0] - 2026-02-05">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#040-2026-01-29" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.4.0] - 2026-01-29
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.4.0] - 2026-01-29">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#removed_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Removed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#031-2026-01-21" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.3.1] - 2026-01-21
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.3.1] - 2026-01-21">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#removed_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Removed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#030-2026-01-19" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.3.0] - 2026-01-19
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.3.0] - 2026-01-19">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#020-2026-01-06" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.2.0] - 2026-01-06
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.2.0] - 2026-01-06">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guides/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../components/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Components
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Components
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../components/button/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Button
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../components/chip/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Chip
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../components/dialog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dialog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../components/divider/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Divider
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../components/dropdown/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dropdown
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../components/label/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Label
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../components/list/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    List
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../components/menu/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Menu
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../components/progress/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Progress
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../components/selection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Selection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../components/textfield/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Text Field
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../components/tooltip/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tooltip
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../layouts/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Layouts
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Layouts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../layouts/anchorlayout/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Anchor Layout
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../layouts/boxlayout/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Box Layout
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../layouts/container/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Container
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../layouts/floatlayout/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Float Layout
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../layouts/gridlayout/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Grid Layout
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../layouts/recycleboxlayout/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Recycle Box Layout
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../layouts/recyclegridlayout/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Recycle Grid Layout
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../layouts/recycleview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Recycle View
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../layouts/relativelayout/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Relative Layout
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../layouts/screenmanager/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Screen Manager
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../layouts/scrollview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scroll View
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../layouts/stacklayout/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Stack Layout
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../layouts/widget/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Widget
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../dataview/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data View
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Data View
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dataview/overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dataview/table/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Table
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dataview/header/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Header
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dataview/body/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Body
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dataview/navigation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Navigation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dataview/base/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Base Classes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pickers
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Pickers
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pickers/datepicker/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Date Picker
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Visualization
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Visualization
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../visualization/chart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Chart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../visualization/plotting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Plotting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../behaviors/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Behaviors
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_8" id="__nav_8_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Behaviors
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../behaviors/theming/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Theming
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../behaviors/hover/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hover
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../behaviors/layer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Layer
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../behaviors/touch/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Touch & Ripple
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../behaviors/motion/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Motion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../behaviors/sizing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sizing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../behaviors/composition/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Composition
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../behaviors/elevation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Elevation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../behaviors/shape/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scale & Shape
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../behaviors/declarative/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Declarative
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../behaviors/appreference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    App Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../theme/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Theme
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_9" id="__nav_9_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Theme
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../theme/manager/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Manager
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../theme/palette/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Palette
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../theme/typography/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Typography
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../app/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Application
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../utils/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Utilities
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../constants/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Constants
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#0131-2026-03-26" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.13.1] - 2026-03-26
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.13.1] - 2026-03-26">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#changed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#refactored" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Refactored
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0130-2026-03-25" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.13.0] - 2026-03-25
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.13.0] - 2026-03-25">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#refactored_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Refactored
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0120-2026-03-09" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.12.0] - 2026-03-09
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.12.0] - 2026-03-09">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#removed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Removed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0111-2026-03-03" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.11.1] - 2026-03-03
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.11.1] - 2026-03-03">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0110-2026-02-20" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.11.0] - 2026-02-20
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.11.0] - 2026-02-20">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#removed_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Removed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0100-2026-02-18" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.10.0] - 2026-02-18
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.10.0] - 2026-02-18">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#removed_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Removed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#090-2026-02-16" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.9.0] - 2026-02-16
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.9.0] - 2026-02-16">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#removed_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Removed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#080-2026-02-12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.8.0] - 2026-02-12
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.8.0] - 2026-02-12">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#removed_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Removed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#070-2026-02-11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.7.0] - 2026-02-11
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.7.0] - 2026-02-11">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#060-2026-02-10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.6.0] - 2026-02-10
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.6.0] - 2026-02-10">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#050-2026-02-05" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.5.0] - 2026-02-05
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.5.0] - 2026-02-05">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#040-2026-01-29" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.4.0] - 2026-01-29
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.4.0] - 2026-01-29">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#removed_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Removed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#031-2026-01-21" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.3.1] - 2026-01-21
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.3.1] - 2026-01-21">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#removed_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Removed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#030-2026-01-19" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.3.0] - 2026-01-19
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.3.0] - 2026-01-19">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#020-2026-01-06" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.2.0] - 2026-01-06
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.2.0] - 2026-01-06">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+                
+
+
+
+
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
+<p>All notable changes to this project will be documented in this file.</p>
+<p>The format is based on <a href="https://keepachangelog.com/en/1.0.0/">Keep a Changelog</a>,
+and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semantic Versioning</a>.</p>
+<p><strong>Types of changes</strong>:</p>
+<ul>
+<li><em>Added</em> for new features.</li>
+<li><em>Changed</em> for changes in existing functionality.</li>
+<li><em>Deprecated</em> for soon-to-be removed features.</li>
+<li><em>Removed</em> for now removed features.</li>
+<li><em>Fixed</em> for any bug fixes.</li>
+<li><em>Security</em> in case of vulnerabilities.</li>
+</ul>
+<h2 id="0131-2026-03-26">[0.13.1] - 2026-03-26<a class="headerlink" href="#0131-2026-03-26" title="Permanent link">&para;</a></h2>
+<h3 id="changed">Changed<a class="headerlink" href="#changed" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Changed <code>MorphDialog</code> <code>default_config</code> <code>auto_size</code> to <code>(False, True)</code>.</li>
+</ul>
+<h3 id="fixed">Fixed<a class="headerlink" href="#fixed" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Fixed <code>MorphAutoSizingBehavior</code> initialization by deferring <code>refresh_auto_sizing()</code> to the next frame via <code>Clock.schedule_once</code>, preventing layout timing issues on widget construction.</li>
+</ul>
+<h3 id="refactored">Refactored<a class="headerlink" href="#refactored" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Consolidated pressed-state management, ripple trigger, and <code>on_press</code>/<code>on_release</code> dispatch into <code>_do_press(pos)</code> and <code>_do_release()</code> in <code>MorphButtonBehavior</code>, removing redundant <code>Clock.schedule_once</code> call for <code>on_release</code> in <code>on_touch_up</code>.</li>
+<li>Removed <code>MorphToggleButtonBehavior._do_press</code> override (no longer needed); added <code>super()._do_release()</code> call in <code>MorphToggleButtonBehavior._do_release</code>.</li>
+<li>Simplified <code>trigger_action</code> to delegate directly to <code>_do_press</code>/<code>_do_release</code>.</li>
+</ul>
+<h2 id="0130-2026-03-25">[0.13.0] - 2026-03-25<a class="headerlink" href="#0130-2026-03-25" title="Permanent link">&para;</a></h2>
+<h3 id="added">Added<a class="headerlink" href="#added" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Added <code>MorphLinearProgress</code> widget: horizontal progress indicator with determinate and indeterminate modes, rounded caps, split-track gap animation, and <code>default_config</code> sizing (<code>size_hint=(1, None)</code>, <code>height=dp(8)</code>).</li>
+<li>Added <code>MorphCircularProgress</code> widget: circular arc progress indicator with determinate and indeterminate modes; indeterminate mode rotates the canvas group with a sinusoidal speed pulse and animates the arc span between 1/6 and 5/6 of the circle (Material Design comet effect).</li>
+<li>Added <code>MorphWavyLinearProgress</code> widget: extends <code>MorphLinearProgress</code> with a continuous sine-wave polyline stroke; phase is tied to absolute x coordinate so indicator and track share one seamless wave pattern.</li>
+<li>Added <code>MorphWavyCircularProgress</code> widget: extends <code>MorphCircularProgress</code> with a radial sine-wave stroke; wave count is derived from the circumference (<code>_CIRCULAR_WAVE_COUNT = 9</code>) so all 9 cycles connect seamlessly at 360° regardless of widget size.</li>
+<li>Added <code>_WavePhaseAnimMixin</code>: mixin class providing <code>wave_speed</code> and <code>_wave_phase</code> properties and a per-frame <code>Clock</code> event that produces a travelling-wave animation on all wavy progress widgets.</li>
+<li>Added <code>_display_value</code> internal property to <code>_MorphProgressBase</code> that drives all canvas rendering and is smoothly animated by <code>on_value</code>.</li>
+<li>Added <code>value_animation_duration</code> (default <code>0.2</code> s) and <code>value_animation_transition</code> (default <code>'out_quad'</code>) properties to <code>_MorphProgressBase</code> for configuring the automatic value transition animation.</li>
+<li>Added <code>redraw()</code> public method to <code>_MorphProgressBase</code> for triggering an immediate canvas and color refresh from external code.</li>
+<li>Added <code>indeterminate_duration</code> property to <code>_MorphProgressBase</code> (default <code>1.33</code> s, matching the Material Design specification).</li>
+<li>Added 4-phase Material Design indeterminate animation to <code>MorphLinearProgress</code>: bar grows from 1/7 to 5/6 of the track width while accelerating, then pauses before repeating; driven by an animatable <code>_ind_speed</code> property.</li>
+<li>Added <code>MorphSimpleTooltip</code> subclass of <code>MorphTooltip</code> encapsulating a single text label.</li>
+<li>Added <code>MorphRichTooltip</code> subclass with <code>heading</code> (bold title) and <code>supporting</code> (detail text) string properties; the supporting label is added and removed from the widget tree dynamically.</li>
+<li>Added <code>MorphTooltipLabel</code> and <code>MorphTooltipHeadingLabel</code> to <code>uix/label.py</code>.</li>
+<li>Added <code>update_tooltip_text(text)</code> interface method on <code>MorphTooltip</code>, overridden in <code>MorphSimpleTooltip</code> and <code>MorphRichTooltip</code>.</li>
+<li>Added <code>linspace</code> generator to <code>morphui/utils/helpers.py</code> (pure-Python, no NumPy dependency).</li>
+</ul>
+<h3 id="changed_1">Changed<a class="headerlink" href="#changed_1" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Changed <code>value</code> property on <code>_MorphProgressBase</code> from a direct render trigger to a target property; setting it now starts an animated transition of <code>_display_value</code> rather than updating the canvas immediately.</li>
+<li>Changed <code>MorphCircularProgress</code> canvas to use <code>Line.circle</code> primitive for arc tessellation, removing manual point generation.</li>
+<li>Changed <code>MorphCircularProgress._refresh_canvas</code> to use a <code>PushMatrix</code>/<code>Rotate</code>/<code>PopMatrix</code> wrapper so only <code>Rotate.angle</code> is updated per frame during indeterminate mode (no geometry recalculation per frame).</li>
+<li>Changed <code>MorphTooltipBehavior.update_tooltip_text</code> to delegate to <code>tooltip.update_tooltip_text()</code> instead of walking the tooltip's children list.</li>
+<li>Changed <code>MorphDatePickerCalendarView</code> to store <code>selected_dates: ListProperty</code> (plain <code>datetime.date</code> values) instead of <code>selected_day_buttons</code> (widget references) so selection state survives month navigation.</li>
+</ul>
+<h3 id="refactored_1">Refactored<a class="headerlink" href="#refactored_1" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Introduced <code>_MorphProgressBase</code> as a shared base class for all progress indicators, consolidating common properties (<code>value</code>, <code>indeterminate</code>, <code>indicator_color</code>, <code>track_color</code>, <code>thickness</code>), canvas bindings, and the abstract <code>_setup_canvas</code>/<code>_refresh_canvas</code> interface.</li>
+</ul>
+<h3 id="fixed_1">Fixed<a class="headerlink" href="#fixed_1" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Fixed <code>MorphAutoSizingBehavior</code> text label growing horizontally beyond its container.</li>
+<li>Fixed <code>MorphDatePickerCalendarView</code> weekday header alignment and improved format hint UX.</li>
+</ul>
+<h2 id="0120-2026-03-09">[0.12.0] - 2026-03-09<a class="headerlink" href="#0120-2026-03-09" title="Permanent link">&para;</a></h2>
+<h3 id="added_1">Added<a class="headerlink" href="#added_1" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Added <code>MorphMotionBaseBehavior</code> class holding all base properties and methods used for motion behavior classes.</li>
+<li>Added <code>MorphDialogMotionBehavior</code> class which extends <code>MorphMotionBaseBehavior</code> to provide motion functionality specific to dialogs.</li>
+<li>Added <code>MorphScrimLayer</code> class that provides a semi-transparent overlay appearing behind dialogs to focus user attention.</li>
+<li>Added <code>MorphDialog</code> class that provides a customizable dialog component for displaying information, prompting user input, or presenting interactive content in modal overlays.</li>
+<li>Added <code>animate_opacity</code> during scale in and out animations to <code>MorphScaleBehavior</code>.</li>
+<li>Added <code>__events__</code> properties to behavior classes instead of calling <code>self.register_event_type()</code> in <code>__init__</code>.</li>
+<li>Added comprehensive test suite for motion behaviors (15 tests for <code>MorphMotionBaseBehavior</code>, 13 tests for <code>MorphDialogMotionBehavior</code>, 4 tests for <code>MorphMenuMotionBehavior</code>).</li>
+</ul>
+<h3 id="changed_2">Changed<a class="headerlink" href="#changed_2" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Changed <code>MorphMenuMotionBehavior</code> to extend <code>MorphMotionBaseBehavior</code> class for better code organization.</li>
+<li>Changed property names in <code>MorphMotionBaseBehavior</code> by removing the <code>menu_</code> prefix since they are used for multiple behavior types, not just menus.</li>
+<li>Changed <code>MorphAutoSizingBehavior</code> to first set <code>text_size</code> to <code>(None, None)</code> and update texture to ensure correct dimensions before setting <code>text_size</code> to match <code>texture_size</code>.</li>
+</ul>
+<h3 id="removed">Removed<a class="headerlink" href="#removed" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Removed adding padding to <code>texture_size</code> for calculating minimum size properties in <code>BaseLabel</code> since <code>texture_size</code> already includes padding.</li>
+<li>Removed calling <code>self.register_event_type()</code> method in behavior <code>__init__</code> methods in favor of using <code>__events__</code> properties.</li>
+</ul>
+<h2 id="0111-2026-03-03">[0.11.1] - 2026-03-03<a class="headerlink" href="#0111-2026-03-03" title="Permanent link">&para;</a></h2>
+<h3 id="added_2">Added<a class="headerlink" href="#added_2" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Added <code>caller_collide_point</code> method to MorphMenuMotionBehavior as a workaround for the fact that the native <code>collide_point</code> method does not work correctly for the caller button when the menu is open.</li>
+<li>Added <code>on_release</code> method to MorphDropdownSelect that toggles the dropdown menu.</li>
+</ul>
+<h3 id="changed_3">Changed<a class="headerlink" href="#changed_3" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Changed MorphDropdownMenu to no longer handle the <code>active</code> state of the caller button, simplifying state management.</li>
+<li>Changed MorphDropdownSelect to bind <code>is_open</code> property to setter of <code>active</code> state for better state synchronization.</li>
+</ul>
+<h2 id="0110-2026-02-20">[0.11.0] - 2026-02-20<a class="headerlink" href="#0110-2026-02-20" title="Permanent link">&para;</a></h2>
+<h3 id="removed_1">Removed<a class="headerlink" href="#removed_1" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Removed <code>dismiss_allowed</code> property from MorphMenuMotionBehavior since the dismissing is now handled by the on_touch_up() method. If the caller has a ripple in progress or a touch collides the caller widget, it will not call dismiss.</li>
+</ul>
+<h3 id="changed_4">Changed<a class="headerlink" href="#changed_4" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Changed MorphDropdownSelect to set its active state to False when the dropdown menu is dismissed, ensuring that the button's visual state correctly reflects the menu's visibility.</li>
+<li>Changed MorphMenuMotionBehavior to not call dismiss in on_touch_up() method if the caller's on_touch_up() method returns True, which indicates that the touch event was handled by the caller and should not trigger dismissing the menu. This allows for more flexible interactions where the caller can choose to handle touch events without automatically dismissing the menu.</li>
+</ul>
+<h3 id="fixed_2">Fixed<a class="headerlink" href="#fixed_2" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Fixed property name from <code>label_text</code> to <code>heading_text</code> in MorphDockedDatePickerField to better reflect its purpose and to align with common terminology for form fields. This change also involved updating internal logic to ensure that the correct property is used for setting the heading text of the date picker field.</li>
+</ul>
+<h2 id="0100-2026-02-18">[0.10.0] - 2026-02-18<a class="headerlink" href="#0100-2026-02-18" title="Permanent link">&para;</a></h2>
+<h3 id="added_3">Added<a class="headerlink" href="#added_3" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Added setting of active state to False on dropdown button when dropdown menu is dismissed to ensure visual state consistency.</li>
+<li>Added <code>_bound_leading_widget</code> property to MorphLeadingWidgetBehavior to store references to widgets with active property bindings.</li>
+<li>Added <code>_bound_trailing_widget</code> property to MorphTrailingWidgetBehavior to store references to widgets with active property bindings.</li>
+<li>Added unbinding of properties to previous leading/trailing widgets when they change.</li>
+<li>Added <code>refresh_widget()</code> function to morphui.utils.helpers that iterates through all attributes of a given widget and calls any method that starts with <code>'refresh_'</code>.</li>
+<li>Added visibility properties to composition behaviors.</li>
+</ul>
+<h3 id="changed_5">Changed<a class="headerlink" href="#changed_5" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Changed all composition behavior classes to inherit from EventDispatcher.</li>
+<li>Changed state-sensitive properties in composition behaviors from AliasProperties to StringProperty.</li>
+<li>Changed child widgets' state-sensitive properties to be bound to their behavior properties instead of using getter/setter methods.</li>
+<li>Changed MorphTextField to inherit from MorphDelegatedThemeBehavior, MorphLeadingWidgetBehavior, MorphTripleLabelBehavior, and MorphTrailingWidgetBehavior.</li>
+<li>Changed MorphFilterChip to no longer inherit from MorphIconBehavior due to changes in composition behaviors.</li>
+<li>Changed default spacing and padding of chips and their child widget classes.</li>
+<li>Changed defining the leading icon for recycled widgets to be done via <code>normal_leading_icon</code> instead of <code>leading_icon</code> (which only works at init).</li>
+<li>Improved naming in composition behaviors.</li>
+</ul>
+<h3 id="removed_2">Removed<a class="headerlink" href="#removed_2" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Removed obsolete getter and setter methods used for AliasProperties in composition behaviors.</li>
+<li>Removed obsolete <code>_update_icon</code> method from MorphFilterChip.</li>
+<li>Removed obsolete reinvented code from MorphTextField that is now covered by new behavior inheritance.</li>
+</ul>
+<h3 id="fixed_3">Fixed<a class="headerlink" href="#fixed_3" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Fixed bug where <code>label_text</code> was used instead of <code>heading_text</code> where needed.</li>
+</ul>
+<h2 id="090-2026-02-16">[0.9.0] - 2026-02-16<a class="headerlink" href="#090-2026-02-16" title="Permanent link">&para;</a></h2>
+<h3 id="added_4">Added<a class="headerlink" href="#added_4" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Added <code>explicit_color_properties</code> set to MorphColorThemeBehavior for tracking user-specified colors that should not be automatically updated by theme changes.</li>
+<li>Added <code>_detect_explicit_properties()</code> method to MorphColorThemeBehavior to auto-detect explicitly set color properties from kwargs during initialization.</li>
+<li>Added <code>_refresh_list_views()</code> method to MorphDockedDatePickerMenu for refreshing list views before displaying.</li>
+<li>Added 'disabled' theme style to <code>THEME.STYLES</code> constant.</li>
+</ul>
+<h3 id="changed_6">Changed<a class="headerlink" href="#changed_6" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Changed MorphColorThemeBehavior to give <code>theme_color_bindings</code> precedence over <code>theme_style</code>, allowing override of predefined theme style bindings.</li>
+<li>Changed all widgets to use <code>default_config.copy() | kwargs</code> pattern in <code>__init__</code>, replacing clean_config usage.</li>
+<li>Changed MorphDockedDatePickerMenu to inherit from MorphElevationBoxLayout.</li>
+<li>Changed MorphDockedDatePickerMenu to return to calendar view when a month is selected in month view.</li>
+<li>Changed MorphDockedDatePickerMenu to reposition menu when size changes to ensure it connects to caller.</li>
+<li>Changed MorphDockedDatePickerMenu to return to calendar view when using arrow keys while in list view (year or month).</li>
+<li>Changed MorphChartToolbar to inherit from MorphToggleButtonBehavior class.</li>
+<li>Changed MorphChartToolbar menu toggling to use active state instead of manual open/close.</li>
+<li>Changed composition behaviors to call <code>_update_icon</code> within refreshing leading or trailing widget methods.</li>
+<li>Changed ListView classes to use f-strings for Builder.load_string and define tree using <code>__name__</code> attribute.</li>
+<li>Changed all THEME.STYLES to have consistent disabled colors across all styles.</li>
+</ul>
+<h3 id="removed_3">Removed<a class="headerlink" href="#removed_3" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Removed <code>clean_config()</code> function from morphui.utils.helpers, replaced with dynamic explicit property tracking system.</li>
+<li>Removed obsolete <code>_update_content_layer</code> override from MorphDelegatedThemeBehavior.</li>
+</ul>
+<h3 id="fixed_4">Fixed<a class="headerlink" href="#fixed_4" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Fixed MorphDockedDatePickerMenu where highlighting and marking selected buttons when using text input instead of clicking on a button now works correctly.</li>
+<li>Fixed MorphDockedDatePickerMenu where wrong item had check mark when switching to list view; list view is now refreshed before entering.</li>
+<li>Fixed MorphDockedDatePickerMenu to set the correct item active when changing year or month using arrow buttons.</li>
+<li>Fixed MorphChartToolbar where menu was closed and reopened when clicking on button while menu was already open.</li>
+<li>Fixed MorphContentLayerBehavior where resetting <code>disabled_content_color</code> is now done in <code>_update_content_layer</code> method instead of <code>refresh_content</code> method with outdated color.</li>
+<li>Fixed MorphDelegatedThemeBehavior where delegating states are now done in <code>_update_current_state</code> method override instead of using bindings which didn't work properly.</li>
+</ul>
+<h2 id="080-2026-02-12">[0.8.0] - 2026-02-12<a class="headerlink" href="#080-2026-02-12" title="Permanent link">&para;</a></h2>
+<h3 id="added_5">Added<a class="headerlink" href="#added_5" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Added container theme style to <code>THEME.STYLES</code> constant.</li>
+<li>Added <code>_clear_active</code> and <code>set_active_by_text</code> methods to BaseDatePickerListView for updating each item when showing the view.</li>
+<li>Added getter and setter methods for <code>disabled_content_color</code> in MorphContentLayerBehavior.</li>
+<li>Added default <code>pos_hint={'center_y': 0.5}</code> for labels and buttons used within containers.</li>
+</ul>
+<h3 id="changed_7">Changed<a class="headerlink" href="#changed_7" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Changed buttons to use 'container' as <code>theme_style</code>.</li>
+<li>Changed MorphContentLayerBehavior's <code>disabled_content_color</code> to an AliasProperty to handle kivy native disabled colors.</li>
+<li>Changed MorphListItemFlat to also call refreshing state and interaction in <code>refresh_view_attrs</code> method.</li>
+<li>Changed MorphTextField where setting y position for leading and trailing widget is obsolete since widgets are centered by pos_hint.</li>
+<li>Changed MorphDropdownList to remove obsolete checking for children length within <code>set_focus_by_text</code> method.</li>
+</ul>
+<h3 id="removed_4">Removed<a class="headerlink" href="#removed_4" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Removed obsolete <code>get_resolved_content_color</code> method from MorphContentLayerBehavior since <code>_get_content_color</code> method exists for the <code>content_color</code> AliasProperty.</li>
+</ul>
+<h3 id="fixed_5">Fixed<a class="headerlink" href="#fixed_5" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Fixed MorphContentLayerBehavior where resetting <code>disabled_content_color</code> was done in <code>refresh_content</code> method with outdated color. Now resetting is done in <code>_update_content_layer</code> method.</li>
+<li>Fixed MorphDropdownMenu where dropdown reopened when clicking a caller. Now it checks if a ripple is in progress and only sets caller active state to False if no ripple is in progress.</li>
+</ul>
+<h2 id="070-2026-02-11">[0.7.0] - 2026-02-11<a class="headerlink" href="#070-2026-02-11" title="Permanent link">&para;</a></h2>
+<h3 id="added_6">Added<a class="headerlink" href="#added_6" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Added <code>hex_colormap</code> as DictProperty to ThemeManager to store registered seed colors.</li>
+<li>Added <code>available_seed_colors</code> as AliasProperty to ThemeManager that is bound to changes of hex_colormap.</li>
+<li>Added <code>colormap</code> as read-only property to ThemeManager to return a RGBA colormap derived from hex_colormap.</li>
+<li>Added <code>leading_scale_enabled</code> BooleanProperty to MorphLeadingWidgetBehavior as flag, whether scale animations are enabled for the leading widget.</li>
+<li>Added <code>on_pre_open</code> method to chart in which the flag <code>dismiss_allowed</code> is set to True.</li>
+<li>Added refreshing view from data in <code>on_pre_open</code> and in <code>on_pre_dismiss</code> to MorphDropdownMenu to ensure the view is up to date after a selection.</li>
+</ul>
+<h3 id="changed_8">Changed<a class="headerlink" href="#changed_8" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Changed ThemeManager's <code>is_dark_mode</code> to an AliasProperty so we can react to that when theme style changes (e.g. a theme toggle button can get active and normal state based on is_dark_mode status).</li>
+<li>Changed storing registered colors in ThemeManager to be handled locally instead of storing to kivy global colormap.</li>
+<li>Changed default theme_color_bindings for buttons.</li>
+<li>Changed predefined theme styles.</li>
+<li>Changed default border width to dp(0.5).</li>
+<li>Changed layer.py color retrieval to use a consistent method: tries to get the color for current state; if a specific color for the state is not set, it falls back to the normal color; if that is also not set it returns the transparent color.</li>
+</ul>
+<h2 id="060-2026-02-10">[0.6.0] - 2026-02-10<a class="headerlink" href="#060-2026-02-10" title="Permanent link">&para;</a></h2>
+<h3 id="added_7">Added<a class="headerlink" href="#added_7" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Added MorphDropdownButton class (a simple dropdown select button that can be used to trigger a dropdown menu).</li>
+<li>Added MorphSimpleBoxLayout class that is basic kivy BoxLayout with support for auto_sizing.</li>
+<li>Added MorphTripleLabelBehavior class for managing heading, supporting and tertiary label widgets.</li>
+<li>Added MorphHeadingLabel, MorphSupportingLabel and MorphTertiaryLabel classes.</li>
+<li>Added MorphListItem which provides a more complex layout than MorphListItemFlat with heading, supporting and tertiary labels.</li>
+<li>Added MorphToggleListItem that extends MorphListItem with toggling its active state.</li>
+<li>Added tests for MorphTripleLabelBehavior class.</li>
+</ul>
+<h3 id="changed_9">Changed<a class="headerlink" href="#changed_9" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Changed MorphDropdownList to set focus to lowest child at <code>on_arrow_up_press</code> method if none has focus.</li>
+<li>Changed Container classes to inherit from the new MorphSimpleBoxLayout.</li>
+<li>Changed attribute name from <code>default_child_widgets</code> to <code>default_child_classes</code> in Container.</li>
+<li>Changed MorphMenuMotionBehavior, moved presetting size from <code>_adjust_and_reposition</code> method into <code>_adjust_to_fit_window</code> method.</li>
+<li>Changed touch behavior, removed overlapping transition part for ripple in and out.</li>
+</ul>
+<h3 id="fixed_6">Fixed<a class="headerlink" href="#fixed_6" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Fixed MorphMenuMotionBehavior where presetting size before adjusting to window did not consider adjusting size to caller when <code>same_width_as_caller</code> was set to True.</li>
+</ul>
+<h2 id="050-2026-02-05">[0.5.0] - 2026-02-05<a class="headerlink" href="#050-2026-02-05" title="Permanent link">&para;</a></h2>
+<h3 id="added_8">Added<a class="headerlink" href="#added_8" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Added MorphScrollView class to scrollview.py module.</li>
+<li>Added MorphTabNavigationManagerBehavior and MorphTabNavigableBehavior for managing tab navigation between widgets.</li>
+<li>Added <code>is_empty</code> property to MorphDataViewTable to indicate when table has no data to show.</li>
+<li>Added attributes for top left and lower left widgets in MorphDataViewTable.</li>
+<li>Added <code>available_texts</code> property to BaseListView.</li>
+<li>Added <code>_clear_hover</code> method to MorphDropdownList.</li>
+<li>Added <code>_set_focus_by_text</code> method to MorphDropdownList.</li>
+<li>Added tests for refactored KeyPressBehavior.</li>
+<li>Added tests for MorphTabNavigableBehavior class.</li>
+<li>Added tests for MorphTabNavigationManagerBehavior.</li>
+</ul>
+<h3 id="changed_10">Changed<a class="headerlink" href="#changed_10" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Changed MorphStateBehavior's <code>update_available_states</code> method to bind and unbind only available states.</li>
+<li>Changed default <code>disabled_state_opacity</code> to 0.0 in MorphInteractionLayerBehavior.</li>
+<li>Changed all properties named <code>interaction_layer_</code> to <code>interaction_</code> in InteractionLayer.</li>
+<li>Changed property name from <code>delegate_to_children</code> to <code>delegated_children</code> in MorphDelegatedThemeBehavior.</li>
+<li>Changed method name from <code>_update_delegated_children</code> to <code>_setup_child_delegation</code> in MorphDelegatedThemeBehavior.</li>
+<li>Changed MorphDataViewTable to remove edges of top_left widget when table is empty.</li>
+<li>Changed MorphDropdownMenu to set current focus of current text at <code>on_pre_open</code> method.</li>
+<li>Changed MorphDropdownMenu to clear focus and hover state for all items at <code>on_dismiss</code> method.</li>
+<li>Changed MorphTabNavigableBehavior to automatically remove tabs in text property.</li>
+<li>Changed <code>return None</code> to <code>return</code> for early exit at functions and methods where no return value is expected.</li>
+<li>Removed tab handling from MorphKeyPressBehavior and moved to MorphTabNavigationManagerBehavior.</li>
+<li>Removed random added imports.</li>
+</ul>
+<h3 id="fixed_7">Fixed<a class="headerlink" href="#fixed_7" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Fixed delegating content in MorphDelegatedThemeBehavior which did not work correctly.</li>
+<li>Fixed MRO error by removing redundant base classes from MorphDataViewNavigationButton.</li>
+<li>Fixed MorphPlotWidget where calling home of navigation during double tap failed if there is no navigation.</li>
+<li>Fixed MorphTextField trying to recalculate layout when widget is on a Screen of ScreenManager and was never visible.</li>
+<li>Fixed MorphDropDownMenu where listview registered key presses even when it was not open.</li>
+<li>Fixed Composition behavior where getting and setting icons failed for recycled widgets, using wrong icons for setting new ones.</li>
+</ul>
+<h2 id="040-2026-01-29">[0.4.0] - 2026-01-29<a class="headerlink" href="#040-2026-01-29" title="Permanent link">&para;</a></h2>
+<h3 id="added_9">Added<a class="headerlink" href="#added_9" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Added key press behavior to MorphDropdownList to allow navigation and selection using keyboard arrows and enter key.</li>
+<li>Added focus state flag to MorphListItemFlat to visually indicate when an item is focused.</li>
+<li>Added MorphKeyPressBehavior inheritance to BaseListView.</li>
+<li>Added overloads for clamp function in helpers module.</li>
+<li>Added default item_release_callback for MorphDropdownFilterField, setting on_item_release method as the default.</li>
+</ul>
+<h3 id="fixed_8">Fixed<a class="headerlink" href="#fixed_8" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Fixed an issue where the filter_value property in Dropdown was set to wrong child widget, preventing filtering from working.</li>
+<li>Fixed MorphTooltip not dismissing anymore after introduction of MorphMenuBehavior.</li>
+</ul>
+<h3 id="changed_11">Changed<a class="headerlink" href="#changed_11" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Changed binding of hovering flag to dismiss_allowed flag for Tooltip.</li>
+<li>Changed binding of focus flag to dismiss_allowed flag for Dropdown.</li>
+</ul>
+<h3 id="removed_5">Removed<a class="headerlink" href="#removed_5" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Removed on_open override in Dropdown to keep it available for further customization.</li>
+</ul>
+<h2 id="031-2026-01-21">[0.3.1] - 2026-01-21<a class="headerlink" href="#031-2026-01-21" title="Permanent link">&para;</a></h2>
+<h3 id="added_10">Added<a class="headerlink" href="#added_10" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Added active state to OverlayState.</li>
+<li>Added active_overlay_edge_color property to MorphOverlayLayerBehavior.</li>
+</ul>
+<h3 id="fixed_9">Fixed<a class="headerlink" href="#fixed_9" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Fixed an issue where the datepicker menu would not dismiss correctly when the text field lost focus.</li>
+<li>Fixed overlay layer not updating correctly on state change in MorphOverlayLayerBehavior.</li>
+<li>Fixed MorphMenuMotionBehavior to schedule calling dismiss in on_touch_up() method to ensure it registers allowing_dismiss when clicking outside of caller and menu.</li>
+</ul>
+<h3 id="changed_12">Changed<a class="headerlink" href="#changed_12" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Changed MorphMenuMotionBehavior to set dismiss_allowed to False before opening.</li>
+<li>Changed MorphMenuMotionBehavior to dispatch on_open after animation.</li>
+<li>Changed MorphMenuMotionBehavior to dispatch on_dismiss after animation.</li>
+</ul>
+<h3 id="removed_6">Removed<a class="headerlink" href="#removed_6" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Removed override of on_touch_down() method from MorphMenuMotionBehavior.</li>
+</ul>
+<h2 id="030-2026-01-19">[0.3.0] - 2026-01-19<a class="headerlink" href="#030-2026-01-19" title="Permanent link">&para;</a></h2>
+<h3 id="added_11">Added<a class="headerlink" href="#added_11" title="Permanent link">&para;</a></h3>
+<ul>
+<li>The module datepicker.py was added to MorphUI which provides a date picker widget with single and range selection modes.</li>
+<li>The MorphScreenManager was added to MorphUI which extends the Kivy ScreenManager with MorphUI theming and transitions.</li>
+<li>The MorphDelegatedThemeBehavior was added to MorphUI which allows delegating theming properties to a target widget.</li>
+<li>The MorphHighlightLayerBehavior was added to MorphUI which provides a highlight layer for widgets.</li>
+</ul>
+<h3 id="changed_13">Changed<a class="headerlink" href="#changed_13" title="Permanent link">&para;</a></h3>
+<ul>
+<li>The default configuration for some buttons and labels was changed.</li>
+</ul>
+<h3 id="fixed_10">Fixed<a class="headerlink" href="#fixed_10" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Fixed missing inheritance of MorphContentLayerBehavior for MorphSimpleiconButton</li>
+<li>Storing original size and size_hint was a list instead of a tuple which leads to unpredictable behaviors when using MorphSizeBoundsBehavior.</li>
+</ul>
+<h2 id="020-2026-01-06">[0.2.0] - 2026-01-06<a class="headerlink" href="#020-2026-01-06" title="Permanent link">&para;</a></h2>
+<h3 id="added_12">Added<a class="headerlink" href="#added_12" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Added themeing support for MorphUI widgets.</li>
+<li>Added uix folder for MorphUI widgets.</li>
+<li>Added utility functions for MorphUI.</li>
+<li>Added dataviews for MorphUI.</li>
+<li>Added visualizations for MorphUI.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href=".." class="md-footer__link md-footer__link--prev" aria-label="Previous: Welcome">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Welcome
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../guides/" class="md-footer__link md-footer__link--next" aria-label="Next: Getting Started">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Getting Started
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["search.suggest", "search.highlight", "search.share", "content.tabs.link", "content.tooltips", "content.code.annotate", "content.code.copy", "content.code.select", "navigation.indexes", "navigation.tabs", "navigation.sections", "navigation.path", "navigation.top", "navigation.footer", "toc.follow"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../javascripts/mathjax.js"></script>
+      
+        <script src="https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>
