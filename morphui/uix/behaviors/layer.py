@@ -1278,13 +1278,12 @@ class MorphInteractionLayerBehavior(BaseLayerBehavior):
         self.interaction_color = [0, 0, 0, 0]  # Trigger update
 
     def apply_interaction(self, state: InteractionState) -> None:
-        """Apply the interaction layer color for the specified state
-        with the given opacity.
+        """Apply the interaction layer color for the specified state.
 
         This method sets the interaction layer color based on the 
-        widget's current theme (light or dark) and the specified 
-        opacity. It is called when a state becomes active to visually
-        indicate that state.
+        widget's current theme (light or dark) and the state's
+        configured opacity. It is called when a state becomes active
+        to visually indicate that state.
 
         Parameters
         ----------
@@ -1292,10 +1291,6 @@ class MorphInteractionLayerBehavior(BaseLayerBehavior):
                 'disabled', 'pressed', 'focus', 'hovered', 'active']
             The interactive state that is being applied. This should be
             one of the states defined in :attr:`supported_states`.
-        opacity : float
-            The opacity of the state layer, specified as a float
-            between 0 and 1. A value of 0 means no state layer, while a
-            value of 1 means a fully opaque state layer.
 
         Examples
         --------

@@ -32,13 +32,7 @@ __all__ = [
 
 
 class MorphChartInfoLabel(MorphSimpleLabel):
-    """Label to show chart information in a MorphChartCard
-    
-    Parameters
-    ----------
-    text : str
-        Text to display in the label.
-    """
+    """Label to show chart information in a MorphChartCard."""
     default_config: Dict[str, Any] = dict(
         theme_color_bindings=dict(
             normal_content_color='content_primary_fixed_variant_color',),

@@ -59,7 +59,7 @@ class MorphPlotWidget(
     This focused approach provides theming and styling capabilities while avoiding
     unnecessary behaviors like interaction layers, content layers, or auto-sizing.
     
-    Parameters
+    Attributes
     ----------
     figure : `~matplotlib.figure.Figure`
         The top level container for all the plot elements.

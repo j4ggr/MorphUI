@@ -80,10 +80,10 @@ Complete auto-generated API documentation for all public MorphUI modules.
 | [`morphui.uix.behaviors.motion`][morphui.uix.behaviors.motion] | Animation motion behaviors |
 | [`morphui.uix.behaviors.sizing`][morphui.uix.behaviors.sizing] | Auto-sizing and size bounds |
 | [`morphui.uix.behaviors.composition`][morphui.uix.behaviors.composition] | Leading/trailing/label widget composition |
-| `morphui.uix.behaviors.elevation` | Drop shadow elevation |
-| `morphui.uix.behaviors.shape` | Scale and rounded sides |
-| `morphui.uix.behaviors.declarative` | Declarative widget tree construction |
-| `morphui.uix.behaviors.appreference` | App and theme manager access |
+| [`morphui.uix.behaviors.elevation`][morphui.uix.behaviors.elevation] | Drop shadow elevation |
+| [`morphui.uix.behaviors.shape`][morphui.uix.behaviors.shape] | Scale and rounded sides |
+| [`morphui.uix.behaviors.declarative`][morphui.uix.behaviors.declarative] | Declarative widget tree construction |
+| [`morphui.uix.behaviors.appreference`][morphui.uix.behaviors.appreference] | App and theme manager access |
 
 ## Theme
 
@@ -97,7 +97,7 @@ Complete auto-generated API documentation for all public MorphUI modules.
 
 | Module | Description |
 |---|---|
-| `morphui.utils.helpers` | General utility functions |
-| `morphui.utils.animations` | Animation helpers |
-| `morphui.utils.dotdict` | Dot-access dictionary |
-| `morphui.constants` | Framework-wide constants |
+| [`morphui.utils.helpers`][morphui.utils.helpers] | General utility functions |
+| [`morphui.utils.animations`][morphui.utils.animations] | Animation helpers |
+| [`morphui.utils.dotdict`][morphui.utils.dotdict] | Dot-access dictionary |
+| [`morphui.constants`][morphui.constants] | Framework-wide constants |

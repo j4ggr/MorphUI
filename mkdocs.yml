@@ -156,10 +156,16 @@ nav:
     - Motion: behaviors/motion.md
     - Sizing: behaviors/sizing.md
     - Composition: behaviors/composition.md
+    - Elevation: behaviors/elevation.md
+    - Scale & Shape: behaviors/shape.md
+    - Declarative: behaviors/declarative.md
+    - App Reference: behaviors/appreference.md
   - Theme:
     - Overview: theme/index.md
     - Manager: theme/manager.md
     - Palette: theme/palette.md
     - Typography: theme/typography.md
   - Application: app.md
+  - Utilities: utils.md
+  - Constants: constants.md
   - API Reference: api/index.md
