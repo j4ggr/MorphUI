@@ -392,10 +392,8 @@ class MorphPlotWidget(
 
     def on_figure(self, caller: Self, figure: Figure) -> None:
         """Callback function, called when `figure` attribute changes."""
-        self.texture = None
         self.figure_canvas = FigureCanvas(figure, plot_widget=self)
-        self.figure_canvas.draw()
-        self.size = list(map(float, self.figure.bbox.size)) # type: ignore
+        self.texture = Texture.create(size=self.size,)
         self._update_figure_size(self, self.size)
 
     def _update_figure_size(self, caller: Self, size: List[float]) -> None:
@@ -404,9 +402,6 @@ class MorphPlotWidget(
             return
         
         fig_size = (size[0] / self.figure.dpi, size[1] / self.figure.dpi)
-        if tuple(self.figure.get_size_inches()) == fig_size:
-            return
-
         self.figure.set_size_inches(*fig_size, forward=True)
         self.figure_canvas.resize_event()
         self.figure_canvas.draw()
