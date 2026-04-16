@@ -12,7 +12,10 @@ MorphScrimLayer
 MorphDialog
     Modal dialog container with open/dismiss animation.
 """
+from types import TracebackType
 from typing import List
+from typing import Self
+from typing import Type
 
 from textwrap import dedent
 
@@ -80,6 +83,9 @@ class MorphDialog(
     The dialog includes a scrim layer that appears behind it to focus 
     the user's attention on the dialog content and reduce distractions 
     from the background interface.
+
+    The dialog supports animated entry and exit, and can be used in a
+    `with` statement to ensure proper opening and closing.
     """
 
     def _get_scrim_color(self) -> List[float]:
@@ -178,3 +184,44 @@ class MorphDialog(
         if self._scrim_widget.parent:
             Window.remove_widget(self._scrim_widget)
         super()._remove_from_window(*args)
+
+    def __enter__(self) -> Self:
+        """Enter the runtime context related to this object.
+
+        This method is called when the dialog is used in a `with` 
+        statement. It opens the dialog and returns the dialog instance
+        for use within the block.
+
+        Returns
+        -------
+        MorphDialog
+            The dialog instance that was opened.
+        """
+        self.open()
+        return self
+    
+    def __exit__(
+            self,
+            exc_type: Type[BaseException] | None,
+            exc_value: BaseException | None,
+            traceback: TracebackType | None
+            ) -> None:
+        """Exit the runtime context related to this object.
+
+        This method is called when the block of code within a `with`
+        statement using the dialog is exited. It dismisses the dialog,
+        ensuring that it is properly closed and removed from the window.
+
+        Parameters
+        ----------
+        exc_type :  Type[BaseException] | None
+            The exception type, if an exception was raised within the 
+            block.
+        exc_value : BaseException | None
+            The exception instance, if an exception was raised within 
+            the block.
+        traceback : TracebackType | None
+            The traceback object, if an exception was raised within the 
+            block.
+        """
+        self.dismiss()
