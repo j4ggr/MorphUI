@@ -1,4 +1,5 @@
 from typing import List
+from typing import Callable
 
 from kivy.metrics import dp
 from kivy.event import EventDispatcher
@@ -7,6 +8,7 @@ from kivy.graphics import PopMatrix
 from kivy.graphics import PushMatrix
 from kivy.animation import Animation
 from kivy.properties import ListProperty
+from kivy.properties import AliasProperty
 from kivy.properties import StringProperty
 from kivy.properties import BooleanProperty
 from kivy.properties import NumericProperty
@@ -367,6 +369,32 @@ class MorphScaleBehavior(EventDispatcher):
     or :meth:`animate_scale_out`.
     """
 
+    _is_scaling: bool = BooleanProperty(False)
+    """Internal flag to indicate if a scale animation is currently in 
+    progress. This can be used to prevent overlapping animations or to 
+    trigger certain actions only when the widget is not in the middle of 
+    a scaling animation.
+    """
+    
+    is_scaling: bool = AliasProperty(
+        lambda self: self._is_scaling,
+        None,
+        bind=['_is_scaling'])
+    """Indicates whether a scale animation is currently in progress
+    (read-only).
+
+    This property is set to True when a scale animation starts and is
+    set back to False when the animation completes. It can be used to
+    check if the widget is currently being scaled, which can be useful 
+    for preventing multiple overlapping animations or for triggering 
+    certain actions only when the widget is not in the middle of a 
+    scaling animation.
+
+    :attr:`is_scaling` is a read-only
+    :class:`~kivy.properties.AliasProperty` that reflects the value of
+    the internal :attr:`_is_scaling` property.
+    """
+
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         with self.canvas.before:
@@ -450,6 +478,7 @@ class MorphScaleBehavior(EventDispatcher):
         Animation.stop_all(
             self, 'scale_factor_x', 'scale_factor_y', 'scale_factor_z')
         
+        self._is_scaling = True
         self.opacity = 0.0
         self.scale_factor_x = 0.0
         self.scale_factor_y = 0.0
@@ -462,10 +491,8 @@ class MorphScaleBehavior(EventDispatcher):
             scale_factor_z=1.0,
             duration=self.scale_animation_duration,
             transition=self.scale_animation_transition)
-        
-        if callback:
-            anim.bind(on_complete=callback)
-            
+        anim.bind(
+            on_complete=lambda *args: self._scale_animation_complete(callback))
         anim.start(self)
         return anim
 
@@ -505,6 +532,7 @@ class MorphScaleBehavior(EventDispatcher):
         Animation.stop_all(
             self, 'scale_factor_x', 'scale_factor_y', 'scale_factor_z')
         
+        self._is_scaling = True
         self.opacity = 1.0
         self.scale_factor_x = 1.0
         self.scale_factor_y = 1.0
@@ -517,9 +545,25 @@ class MorphScaleBehavior(EventDispatcher):
             scale_factor_z=0.0,
             duration=self.scale_animation_duration,
             transition=self.scale_animation_transition)
-        
-        if callback:
-            anim.bind(on_complete=callback)
-            
+        anim.bind(
+            on_complete=lambda *args: self._scale_animation_complete(callback))
         anim.start(self)
         return anim
+
+    def _scale_animation_complete(
+            self, callback: Callable | None = None) -> None:
+        """Callback for when a scale animation completes.
+
+        This method is called when a scale animation completes. It can 
+        be used to perform any necessary cleanup after the animation,
+        such as resetting properties or calling a user-defined callback.
+
+        Parameters
+        ----------
+        callback : callable, optional
+            A function to call after the animation completes. This is the
+            same callback that can be passed to the animation methods.
+        """
+        self._is_scaling = False
+        if callable(callback):
+            callback()
