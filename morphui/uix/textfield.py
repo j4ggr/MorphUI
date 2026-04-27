@@ -689,17 +689,6 @@ class MorphTextField(
     :class:`~kivy.properties.OptionProperty` and defaults to 
     'float_to_border'."""
 
-    _text_input_padding: List[float] = VariableListProperty(dp(0), length=4)
-    """The padding around the internal text input widget.
-
-    This property defines the padding space around the internal
-    :class:`MorphTextInput` widget within the text field. It is used
-    for layout calculations and positioning. The padding is defined
-    as [left, bottom, right, top].
-
-    :attr:`_text_input_padding` is a
-    :class:`~kivy.properties.VariableListProperty` of length 4."""
-
     text_input_default_padding: List[float] = VariableListProperty(
         [dp(8), dp(8), dp(8), dp(8)], length=4)
     """The default padding values around the internal text input widget.
@@ -744,7 +733,7 @@ class MorphTextField(
     minimum_width: float = AliasProperty(
         lambda self: (
             self._text_input_min_width),
-        bind=['size', '_text_input_padding', '_text_input_min_width'],
+        bind=['size', '_text_input_min_width'],
         cache=True)
     """The minimum width of the text field (read-only).
 
@@ -757,7 +746,7 @@ class MorphTextField(
     minimum_height: float = AliasProperty(
         lambda self: (
             self._text_input_height),
-        bind=['size', '_text_input_padding', '_text_input_height'],
+        bind=['size', '_text_input_height'],
         cache=True)
     """The minimum height of the text field (read-only).
 
