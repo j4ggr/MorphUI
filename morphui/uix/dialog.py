@@ -16,6 +16,7 @@ from types import TracebackType
 from typing import List
 from typing import Self
 from typing import Type
+from typing import Literal
 
 from textwrap import dedent
 
@@ -26,6 +27,7 @@ from kivy.properties import ColorProperty
 from kivy.properties import AliasProperty
 from kivy.properties import ObjectProperty
 from kivy.core.window import Window
+from kivy.input.motionevent import MotionEvent
 
 from morphui.uix.boxlayout import MorphElevationBoxLayout
 from morphui.uix.behaviors import MorphSizeBoundsBehavior
@@ -67,6 +69,21 @@ class MorphScrimLayer(Widget):
                     pos: self.pos
                     size: self.size
         '''))
+
+    def on_touch_down(self, touch: MotionEvent) -> Literal[True] | None:
+        if self.collide_point(*touch.pos):
+            return True
+        return super().on_touch_down(touch)
+
+    def on_touch_move(self, touch: MotionEvent) -> Literal[True] | None:
+        if self.collide_point(*touch.pos):
+            return True
+        return super().on_touch_move(touch)
+
+    def on_touch_up(self, touch: MotionEvent) -> Literal[True] | None:
+        if self.collide_point(*touch.pos):
+            return True
+        return super().on_touch_up(touch)
 
 
 class MorphDialog(

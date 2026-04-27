@@ -792,10 +792,6 @@ class MorphTextField(
     This widget handles the actual text input functionality and is
     managed internally by the MorphTextField class."""
 
-    _heading_initial_color_bindings: dict[str, str] = {}
-    """Stores the initial color bindings of the heading widget for
-    restoration after focus changes."""
-
     _heading_initial_font_size: float = sp(1)
     """Stores the initial font size of the heading widget for
     restoration after focus changes."""
@@ -840,8 +836,6 @@ class MorphTextField(
         for child in self.delegated_children:
             self.add_widget(child)
 
-        self._heading_initial_color_bindings = (
-            self.heading_widget.theme_color_bindings.copy())
         self._heading_initial_font_size = self.heading_widget.font_size
         if self.selected_text_color is None:
             self.selected_text_color = self._text_input.selection_color
