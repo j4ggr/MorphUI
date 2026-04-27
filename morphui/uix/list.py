@@ -1,6 +1,7 @@
 from typing import Any
 from typing import Dict
 from typing import List
+from typing import Literal
 from typing import Callable
 
 from kivy.metrics import dp
@@ -10,6 +11,7 @@ from kivy.properties import AliasProperty
 from kivy.properties import ObjectProperty
 from kivy.properties import BooleanProperty
 from kivy.properties import NumericProperty
+from kivy.properties import OptionProperty
 from kivy.uix.recycleview import RecycleView
 from kivy.uix.recycleview.views import RecycleDataViewBehavior
 
@@ -354,6 +356,49 @@ class MorphListLayout(
         super().__init__(**config)
 
 
+def filter_item(
+        item_text: str,
+        filter_value: str,
+        filter_mode: str = 'fuzzy') -> bool:
+    """Determine if an item text should be filtered out.
+
+    Parameters
+    ----------
+    item_text : str
+        The text of the item to test.
+    filter_value : str
+        The query string typed by the user.
+    filter_mode : str, optional
+        The matching strategy to apply:
+
+        - ``'fuzzy'`` (default): the query characters must appear in
+          the item text as an in-order subsequence (case-insensitive).
+        - ``'contains'``: the query must be a case-insensitive
+          substring of the item text.
+        - ``'prefix'``: the item text must start with the query
+          (case-insensitive).
+
+    Returns
+    -------
+    bool
+        ``True`` if the item should be filtered out (no match),
+        ``False`` if it should be kept (match).
+    """
+    if not filter_value:
+        return False
+
+    query = filter_value.lower()
+    text = item_text.lower()
+
+    if filter_mode == 'contains':
+        return query not in text
+    elif filter_mode == 'prefix':
+        return not text.startswith(query)
+    else:  # fuzzy
+        it = iter(text)
+        return not all(c in it for c in query)
+
+
 class BaseListView(
         MorphKeyPressBehavior,
         MorphIdentificationBehavior,
@@ -375,6 +420,24 @@ class BaseListView(
 
     :attr:`filter_value` is an :class:`~kivy.properties.ObjectProperty`
     and defaults to an empty string."""
+
+    filter_mode: Literal['fuzzy', 'contains', 'prefix'] = OptionProperty(
+        'fuzzy', options=['fuzzy', 'contains', 'prefix'])
+    """The matching strategy used when filtering items.
+
+    Controls how :attr:`filter_value` is compared against each item's
+    text when :meth:`should_filter_item` is evaluated:
+
+    - ``'fuzzy'`` (default): the query characters must appear in the
+      item text as an in-order subsequence (case-insensitive).
+    - ``'contains'``: the query must be a case-insensitive substring
+      of the item text.
+    - ``'prefix'``: the item text must start with the query
+      (case-insensitive).
+
+    :attr:`filter_mode` is a :class:`~kivy.properties.OptionProperty`
+    and defaults to ``'fuzzy'``.
+    """
 
     item_release_callback: Callable[[Any, int], None] | None = ObjectProperty(None)
     """Callback function invoked when an item is released.
@@ -455,6 +518,7 @@ class BaseListView(
         bind=[
             '_source_items',
             'filter_value',
+            'filter_mode',
             'item_release_callback'])
     """The list of items to display in the list view.
 
@@ -548,12 +612,8 @@ class BaseListView(
             `True` if the item should be filtered out, `False`
             otherwise.
         """
-        if not self.filter_value:
-            return False
-        
-        filter_val = str(self.filter_value).lower()
-        item_text = str(item.get('text', item.get('label_text', ''))).lower()
-        return filter_val not in item_text
+        item_text = str(item.get('text', item.get('label_text', '')))
+        return filter_item(item_text, str(self.filter_value), self.filter_mode)
     
     def refresh_data(self, *args) -> None:
         """Refresh the displayed data in the list view.
