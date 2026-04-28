@@ -25,6 +25,7 @@ from typing import Any
 from typing import Dict
 from typing import List
 from typing import Tuple
+from typing import Literal
 
 from kivy.clock import Clock
 from kivy.event import EventDispatcher
@@ -83,7 +84,7 @@ __all__ = [
     'MorphTextFieldFilled',]
 
 
-NO_ERROR = 'none'
+NO_ERROR: Literal['none'] = 'none'
 """Constant representing no error state."""
 
 
@@ -789,22 +790,20 @@ class MorphTextField(
     """Stores the size factor of the heading widget for scaling purposes."""
 
     def __init__(self, **kwargs) -> None:
-        config = self.default_config.copy() | kwargs
-
         child_widgets = dict(
             heading_widget=MorphTextFieldHeadingLabel,
             supporting_widget=MorphTextFieldSupportingLabel,
             tertiary_widget=MorphTextFieldTertiaryLabel,
             leading_widget=MorphTextFieldLeadingIconLabel,
             trailing_widget=MorphTextFieldTrailingIconButton,)
-        config |= {
-            prop_name: widget() for prop_name, widget in child_widgets.items() 
-            if prop_name not in config}
+        config = (
+            self.default_config.copy()
+            | {k: v() for k, v in child_widgets.items()  if k not in kwargs}
+            | kwargs)
+        _bindings = config.get('theme_color_bindings') or {}
+        color_bindings = {p: c  for p, c in _bindings.items() if 'content' in p}
 
         super().__init__(**config)
-        color_bindings = config.get('theme_color_bindings') or {}
-        color_bindings = {
-            p: c  for p, c in color_bindings.items() if 'content' in p}
         self._text_input = MorphTextInput(
             theme_color_bindings=dict(
                 normal_surface_color='transparent_color',
