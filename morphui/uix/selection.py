@@ -221,18 +221,27 @@ class MorphSwitch(
             size=self._update_thumb,)
         self._update_thumb()
 
-    def _do_press(self, *args) -> None:
-        """Handle the `pressed` event to toggle the switch state.
+    def _do_press(self, pos: Tuple[float, float]) -> None:
+        """Internal method to handle press logic.
 
-        This method is called when the switch is pressed, toggling
-        its `active` state.
+        This method sets the :attr:`pressed` state to True. If 
+        ripple behavior is enabled, it also triggers the ripple effect 
+        at the specified position. Finally, it updates the thumb's 
+        layout to reflect the pressed state.
 
         Parameters
         ----------
-        instance : Any
-            The instance of the widget that was pressed.
+        pos : Tuple[float, float]
+            The position where the press action occurred, used for
+            triggering the ripple effect if enabled.
+
+        Notes
+        -----
+        This implementation is based on Kivy button behavior's, see
+        :meth:`~kivy.uix.behaviors.ButtonBehavior._do_press`
+
         """
-        super()._do_press(*args)
+        super()._do_press(pos)
         self._update_thumb()
 
     def _resolve_thumb_diameter(self) -> float:
