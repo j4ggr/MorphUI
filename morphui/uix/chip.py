@@ -88,8 +88,8 @@ class MorphChip(
             self.layout = MorphFloatLayout(
                 MorphChip(
                     identity='chip',
-                    leading_icon='language-python',
-                    trailing_icon='close',
+                    normal_leading_icon='language-python',
+                    normal_trailing_icon='close',
                     label_text='Python Chip',
                     pos_hint={'center_x': 0.5, 'center_y': 0.6},
                     theme_color_bindings=dict(
@@ -222,14 +222,6 @@ class MorphFilterChip(
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
-    
-    # def _update_icon(self, *args) -> None:
-    #     """Update the leading icon based on the toggle state.
-
-    #     This method switches the leading icon between `normal_icon` and
-    #     `active_icon` depending on whether the chip is active or not.
-    #     """
-    #     self.leading_icon = self.icon
 
 
 class MorphInputChip(MorphChip):
@@ -260,7 +252,7 @@ class MorphInputChip(MorphChip):
 
     default_config: Dict[str, Any] = (
         MorphChip.default_config.copy() | dict(
-        trailing_icon='close',))
+        normal_trailing_icon='close',))
     """Default configuration for the :class:`MorphInputChip` component."""
 
     __events__ = (
