@@ -943,7 +943,7 @@ class MorphDropdownMultiselect(
             self.dropdown_menu.items = items + [{'label_text': option}]
         self._update_layout()
     
-    def validate(self, *args) -> bool:
+    def validate(self, text: str) -> bool:
         """Validate the current text input.
 
         This method checks the current text input against the defined
@@ -954,13 +954,13 @@ class MorphDropdownMultiselect(
         bool
             True if the input is valid, False otherwise.
         """
-
+        error = False
+        error_type = NO_ERROR
         if self.required and not self.selected_options:
-            self.error = True
-            self.error_type = 'required'
-            return False
+            error = True
+            error_type = 'required'
         
-        self.error = False
-        self.error_type = NO_ERROR
-        return True
+        self.error = error
+        self.error_type = error_type
+        return not error
 

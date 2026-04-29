@@ -1016,6 +1016,7 @@ class MorphTextField(
             pos=self._update_layout,
             padding=self._update_layout,
             spacing=self._update_layout,
+            engaged=self._trigger_validation,
             focus=lambda *args: Clock.schedule_once(self._animate_on_focus),
             selected_text_color=self._update_selection_color,
             selected_text_color_opacity=self._update_selection_color,
@@ -1314,20 +1315,15 @@ class MorphTextField(
         error_text = self.supporting_error_texts.get(self.error_type, '')
         self.supporting_text = error_text
 
-    def on_text(self, instance: Any, text: str) -> None:
-        """Fired when the text content changes.
+    def _trigger_validation(self, *args) -> None:
+        """Trigger validation of the text field content.
 
-        This method updates the tertiary text to reflect the
-        current length of the text input.
-
-        Parameters
-        ----------
-        instance : Any
-            The instance of the text field.
-        text : str
-            The new text content of the text field.
+        This method is called when the text field becomes engaged 
+        (focused). It triggers the validation of the text field content 
+        by calling the :attr:`validate` method with the current text. It
+        also updates the tertiary text based on the maximum text length.
         """
-        self.validate(text)
+        self.validate(self._text_input.text)
         self._update_tertiary_text(self, self.max_text_length)
 
 

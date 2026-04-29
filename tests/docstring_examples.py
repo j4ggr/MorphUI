@@ -35,6 +35,7 @@ class MyApp(MorphApp):
                 items=[
                     {'label_text': i} 
                     for i in ['Item 1', 'Item 2', 'Item 3']],
+                required=True,
                 pos_hint={'center_x': 0.5, 'center_y': 0.5},),
             normal_surface_color=self.theme_manager.surface_color,)
 
