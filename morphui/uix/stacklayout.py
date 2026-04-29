@@ -1,8 +1,9 @@
 from kivy.uix.stacklayout import StackLayout
 
 from morphui.uix.behaviors import MorphColorThemeBehavior
-from morphui.uix.behaviors import MorphSurfaceLayerBehavior
 from morphui.uix.behaviors import MorphDeclarativeBehavior
+from morphui.uix.behaviors import MorphSurfaceLayerBehavior
+from morphui.uix.behaviors import MorphAutoSizingBehavior
 
 
 __all__ = [
@@ -13,6 +14,7 @@ class MorphStackLayout(
         MorphDeclarativeBehavior,
         MorphColorThemeBehavior,
         MorphSurfaceLayerBehavior,
+        MorphAutoSizingBehavior,
         StackLayout):
     """A StackLayout that supports declarative child widgets via
     :class:`~morphui.uix.behaviors.MorphDeclarativeBehavior`.

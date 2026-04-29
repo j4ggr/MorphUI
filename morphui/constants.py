@@ -188,7 +188,7 @@ class _Name_:
     """Canvas instruction group for the text content in a text field
     component."""
 
-    # Identifiers for component parts
+    # Identifiers for component parts #TODO: Remove identifiers since it can exist only one of each part in a component. Use class name instead for identification.
     INPUT: Literal['input'] = 'input'
     """Standard name for the text input area in a text field component,
     used for identification."""
