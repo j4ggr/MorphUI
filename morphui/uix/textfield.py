@@ -425,7 +425,7 @@ class MorphTextInput(
     :attr:`minimum_height` is a :class:`~kivy.properties.AliasProperty`.
     """
 
-    maximum_height: int = NumericProperty(dp(300))
+    maximum_height: float = NumericProperty(dp(300))
     """The maximum height of the TextInput when auto_height is enabled.
 
     Sets the upper limit for the height of the TextInput when
@@ -713,61 +713,18 @@ class MorphTextField(
     :attr:`padding` is a :class:`~kivy.properties.VariableListProperty`
     of length 4 and defaults to [dp(4), dp(4), dp(4), dp(4)]."""
 
-    _text_input_padding: List[float] = VariableListProperty(
+    input_widget_padding: List[float] = VariableListProperty(
         [dp(4), dp(4), dp(4), dp(4)], length=4)
-    """The padding values around the internal text input widget.
+    """The padding values around the internal input widget.
 
     This property defines the base padding space that is applied around
     the internal :class:`MorphTextInput` widget before any adjustments
     for icons or other widgets. The padding is defined as
     [left, top, right, bottom].
 
-    :attr:`text_input_padding` is a
+    :attr:`input_widget_padding` is a
     :class:`~kivy.properties.VariableListProperty` of length 4 and
-    defaults to [dp(8), dp(8), dp(8), dp(8)]."""
-
-    def _get_text_input_padding(self) -> List[float]:
-        """Get the base padding values for the internal text input 
-        widget.
-
-        This method returns the base padding values defined in
-        :attr:`_text_input_padding`. It also applies adjustments to the
-        top and bottom padding based on the :attr:`heading_focus_behavior`
-        and whether the text field is currently engaged (focused). If 
-        the heading_focus_behavior is set to 'move_above' and the text
-        field is engaged, it increases the top padding to create space
-        for the heading to move above the input area and decreases the
-        bottom padding to maintain overall height.
-
-        Returns
-        -------
-        List[float]
-            The base padding values for the internal text input widget.
-        """
-        padding = self._text_input_padding.copy()
-        if self.heading_focus_behavior == 'move_above' and self.engaged:
-            padding[1] += dp(16)
-            padding[3] -= dp(4)
-        return padding
-
-    text_input_padding: List[float] = AliasProperty(
-        _get_text_input_padding,
-        None,
-        bind=[
-            'heading_focus_behavior',
-            'engaged',
-            '_text_input_padding'],
-        cache=True)
-    """The effective padding values for the internal text input widget
-    (read-only).
-
-    This property calculates the effective padding for the internal
-    text input widget based on the current state of the text field,
-    including the heading focus behavior and engagement state.
-
-    :attr:`text_input_padding` is a
-    :class:`~kivy.properties.AliasProperty` of length 4 and is read-only.
-    """
+    defaults to [dp(4), dp(4), dp(4), dp(4)]."""
 
     def _get_input_margin(self) -> Tuple[float, float, float, float]:
         """Calculate the margin values for the internal input widget.
@@ -792,9 +749,8 @@ class MorphTextField(
             right += self.trailing_widget.width + self.spacing[0]
 
         if self.heading_focus_behavior == 'move_above' and self.engaged:
-            vertical_shift = - dp(4)
-            top += self.heading_widget.height + self.spacing[1] + vertical_shift
-            bottom += vertical_shift
+            top += bottom
+            bottom = 0
         
         return (left, top, right, bottom)
 
@@ -807,7 +763,7 @@ class MorphTextField(
             'padding',
             'spacing',
             'heading_focus_behavior',
-            'engaged',],)
+            'engaged',])
     """The margin values applied to the internal input widget
     (read-only).
 
@@ -892,7 +848,6 @@ class MorphTextField(
             self._input_height
             + self.input_margin[1]
             + self.input_margin[3])
-        print(f"Calculated minimum height: {minimum_height} (input height: {self._input_height}, input margin: {self.input_margin})")
         return minimum_height
     
     minimum_height: float = AliasProperty(
@@ -936,8 +891,7 @@ class MorphTextField(
         bind=[
             'pos',
             'size',
-            'padding'],
-        cache=True)
+            'padding'])
     """The bounding box of the content area (read-only).
 
     This property calculates the bounding box of the content area
@@ -956,8 +910,7 @@ class MorphTextField(
         bind=[
             'pos',
             'size',
-            'input_margin'],
-        cache=True)
+            'input_margin'])
     """The bounding box of the internal input widget (read-only).
 
     This property calculates the bounding box of the internal input 
@@ -997,7 +950,23 @@ class MorphTextField(
 
     _heading_size_factor: float = 1.0
     """Stores the size factor of the heading widget for scaling purposes."""
-    
+
+    @property
+    def input_widget(self) -> MorphTextInput:
+        """The internal text input widget (read-only).
+
+        This property provides access to the internal :class:`MorphTextInput`
+        widget that is used for handling user input. It allows external
+        code to interact with the text input widget directly if needed.
+        Internal it is used to bind properties for bidirectional updates 
+        and to set properties like padding and maximum height.
+
+        Returns
+        -------
+        MorphTextInput
+            The internal text input widget.
+        """
+        return self._text_input
 
     def __init__(self, **kwargs) -> None:
         child_widgets = dict(
@@ -1012,32 +981,16 @@ class MorphTextField(
             | kwargs)
         _bindings = config.get('theme_color_bindings') or {}
         color_bindings = {p: c  for p, c in _bindings.items() if 'content' in p}
-
-        super().__init__(**config)
         self._text_input = MorphTextInput(
             theme_color_bindings=dict(
                 normal_surface_color='transparent_color',
                 **color_bindings),
-            identity=NAME.INPUT,
             size_hint=(None, None),
-            maximum_height=self.maximum_height,
-            padding=self.text_input_padding,
             auto_height=True)
-        self.add_widget(self._text_input)
-        
-        children = [
-            self.leading_widget,
-            self.heading_widget,
-            self.tertiary_widget,
-            self.supporting_widget,
-            self.trailing_widget,]
-        self.delegated_children = [c for c in children if c is not None]
-        for child in self.delegated_children:
-            self.add_widget(child)
-
+        super().__init__(**config)
         self._heading_initial_font_size = self.heading_widget.font_size
-        if self.selected_text_color is None:
-            self.selected_text_color = self._text_input.selection_color
+        self.selected_text_color = (
+            self.selected_text_color or self._text_input.selection_color)
 
         bidirectional_binding = (
             'text',
@@ -1051,24 +1004,50 @@ class MorphTextField(
             setattr(self._text_input, prop, getattr(self, prop))
 
         self._text_input.bind(
-            _lines=self._update_layout,
+            _lines=self._update_layout,)
+        
+        self.input_widget.bind(
             padding=self._update_layout,
             height=self.setter('_input_height'),
             minimum_width=self.setter('_input_min_width'),)
         
         self.bind(
-            input_bbox=self._update_layout,
+            size=self._update_layout,
+            pos=self._update_layout,
+            padding=self._update_layout,
+            spacing=self._update_layout,
             focus=lambda *args: Clock.schedule_once(self._animate_on_focus),
             selected_text_color=self._update_selection_color,
             selected_text_color_opacity=self._update_selection_color,
             error_type=self._update_supporting_error_text,
             supporting_error_texts=self._update_supporting_error_text,
             minimum_height=self.setter('height'),
-            maximum_height=self._text_input.setter('maximum_height'),
-            text_input_padding=self._text_input.setter('padding'),)
+            maximum_height=self.input_widget.setter('maximum_height'),
+            input_widget_padding=self.input_widget.setter('padding'),)
 
+        self._add_widgets_to_layout()
         self.refresh_textfield_content()
-    
+
+    def _add_widgets_to_layout(self) -> None:
+        """Add child widgets to the layout in the correct order.
+
+        This method ensures that the child widgets are added to the 
+        layout in the correct order. The order is important for proper 
+        layering and visual appearance.
+        """
+        self.clear_widgets()
+        children = (
+            self.leading_widget,
+            self.heading_widget,
+            self.tertiary_widget,
+            self.supporting_widget,
+            self.trailing_widget,)
+        self.delegated_children = [c for c in children if c is not None]
+        for child in self.delegated_children:
+            self.add_widget(child)
+
+        self.add_widget(self.input_widget)
+        
     def _update_tertiary_text(self, instance: Any, max_length: int) -> None:
         """Update the tertiary text based on the maximum length.
 
@@ -1111,7 +1090,7 @@ class MorphTextField(
             return
         
         Animation.stop_all(self.heading_widget)
-        Animation.stop_all(self._text_input)
+        Animation.stop_all(self.input_widget)
         Animation.stop_all(self)
 
         h_padding = self.padding[0] + self.padding[2]
@@ -1134,13 +1113,13 @@ class MorphTextField(
             self.tertiary_widget.right = self.content_bbox[2]
             self.tertiary_widget.top = self.y - self.spacing[1]
 
-        self._text_input.pos = self.input_bbox[0], self.input_bbox[3]
-        self._text_input.width = max(
+        self.input_widget.pos = self.input_bbox[0], self.input_bbox[3]
+        self.input_widget.width = max(
             self.input_bbox[2] - self.input_bbox[0],
-            self._text_input.minimum_width,)
-        self._text_input.height = max(
+            self.input_widget.minimum_width,)
+        self.input_widget.height = max(
             self.input_bbox[1] - self.input_bbox[3],
-            self._text_input.minimum_height,)
+            self.input_widget.minimum_height,)
 
         self.width = max(self.width, self.minimum_width)
 
@@ -1156,8 +1135,8 @@ class MorphTextField(
         This method updates the text and icons of the child widgets
         by calling the _update_child_widget method for each widget.
         """
-        self._input_height = self._text_input.height
-        self._input_min_width = self._text_input.minimum_width
+        self._input_height = self.input_widget.height
+        self._input_min_width = self.input_widget.minimum_width
 
         self._update_supporting_error_text()
         self._update_layout()
@@ -1166,7 +1145,7 @@ class MorphTextField(
         self.refresh_leading_widget()
         self.refresh_trailing_widget()
         self.refresh_triple_labels()
-        self._text_input.refresh_content()
+        self.input_widget.refresh_content()
 
     def _resolve_heading_position(self) -> Tuple[float, float]:
         """Get the position of the heading widget.
@@ -1176,26 +1155,25 @@ class MorphTextField(
         Tuple[float, float]
             The (x, y) position of the heading widget.
         """
-        x = self._text_input.x + self.text_input_padding[0]
+        x = self.input_widget.x + self.input_widget_padding[0]
         y = self.y + self.height / 2 - self.heading_widget.height / 2
-        if not self.engaged:
-            return (x, y)
-        
-        match self.heading_focus_behavior:
-            case 'hide':
-                pass
-            case 'move_above':
-                x = self._text_input.x
-                y = (
-                self.y
-                + self.height
-                - self.text_input_padding[1]
-                + dp(2))
-            case 'float_to_border':
-                x = max(
-                    self.x + self.padding[0],
-                    self.x + self.clamped_radius[0])
-                y = self.y + self.height - dp(8)
+        if self.engaged:
+            match self.heading_focus_behavior:
+                case 'hide':
+                    x = x
+                    y = y
+                case 'move_above':
+                    x = self.input_widget.x
+                    y = (
+                    self.y
+                    + self.input_widget.height
+                    - self.input_widget_padding[1]
+                    + self.spacing[1])
+                case 'float_to_border':
+                    x = max(
+                        self.x + self.padding[0],
+                        self.x + self.clamped_radius[0])
+                    y = self.y + self.height - dp(8)
             
         return (x, y)
     
@@ -1256,7 +1234,7 @@ class MorphTextField(
             return
 
         Animation.cancel_all(self.heading_widget)
-        Animation.cancel_all(self._text_input)
+        Animation.cancel_all(self.input_widget)
         Animation.cancel_all(self)
 
         font_size = self._resolve_heading_font_size()
@@ -1295,11 +1273,11 @@ class MorphTextField(
             ).start(self)
         elif self.heading_focus_behavior == 'move_above':
             input_animation = Animation(
-                padding=self.text_input_padding,
+                padding=self.input_widget_padding,
                 duration=self.focus_animation_duration,
                 transition=self.focus_animation_transition)
             heading_animation.bind(
-                on_complete=lambda *args: input_animation.start(self._text_input))
+                on_complete=lambda *args: input_animation.start(self.input_widget))
 
         heading_animation.start(self.heading_widget)
 
@@ -1397,6 +1375,6 @@ class MorphTextFieldFilled(
         MorphTextField.default_config.copy() | dict(            
             heading_focus_behavior='move_above',
             border_bottom_line_only=True,
-            _text_input_padding=[dp(8), dp(8), dp(18), dp(18)],
+            input_widget_padding=[dp(8), dp(8), dp(18), dp(18)],
             multiline=False,
             radius=[dp(16), dp(16), 0, 0],))
