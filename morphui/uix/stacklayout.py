@@ -46,4 +46,9 @@ class MorphStackLayout(
     MyApp().run()
     ```
     """
-    pass
+    def refresh_content(self) -> None:
+        """Refreshes the content of the StackLayout and all its 
+        children."""
+        for child in self.children:
+            if hasattr(child, 'refresh_content'):
+                child.refresh_content()

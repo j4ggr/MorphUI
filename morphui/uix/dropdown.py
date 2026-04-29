@@ -23,54 +23,32 @@ MorphDropdownFilterFieldFilled
 from typing import Any
 from typing import List
 from typing import Dict
-from typing import Tuple
 from typing import Literal
 
 from textwrap import dedent
 
 from kivy.lang import Builder
-from kivy.clock import Clock
 from kivy.metrics import dp
-from kivy.metrics import sp
-from kivy.animation import Animation
+from kivy.properties import ListProperty
 from kivy.properties import DictProperty
 from kivy.properties import AliasProperty
-from kivy.properties import ColorProperty
 from kivy.properties import StringProperty
 from kivy.properties import ObjectProperty
-from kivy.properties import BooleanProperty
-from kivy.properties import NumericProperty
 
 from morphui.uix.list import BaseListView
 from morphui.uix.list import MorphListLayout
 from morphui.uix.list import MorphListItemFlat
 from morphui.uix.chip import MorphInputChip
 from morphui.uix.button import MorphTextIconButton
-from morphui.uix.behaviors import MorphTypographyBehavior
 from morphui.uix.boxlayout import MorphElevationBoxLayout
 from morphui.uix.behaviors import MorphMenuMotionBehavior
 from morphui.uix.behaviors import MorphSizeBoundsBehavior
-from morphui.uix.behaviors import MorphAutoSizingBehavior
 from morphui.uix.behaviors import MorphRoundSidesBehavior
-from morphui.uix.behaviors import MorphTripleLabelBehavior
 from morphui.uix.behaviors import MorphToggleButtonBehavior
-from morphui.uix.behaviors import MorphContentLayerBehavior
-from morphui.uix.behaviors import MorphLeadingWidgetBehavior
-from morphui.uix.behaviors import MorphTrailingWidgetBehavior
-from morphui.uix.behaviors import MorphDelegatedThemeBehavior
-from morphui.uix.behaviors import MorphInteractionLayerBehavior
 
-from morphui.uix.floatlayout import MorphFloatLayout
 from morphui.uix.stacklayout import MorphStackLayout
 
-from morphui.uix.label import MorphTextFieldHeadingLabel
-from morphui.uix.label import MorphTextFieldSupportingLabel
-from morphui.uix.label import MorphTextFieldLeadingIconLabel
-
-from morphui.uix.button import MorphTextFieldTrailingIconButton
-
 from morphui.uix.textfield import NO_ERROR
-from morphui.uix.textfield import MorphTextInput
 from morphui.uix.textfield import MorphTextField
 from morphui.uix.textfield import MorphTextFieldFilled
 from morphui.uix.textfield import MorphTextFieldRounded
@@ -780,15 +758,7 @@ class MorphDropdownFilterFieldFilled(
 
 
 class MorphDropdownMultiselect(
-        MorphDelegatedThemeBehavior,
-        MorphLeadingWidgetBehavior,
-        MorphTripleLabelBehavior,
-        MorphTrailingWidgetBehavior,
-        MorphTypographyBehavior,
-        MorphContentLayerBehavior,
-        MorphInteractionLayerBehavior,
-        MorphAutoSizingBehavior,
-        MorphFloatLayout,):
+        MorphDropdownFilterField):
     """Morph Dropdown Multiselect component.
 
     A multiselect dropdown allows users to select multiple items from a
@@ -823,73 +793,26 @@ class MorphDropdownMultiselect(
         MyApp().run()
     ```
     """
-    
-    disabled: bool = BooleanProperty(False)
-    """Indicates whether the text field is disabled.
-    
-    When True, the text field is disabled and does not accept input.
-    When False, it is enabled and can receive user input. It is bound
-    bidirectionally to the disabled property of the internal
-    :class:`MorphTextInput`.
 
-    :attr:`disabled` is a :class:`~kivy.properties.BooleanProperty`
-    and defaults to False."""
+    _chips: List[MorphInputChip] = ListProperty([])
+    """Internal list of chips representing selected options.
 
-    focus: bool = BooleanProperty(False)
-    """Indicates whether the text field is focused (active for input).
-    
-    This property reflects the focus state of the internal text input
-    widget. When True, the text field is active and ready to receive
-    keyboard input. When False, it is inactive. It is bound
-    bidirectionally to the focus state of the internal
-    :class:`MorphTextInput`.
+    This property holds the list of 
+    :class:`~morphui.uix.chip.MorphInputChip` instances that represent 
+    the currently selected options in the multiselect dropdown.
 
-    :attr:`focus` is a :class:`~kivy.properties.BooleanProperty`
-    and defaults to False."""
-
-    error: bool = BooleanProperty(False)
-    """Indicates whether the text widget is in an error state.
-
-    This property reflects the error state of the internal text. 
-    When True, the text widget is marked as having an error,
-    When False, it is not in an error state.
-
-    :attr:`error` is a :class:`~kivy.properties.BooleanProperty`
-    and defaults to False."""
-
-    error_type: str = StringProperty('')
-    """The type of error associated with the current error state.
-
-    This property holds a string that describes the type of error
-    encountered in the text input. It can be used to provide
-    specific feedback to the user about the nature of the error.
-    The possible values are the same as those defined for the
-    :attr:`validator` property plus `required` and `max_text_length`.
-
-    :attr:`error_type` is a :class:`~kivy.properties.StringProperty`
-    and defaults to an empty string."""
-
-    required: bool = BooleanProperty(False)
-    """Indicates whether the text is required.
-
-    When True, the :attr:`text` must contain valid text to be 
-    considered valid. When False, the text widget can be left empty 
-    without error.
-
-    :attr:`required` is a :class:`~kivy.properties.BooleanProperty`
-    and defaults to False."""
+    :attr:`_chips` is a :class:`~kivy.properties.ListProperty` and
+    defaults to an empty list.
+    """
 
     def _get_selected_options(self) -> List[str]:
-        """Get the list of currently selected options in the multiselect dropdown."""
-        if not hasattr(self, '_option_container'):
-            return []
-        return [
-            chip.label_text for chip in self._option_container.children 
-            if isinstance(chip, MorphInputChip)]
+        """Get the list of currently selected options in the multiselect 
+        dropdown."""
+        return [c.label_text for c in self._chips]
 
     selected_options: List[str] = AliasProperty(
         _get_selected_options,
-        bind=['_option_container'])
+        bind=['_chips'])
     """List of currently selected options in the multiselect dropdown.
 
     This property holds the list of options that are currently selected 
@@ -900,445 +823,70 @@ class MorphDropdownMultiselect(
     and defaults to an empty list.
     """
 
-    focus_animation_duration: float = NumericProperty(0.15)
-    """The duration of the focus animation in seconds.
+    engaged: bool = AliasProperty(
+        lambda self: self.focus or bool(self.selected_options),
+        None,
+        bind=['focus', 'selected_options'],
+        cache=True)
 
-    This property defines how long the animation takes when the text
-    field gains or loses focus. It affects the speed of visual
-    transitions related to focus changes.
+    _options_container: MorphStackLayout = ObjectProperty(None)
+    """Internal container for selected option chips.
 
-    :attr:`focus_animation_duration` is a
-    :class:`~kivy.properties.NumericProperty` and defaults to 0.15."""
+    This property holds a reference to the internal stack layout that
+    contains the chips representing the selected options in the
+    multiselect dropdown.
 
-    focus_animation_transition: str = StringProperty('out_sine')
-    """The transition type for the focus animation.
-
-    This property determines the easing function used for the focus
-    animation. It affects the style of the animation when the text
-    field gains or loses focus. For a list of supported transitions,
-    refer to the 
-    [Kivy documentation](https://kivy.org/doc/stable/api-kivy.animation.html)
-
-    :attr:`focus_animation_transition` is a 
-    :class:`~kivy.properties.StringProperty` and defaults to 'out_sine'.
+    :attr:`_options_container` is a 
+    :class:`~kivy.properties.ObjectProperty` and defaults to `None`.
     """
 
-    supporting_error_texts: Dict[str, str] = DictProperty({})
-    """Mapping of error types to supporting error messages.
+    @property
+    def input_widget(self) -> MorphStackLayout:
+        """The internal text input widget (read-only).
 
-    This property holds a dictionary that maps specific error types to
-    corresponding error messages. When the text field enters an error
-    state, the appropriate error message can be displayed based on the
-    error type. The keys in the dictionary should match the possible
-    values of the :attr:`validator` property. If you want to set a
-    supporting text if there is no error, use the 'none' key.
-
-    :attr:`supporting_error_texts` is a
-    :class:`~kivy.properties.DictProperty` and defaults to an empty 
-    dictionary."""
-
-    selected_text_color: List[float] = ColorProperty(None, allownone=True)
-    """The color of the text selection highlight.
-
-    This property defines the RGBA color used to highlight selected
-    text within the text field. It is bound bidirectionally to the
-    selected_text_color property of the internal :class:`MorphTextInput`.
-
-    :attr:`selected_text_color` is a :class:`~kivy.properties.ColorProperty`
-    and defaults to None."""
-
-    selected_text_color_opacity: float = NumericProperty(0.4)
-    """The opacity of the text selection highlight color.
-
-    :attr:`selected_text_color_opacity` is a
-    :class:`~kivy.properties.NumericProperty` and defaults to 0.4."""
-
-    _horizontal_padding: float = NumericProperty(dp(12))
-    """The horizontal padding applied around the widgets.
-
-    This padding is applied to the left and right sides of the leading
-    and trailing widgets if present. Otherwise for the internal text
-    input area, it ensures consistent alignment of the widgets.
-
-    :attr:`_horizontal_padding` is a 
-    :class:`~kivy.properties.NumericProperty` and defaults to dp(12)."""
-
-    def _get_minimum_width(self) -> float:
-        """Calculate the minimum width of the multiselect dropdown.
-
-        This method calculates the minimum width required to accommodate
-        the internal stack layout along with the defined padding. It
-        ensures that the dropdown can expand horizontally to fit its
-        content while maintaining proper spacing.
+        This property provides access to the internal 
+        :class:`MorphStackLayout` widget that is used for handling user 
+        input. It allows external code to interact with the stack layout
+        widget directly if needed. Internal it is used to bind 
+        properties for bidirectional updates and to set properties like 
+        padding and maximum height.
 
         Returns
         -------
-        float
-            The calculated minimum width of the multiselect dropdown.
+        MorphStackLayout
+            The internal stack layout widget.
         """
-        min_width = (
-            self._option_container.content_width 
-            + 2 * self._horizontal_padding
-            + (self.leading_widget.width if self.shows_leading_icon else 0)
-            + (self.trailing_widget.width if self.shows_trailing_icon else 0))
-        return min_width
+        return self._options_container
 
-    minimum_width: float = AliasProperty(
-        _get_minimum_width,
-        None,
-        bind=['size',])
-    """The minimum width of the multiselect dropdown (read-only).
-
-    This property calculates the minimum width required to accommodate
-    the internal stack layout along with the defined padding. It
-    ensures that the dropdown can expand horizontally to fit its
-    content while maintaining proper spacing.
-
-    :attr:`minimum_width` is a :class:`~kivy.properties.AliasProperty`
-    and is read-only."""
-
-    def _get_minimum_height(self) -> float:
-       return self._option_container.content_height
-    
-    minimum_height: float = AliasProperty(
-        _get_minimum_height,
-        None,
-        bind=['size'])
-    """The minimum height of the multiselect dropdown (read-only).
-
-    This property calculates the minimum height required to accommodate
-    the internal stack layout along with the defined padding.
-    
-    :attr:`minimum_height` is a :class:`~kivy.properties.AliasProperty`
-    and is read-only."""
-
-    _option_container: MorphStackLayout = ObjectProperty(None)
-    """Internal stack layout used to arrange child widgets in the
-    multiselect dropdown."""
-
-    _text_input: MorphTextInput
-    """Internal text input widget used for filtering items in the 
-    dropdown."""
-
-    _heading_initial_font_size: float = sp(1)
-    """Stores the initial font size of the heading widget for
-    restoration after focus changes."""
-
-    _heading_size_factor: float = 1.0
-    """Factor to scale the heading font size based on the current state."""
-
-    default_config: Dict[str, Any] = dict(
-        theme_color_bindings=(
-            MorphTextFieldOutlined.default_config['theme_color_bindings'].copy()),
-        auto_size=(False, False),
-        size_hint=(1, None),
-        border_bottom_line_only=False,
-        radius=[dp(4), dp(4), dp(4), dp(4)],)
+    default_config: Dict[str, Any] = (
+        MorphDropdownFilterField.default_config.copy() | dict(
+        ))
 
     __events__ = (
-        'on_item_release',
         'on_enter_press',)
 
     def __init__(self, **kwargs) -> None:
-
-        child_widgets = dict(
-            heading_widget=MorphTextFieldHeadingLabel,
-            supporting_widget=MorphTextFieldSupportingLabel,
-            leading_widget=MorphTextFieldLeadingIconLabel,
-            trailing_widget=MorphTextFieldTrailingIconButton,)
-        config = (
-            self.default_config.copy()
-            | {k: v() for k, v in child_widgets.items()  if k not in kwargs}
-            | kwargs)
-        _bindings = config.get('theme_color_bindings') or {}
-        color_bindings = {p: c  for p, c in _bindings.items() if 'content' in p}
-        items = config.pop('items', [])
-        
-        self._text_input = MorphTextInput(
-            theme_color_bindings=dict(
-                normal_surface_color='tertiary_container_color',
-                **color_bindings),
-            padding=[dp(0), dp(8)],
-            auto_size=(False, True),
-            size_hint=(None, None),
-            multiline=False,)
-        self._option_container = MorphStackLayout(
-            self._text_input,
-            theme_color_bindings=dict(
-                normal_surface_color='transparent_color',),
-            auto_size=(False, True),
-            size_hint=(None, None),
-            padding=dp(4),
-            spacing=dp(4), 
-            orientation='lr-tb',)
-        self.dropdown_menu = MorphDropdownMenu(
-            caller=self,
-            items=items,
-            item_release_callback=lambda item, index: (
-                self.dispatch('on_item_release', item, index)))
-
-        super().__init__(**config)
-
-        self.add_widget(self._option_container)
-        
-        children = [
-            self.leading_widget,
-            self.heading_widget,
-            self.supporting_widget,
-            self.trailing_widget,]
-        self.delegated_children = [c for c in children if c is not None]
-        for child in self.delegated_children:
-            self.add_widget(child)
-
-        self._heading_initial_font_size = self.heading_widget.font_size
-        if self.selected_text_color is None:
-            self.selected_text_color = self._text_input.selection_color
-        
-        bidirectional_binding = (
-            'focus',
-            'disabled',)
-        for prop in bidirectional_binding:
-            self.fbind(prop, self._text_input.setter(prop))
-            self._text_input.fbind(prop, self.setter(prop))
-            setattr(self._text_input, prop, getattr(self, prop))
-        
+        if '_options_container' not in kwargs:
+            kwargs['_options_container'] = MorphStackLayout(
+                orientation='lr-tb',
+                spacing=dp(4),
+                padding=dp(4),
+                auto_size=(False, True),
+                size_hint=(None, None),)
+        super().__init__(**kwargs)
+        self._options_container.add_widget(self._text_input)
+        self._options_container.bind(
+            children=self._update_chips,)
         self._text_input.bind(
-            on_text_validate=self.on_enter_press,
-            padding=self._update_layout,
-            size=self._update_layout,)
-        self._option_container.bind(
-            children=self._update_layout,
-            content_width=self._update_layout,
-            content_height=self._update_layout,)
-        self.bind(
-            pos=self._update_layout,
-            size=self._update_layout,
-            identities=self._update_layout,
-            leading_widget=self._update_layout,
-            trailing_widget=self._update_layout,
-            focus=lambda *args: Clock.schedule_once(self._animate_on_focus),
-            error_type=self._update_supporting_error_text,
-            supporting_error_texts=self._update_supporting_error_text,)
-        self._update_layout()
+            on_text_validate=self.on_enter_press,)
+        self._update_chips()
 
-    def _update_layout(self, *args) -> None:
-        """Update the layout of the text field and its child widgets.
-
-        This method recalculates the positions and sizes of the child 
-        widgets based on the current layout settings.
-
-        Notes
-        -----
-        If width or height is non-positive, the method exits early to 
-        avoid layout issues. This occurs when the widget is not yet 
-        fully initialized or visible (by ScreenManager).
-
-        This method stops any ongoing animations on the child widgets
-        before updating their positions and sizes to ensure smooth
-        transitions. 
-        """
-        self.refresh_auto_sizing()
-        spacing = dp(4)
-        left_alignment = self.x + self._horizontal_padding
-        right_alignment = self.right - self._horizontal_padding
-        bottom_alignment = self.y - spacing
-        x_container, y_container = left_alignment, self.y
-        w_container, h_container = right_alignment - left_alignment, self.height
-        # if w_container <= 0 or h_container <= 0: # ScreenManager issue when widget was not visible yet.
-        #     return
-        
-        Animation.stop_all(self.heading_widget)
-        Animation.stop_all(self._text_input)
-        Animation.stop_all(self)
-        
-        if self.shows_leading_icon:
-            self.leading_widget.x = left_alignment
-            delta_x = self.leading_widget.width + spacing
-            x_container += delta_x
-            w_container -= delta_x
-
-        if self.shows_trailing_icon:
-            self.trailing_widget.right = right_alignment
-            delta_x = self.trailing_widget.width + spacing
-            w_container -= delta_x
-        
-        if self.shows_supporting:
-            self.supporting_widget.x = left_alignment
-            self.supporting_widget.top = bottom_alignment
-            self.supporting_widget.maximum_width = (
-                self.width - 2 * self._horizontal_padding)
-
-        self._option_container.pos = (x_container, y_container)
-        self._option_container.width = w_container
-        self.height = self._option_container.height
-
-        if self.shows_heading:
-            self.heading_widget.font_size = self._resolve_heading_font_size()
-            self.heading_widget.pos = self._resolve_heading_position()
-            self.border_open_x, self.border_open_length = (
-                self._resolve_border_open_params())
-
-    def _resolve_heading_font_size(self) -> float:
-        """Get the font size for the heading widget.
-
-        Returns
-        -------
-        float
-            The font size for the heading widget.
-        """
-        if self.focus or self.selected_options:
-            font_size = self.typography.get_font_size(
-                role=self.heading_widget.typography_role,
-                size='small')
-        else:
-            font_size = self._heading_initial_font_size
-
-        if isinstance(font_size, str):
-            font_size = sp(int(font_size.replace('sp', '')))
-        self._heading_size_factor = font_size / self._heading_initial_font_size
-        return font_size
-
-    def _resolve_heading_position(self) -> Tuple[float, float]:
-        """Get the position of the heading widget.
-
-        The position is calculated based on the current state of the 
-        text input and the focus state of the widget.
-
-        Returns
-        -------
-        Tuple[float, float]
-            The (x, y) position of the heading widget.
-        """
-        padding = self._option_container.padding
-        x = self._option_container.x + padding[0]
-        y = self.y + self.height / 2 - self.heading_widget.height / 2
-        if not self.focus and not self.selected_options:
-            return (x, y)
-        
-        x = max(
-            self.x + self._horizontal_padding,
-            self.x + self.clamped_radius[0])
-        y = self.y + self.height - dp(8)
-        return (x, y)
-
-    def _resolve_border_open_params(self) -> Tuple[float | None, float]:
-        """Get the open border segment parameters for the multiselect.
-
-        The open border segment is used when the heading floats over
-        the border. It defines where the border should be open to
-        accommodate the heading.
-
-        Returns
-        -------
-        Tuple[float | None, float]
-            The (x, length) of the open border segment for the multiselect.
-        """
-        open_x = None
-        open_length = 0.0
-        
-        if self.focus or self.selected_options:
-            open_x = self._resolve_heading_position()[0]
-            open_length = (
-                self.heading_widget.width
-                * self._heading_size_factor)
-        return open_x, open_length
-        
-    def refresh_content(self, *args) -> None:
-        """Refresh the content of the multiselect and its child widgets.
-
-        
-        """
-        self._update_supporting_error_text()
-        self._update_layout()
-
-        self.validate()
-        self.refresh_leading_widget()
-        self.refresh_trailing_widget()
-        self.refresh_triple_labels()
-        self._text_input.refresh_content()
-
-    def _animate_on_focus(self, *args) -> None:
-        """Handle focus changes for the text field.
-
-        This method animates the heading widget to a new position
-        and font size when the text field gains or loses focus.
-        """
-        if self.heading_widget is None:
-            return
-
-        Animation.cancel_all(self.heading_widget)
-        Animation.cancel_all(self._text_input)
-        Animation.cancel_all(self)
-
-        font_size = self._resolve_heading_font_size()
-        target_pos = self._resolve_heading_position()
-
-        self.border_width = dp(1.5) if self.focus else dp(1)
-        heading_animation = Animation(
-            x=target_pos[0],
-            y=target_pos[1],
-            font_size=font_size,
-            duration=self.focus_animation_duration,
-            transition=self.focus_animation_transition,)
-        border_open_x, border_open_length = (
-            self._resolve_border_open_params())
-        self.border_open_x = border_open_x
-        Animation(
-            border_open_length=border_open_length,
-            duration=self.focus_animation_duration,
-            transition=self.focus_animation_transition
-        ).start(self)
-        heading_animation.start(self.heading_widget)
-    
-    def _update_supporting_error_text(self, *args) -> None:
-        """Update the supporting text based on the error type.
-
-        This method sets the :attr:`supporting_text` property of the
-        text field based on the current error type. If there is an
-        error type and a corresponding message in
-        :attr:`supporting_error_texts`, it updates the supporting text
-        accordingly.
-        """
-        if not self.supporting_error_texts:
-            return
-        
-        error_text = self.supporting_error_texts.get(self.error_type, '')
-        self.supporting_text = error_text
-    
-    def _on_focus_changed(
-            self,
-            instance: 'MorphDropdownMultiselect',
-            focus: bool
-            ) -> None:
-        """Handle changes to the focus property.
-
-        This method is called whenever the focus state of the filter
-        field changes. It opens or closes the associated dropdown list
-        based on the focus state.
--
-        Parameters
-        ----------
-        instance : MorphDropdownMultiselect
-            The instance of the multiselect where the change occurred.
-        focus : bool
-            The new focus state of the multiselect.
-        """
-        self.trailing_widget.focus = focus
-        if focus:
-            self.dropdown_menu.open()
-        else:
-            self.dropdown_menu.dismiss()
-    
-    def _on_trailing_release(self, *args) -> None:
-        """Handle the release event of the trailing widget.
-
-        This method is called when the trailing widget (typically an
-        icon button) is released. If the dropdown is not open, it sets
-        focus to the multiselect, thereby opening the dropdown.
-        Otherwise, it does nothing.
-        """
-        if not self.dropdown_menu.is_open:
-            self.focus = True
+    def _update_chips(self, *args) -> None:
+        """Update the internal list of chips based on the current 
+        children of the options container."""
+        self._chips = [
+            c for c in getattr(self._options_container, 'children', [])
+            if isinstance(c, MorphInputChip)]
 
     def on_enter_press(self, *args) -> None:
         """Handle the event when the user presses Enter in the text 
@@ -1368,7 +916,7 @@ class MorphDropdownMultiselect(
         index : int
             The index of the released item in the dropdown list.
         """
-        self.add_selected_option(item['label_text'])
+        self.add_selected_option(item.label_text)
 
     def add_selected_option(self, option: str) -> None:
         """Add an option to the list of selected options.
@@ -1383,15 +931,19 @@ class MorphDropdownMultiselect(
             The option to be added to the list of selected options.
         """
         self._text_input.text = ''
-        self._option_container.remove_widget(self._text_input)
-        self._option_container.add_widget(MorphInputChip(label_text=option))
-        self._option_container.add_widget(self._text_input)
+        if option in self.selected_options:
+            return
+        
+        chip = MorphInputChip(label_text=option)
+        self._options_container.remove_widget(self._text_input)
+        self._options_container.add_widget(chip)
+        self._options_container.add_widget(self._text_input)
         items = self.dropdown_menu.items
         if option not in [i['label_text'] for i in items]:
             self.dropdown_menu.items = items + [{'label_text': option}]
         self._update_layout()
     
-    def validate(self) -> bool:
+    def validate(self, *args) -> bool:
         """Validate the current text input.
 
         This method checks the current text input against the defined
