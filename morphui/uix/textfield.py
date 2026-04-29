@@ -609,16 +609,17 @@ class MorphTextField(
     :attr:`password` is a :class:`~kivy.properties.BooleanProperty`
     and defaults to False."""
 
-    spacing: float = NumericProperty(dp(4))
+    spacing: List[float] = VariableListProperty([dp(4), dp(4)], length=2)
     """The spacing between the child widgets.
     
     This property defines the amount of space (in pixels) between the
     child widgets within the text field, such as the heading, supporting
     and text input widgets. It helps to maintain a visually appealing
-    layout by providing consistent spacing.
+    layout by providing consistent spacing. The spacing is defined as 
+    [horizontal_spacing, vertical_spacing].
     
-    :attr:`spacing` is a :class:`~kivy.properties.NumericProperty`
-    and defaults to dp(4)."""
+    :attr:`spacing` is a :class:`~kivy.properties.VariableListProperty`
+    and defaults to [dp(4), dp(4)]."""
 
     selected_text_color: List[float] = ColorProperty(None, allownone=True)
     """The color of the text selection highlight.
@@ -701,45 +702,144 @@ class MorphTextField(
     :class:`~kivy.properties.OptionProperty` and defaults to 
     'float_to_border'."""
 
-    text_input_default_padding: List[float] = VariableListProperty(
-        [dp(8), dp(8), dp(8), dp(8)], length=4)
-    """The default padding values around the internal text input widget.
+    padding: List[float] = VariableListProperty(
+        [dp(4), dp(4), dp(4), dp(4)], length=4)
+    """The padding values around the text field content.
+
+    This property defines the padding space that is applied around the
+    content of the text field. The padding is defined as
+    [left, top, right, bottom].
+
+    :attr:`padding` is a :class:`~kivy.properties.VariableListProperty`
+    of length 4 and defaults to [dp(4), dp(4), dp(4), dp(4)]."""
+
+    _text_input_padding: List[float] = VariableListProperty(
+        [dp(4), dp(4), dp(4), dp(4)], length=4)
+    """The padding values around the internal text input widget.
 
     This property defines the base padding space that is applied around
     the internal :class:`MorphTextInput` widget before any adjustments
     for icons or other widgets. The padding is defined as
-    [left, bottom, right, top].
+    [left, top, right, bottom].
 
-    :attr:`text_input_default_padding` is a
+    :attr:`text_input_padding` is a
     :class:`~kivy.properties.VariableListProperty` of length 4 and
     defaults to [dp(8), dp(8), dp(8), dp(8)]."""
 
-    _horizontal_padding: float = NumericProperty(dp(12))
-    """The horizontal padding applied around the widgets.
+    def _get_text_input_padding(self) -> List[float]:
+        """Get the base padding values for the internal text input 
+        widget.
 
-    This padding is applied to the left and right sides of the leading
-    and trailing widgets if present. Otherwise for the internal text
-    input area, it ensures consistent alignment of the widgets.
+        This method returns the base padding values defined in
+        :attr:`_text_input_padding`. It also applies adjustments to the
+        top and bottom padding based on the :attr:`heading_focus_behavior`
+        and whether the text field is currently engaged (focused). If 
+        the heading_focus_behavior is set to 'move_above' and the text
+        field is engaged, it increases the top padding to create space
+        for the heading to move above the input area and decreases the
+        bottom padding to maintain overall height.
 
-    :attr:`_horizontal_padding` is a 
-    :class:`~kivy.properties.NumericProperty` and defaults to dp(12)."""
+        Returns
+        -------
+        List[float]
+            The base padding values for the internal text input widget.
+        """
+        padding = self._text_input_padding.copy()
+        if self.heading_focus_behavior == 'move_above' and self.engaged:
+            padding[1] += dp(16)
+            padding[3] -= dp(4)
+        return padding
 
-    _text_input_min_width: float = NumericProperty(dp(0))
-    """The current minimum width of the internal text input widget.
+    text_input_padding: List[float] = AliasProperty(
+        _get_text_input_padding,
+        None,
+        bind=[
+            'heading_focus_behavior',
+            'engaged',
+            '_text_input_padding'],
+        cache=True)
+    """The effective padding values for the internal text input widget
+    (read-only).
+
+    This property calculates the effective padding for the internal
+    text input widget based on the current state of the text field,
+    including the heading focus behavior and engagement state.
+
+    :attr:`text_input_padding` is a
+    :class:`~kivy.properties.AliasProperty` of length 4 and is read-only.
+    """
+
+    def _get_input_margin(self) -> Tuple[float, float, float, float]:
+        """Calculate the margin values for the internal input widget.
+
+        This method computes the margin space that should be applied
+        around the internal input widget (e.g. TextInput) based on the
+        presence of leading and trailing widgets. It adjusts the base
+        padding accordingly to ensure proper spacing and alignment of 
+        the input widget within the text field.
+
+        Returns
+        -------
+        Tuple[float, float, float, float]
+            The calculated margin values as (left, top, right, bottom).
+        """
+        left, top, right, bottom = self.padding
+
+        if self.shows_leading_icon:
+            left += self.leading_widget.width + self.spacing[0]
+
+        if self.shows_trailing_icon:
+            right += self.trailing_widget.width + self.spacing[0]
+
+        if self.heading_focus_behavior == 'move_above' and self.engaged:
+            vertical_shift = - dp(4)
+            top += self.heading_widget.height + self.spacing[1] + vertical_shift
+            bottom += vertical_shift
+        
+        return (left, top, right, bottom)
+
+    input_margin: Tuple[float, float, float, float] = AliasProperty(
+        _get_input_margin,
+        None,
+        bind=[
+            'shows_leading_icon',
+            'shows_trailing_icon',
+            'padding',
+            'spacing',
+            'heading_focus_behavior',
+            'engaged',],)
+    """The margin values applied to the internal input widget
+    (read-only).
+
+    This property defines the margin space that is applied around
+    the internal input widget (e.g. TextInput for TextField or other 
+    input widgets). This margin is required for positioning the internal 
+    widgets correctly. It means that this margin is the space needed 
+    between input widget and outer frame. So that when we calculate the 
+    position of the input widget, we can use this margin to determine 
+    how much space to leave around it for positioning the other widgets.
+    The margin is defined as (left, top, right, bottom)
+
+    :attr:`input_margin` is a
+    :class:`~kivy.properties.AliasProperty` and defaults to 
+    (dp(4), dp(4), dp(4), dp(4))."""
+
+    _input_min_width: float = NumericProperty(dp(0))
+    """The current minimum width of the internal input widget.
 
     This property is used for layout calculations and reflects the
-    current minimum width of the internal text input widget.
+    current minimum width of the internal input widget.
 
-    :attr:`_text_input_min_width` is a
+    :attr:`_input_min_width` is a
     :class:`~kivy.properties.NumericProperty`."""
 
-    _text_input_height: float = NumericProperty(dp(0))
-    """The current height of the internal text input widget.
+    _input_height: float = NumericProperty(dp(0))
+    """The current height of the internal input widget.
 
     This property is used for layout calculations and reflects the
-    current height of the internal text input widget.
+    current height of the internal input widget.
 
-    :attr:`_text_input_height` is a
+    :attr:`_input_height` is a
     :class:`~kivy.properties.NumericProperty`."""
 
     def _get_minimum_width(self) -> float:
@@ -755,19 +855,18 @@ class MorphTextField(
         float
             The calculated minimum width for the text field.
         """
-        w_min = self._text_input_min_width + self._horizontal_padding
-
-        if self.leading_widget is not None:
-            w_min += self.leading_widget.width + self._horizontal_padding
-        if self.trailing_widget is not None:
-            w_min += self.trailing_widget.width + self._horizontal_padding
-        return w_min
+        minimum_width = (
+            self._input_min_width
+            + self.input_margin[0]
+            + self.input_margin[2])
+        return minimum_width
 
     minimum_width: float = AliasProperty(
-        lambda self: (
-            self._text_input_min_width),
-        bind=['size', '_text_input_min_width'],
-        cache=True)
+        _get_minimum_width,
+        None,
+        bind=[
+            'input_margin',
+            '_input_min_width'],)
     """The minimum width of the text field (read-only).
 
     This property calculates the minimum width required to accommodate
@@ -775,11 +874,33 @@ class MorphTextField(
 
     :attr:`minimum_width` is a :class:`~kivy.properties.AliasProperty`
     and is read-only."""
+
+    def _get_minimum_height(self) -> float:
+        """Calculate the minimum height required for the text field.
+
+        This method computes the minimum height needed to accommodate the
+        internal text input widget along with the defined padding and any
+        heading or supporting widgets. It takes into account the presence
+        of these widgets and adjusts the padding accordingly.
+
+        Returns
+        -------
+        float
+            The calculated minimum height for the text field.
+        """
+        minimum_height = (
+            self._input_height
+            + self.input_margin[1]
+            + self.input_margin[3])
+        print(f"Calculated minimum height: {minimum_height} (input height: {self._input_height}, input margin: {self.input_margin})")
+        return minimum_height
     
     minimum_height: float = AliasProperty(
-        lambda self: (
-            self._text_input_height),
-        bind=['size', '_text_input_height'],
+        _get_minimum_height,
+        None,
+        bind=[
+            'input_margin',
+            '_input_height'],
         cache=True)
     """The minimum height of the text field (read-only).
 
@@ -792,7 +913,9 @@ class MorphTextField(
     engaged: bool = AliasProperty(
         lambda self: self.focus or bool(self.text),
         None,
-        bind=['focus', 'text'],
+        bind=[
+            'focus',
+            'text'],
         cache=True)
     """Whether the text field is active — focused or has content (read-only).
 
@@ -803,32 +926,45 @@ class MorphTextField(
     :attr:`is_active` is a :class:`~kivy.properties.AliasProperty`
     bound to `focus` and `text`."""
 
-    left_alignment: float = AliasProperty(
-        lambda self: self.x + self._horizontal_padding,
+    content_bbox: List[float] = AliasProperty(
+        lambda self: [
+            self.x + self.padding[0],
+            self.y + self.height - self.padding[1],
+            self.x + self.width - self.padding[2],
+            self.y + self.padding[3]],
         None,
-        bind=['x', '_horizontal_padding'],
+        bind=[
+            'pos',
+            'size',
+            'padding'],
         cache=True)
-    """The x-coordinate for left-aligned widgets (read-only).
+    """The bounding box of the content area (read-only).
 
-    This property calculates the x-coordinate for left-aligned widgets
-    based on the text field's position and horizontal padding.
+    This property calculates the bounding box of the content area
+    based on the text field's position, size, and padding.
 
-    :attr:`left_alignment` is a :class:`~kivy.properties.AliasProperty`
-    and is bound to the text field's x position and horizontal padding."""
+    :attr:`content_bbox` is a :class:`~kivy.properties.AliasProperty`
+    and is read-only."""
 
-    right_alignment: float = AliasProperty(
-        lambda self: self.x + self.width - self._horizontal_padding,
+    input_bbox: List[float] = AliasProperty(
+        lambda self: [
+            self.x + self.input_margin[0],
+            self.y + self.height - self.input_margin[1],
+            self.x + self.width - self.input_margin[2],
+            self.y + self.input_margin[3]],
         None,
-        bind=['x', 'width', '_horizontal_padding'],
+        bind=[
+            'pos',
+            'size',
+            'input_margin'],
         cache=True)
-    """The x-coordinate for right-aligned widgets (read-only).
+    """The bounding box of the internal input widget (read-only).
 
-    This property calculates the x-coordinate for right-aligned widgets
-    based on the text field's position, width, and horizontal padding.
+    This property calculates the bounding box of the internal input 
+    widget based on the text field's position, size, and input margins.
 
-    :attr:`right_alignment` is a :class:`~kivy.properties.AliasProperty`
-    and is bound to the text field's x position, width, and horizontal
-    padding."""
+    :attr:`input_bbox` is a :class:`~kivy.properties.AliasProperty`
+    and is read-only."""
 
     default_config = dict(
         theme_color_bindings=dict(
@@ -861,6 +997,7 @@ class MorphTextField(
 
     _heading_size_factor: float = 1.0
     """Stores the size factor of the heading widget for scaling purposes."""
+    
 
     def __init__(self, **kwargs) -> None:
         child_widgets = dict(
@@ -883,7 +1020,8 @@ class MorphTextField(
                 **color_bindings),
             identity=NAME.INPUT,
             size_hint=(None, None),
-            padding=dp(0),
+            maximum_height=self.maximum_height,
+            padding=self.text_input_padding,
             auto_height=True)
         self.add_widget(self._text_input)
         
@@ -915,22 +1053,19 @@ class MorphTextField(
         self._text_input.bind(
             _lines=self._update_layout,
             padding=self._update_layout,
-            height=self.setter('_text_input_height'),
-            minimum_width=self.setter('_text_input_min_width'),)
+            height=self.setter('_input_height'),
+            minimum_width=self.setter('_input_min_width'),)
         
         self.bind(
-            pos=self._update_layout,
-            size=self._update_layout,
-            declarative_children=self._update_layout,
-            leading_widget=self._update_layout,
-            trailing_widget=self._update_layout,
+            input_bbox=self._update_layout,
             focus=lambda *args: Clock.schedule_once(self._animate_on_focus),
             selected_text_color=self._update_selection_color,
             selected_text_color_opacity=self._update_selection_color,
             error_type=self._update_supporting_error_text,
             supporting_error_texts=self._update_supporting_error_text,
             minimum_height=self.setter('height'),
-            maximum_height=self._text_input.setter('maximum_height'),)
+            maximum_height=self._text_input.setter('maximum_height'),
+            text_input_padding=self._text_input.setter('padding'),)
 
         self.refresh_textfield_content()
     
@@ -972,48 +1107,42 @@ class MorphTextField(
         before updating their positions and sizes to ensure smooth
         transitions. 
         """
-        bottom_alignment = self.y - self.spacing
-        x_input, y_input = self.pos
-        w_input, h_input = self.size
-        if w_input <= 0 or h_input <= 0: # ScreenManager issue when widget was not visible yet.
+        if self.size[0] <= 0 or self.size[1] <= 0: # ScreenManager issue when widget was not visible yet.
             return
         
         Animation.stop_all(self.heading_widget)
         Animation.stop_all(self._text_input)
         Animation.stop_all(self)
+
+        h_padding = self.padding[0] + self.padding[2]
         
         if self.shows_leading_icon:
-            self.leading_widget.x = self.left_alignment
-            x_input = self.leading_widget.x + self.leading_widget.width
-            w_input -= (x_input - self.x)
+            self.leading_widget.x = self.content_bbox[0]
 
         if self.shows_trailing_icon:
-            self.trailing_widget.right = self.right_alignment
-            w_input -= (self.x + self.width - self.trailing_widget.x)
+            self.trailing_widget.right = self.content_bbox[2]
 
         if self.shows_supporting:
-            self.supporting_widget.x = self.left_alignment
-            self.supporting_widget.top = bottom_alignment
-            self.supporting_widget.maximum_width = (
-                self.width - 2 * self._horizontal_padding)
+            self.supporting_widget.x = self.content_bbox[0]
+            self.supporting_widget.top = self.y - self.spacing[1]
+            _w_max = self.width - h_padding
+            if self.shows_tertiary:
+                _w_max -= (self.tertiary_widget.width + self.spacing[0])
+            self.supporting_widget.maximum_width = _w_max
         
         if self.shows_tertiary:
-            self.tertiary_widget.right = self.right_alignment
-            self.tertiary_widget.top = bottom_alignment
-            if self.shows_supporting:
-                self.supporting_widget.maximum_width = (
-                    self.width
-                    - 2 * self._horizontal_padding
-                    - self.tertiary_widget.width
-                    - self.spacing)
+            self.tertiary_widget.right = self.content_bbox[2]
+            self.tertiary_widget.top = self.y - self.spacing[1]
 
-        self._text_input.pos = x_input, y_input
-        self._text_input.padding = self._resolve_text_input_padding()
-        self._text_input.width = max(self._text_input.minimum_width, w_input)
-        self._text_input.height = max(self._text_input.minimum_height, h_input)
+        self._text_input.pos = self.input_bbox[0], self.input_bbox[3]
+        self._text_input.width = max(
+            self.input_bbox[2] - self.input_bbox[0],
+            self._text_input.minimum_width,)
+        self._text_input.height = max(
+            self.input_bbox[1] - self.input_bbox[3],
+            self._text_input.minimum_height,)
 
         self.width = max(self.width, self.minimum_width)
-        self.height = max(self._text_input.height, self.minimum_height)
 
         if self.shows_heading:
             self.heading_widget.font_size = self._resolve_heading_font_size()
@@ -1027,8 +1156,8 @@ class MorphTextField(
         This method updates the text and icons of the child widgets
         by calling the _update_child_widget method for each widget.
         """
-        self._text_input_height = self._text_input.height
-        self._text_input_min_width = self._text_input.minimum_width
+        self._input_height = self._text_input.height
+        self._input_min_width = self._text_input.minimum_width
 
         self._update_supporting_error_text()
         self._update_layout()
@@ -1047,8 +1176,7 @@ class MorphTextField(
         Tuple[float, float]
             The (x, y) position of the heading widget.
         """
-        padding = self._resolve_text_input_padding()
-        x = self._text_input.x + padding[0]
+        x = self._text_input.x + self.text_input_padding[0]
         y = self.y + self.height / 2 - self.heading_widget.height / 2
         if not self.engaged:
             return (x, y)
@@ -1061,11 +1189,11 @@ class MorphTextField(
                 y = (
                 self.y
                 + self.height
-                - padding[1]
+                - self.text_input_padding[1]
                 + dp(2))
             case 'float_to_border':
                 x = max(
-                    self.x + self._horizontal_padding,
+                    self.x + self.padding[0],
                     self.x + self.clamped_radius[0])
                 y = self.y + self.height - dp(8)
             
@@ -1118,21 +1246,6 @@ class MorphTextField(
                 * self._heading_size_factor)
         return open_x, open_length
 
-    def _resolve_text_input_padding(self) -> List[float]:
-        """Get the padding values for the internal text input widget.
-
-        Returns
-        -------
-        List[float]
-            The padding values [left, bottom, right, top] for the
-            internal text input widget.
-        """
-        padding = self.text_input_default_padding.copy()
-        if self.heading_focus_behavior == 'move_above' and self.engaged:
-            padding[1] = dp(24)
-            padding[3] = dp(4)
-        return padding
-
     def _animate_on_focus(self, *args) -> None:
         """Handle focus changes for the text field.
 
@@ -1182,7 +1295,7 @@ class MorphTextField(
             ).start(self)
         elif self.heading_focus_behavior == 'move_above':
             input_animation = Animation(
-                padding=self._resolve_text_input_padding(),
+                padding=self.text_input_padding,
                 duration=self.focus_animation_duration,
                 transition=self.focus_animation_transition)
             heading_animation.bind(
@@ -1284,6 +1397,6 @@ class MorphTextFieldFilled(
         MorphTextField.default_config.copy() | dict(            
             heading_focus_behavior='move_above',
             border_bottom_line_only=True,
-            text_input_default_padding=[dp(8), dp(8), dp(18), dp(18)],
+            _text_input_padding=[dp(8), dp(8), dp(18), dp(18)],
             multiline=False,
             radius=[dp(16), dp(16), 0, 0],))
