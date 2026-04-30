@@ -872,13 +872,13 @@ class MorphDropdownMultiselect(
         if '_options_container' not in kwargs:
             kwargs['_options_container'] = MorphStackLayout(
                 theme_color_bindings=dict(
-                    normal_surface_color='primary_container_color',),
+                    normal_surface_color='transparent_color',),
                 orientation='lr-tb',
                 spacing=dp(4),
-                padding=dp(4),
                 auto_size=(False, True),
                 size_hint=(None, None),)
         super().__init__(**kwargs)
+        self._text_input.padding = MorphInputChip.default_config['padding']
         self._options_container.add_widget(self._text_input)
         self._options_container.bind(
             children=self.on_options_container_children,
@@ -1010,6 +1010,7 @@ class MorphDropdownMultiselect(
             return
         
         chip = MorphInputChip(label_text=option)
+        self._text_input.width = self._text_input.minimum_width
         self._options_container.remove_widget(self._text_input)
         self._options_container.add_widget(chip)
         self._options_container.add_widget(self._text_input)

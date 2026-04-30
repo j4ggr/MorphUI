@@ -1136,9 +1136,6 @@ class MorphTextField(
         This method updates the text and icons of the child widgets
         by calling the _update_child_widget method for each widget.
         """
-        self._input_height = self.input_widget.height
-        self._input_min_width = self.input_widget.minimum_width
-
         self._update_supporting_error_text()
         self._update_layout()
 
@@ -1146,7 +1143,14 @@ class MorphTextField(
         self.refresh_leading_widget()
         self.refresh_trailing_widget()
         self.refresh_triple_labels()
-        self.input_widget.refresh_content()
+        
+        def _input_widget_updates(*args) -> None:
+            self._input_height = self.input_widget.height
+            self._input_min_width = self.input_widget.minimum_width
+            self.input_widget.maximum_height = self.maximum_height
+            self.input_widget.padding = self.input_widget_padding
+            self.input_widget.refresh_content()
+        Clock.schedule_once(_input_widget_updates)
 
     def _resolve_heading_position(self) -> Tuple[float, float]:
         """Get the position of the heading widget.

@@ -138,7 +138,7 @@ class MorphChip(
         trailing_scale_enabled=True,
         orientation='horizontal',
         auto_size=True,
-        padding=dp(8),
+        padding=[dp(8), dp(4)],
         spacing=dp(4),
         radius=dp(8),
         round_sides=False,)
