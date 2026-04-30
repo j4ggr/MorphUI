@@ -818,9 +818,9 @@ class MorphDropdownMultiselect(
     """
 
     active: bool = AliasProperty(
-        lambda self: bool(self.selected_options),
+        lambda self: bool(self.selected_options) and not bool(self.text),
         None,
-        bind=['selected_options'])
+        bind=['selected_options', 'text'],)
     """Whether the dropdown filter field is active (read-only).
 
     This property indicates whether the dropdown filter field is active,
