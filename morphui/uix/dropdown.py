@@ -795,6 +795,43 @@ class MorphDropdownMultiselect(
     ```
     """
 
+    normal_trailing_icon: str = StringProperty('check-all')
+    """Icon for the normal state of the dropdown filter field.
+
+    This property holds the icon name used when the dropdown is in it's
+    normal state, typically indicating that no options are selected.
+
+    :attr:`normal_trailing_icon` is a
+    :class:`~kivy.properties.StringProperty` and defaults to
+    `'check-all'`.
+    """
+
+    active_trailing_icon: str = StringProperty('close')
+    """Icon for the active state of the dropdown filter field.
+
+    This property holds the icon name used when the dropdown is in its
+    active state, typically indicating that some options are selected.
+
+    :attr:`active_trailing_icon` is a
+    :class:`~kivy.properties.StringProperty` and defaults to
+    `'close-circle-multiple-outline'`.
+    """
+
+    active: bool = AliasProperty(
+        lambda self: bool(self.selected_options),
+        None,
+        bind=['selected_options'])
+    """Whether the dropdown filter field is active (read-only).
+
+    This property indicates whether the dropdown filter field is active,
+    which is determined by whether there are any selected options. It is
+    read-only and cannot be set directly.
+
+    :attr:`active` is a :class:`~kivy.properties.AliasProperty` and
+    is bound to the `selected_options` property, updating automatically
+    whenever the selected options change.
+    """
+
     _chips: List[MorphInputChip] = ListProperty([])
     """Internal list of chips representing selected options.
 
@@ -862,6 +899,7 @@ class MorphDropdownMultiselect(
 
     default_config: Dict[str, Any] = (
         MorphDropdownFilterField.default_config.copy() | dict(
+        focus_trailing_icon='',
         ))
 
     __events__ = (
@@ -962,6 +1000,18 @@ class MorphDropdownMultiselect(
                 - l_padding
                 - r_padding)
         self._text_input.width = available_width
+    
+    def _on_trailing_release(self, *args) -> None:
+        """Handle the release event of the trailing widget.
+
+        This method is called when the trailing widget (typically an
+        icon button) is released. """
+        if self.active:
+            self._options_container.clear_widgets()
+            self._options_container.add_widget(self._text_input)
+        else:
+            for item in self.dropdown_menu.items:
+                self.add_selected_option(item['label_text'])
 
     def on_enter_press(self, *args) -> None:
         """Handle the event when the user presses Enter in the text 
