@@ -28,6 +28,7 @@ from typing import Literal
 from textwrap import dedent
 
 from kivy.lang import Builder
+from kivy.clock import Clock
 from kivy.metrics import dp
 from kivy.properties import ListProperty
 from kivy.properties import DictProperty
@@ -812,6 +813,7 @@ class MorphDropdownMultiselect(
 
     selected_options: List[str] = AliasProperty(
         _get_selected_options,
+        None,
         bind=['_chips'])
     """List of currently selected options in the multiselect dropdown.
 
@@ -863,11 +865,14 @@ class MorphDropdownMultiselect(
         ))
 
     __events__ = (
+        'on_selection_change',
         'on_enter_press',)
 
     def __init__(self, **kwargs) -> None:
         if '_options_container' not in kwargs:
             kwargs['_options_container'] = MorphStackLayout(
+                theme_color_bindings=dict(
+                    normal_surface_color='primary_container_color',),
                 orientation='lr-tb',
                 spacing=dp(4),
                 padding=dp(4),
@@ -876,17 +881,87 @@ class MorphDropdownMultiselect(
         super().__init__(**kwargs)
         self._options_container.add_widget(self._text_input)
         self._options_container.bind(
-            children=self._update_chips,)
+            children=self.on_options_container_children,
+            size=self._adjust_text_input_width,)
         self._text_input.bind(
             on_text_validate=self.on_enter_press,)
         self._update_chips()
+        self._adjust_text_input_width()
+
+    def on_options_container_children(
+            self, instance: MorphStackLayout, children: List[object]) -> None:
+        """Handle changes to the children of the options container.
+        
+        This method is called whenever the children of the options 
+        container change, such as when a new chip is added or an 
+        existing chip is removed. It checks if the internal text input 
+        is still a child of the options container before dispatching the
+        :method:`on_selection_change` event, ensuring that the event is 
+        only triggered when the text input is present.
+
+        Notes
+        -----
+        The event is dispatched using `Clock.schedule_once` to ensure 
+        that it is executed in the next frame, allowing the UI to update
+        before the event is handled. This is important to allow the 
+        addition or removal of chips to be reflected in the UI before 
+        any further processing occurs.
+        """
+        if self._text_input not in children:
+            return
+        
+        Clock.schedule_once(lambda dt: self.dispatch('on_selection_change'))
+
+    def on_selection_change(self, *args) -> None:
+        """Event handler for selection change events.
+
+        This method is called whenever the selection of options changes,
+        such as when a new option is added or an existing option is 
+        removed. It can be overridden to provide custom behavior when the
+        selection changes.
+        """
+        self._update_chips()
+        self._adjust_text_input_width()
+        self._update_layout()
 
     def _update_chips(self, *args) -> None:
         """Update the internal list of chips based on the current 
-        children of the options container."""
-        self._chips = [
-            c for c in getattr(self._options_container, 'children', [])
-            if isinstance(c, MorphInputChip)]
+        children of the options container.
+        
+        This method is called to refresh the internal list of chips 
+        whenever the children of the options container change.
+        """
+        self._chips = sorted(
+            (c for c in getattr(self._options_container, 'children', [])
+            if isinstance(c, MorphInputChip)),
+            key=lambda c: (c.top, -c.right))
+        
+    def _adjust_text_input_width(self, *args) -> None:
+        """Adjust the width of the internal text input based on the 
+        available space in the options container.
+        
+        This method calculates the available width for the text input
+        based on the width of the options container and the space taken
+        by the chips. It then sets the width of the text input to fit
+        within the remaining space."""
+        if self._options_container is None:
+            return
+        
+        self._text_input.width = self._text_input.minimum_width
+        l_padding = self._options_container.padding[0]
+        r_padding = self._options_container.padding[2]
+        h_spacing = self._options_container.spacing[0]
+
+        available_width = (
+            self._options_container.width
+            - (self._chips[0].right + h_spacing if self._chips else l_padding)
+            - r_padding)
+        if available_width < self._text_input.minimum_width:
+            available_width = (
+                self._options_container.width
+                - l_padding
+                - r_padding)
+        self._text_input.width = available_width
 
     def on_enter_press(self, *args) -> None:
         """Handle the event when the user presses Enter in the text 
@@ -938,10 +1013,10 @@ class MorphDropdownMultiselect(
         self._options_container.remove_widget(self._text_input)
         self._options_container.add_widget(chip)
         self._options_container.add_widget(self._text_input)
+
         items = self.dropdown_menu.items
         if option not in [i['label_text'] for i in items]:
             self.dropdown_menu.items = items + [{'label_text': option}]
-        self._update_layout()
     
     def validate(self, text: str) -> bool:
         """Validate the current text input.
