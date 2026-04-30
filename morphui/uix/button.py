@@ -411,13 +411,13 @@ class MorphTextIconToggleButton(
 
     This class extends MorphTextIconButton and adds toggle behavior,
     allowing the button to switch between active and inactive states.
-    By default, it uses 'menu-down' and 'menu-up' icons to indicate
+    By default, it uses 'chevron-down' and 'chevron-up' icons to indicate
     the toggle state.
     """
     default_config: Dict[str, Any] = (
         MorphTextIconButton.default_config.copy() | dict(
-        normal_icon='menu-down',
-        active_icon='menu-up',))
+        normal_icon='chevron-down',
+        active_icon='chevron-up',))
     
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)

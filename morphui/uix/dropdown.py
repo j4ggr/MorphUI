@@ -402,7 +402,7 @@ class MorphDropdownSelect(
     ```
     """
 
-    normal_icon: str = StringProperty('menu-down')
+    normal_icon: str = StringProperty('chevron-down')
     """Icon for the normal (closed) state of the dropdown filter field.
 
     This property holds the icon name used when the dropdown is in its
@@ -410,10 +410,10 @@ class MorphDropdownSelect(
 
     :attr:`normal_icon` is a
     :class:`~kivy.properties.StringProperty` and defaults to
-    `'menu-down'`.
+    `'chevron-down'`.
     """
 
-    active_icon: str | None  = StringProperty('menu-up')
+    active_icon: str | None  = StringProperty('chevron-up')
     """Icon for the focused (open) state of the dropdown filter field.
 
     This property holds the icon name used when the dropdown is in its
@@ -421,7 +421,7 @@ class MorphDropdownSelect(
     
     :attr:`active_icon` is a
     :class:`~kivy.properties.StringProperty` and defaults to
-    `'menu-up'`.
+    `'chevron-up'`.
     """
 
     dropdown_menu: MorphDropdownMenu = ObjectProperty(None)
@@ -570,7 +570,7 @@ class MorphDropdownFilterField(MorphTextField):
     ```
     """
 
-    normal_trailing_icon: str = StringProperty('menu-down')
+    normal_trailing_icon: str = StringProperty('chevron-down')
     """Icon for the normal (closed) state of the dropdown filter field.
 
     This property holds the icon name used when the dropdown is in its
@@ -578,10 +578,10 @@ class MorphDropdownFilterField(MorphTextField):
 
     :attr:`normal_trailing_icon` is a
     :class:`~kivy.properties.StringProperty` and defaults to
-    `'menu-down'`.
+    `'chevron-down'`.
     """
 
-    focus_trailing_icon: str = StringProperty('menu-up')
+    focus_trailing_icon: str = StringProperty('chevron-up')
     """Icon for the focused (open) state of the dropdown filter field.
 
     This property holds the icon name used when the dropdown is in its
@@ -589,7 +589,7 @@ class MorphDropdownFilterField(MorphTextField):
 
     :attr:`focus_trailing_icon` is a
     :class:`~kivy.properties.StringProperty` and defaults to
-    `'menu-up'`.
+    `'chevron-up'`.
     """
 
     dropdown_menu: MorphDropdownMenu = ObjectProperty(None)

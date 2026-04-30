@@ -793,8 +793,10 @@ class MorphTextField(
             right += self.trailing_widget.width + self.spacing[0]
 
         if self.heading_focus_behavior == 'move_above' and self.engaged:
-            top += bottom
-            bottom = 0
+            shift = bottom - dp(2)
+            if shift > 0:
+                top += shift
+                bottom = dp(2)
         
         return (left, top, right, bottom)
 
@@ -1265,12 +1267,9 @@ class MorphTextField(
                     x = x
                     y = y
                 case 'move_above':
+                    self._update_input_widget_geometry()
                     x = self.input_widget.x
-                    y = (
-                    self.y
-                    + self.input_widget.height
-                    - self.input_widget_padding[1]
-                    + self.spacing[1])
+                    y = self.input_widget.top + self.spacing[1]
                 case 'float_to_border':
                     x = max(
                         self.x + self.padding[0],
@@ -1575,6 +1574,6 @@ class MorphTextFieldFilled(
         MorphTextField.default_config.copy() | dict(            
             heading_focus_behavior='move_above',
             border_bottom_line_only=True,
-            input_widget_padding=[dp(8), dp(8), dp(18), dp(18)],
+            padding=[dp(4), dp(4), dp(4), dp(18)],
             multiline=False,
             radius=[dp(16), dp(16), 0, 0],))
