@@ -550,6 +550,50 @@ class MorphTextField(
       text field. This icon is positioned at the end of the text field 
       and can be used to indicate additional actions or provide visual
       context.
+
+    The text field supports three visual styles: filled, outlined, and
+    rounded. The default style is filled, but you can use the specific
+    classes :class:`MorphTextFieldFilled`, :class:`MorphTextFieldOutlined`,
+    and :class:`MorphTextFieldRounded` to create instances with the
+    desired style. Each style has its own visual characteristics, such 
+    as border and background appearance, while sharing the same core
+    functionality and properties.
+
+    Examples
+    --------
+    Here is an example of how to use the MorphTextField in a simple app:
+
+    ```python
+    from morphui.app import MorphApp
+    from morphui.uix.floatlayout import MorphFloatLayout
+    from morphui.uix.textfield import MorphTextField
+
+    class MyApp(MorphApp):
+        def build(self) -> MorphFloatLayout:
+            self.theme_mode='Dark'
+            self.seed_color='morphui_teal'
+
+            layout = MorphFloatLayout(
+                MorphTextField(
+                    identity='text_field',
+                    heading_text='Enter your name',
+                    supporting_text='This field is required.',
+                    leading_icon='account',
+                    trailing_icon='close',
+                    pos_hint={'center_x': 0.5, 'center_y': 0.5},
+                    size_hint=(0.8, None),),
+                theme_color_bindings=dict(
+                    normal_surface_color='background_color',),)
+            self.text_field = layout.identities.text_field
+            # on_release does skip animation of heading text, so using on_press instead
+            self.text_field.trailing_widget.bind(on_press=self.clear_text) 
+            return layout
+
+        def clear_text(self, *args) -> None:
+            self.text_field.text = ''
+            
+    if __name__ == '__main__':
+        MyApp().run()
     """
 
     text: str = StringProperty('')
@@ -1062,15 +1106,95 @@ class MorphTextField(
         max_length : int
             The maximum length to set for the tertiary widget.
         """
-        if self.tertiary_widget is None:
+        if not self.shows_tertiary:
             return
 
         if max_length > 0:
             self.tertiary_text = f'{len(self.text)}/{max_length}'
         else:
             self.tertiary_text = ''
-        self._update_layout()
+        self._update_tertiary_position()
 
+    def _update_tertiary_position(self, *args) -> None:
+        """Update the position of the tertiary widget.
+
+        This method calculates and sets the position of the tertiary 
+        widget. The tertiary widget is typically positioned at the 
+        bottom-right of the text field."""
+        if not self.shows_tertiary:
+            return
+        
+        self.tertiary_widget.right = self.content_bbox[2]
+        self.tertiary_widget.top = self.y - self.spacing[1]
+    
+    def _update_leading_icon_position(self, *args) -> None:
+        """Update the position of the leading icon widget.
+
+        This method calculates and sets the position of the leading icon
+        widget. The leading icon is typically positioned at the left 
+        side of the text field, aligned with the input area."""
+        if not self.shows_leading_icon:
+            return
+        
+        self.leading_widget.x = self.content_bbox[0]
+
+    def _update_trailing_icon_position(self, *args) -> None:
+        """Update the position of the trailing icon widget.
+
+        This method calculates and sets the position of the trailing icon
+        widget. The trailing icon is typically positioned at the right 
+        side of the text field, aligned with the input area."""
+        if not self.shows_trailing_icon:
+            return
+
+        self.trailing_widget.right = self.content_bbox[2]
+
+    def _update_supporting_position(self, *args) -> None:
+        """Update the position of the supporting widget.
+
+        This method calculates and sets the position of the supporting
+        widget. The supporting widget is typically positioned below the
+        text field, aligned with the input area."""
+        if not self.shows_supporting:
+            return
+        
+        self.supporting_widget.x = self.content_bbox[0]
+        self.supporting_widget.top = self.y - self.spacing[1]
+        _w_max = self.width - self.padding[0] - self.padding[2]
+        if self.shows_tertiary:
+            _w_max -= (self.tertiary_widget.width + self.spacing[0])
+        self.supporting_widget.maximum_width = _w_max
+
+    def _update_input_widget_geometry(self, *args) -> None:
+        """Update the geometry of the internal input widget.
+
+        This method calculates and sets the position and size of the
+        internal input widget based on the current layout settings and
+        the presence of other widgets. It ensures that the input widget
+        is properly sized and positioned within the text field."""
+        self.input_widget.pos = self.input_bbox[0], self.input_bbox[3]
+        self.input_widget.width = max(
+            self.input_bbox[2] - self.input_bbox[0],
+            self.input_widget.minimum_width,)
+        self.input_widget.height = max(
+            self.input_bbox[1] - self.input_bbox[3],
+            self.input_widget.minimum_height,)
+
+    def _update_heading_geometry(self, *args) -> None:
+        """Update the geometry of the heading widget.
+
+        This method calculates and sets the position and font size of the
+        heading widget based on the current layout settings and focus state.
+        It ensures that the heading widget is properly sized and positioned
+        within the text field, especially during focus transitions."""
+        if not self.shows_heading:
+            return
+        
+        self.heading_widget.font_size = self._resolve_heading_font_size()
+        self.heading_widget.pos = self._resolve_heading_position()
+        self.border_open_x, self.border_open_length = (
+                self._resolve_border_open_params())
+    
     def _update_layout(self, *args) -> None:
         """Update the layout of the text field and its child widgets.
 
@@ -1094,42 +1218,15 @@ class MorphTextField(
         Animation.stop_all(self.input_widget)
         Animation.stop_all(self)
 
-        h_padding = self.padding[0] + self.padding[2]
-        
-        if self.shows_leading_icon:
-            self.leading_widget.x = self.content_bbox[0]
-
-        if self.shows_trailing_icon:
-            self.trailing_widget.right = self.content_bbox[2]
-
-        if self.shows_supporting:
-            self.supporting_widget.x = self.content_bbox[0]
-            self.supporting_widget.top = self.y - self.spacing[1]
-            _w_max = self.width - h_padding
-            if self.shows_tertiary:
-                _w_max -= (self.tertiary_widget.width + self.spacing[0])
-            self.supporting_widget.maximum_width = _w_max
-        
-        if self.shows_tertiary:
-            self.tertiary_widget.right = self.content_bbox[2]
-            self.tertiary_widget.top = self.y - self.spacing[1]
-
-        self.input_widget.pos = self.input_bbox[0], self.input_bbox[3]
-        self.input_widget.width = max(
-            self.input_bbox[2] - self.input_bbox[0],
-            self.input_widget.minimum_width,)
-        self.input_widget.height = max(
-            self.input_bbox[1] - self.input_bbox[3],
-            self.input_widget.minimum_height,)
+        self._update_leading_icon_position()
+        self._update_trailing_icon_position()
+        self._update_supporting_position()
+        self._update_tertiary_position()
+        self._update_heading_geometry()
+        self._update_input_widget_geometry()
 
         self.width = max(self.width, self.minimum_width)
 
-        if self.shows_heading:
-            self.heading_widget.font_size = self._resolve_heading_font_size()
-            self.heading_widget.pos = self._resolve_heading_position()
-            self.border_open_x, self.border_open_length = (
-                self._resolve_border_open_params())
-        
     def refresh_textfield_content(self, *args) -> None:
         """Refresh the content of the text field and its child widgets.
 
@@ -1143,7 +1240,7 @@ class MorphTextField(
         self.refresh_leading_widget()
         self.refresh_trailing_widget()
         self.refresh_triple_labels()
-        
+
         def _input_widget_updates(*args) -> None:
             self._input_height = self.input_widget.height
             self._input_min_width = self.input_widget.minimum_width
@@ -1337,6 +1434,41 @@ class MorphTextFieldOutlined(
 
     This class provides an outlined appearance for the text field,
     adhering to Material Design guidelines.
+
+    Example
+    -------
+
+    ```python
+    from morphui.app import MorphApp
+    from morphui.uix.floatlayout import MorphFloatLayout
+    from morphui.uix.textfield import MorphTextFieldOutlined
+
+    class MyApp(MorphApp):
+        def build(self) -> MorphFloatLayout:
+            self.theme_mode='Dark'
+            self.seed_color='morphui_teal'
+
+            layout = MorphFloatLayout(
+                MorphTextFieldOutlined(
+                    identity='text_field',
+                    heading_text='Enter your name',
+                    supporting_text='This field is required.',
+                    leading_icon='account',
+                    trailing_icon='close',
+                    pos_hint={'center_x': 0.5, 'center_y': 0.5},
+                    size_hint=(0.8, None),),
+                theme_color_bindings=dict(
+                    normal_surface_color='background_color',),)
+            self.text_field = layout.identities.text_field
+            # on_release does skip animation of heading text, so using on_press instead
+            self.text_field.trailing_widget.bind(on_press=self.clear_text) 
+            return layout
+
+        def clear_text(self, *args) -> None:
+            self.text_field.text = ''
+            
+    if __name__ == '__main__':
+        MyApp().run()
     """
 
     default_config: Dict[str, Any] = (
@@ -1354,6 +1486,40 @@ class MorphTextFieldRounded(
 
     This class combines the features of MorphTextField with rounded
     sides and elevation behavior for enhanced visual appearance.
+
+    Examples
+    --------
+    ```python
+    from morphui.app import MorphApp
+    from morphui.uix.floatlayout import MorphFloatLayout
+    from morphui.uix.textfield import MorphTextFieldRounded
+
+    class MyApp(MorphApp):
+        def build(self) -> MorphFloatLayout:
+            self.theme_mode='Dark'
+            self.seed_color='morphui_teal'
+
+            layout = MorphFloatLayout(
+                MorphTextFieldRounded(
+                    identity='text_field',
+                    heading_text='Enter your name',
+                    supporting_text='This field is required.',
+                    leading_icon='account',
+                    trailing_icon='close',
+                    pos_hint={'center_x': 0.5, 'center_y': 0.5},
+                    size_hint=(0.8, None),),
+                theme_color_bindings=dict(
+                    normal_surface_color='background_color',),)
+            self.text_field = layout.identities.text_field
+            # on_release does skip animation of heading text, so using on_press instead
+            self.text_field.trailing_widget.bind(on_press=self.clear_text) 
+            return layout
+
+        def clear_text(self, *args) -> None:
+            self.text_field.text = ''
+            
+    if __name__ == '__main__':
+        MyApp().run()
     """
 
     default_config: Dict[str, Any] = (
@@ -1369,6 +1535,40 @@ class MorphTextFieldFilled(
 
     This class provides a filled appearance for the text field,
     adhering to Material Design guidelines.
+
+    Examples
+    --------
+    ```python
+    from morphui.app import MorphApp
+    from morphui.uix.floatlayout import MorphFloatLayout
+    from morphui.uix.textfield import MorphTextFieldFilled
+
+    class MyApp(MorphApp):
+        def build(self) -> MorphFloatLayout:
+            self.theme_mode='Dark'
+            self.seed_color='morphui_teal'
+
+            layout = MorphFloatLayout(
+                MorphTextFieldFilled(
+                    identity='text_field',
+                    heading_text='Enter your name',
+                    supporting_text='This field is required.',
+                    leading_icon='account',
+                    trailing_icon='close',
+                    pos_hint={'center_x': 0.5, 'center_y': 0.5},
+                    size_hint=(0.8, None),),
+                theme_color_bindings=dict(
+                    normal_surface_color='background_color',),)
+            self.text_field = layout.identities.text_field
+            # on_release does skip animation of heading text, so using on_press instead
+            self.text_field.trailing_widget.bind(on_press=self.clear_text) 
+            return layout
+
+        def clear_text(self, *args) -> None:
+            self.text_field.text = ''
+            
+    if __name__ == '__main__':
+        MyApp().run()
     """
 
     default_config: Dict[str, Any] = (
