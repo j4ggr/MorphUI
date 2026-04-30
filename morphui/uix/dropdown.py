@@ -64,6 +64,10 @@ __all__ = [
     'MorphDropdownFilterFieldRounded',
     'MorphDropdownFilterFieldFilled',
     'MorphDropdownSelect',
+    'MorphDropdownMultiselect',
+    'MorphDropdownMultiselectOutlined',
+    'MorphDropdownMultiselectRounded',
+    'MorphDropdownMultiselectFilled',
     ]
 
 
@@ -774,6 +778,7 @@ class MorphDropdownMultiselect(
     Examples
     --------
     Basic usage with a simple list of items:
+
     ```python
     from morphui.app import MorphApp
     from morphui.uix.floatlayout import MorphFloatLayout
@@ -781,18 +786,67 @@ class MorphDropdownMultiselect(
 
     class MyApp(MorphApp):
         def build(self) -> MorphFloatLayout:
-            self.theme_manager.switch_to_dark()
+            self.theme_manager.theme_mode = 'Dark'
+            self.theme_manager.seed_color = 'morphui_teal'
             return MorphFloatLayout(
                 MorphDropdownMultiselect(
                     identity='my_widget',
+                    heading_text='Select Items',
                     items=[
                         {'label_text': i} 
                         for i in ['Item 1', 'Item 2', 'Item 3']],
-                normal_surface_color=self.theme_manager.surface_color,)
-    
+                    required=True,
+                    pos_hint={'center_x': 0.5, 'center_y': 0.5},),
+                theme_color_bindings=dict(
+                    normal_surface_color='background_color'),)
+
     if __name__ == '__main__':
         MyApp().run()
     ```
+
+    Different kinds of the dropdown multiselect:
+    ```python
+    from morphui.app import MorphApp
+    from morphui.uix.floatlayout import MorphFloatLayout
+    from morphui.uix.dropdown import MorphDropdownMultiselectOutlined
+    from morphui.uix.dropdown import MorphDropdownMultiselectRounded
+    from morphui.uix.dropdown import MorphDropdownMultiselectFilled
+
+    class MyApp(MorphApp):
+        def build(self) -> MorphFloatLayout:
+            self.theme_manager.theme_mode = 'Dark'
+            self.theme_manager.seed_color = 'morphui_teal'
+            items = [
+                {'label_text': f'Item {i}'}
+                for i in range(1, 6)]
+
+            return MorphFloatLayout(
+                MorphDropdownMultiselectOutlined(
+                    heading_text='Outlined Multiselect',
+                    leading_icon='database-check',
+                    identity='outlined',
+                    items=items,
+                    pos_hint={'center_x': 0.5, 'center_y': 0.9},
+                    size_hint=(0.8, None),),
+                MorphDropdownMultiselectRounded(
+                    heading_text='Rounded Multiselect',
+                    leading_icon='email-check',
+                    identity='rounded',
+                    items=items,
+                    pos_hint={'center_x': 0.5, 'center_y': 0.7},
+                    size_hint=(0.8, None),),
+                MorphDropdownMultiselectFilled(
+                    heading_text='Filled Multiselect',
+                    leading_icon='filter-check',
+                    identity='filled',
+                    items=items,
+                    pos_hint={'center_x': 0.5, 'center_y': 0.5},
+                    size_hint=(0.8, None),),
+                theme_color_bindings=dict(
+                    normal_surface_color='background_color'),)
+    
+    if __name__ == '__main__':
+        MyApp().run()
     """
 
     normal_trailing_icon: str = StringProperty('check-all')
@@ -1090,3 +1144,132 @@ class MorphDropdownMultiselect(
         self.error_type = error_type
         return not error
 
+
+class MorphDropdownMultiselectOutlined(
+    MorphDropdownMultiselect):
+    """An outlined version of the MorphDropdownMultiselect component.
+
+    Uses same default configuration as
+    :class:`~morphui.uix.textfield.MorphTextFieldOutlined`
+
+    Examples
+    --------
+    Basic usage with a simple list of items:
+
+    ```python
+    from morphui.app import MorphApp
+    from morphui.uix.floatlayout import MorphFloatLayout
+    from morphui.uix.dropdown import MorphDropdownMultiselectOutlined
+
+    class MyApp(MorphApp):
+        def build(self) -> MorphFloatLayout:
+            self.theme_manager.theme_mode = 'Dark'
+            self.theme_manager.seed_color = 'morphui_teal'
+            return MorphFloatLayout(
+                MorphDropdownMultiselectOutlined(
+                    identity='my_widget',
+                    heading_text='Select Items',
+                    items=[
+                        {'label_text': i} 
+                        for i in ['Item 1', 'Item 2', 'Item 3']],
+                    required=True,
+                    pos_hint={'center_x': 0.5, 'center_y': 0.5},),
+                theme_color_bindings=dict(
+                    normal_surface_color='background_color'),)
+    
+    if __name__ == '__main__':
+        MyApp().run()
+    """
+
+    default_config: Dict[str, Any] = (
+        MorphDropdownMultiselect.default_config.copy()
+        | MorphTextFieldOutlined.default_config.copy())
+    """Default configuration for the
+    :class:`MorphDropdownMultiselectOutlined`."""
+
+
+class MorphDropdownMultiselectRounded(
+        MorphRoundSidesBehavior,
+        MorphDropdownMultiselect):
+    """A rounded version of the MorphDropdownMultiselect component.
+
+    Uses same default configuration as
+    :class:`~morphui.uix.textfield.MorphTextFieldRounded`
+
+    Examples
+    --------
+    Basic usage with a simple list of items:
+
+    ```python
+    from morphui.app import MorphApp
+    from morphui.uix.floatlayout import MorphFloatLayout
+    from morphui.uix.dropdown import MorphDropdownMultiselectRounded
+
+    class MyApp(MorphApp):
+        def build(self) -> MorphFloatLayout:
+            self.theme_manager.theme_mode = 'Dark'
+            self.theme_manager.seed_color = 'morphui_teal'
+            return MorphFloatLayout(
+                MorphDropdownMultiselectRounded(
+                    identity='my_widget',
+                    heading_text='Select Items',
+                    items=[
+                        {'label_text': i} 
+                        for i in ['Item 1', 'Item 2', 'Item 3']],
+                    required=True,
+                    pos_hint={'center_x': 0.5, 'center_y': 0.5},),
+                theme_color_bindings=dict(
+                    normal_surface_color='background_color'),)
+    
+    if __name__ == '__main__':
+        MyApp().run()
+    """
+
+    default_config: Dict[str, Any] = (
+        MorphDropdownMultiselect.default_config.copy()
+        | MorphTextFieldRounded.default_config.copy())
+    """Default configuration for the
+    :class:`MorphDropdownMultiselectRounded`."""
+
+
+class MorphDropdownMultiselectFilled(
+    MorphDropdownMultiselect):
+    """A filled version of the MorphDropdownMultiselect component.
+
+    Uses same default configuration as
+    :class:`~morphui.uix.textfield.MorphTextFieldFilled`
+
+    Examples
+    --------
+    Basic usage with a simple list of items:
+
+    ```python
+    from morphui.app import MorphApp
+    from morphui.uix.floatlayout import MorphFloatLayout
+    from morphui.uix.dropdown import MorphDropdownMultiselectFilled
+
+    class MyApp(MorphApp):
+        def build(self) -> MorphFloatLayout:
+            self.theme_manager.theme_mode = 'Dark'
+            self.theme_manager.seed_color = 'morphui_teal'
+            return MorphFloatLayout(
+                MorphDropdownMultiselectFilled(
+                    identity='my_widget',
+                    heading_text='Select Items',
+                    items=[
+                        {'label_text': i} 
+                        for i in ['Item 1', 'Item 2', 'Item 3']],
+                    required=True,
+                    pos_hint={'center_x': 0.5, 'center_y': 0.5},),
+                theme_color_bindings=dict(
+                    normal_surface_color='background_color'),)
+    
+    if __name__ == '__main__':
+        MyApp().run()
+    """
+
+    default_config: Dict[str, Any] = (
+        MorphDropdownMultiselect.default_config.copy()
+        | MorphTextFieldFilled.default_config.copy())
+    """Default configuration for the
+    :class:`MorphDropdownMultiselectFilled`."""
