@@ -422,7 +422,7 @@ class BaseListView(
     and defaults to an empty string."""
 
     filter_mode: Literal['fuzzy', 'contains', 'prefix'] = OptionProperty(
-        'fuzzy', options=['fuzzy', 'contains', 'prefix'])
+        'contains', options=['fuzzy', 'contains', 'prefix'])
     """The matching strategy used when filtering items.
 
     Controls how :attr:`filter_value` is compared against each item's
@@ -436,7 +436,7 @@ class BaseListView(
       (case-insensitive).
 
     :attr:`filter_mode` is a :class:`~kivy.properties.OptionProperty`
-    and defaults to ``'fuzzy'``.
+    and defaults to ``'contains'``.
     """
 
     item_release_callback: Callable[[Any, int], None] | None = ObjectProperty(None)
