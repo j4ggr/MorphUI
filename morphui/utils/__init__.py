@@ -14,6 +14,8 @@ from .helpers import get_edges_params
 from .helpers import calculate_text_size
 from .helpers import calculate_widget_local_pos
 
+from .observers import ProgressObserver
+
 
 __all__ = [
     'DotDict',
@@ -25,4 +27,5 @@ __all__ = [
     'FrozenGeometry',
     'get_edges_params',
     'calculate_text_size',
-    'calculate_widget_local_pos',]
+    'calculate_widget_local_pos',
+    'ProgressObserver',]

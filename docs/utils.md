@@ -9,3 +9,7 @@
 ---
 
 ::: morphui.utils.dotdict
+
+---
+
+::: morphui.utils.observers
