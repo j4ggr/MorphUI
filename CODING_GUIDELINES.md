@@ -210,7 +210,7 @@ class MorphButton(MorphLabel):
         # Typography
         typography_role='Label',
         typography_size='medium',
-        typography_weight='Medium',
+        typography_weight='Heavy',
         
         # Behavior
         size_hint=(None, None),
@@ -221,7 +221,7 @@ class MorphButton(MorphLabel):
     Provides Material Design button appearance and behavior:
     - Centered content alignment for button text
     - Primary theme colors for prominence
-    - Medium weight typography for readability
+    - Heavy weight typography for readability
     - Auto-sizing for content-appropriate dimensions
     
     Override theme_color_bindings when using theme_style parameter.

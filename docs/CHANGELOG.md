@@ -14,6 +14,47 @@ __Types of changes__:
 - _Fixed_ for any bug fixes.
 - _Security_ in case of vulnerabilities.
 
+## [0.14.0] - 2026-04-30
+
+### Added
+
+- Added `MorphDropdownMultiselect` component: multi-selection dropdown built on top of `MorphDropdownFilterField`, displaying selected items as chips inside the text field with an auto-adjusting text input width.
+- Added `MorphDropdownMultiselectOutlined`, `MorphDropdownMultiselectRounded`, and `MorphDropdownMultiselectFilled` styled variants inheriting their `default_config` from the corresponding `MorphTextField` subclasses.
+- Added select-all / deselect-all functionality to `MorphDropdownMultiselect`; when a filter is active, the action applies only to the visible (filtered) items.
+- Added `engaged` property and associated layout helpers to `MorphTextField` to track whether the field has ever received user input.
+- Added `_trigger_validation` call on `engaged` changes in `MorphTextField` so validation state updates automatically when the field becomes engaged.
+- Added `filter_mode` property to `BaseListView` supporting `'contains'` and `'fuzzy'` strategies.
+- Added context manager support (`__enter__` / `__exit__`) to `MorphDialog`.
+- Added `is_scaling` property to `MorphRoundSidesBehavior` to observe whether a scaling animation is in progress.
+- Added `MorphAutoSizingBehavior` to `MorphStackLayout`.
+- Added full MkDocs documentation site: landing page rewrite, Getting Started guide, theme and behavior sections, component overview pages with code examples, module docstrings, and GitHub Pages deployment workflow.
+- Added `ProgressObserver` utility (`morphui.utils.observers`): runs a callable worker on a daemon thread and polls its `busy`/`status`/`progress`/`cancel` state via the Kivy clock to keep a widget in sync, with `on_success` / `on_failure` / `on_completion` callback hooks and cooperative cancellation.
+
+### Changed
+
+- Changed default `filter_mode` in `BaseListView` from `'fuzzy'` to `'contains'`.
+- Changed default padding in `MorphChip` from `dp(8)` to `[dp(8), dp(4)]`.
+- Changed `MorphSwitch._do_press` signature to be compatible with the `MorphButtonBehavior` base class.
+- Changed `MorphPlotWidget._update_figure_size()` to always derive the figure size from the widget size and call `resize_event`, preventing the widget from resizing when a new figure is assigned.
+
+### Refactored
+
+- Split `MorphTextField._update_layout` into dedicated methods: `_update_leading_icon_position`, `_update_trailing_icon_position`, `_update_supporting_position`, `_update_tertiary_position`, `_update_input_widget_geometry`, and `_update_heading_geometry`.
+- Replaced ad-hoc layout helpers in `MorphTextField` with reactive `content_bbox` / `input_bbox` properties.
+- Exposed `input_widget` accessor on `MorphTextField` and cleaned up internal padding logic.
+- Removed obsolete `_text_input_padding` property from `MorphTextField`.
+- Rewrote `MorphDropdownMultiselect` on top of `MorphDropdownFilterField`, replacing the previous `StackLayout`-based prototype.
+
+### Fixed
+
+- Fixed right positioning of `text_input` and `heading_label` for filled-style `MorphTextField` variants.
+- Fixed touch events propagating through the scrim layer in `MorphDialog`.
+- Fixed icons not appearing in chip examples and `MorphInputChip` due to deprecated icon property settings.
+- Fixed `MorphPlotWidget` resizing the widget when a new figure with different dimensions was assigned.
+- Fixed `DataView._get_values` crash when `n_cols < 1`.
+- Fixed custom color CSS overrides not being applied in the documentation site.
+- Fixed Griffe docstring warnings by removing a stale `opacity` parameter and converting constructor `Parameters` to `Attributes` in chart and plotting widget docstrings.
+
 ## [0.13.1] - 2026-03-26
 
 ### Changed

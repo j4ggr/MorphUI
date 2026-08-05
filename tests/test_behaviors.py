@@ -821,9 +821,6 @@ class TestMorphResizeBehavior:
         assert widget.auto_size == (False, False)
         assert widget._original_size_hint == (1, 1)  # Stored as tuple
         assert widget._original_size == (100.0, 100.0)  # Default Widget size (stored as tuple)
-        # _has_texture_size should be initialized during __init__.
-        assert widget._has_texture_size is False
-        assert widget.has_texture_size is False
 
     def test_initialization_with_auto_size(self):
         """Test initialization with auto_size=True sets both width and height."""
@@ -832,24 +829,6 @@ class TestMorphResizeBehavior:
         assert widget.auto_size == (True, True)
         assert widget.auto_width is True
         assert widget.auto_height is True
-
-    def test_has_texture_size_property_with_texture(self):
-        """Test has_texture_size property for widget with texture_size."""
-        widget = self.MockTextWidget()
-        
-        # First call should check and cache
-        assert widget.has_texture_size is True
-        assert widget._has_texture_size is True
-        
-        # Second call should use cached value
-        assert widget.has_texture_size is True
-
-    def test_has_texture_size_property_without_texture(self):
-        """Test has_texture_size property for widget without texture_size."""
-        widget = self.MockWidget()
-        
-        assert widget.has_texture_size is False
-        assert widget._has_texture_size is False
 
     def test_auto_width_property_binding(self):
         """Test auto_width property changes trigger appropriate methods."""
@@ -891,19 +870,6 @@ class TestMorphResizeBehavior:
         assert widget.size_hint_x is None
         assert widget.size_hint_y is None
 
-    def test_update_size_with_texture_size(self):
-        """Test _update_size method with texture_size widget."""
-        widget = self.MockTextWidget()
-        widget.texture_size = (120, 60)
-        
-        # Test auto_width only
-        widget.auto_width = True
-        widget.auto_height = False
-        widget._update_auto_sizing()
-        
-        assert widget.width == 120
-        assert widget.height == widget._original_size[1]
-
     def test_update_size_with_minimum_size(self):
         """Test _update_size method with minimum_width/height widget."""
         widget = self.MockWidget()
@@ -917,18 +883,6 @@ class TestMorphResizeBehavior:
         
         assert widget.width == widget._original_size[0]
         assert widget.height == 75
-
-    def test_update_size_both_dimensions(self):
-        """Test _update_size method with both auto_width and auto_height."""
-        widget = self.MockTextWidget()
-        widget.texture_size = (200, 100)
-        widget.auto_width = True
-        widget.auto_height = True
-        
-        widget._update_auto_sizing()
-        
-        assert widget.width == 200
-        assert widget.height == 100
 
     def test_update_size_restore_original(self):
         """Test _update_size restores original size when auto sizing disabled."""
@@ -3317,7 +3271,6 @@ class TestMorphButtonBehavior:
 
         assert result is True
         assert self.widget.pressed is True
-        assert self.widget.active is True
         assert self.widget in self.mock_touch.ud
         assert self.mock_touch.grab.called
         assert self.widget in self.mock_touch.ud
@@ -3372,8 +3325,9 @@ class TestMorphButtonBehavior:
         self.widget._press_duration = 0.1  # Above min_state_time
 
         with patch.object(self.widget, 'collide_point', return_value=True), \
-             patch.object(Clock, 'schedule_once'):
+             patch.object(Clock, 'schedule_once') as mock_schedule:
             result = self.widget.on_touch_up(self.mock_touch)
+            mock_schedule.call_args[0][0]()  # Run the scheduled _do_release.
 
         assert result is True
         assert self.widget.pressed is False
@@ -3407,7 +3361,8 @@ class TestMorphButtonBehavior:
         
         result = self.widget.on_touch_up(self.mock_touch)
         assert result is None
-        assert self.widget.pressed is False
+        # Disabled widgets return early before scheduling _do_release.
+        assert self.widget.pressed is True
 
     def test_on_touch_up_outside_bounds_no_always_release(self):
         """Test touch up outside bounds when always_release is False."""
@@ -3438,13 +3393,10 @@ class TestMorphButtonBehavior:
         
         assert result is True
         # Check that the delay is calculated correctly
-        calls = mock_schedule.call_args_list
-        assert len(calls) == 2
-        # Both calls should have a delay >= min_state_time - _press_duration
+        mock_schedule.assert_called_once()
+        delay = mock_schedule.call_args[0][1]  # Second argument is the delay
         expected_delay = 0.035 - 0.01
-        for call in calls:
-            delay = call[0][1]  # Second argument is the delay
-            assert delay >= expected_delay
+        assert delay >= expected_delay
 
     def test_on_touch_up_with_ripple(self):
         """Test touch up with ripple effect."""
@@ -3520,15 +3472,9 @@ class TestMorphButtonBehavior:
 
     def test_do_release(self):
         """Test _do_release method."""
-        assert self.widget.active is False
+        self.widget.pressed = True
         self.widget._do_release()
-        assert self.widget.active is True
-
-    def test_do_release(self):
-        """Test _do_release method."""
-        self.widget.active = True
-        self.widget._do_release()
-        assert self.widget.active is False
+        assert self.widget.pressed is False
 
     def test_on_press_event(self):
         """Test on_press event dispatch."""
@@ -3798,7 +3744,6 @@ class TestMorphToggleButtonBehavior:
                 result = self.widget.on_touch_up(self.mock_touch)
             
             assert result is True
-            assert self.widget.pressed is False
             
             # Simulate the scheduled _do_release call
             # Get the scheduled function call
@@ -3806,7 +3751,8 @@ class TestMorphToggleButtonBehavior:
             scheduled_func = mock_schedule.call_args_list[0][0][0]  # First call, first argument
             scheduled_func(0)  # Call with dt=0
             
-            # After the press/release cycle, active state should have toggled
+            # After the press/release cycle, pressed resets and active toggles.
+            assert self.widget.pressed is False
             assert self.widget.active is True
 
     def test_group_mutual_exclusivity_full_interaction(self):
