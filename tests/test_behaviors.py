@@ -24,6 +24,9 @@ from morphui.uix.behaviors import MorphTabNavigableBehavior
 from morphui.uix.behaviors import MorphSurfaceLayerBehavior
 from morphui.uix.behaviors import MorphDeclarativeBehavior
 from morphui.uix.behaviors import MorphAppReferenceBehavior
+from morphui.uix.behaviors import require_view
+from morphui.uix.behaviors import require_model
+from morphui.uix.behaviors import require_controller
 from morphui.uix.behaviors import MorphAutoSizingBehavior
 from morphui.uix.behaviors import MorphSizeBoundsBehavior
 from morphui.uix.behaviors import MorphStateBehavior
@@ -1607,6 +1610,90 @@ class TestMorphAppReferenceBehavior:
         controller = widget.controller
         
         assert controller is None
+
+
+class TestMorphAppReferenceGuardDecorators:
+    """Test suite for the require_view/require_model/require_controller
+    decorators of morphui.uix.behaviors.appreference."""
+
+    class TestWidget(MorphAppReferenceBehavior, Widget):
+        """Test widget combining Widget with MorphAppReferenceBehavior."""
+
+        @require_view()
+        def set_theme(self, *args) -> str:
+            return 'ran'
+
+        @require_model('do the thing')
+        def do_thing(self) -> str:
+            return 'ran'
+
+        @require_controller()
+        def notify_controller(self) -> str:
+            return 'ran'
+
+        @require_view()
+        def on_input_change(self, *args) -> str:
+            return 'ran'
+
+    def test_require_view_skips_when_view_missing(self):
+        """The method is skipped and a warning is logged when view is None."""
+        widget = self.TestWidget()
+        with patch('morphui.uix.behaviors.appreference.Logger') as mock_logger:
+            result = widget.set_theme()
+        assert result is None
+        mock_logger.warning.assert_called_once()
+        assert 'set theme' in mock_logger.warning.call_args[0][0]
+
+    def test_require_view_runs_when_view_present(self):
+        """The method runs normally once view is available."""
+        widget = self.TestWidget()
+        widget._view = Mock()
+        assert widget.set_theme() == 'ran'
+
+    def test_require_model_uses_custom_message(self):
+        """A custom action phrase is used in the warning message."""
+        widget = self.TestWidget()
+        with patch('morphui.uix.behaviors.appreference.Logger') as mock_logger:
+            result = widget.do_thing()
+        assert result is None
+        assert 'do the thing' in mock_logger.warning.call_args[0][0]
+
+    def test_require_model_runs_when_model_present(self):
+        """The method runs normally once model is available."""
+        widget = self.TestWidget()
+        widget._model = Mock()
+        assert widget.do_thing() == 'ran'
+
+    def test_require_controller_skips_when_controller_missing(self):
+        """The method is skipped when controller is None."""
+        widget = self.TestWidget()
+        with patch('morphui.uix.behaviors.appreference.Logger') as mock_logger:
+            result = widget.notify_controller()
+        assert result is None
+        mock_logger.warning.assert_called_once()
+
+    def test_require_controller_runs_when_controller_present(self):
+        """The method runs normally once controller is available."""
+        widget = self.TestWidget()
+        widget._controller = Mock()
+        assert widget.notify_controller() == 'ran'
+
+    def test_default_message_strips_on_prefix(self):
+        """Methods named on_* get a 'handle ...' phrase by default."""
+        widget = self.TestWidget()
+        with patch('morphui.uix.behaviors.appreference.Logger') as mock_logger:
+            widget.on_input_change()
+        assert 'handle input change' in mock_logger.warning.call_args[0][0]
+
+    def test_warning_prefers_hosts_log_warning_method(self):
+        """If the host defines log_warning, it is used instead of Logger."""
+        widget = self.TestWidget()
+        widget.log_warning = Mock()
+        with patch('morphui.uix.behaviors.appreference.Logger') as mock_logger:
+            result = widget.set_theme()
+        assert result is None
+        widget.log_warning.assert_called_once()
+        mock_logger.warning.assert_not_called()
 
 
 class TestMorphThemeBehavior:

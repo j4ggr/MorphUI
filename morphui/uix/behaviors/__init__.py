@@ -1,4 +1,7 @@
 from .appreference import MorphAppReferenceBehavior
+from .appreference import require_view
+from .appreference import require_model
+from .appreference import require_controller
 
 from .states import MorphStateBehavior
 
@@ -57,6 +60,9 @@ from .composition import MorphTrailingWidgetBehavior
 
 __all__ = [
     'MorphAppReferenceBehavior',        # App reference handling
+    'require_view',                     # Skip method + warn if view is unset
+    'require_model',                    # Skip method + warn if model is unset
+    'require_controller',               # Skip method + warn if controller is unset
     'MorphStateBehavior',               # Interactive state properties
     'MorphHighlightLayerBehavior',      # Highlight layer functionality
     'MorphSurfaceLayerBehavior',        # Surface and border styling

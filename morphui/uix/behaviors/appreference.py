@@ -1,13 +1,139 @@
+from collections.abc import Callable
+from functools import wraps
 from typing import Any
+from typing import Generic
+from typing import TypeVar
+
+from kivy.logger import Logger
 
 from morphui.app import MorphApp
 from morphui.theme.manager import ThemeManager
 from morphui.theme.typography import Typography
 
-__all__ = ['MorphAppReferenceBehavior']
+__all__ = [
+    'MorphAppReferenceBehavior',
+    'require_view',
+    'require_model',
+    'require_controller',
+]
+
+AppT = TypeVar('AppT', bound=MorphApp, default=MorphApp)
+"""Type of the running app instance, bound to :class:`MorphApp`."""
+
+ModelT = TypeVar('ModelT', default=Any)
+"""Type of the app's model instance."""
+
+ControllerT = TypeVar('ControllerT', default=Any)
+"""Type of the app's controller instance."""
+
+ViewT = TypeVar('ViewT', default=Any)
+"""Type of the app's view instance."""
 
 
-class MorphAppReferenceBehavior:
+def _phrase(func: Callable) -> str:
+    """Turn a method name like ``on_input_change`` into an action
+    phrase such as ``'handle input change'`` for warning messages."""
+    name = func.__name__
+    if name.startswith('on_'):
+        return f'handle {name[3:]}'.replace('_', ' ')
+    return name.replace('_', ' ')
+
+
+def _warn(self: Any, message: str) -> None:
+    """Emit *message* via the host's own ``log_warning`` method if it
+    has one, otherwise fall back to Kivy's ``Logger``."""
+    log_warning = getattr(self, 'log_warning', None)
+    if callable(log_warning):
+        log_warning(message)
+    else:
+        Logger.warning(f'MorphUI: {message}')
+
+
+def require_view(message: str | None = None) -> Callable[[Callable], Callable]:
+    """Decorator factory: skip the method and log a warning instead of
+    raising if ``self.view`` is not yet available.
+
+    Avoids a repetitive ``if self.view is None: ...; return`` guard in
+    every method of a :class:`MorphAppReferenceBehavior` subclass that
+    may run before the view has been attached to the running app. The
+    warning is emitted via the host's own ``log_warning`` method if it
+    has one, otherwise via Kivy's ``Logger``.
+
+    Parameters
+    ----------
+    message : str | None
+        Action phrase used in the warning, e.g. ``'save settings'``.
+        Defaults to the decorated method's name with underscores
+        replaced by spaces (``on_`` prefixes become ``'handle ...'``).
+
+    Examples
+    --------
+    ```python
+    class MyController(MorphAppReferenceBehavior):
+        @require_view()
+        def save_settings(self, *args) -> None:
+            self.view.settings['theme_mode'] = 'Dark'
+
+        @require_view('switch primary palette')
+        def switch_seed_color(self, palette_name: str) -> None:
+            self.view.theme_manager.seed_color = palette_name
+    ```
+    """
+    def decorator(func: Callable) -> Callable:
+        action = message or _phrase(func)
+
+        @wraps(func)
+        def wrapper(self, *args, **kwargs):
+            if self.view is None:
+                _warn(self, f'View not yet available, cannot {action}.')
+                return None
+            return func(self, *args, **kwargs)
+        return wrapper
+    return decorator
+
+
+def require_model(message: str | None = None) -> Callable[[Callable], Callable]:
+    """Decorator factory: skip the method and log a warning instead of
+    raising if ``self.model`` is not yet available.
+
+    See :func:`require_view` for details; this variant guards
+    ``self.model`` instead.
+    """
+    def decorator(func: Callable) -> Callable:
+        action = message or _phrase(func)
+
+        @wraps(func)
+        def wrapper(self, *args, **kwargs):
+            if self.model is None:
+                _warn(self, f'Model not yet available, cannot {action}.')
+                return None
+            return func(self, *args, **kwargs)
+        return wrapper
+    return decorator
+
+
+def require_controller(
+        message: str | None = None) -> Callable[[Callable], Callable]:
+    """Decorator factory: skip the method and log a warning instead of
+    raising if ``self.controller`` is not yet available.
+
+    See :func:`require_view` for details; this variant guards
+    ``self.controller`` instead.
+    """
+    def decorator(func: Callable) -> Callable:
+        action = message or _phrase(func)
+
+        @wraps(func)
+        def wrapper(self, *args, **kwargs):
+            if self.controller is None:
+                _warn(self, f'Controller not yet available, cannot {action}.')
+                return None
+            return func(self, *args, **kwargs)
+        return wrapper
+    return decorator
+
+
+class MorphAppReferenceBehavior(Generic[AppT, ModelT, ControllerT, ViewT]):
     """Behavior providing convenient access to app instances and MVC 
     components.
 
@@ -30,7 +156,10 @@ class MorphAppReferenceBehavior:
     from morphui.uix.label import MorphLabel
     from morphui.uix.behaviors import MorphAppReferenceBehavior
 
-    class MyWidget(MorphAppReferenceBehavior, MorphLabel):
+    class MyWidget(
+        MorphAppReferenceBehavior[MyApp, MyModel, MyController, MyView],
+        MorphLabel,
+    ):
         def __init__(self, **kwargs):
             super().__init__(**kwargs)
             
@@ -72,22 +201,28 @@ class MorphAppReferenceBehavior:
     - Theme manager is always available through the MorphApp instance
     - The app reference is automatically obtained and cached on first 
       access
+    - Subclasses can specialize the ``App``, ``Model``, ``Controller`` 
+      and ``View`` types by parameterizing this generic behavior, 
+      e.g. ``MorphAppReferenceBehavior[MyApp, MyModel, MyController, 
+      MyView]``, so that ``app``, ``model``, ``controller`` and 
+      ``view`` are typed accordingly instead of falling back to 
+      ``Any``
     """
 
-    _app: Any = None
+    _app: AppT | None = None
     """Reference to the running app instance (cached)."""
 
-    _model: Any = None
+    _model: ModelT | None = None
     """Reference to the app's model instance (cached)."""
 
-    _controller: Any = None
+    _controller: ControllerT | None = None
     """Reference to the app's controller instance (cached)."""
 
-    _view: Any = None
+    _view: ViewT | None = None
     """Reference to the app's view instance (cached)."""
 
     @property
-    def app(self) -> Any:
+    def app(self) -> AppT:
         """Get the reference to the running MorphApp instance
         (read-only).
 
@@ -109,7 +244,7 @@ class MorphAppReferenceBehavior:
         """
         if self._app is None:
             self._app = MorphApp.get_running_app()
-        return self._app
+        return self._app  # type: ignore[return-value]
     
     @property
     def theme_manager(self) -> ThemeManager:
@@ -148,7 +283,7 @@ class MorphAppReferenceBehavior:
         return MorphApp._typography
 
     @property
-    def model(self) -> Any:
+    def model(self) -> ModelT | None:
         """Get the application's model instance (read-only).
 
         This property provides access to the application's model
@@ -172,7 +307,7 @@ class MorphAppReferenceBehavior:
         return self._model
 
     @property
-    def controller(self) -> Any:
+    def controller(self) -> ControllerT | None:
         """Get the application's controller instance (read-only).
 
         This property provides access to the application's controller
@@ -240,7 +375,7 @@ class MorphAppReferenceBehavior:
         return self._controller
 
     @property
-    def view(self) -> Any:
+    def view(self) -> ViewT | None:
         """Get the application's view instance (read-only).
 
         This property provides access to the application's view
