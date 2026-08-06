@@ -14,6 +14,12 @@ __Types of changes__:
 - _Fixed_ for any bug fixes.
 - _Security_ in case of vulnerabilities.
 
+## [0.15.0] - 2026-08-05
+
+### Added
+
+- Added `ProgressObserver` utility (`morphui.utils.observers`): runs a callable worker on a daemon thread and polls its `busy`/`status`/`progress`/`cancel` state via the Kivy clock to keep a widget in sync, with `on_success` / `on_failure` / `on_completion` callback hooks and cooperative cancellation.
+
 ## [0.14.0] - 2026-04-30
 
 ### Added
@@ -28,7 +34,6 @@ __Types of changes__:
 - Added `is_scaling` property to `MorphRoundSidesBehavior` to observe whether a scaling animation is in progress.
 - Added `MorphAutoSizingBehavior` to `MorphStackLayout`.
 - Added full MkDocs documentation site: landing page rewrite, Getting Started guide, theme and behavior sections, component overview pages with code examples, module docstrings, and GitHub Pages deployment workflow.
-- Added `ProgressObserver` utility (`morphui.utils.observers`): runs a callable worker on a daemon thread and polls its `busy`/`status`/`progress`/`cancel` state via the Kivy clock to keep a widget in sync, with `on_success` / `on_failure` / `on_completion` callback hooks and cooperative cancellation.
 
 ### Changed
 
