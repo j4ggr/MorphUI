@@ -14,6 +14,12 @@ __Types of changes__:
 - _Fixed_ for any bug fixes.
 - _Security_ in case of vulnerabilities.
 
+## [0.16.0] - 2026-08-06
+
+### Added
+
+- Added `require_view`, `require_model`, `require_controller` decorator factories (`morphui.uix.behaviors.appreference`): skip the decorated method and log a warning instead of raising when `self.view` / `self.model` / `self.controller` is not yet available, removing the need for repetitive `if self.view is None: ...; return` guards in `MorphAppReferenceBehavior` subclasses. The warning is emitted via the host's own `log_warning` method if it has one, otherwise via `kivy.logger.Logger`.
+
 ## [0.15.0] - 2026-08-05
 
 ### Added
