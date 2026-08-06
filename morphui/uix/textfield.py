@@ -302,6 +302,9 @@ class MorphTextValidator(EventDispatcher):
         bool
             True if the input is a valid numeric value, False otherwise.
         """
+        if not text:
+            return False
+        
         return REGEX.NUMERIC.match(text) is not None
     
     def is_valid_alphanumeric(self, text: str) -> bool:
@@ -318,6 +321,9 @@ class MorphTextValidator(EventDispatcher):
             True if the input is a valid alphanumeric value, False 
             otherwise.
         """
+        if not text:
+            return False
+        
         return REGEX.ALPHANUMERIC.match(text) is not None
 
     def validate(self, text: str) -> bool:
@@ -917,7 +923,7 @@ class MorphTextField(
         bind=[
             'focus',
             'text'],
-        cache=True)
+        cache=False) # Do not set cache to True, it will cause the property to not update when text is changed programmatically
     """Whether the text field is active — focused or has content (read-only).
 
     Used to drive heading animation, border state, and padding transitions.
@@ -1423,7 +1429,7 @@ class MorphTextField(
         by calling the :attr:`validate` method with the current text. It
         also updates the tertiary text based on the maximum text length.
         """
-        self.validate(self._text_input.text)
+        self.validate(self.text)
         self._update_tertiary_text(self, self.max_text_length)
 
 
