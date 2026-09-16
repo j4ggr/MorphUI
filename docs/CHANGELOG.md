@@ -14,6 +14,14 @@ __Types of changes__:
 - _Fixed_ for any bug fixes.
 - _Security_ in case of vulnerabilities.
 
+## [0.16.1] - 2026-08-06
+
+### Fixed
+
+- Fixed `MorphTextValidator.is_valid_numeric` and `is_valid_alphanumeric` (`morphui.uix.textfield`) incorrectly matching empty strings as valid.
+- Fixed `MorphTextField.active` not updating when its `text` was changed programmatically by disabling caching on that property.
+- Fixed `MorphTextField` validation running against the internal `_text_input.text` instead of the field's own `text`, causing stale validation results after programmatic text changes.
+
 ## [0.16.0] - 2026-08-06
 
 ### Added
