@@ -903,7 +903,7 @@ class MorphResizeBehavior(
                 not self.resize_enabled,
                 not self.hovered_resizable_edges,
                 self._resize_in_progress,)):
-            return False
+            return super().on_touch_down(touch)
         touch.grab(self)
         touch.ud[self] = True
         self._start_resize(touch.pos)
@@ -951,7 +951,7 @@ class MorphResizeBehavior(
             True if touch was handled for resize
         """
         if not self._resize_in_progress:
-            return False
+            return super().on_touch_move(touch)
             
         self._resize(touch.pos)
         return True
@@ -1135,7 +1135,7 @@ class MorphResizeBehavior(
             True if touch was handled for resize
         """
         if not self._resize_in_progress:
-            return False
+            return super().on_touch_up(touch)
             
         touch.ungrab(self)
         self._end_resize()

@@ -1143,7 +1143,7 @@ class TestMorphResizeBehavior:
         touch.pos = (300, 175)
         touch.ud = {}
 
-        assert widget.on_touch_down(touch) is False
+        assert not widget.on_touch_down(touch)
         assert widget._resize_in_progress is False
 
     @patch('kivy.core.window.Window')
@@ -1156,7 +1156,31 @@ class TestMorphResizeBehavior:
         touch.pos = (300, 175)
         touch.ud = {}
 
-        assert widget.on_touch_down(touch) is False
+        assert not widget.on_touch_down(touch)
+
+    @patch('kivy.core.window.Window')
+    def test_on_touch_down_propagates_to_children_when_not_resizing(
+            self, mock_window):
+        """Test a touch not on a resizable edge still reaches children
+        (e.g. a button inside the resizable box)."""
+        widget = self.MockWidget()
+        widget.size = (200, 150)
+        widget.pos = (100, 100)
+        widget.hovered_edges = []  # not hovering a resizable edge
+
+        child = Widget(size=(50, 50), pos=(120, 120))
+        child.on_touch_down = Mock(return_value=True)
+        widget.add_widget(child)
+
+        touch = Mock(spec=MotionEvent)
+        touch.pos = (130, 130)
+        touch.ud = {}
+
+        result = widget.on_touch_down(touch)
+
+        assert result is True
+        child.on_touch_down.assert_called_once_with(touch)
+        assert widget._resize_in_progress is False
 
     @patch('kivy.core.window.Window')
     def test_resize_right_edge_grows_width(self, mock_window):
