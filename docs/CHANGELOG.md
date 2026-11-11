@@ -14,6 +14,19 @@ __Types of changes__:
 - _Fixed_ for any bug fixes.
 - _Security_ in case of vulnerabilities.
 
+## [0.17.0] - 2026-11-11
+
+### Added
+
+- Added collapse/expand snapping to `MorphResizeBehavior` (`morphui.uix.behaviors.sizing`): a resized dimension can now snap entirely shut below a percentage of its lower bound (`collapsible`, `collapse_threshold`, `collapsed_size`) and pop back open past another percentage (`expand_threshold`), with new `collapsed_width` / `collapsed_height` / `collapsed` properties and `on_collapse(axis)` / `on_expand(axis)` events.
+- Added `examples/sizing_example.py` demonstrating `MorphSizeBoundsBehavior`, `MorphResizeBehavior` (bounds, aspect ratio, collapse/expand), and `MorphAutoSizingBehavior` in one runnable demo app.
+
+### Fixed
+
+- Fixed `MorphResizeBehavior.on_touch_down` / `on_touch_move` / `on_touch_up` (`morphui.uix.behaviors.sizing`) swallowing every touch that wasn't on a resizable edge, which prevented child widgets (e.g. buttons) inside a resizable container from ever receiving touches.
+- Fixed `MorphSizeBoundsBehavior`'s automatic size clamp silently undoing a collapse-to-zero by overriding `constrain_size()` in `MorphResizeBehavior` to skip already-collapsed dimensions.
+- Fixed `BaseLayerBehavior` (`morphui.uix.behaviors.layer`) surface/border geometry being offset for widgets that are themselves a `RelativeLayout` (e.g. `MorphScreen`, which extends Kivy's `Screen`), by using `get_effective_pos` consistently in `_generate_corner_arc_points` / `_generate_contour` / `_generate_border_path`.
+
 ## [0.16.1] - 2026-08-06
 
 ### Fixed
