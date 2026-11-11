@@ -22,6 +22,7 @@ from kivy.metrics import dp
 from kivy.properties import ListProperty
 from kivy.properties import AliasProperty
 from kivy.properties import BooleanProperty
+from kivy.properties import NumericProperty
 from kivy.properties import VariableListProperty
 from kivy.core.window import Window
 from kivy.input.motionevent import MotionEvent
@@ -565,6 +566,8 @@ class MorphResizeBehavior(
       changes
     - **Size Constraints**: Minimum and maximum size limits via inheritance
     - **Aspect Ratio**: Optional aspect ratio preservation
+    - **Collapse/Expand**: Optional snap-shut collapsing below a
+      percentage of the lower bound, reopening past another threshold
     - **Animation**: Smooth transitions for visual feedback
     - **Events**: Comprehensive event system for resize operations
     
@@ -573,6 +576,8 @@ class MorphResizeBehavior(
     - :meth:`on_resize_start`: Fired when resize operation begins
     - :meth:`on_resize_progress`: Fired during resize (real-time updates)
     - :meth:`on_resize_end`: Fired when resize operation completes
+    - :meth:`on_collapse`: Fired when a dimension snaps entirely shut
+    - :meth:`on_expand`: Fired when a collapsed dimension pops back open
     
     Properties
     ----------
@@ -581,6 +586,11 @@ class MorphResizeBehavior(
     - :attr:`size_lower_bound`: Minimum width and height constraints (inherited)
     - :attr:`size_upper_bound`: Maximum width and height constraints (inherited)
     - :attr:`preserve_aspect_ratio`: Whether to maintain aspect ratio
+    - :attr:`collapsible`: Enable collapse-on-resize behavior
+    - :attr:`collapse_threshold`: Fraction of lower bound that triggers collapse
+    - :attr:`expand_threshold`: Fraction of lower bound that triggers re-expand
+    - :attr:`collapsed_size`: Size to snap to while collapsed
+    - :attr:`collapsed`: Whether the widget is currently collapsed
     
     Examples
     --------
@@ -614,6 +624,20 @@ class MorphResizeBehavior(
             super().__init__(**kwargs)
             self.preserve_aspect_ratio = True
             self.size_lower_bound = [100, 75]  # 4:3 ratio minimum
+    ```
+    
+    Collapsible sidebar that snaps shut when dragged small and pops
+    back open past a reveal threshold:
+    
+    ```python
+    class CollapsibleSidebar(MorphResizeBehavior, Widget):
+        def __init__(self, **kwargs):
+            super().__init__(**kwargs)
+            self.resizable_edges = ['right']
+            self.size_lower_bound = [200, -1]
+            self.collapsible = True
+            self.collapse_threshold = 0.4  # collapse below 40% of 200px
+            self.expand_threshold = 0.6    # reopen past 60% of 200px
     ```
     """
 
@@ -666,6 +690,86 @@ class MorphResizeBehavior(
     and defaults to False.
     """
 
+    collapsible: bool = BooleanProperty(False)
+    """Enable collapse-on-resize behavior.
+    
+    When True, dragging a dimension below :attr:`collapse_threshold`
+    (a fraction of its resolved lower bound) snaps that dimension
+    entirely shut to :attr:`collapsed_size` instead of stopping at the
+    lower bound. A collapsed dimension only reopens once dragged back
+    past :attr:`expand_threshold`, at which point it pops back open to
+    its lower bound size.
+    
+    :attr:`collapsible` is a :class:`~kivy.properties.BooleanProperty`
+    and defaults to False.
+    """
+
+    collapse_threshold: float = NumericProperty(0.5)
+    """Fraction of the resolved lower bound below which a dimension
+    collapses entirely.
+    
+    While dragging, once a dimension's size drops to or below
+    ``_resolved_size_lower_bound * collapse_threshold``, that dimension
+    snaps to :attr:`collapsed_size`. Has no effect unless
+    :attr:`collapsible` is True.
+    
+    :attr:`collapse_threshold` is a 
+    :class:`~kivy.properties.NumericProperty` and defaults to 0.5.
+    """
+
+    expand_threshold: float = NumericProperty(0.5)
+    """Fraction of the resolved lower bound above which a collapsed
+    dimension expands again.
+    
+    Once a dimension is collapsed, it remains at :attr:`collapsed_size`
+    until dragged back past
+    ``_resolved_size_lower_bound * expand_threshold``, at which point it
+    pops back open to its lower bound size. Set this higher than
+    :attr:`collapse_threshold` to create a dead zone between collapsing
+    and expanding, preventing rapid flicker near the threshold. Has no
+    effect unless :attr:`collapsible` is True.
+    
+    :attr:`expand_threshold` is a 
+    :class:`~kivy.properties.NumericProperty`and defaults to 0.5.
+    """
+
+    collapsed_size = VariableListProperty([0, 0], length=2)
+    """Size [width, height] a dimension snaps to once collapsed.
+    
+    :attr:`collapsed_size` is a
+    :class:`~kivy.properties.VariableListProperty` and defaults to
+    [0, 0].
+    """
+
+    collapsed_width: bool = BooleanProperty(False)
+    """Whether the width is currently collapsed (read-only).
+    
+    :attr:`collapsed_width` is a :class:`~kivy.properties.BooleanProperty`
+    and defaults to False.
+    """
+
+    collapsed_height: bool = BooleanProperty(False)
+    """Whether the height is currently collapsed (read-only).
+    
+    :attr:`collapsed_height` is a :class:`~kivy.properties.BooleanProperty`
+    and defaults to False.
+    """
+
+    def _get_collapsed(self) -> bool:
+        """Get whether either dimension is currently collapsed."""
+        return self.collapsed_width or self.collapsed_height
+
+    collapsed: bool = AliasProperty(
+        _get_collapsed,
+        bind=('collapsed_width', 'collapsed_height'),
+        cache=True)
+    """Whether the widget is currently collapsed along any dimension
+    (read-only).
+    
+    :attr:`collapsed` is a :class:`~kivy.properties.AliasProperty` and
+    is bound to :attr:`collapsed_width` and :attr:`collapsed_height`.
+    """
+
     _resize_reference_geometry: FrozenGeometry
     """Frozen reference geometry for mouse movements when resize 
     operation started."""
@@ -686,7 +790,9 @@ class MorphResizeBehavior(
     __events__ = (
         'on_resize_start',
         'on_resize_progress',
-        'on_resize_end',)
+        'on_resize_end',
+        'on_collapse',
+        'on_expand',)
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
@@ -894,10 +1000,123 @@ class MorphResizeBehavior(
                 else: 
                     h = w / target_ratio    # Height is too large relative to width
 
-        new_size = self.constrain_size((w, h))
+        if self.collapsible:
+            new_size = self._apply_collapse_snapping((w, h), edges)
+        else:
+            new_size = self.constrain_size((w, h))
         new_pos = (x, y)
         self.dispatch(
             'on_resize_progress', self.resize_edge_or_corner, new_size, new_pos)
+
+    def _apply_collapse_snapping(
+            self, size: Tuple[float, float], edges: List[str]
+            ) -> Tuple[float, float]:
+        """Apply collapse/expand snapping to a candidate resize size.
+
+        For each dimension actively being resized (as determined by
+        `edges`), this bypasses the normal lower bound clamp in favor of
+        :meth:`_collapse_dimension`, which snaps the dimension shut once
+        dragged below :attr:`collapse_threshold` and reopens it once
+        dragged back past :attr:`expand_threshold`. Dimensions not being
+        actively resized are clamped normally.
+
+        Parameters
+        ----------
+        size : Tuple[float, float]
+            Candidate (width, height) before bound clamping.
+        edges : List[str]
+            The edge(s) currently being dragged.
+
+        Returns
+        -------
+        Tuple[float, float]
+            The resulting (width, height) after collapse snapping.
+        """
+        lower_w, lower_h = self._resolved_size_lower_bound
+        upper_w, upper_h = self._resolved_size_upper_bound
+        collapsed_w, collapsed_h = self.collapsed_size
+        w, h = size
+
+        if any(edge in NAME.VERTICAL_EDGES for edge in edges):
+            w = self._collapse_dimension('width', w, lower_w, upper_w, collapsed_w)
+        else:
+            w = clamp(w, lower_w, upper_w)
+
+        if any(edge in NAME.HORIZONTAL_EDGES for edge in edges):
+            h = self._collapse_dimension('height', h, lower_h, upper_h, collapsed_h)
+        else:
+            h = clamp(h, lower_h, upper_h)
+
+        return (w, h)
+
+    def _collapse_dimension(
+            self,
+            axis: str,
+            value: float,
+            lower: float,
+            upper: float,
+            collapsed_value: float,
+            ) -> float:
+        """Snap a single dimension shut or reopen it based on thresholds.
+
+        Parameters
+        ----------
+        axis : str
+            Either 'width' or 'height'; used to read/set the matching
+            `collapsed_width`/`collapsed_height` property.
+        value : float
+            The raw candidate size for this dimension.
+        lower : float
+            The resolved lower bound for this dimension.
+        upper : float
+            The resolved upper bound for this dimension.
+        collapsed_value : float
+            The size to snap to while collapsed.
+
+        Returns
+        -------
+        float
+            The resulting size for this dimension.
+        """
+        was_collapsed = getattr(self, f'collapsed_{axis}')
+        if was_collapsed:
+            if value >= lower * self.expand_threshold:
+                setattr(self, f'collapsed_{axis}', False)
+                self.dispatch('on_expand', axis)
+                return clamp(value, lower, upper)
+            return collapsed_value
+        elif lower > 0 and value <= lower * self.collapse_threshold:
+            setattr(self, f'collapsed_{axis}', True)
+            self.dispatch('on_collapse', axis)
+            return collapsed_value
+        return clamp(value, lower, upper)
+
+    def constrain_size(self, size: Tuple[float, float]) -> Tuple[float, float]:
+        """Apply size bounds constraints, skipping collapsed dimensions.
+
+        This overrides :meth:`MorphSizeBoundsBehavior.constrain_size` so
+        that the automatic size clamp bound to the `size` property does
+        not immediately re-expand a dimension that was just snapped shut
+        by :meth:`_collapse_dimension`.
+
+        Parameters
+        ----------
+        size : Tuple[float, float]
+            The size to constrain (width, height)
+
+        Returns
+        -------
+        Tuple[float, float]
+            The constrained size (width, height)
+        """
+        width, height = size
+        lower_w, lower_h = self._resolved_size_lower_bound
+        upper_w, upper_h = self._resolved_size_upper_bound
+        if not self.collapsed_width:
+            width = clamp(width, lower_w, upper_w)
+        if not self.collapsed_height:
+            height = clamp(height, lower_h, upper_h)
+        return (width, height)
 
     def on_touch_up(self, touch: MotionEvent) -> bool:
         """Handle touch up events to end resize operations.
@@ -1018,6 +1237,36 @@ class MorphResizeBehavior(
             self.opacity = 1.0  # Restore full opacity
             self.save_size_to_config()  # Save new size
         ```
+        """
+        pass
+
+    def on_collapse(self, axis: str) -> None:
+        """Event fired when a dimension snaps entirely shut.
+
+        This event is dispatched when :attr:`collapsible` is True and the
+        widget is dragged below :attr:`collapse_threshold` along the
+        given axis. Override this method to react to the widget becoming
+        collapsed, e.g. hiding its contents.
+
+        Parameters
+        ----------
+        axis : str
+            Either 'width' or 'height'; the dimension that collapsed.
+        """
+        pass
+
+    def on_expand(self, axis: str) -> None:
+        """Event fired when a collapsed dimension pops back open.
+
+        This event is dispatched when :attr:`collapsible` is True and a
+        previously collapsed dimension is dragged back past
+        :attr:`expand_threshold`. Override this method to react to the
+        widget expanding again, e.g. restoring its contents.
+
+        Parameters
+        ----------
+        axis : str
+            Either 'width' or 'height'; the dimension that expanded.
         """
         pass
 

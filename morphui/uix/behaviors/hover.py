@@ -49,9 +49,9 @@ class MorphHoverBehavior(EventDispatcher):
     ----------
     - :attr:`hover_enabled`: Enable/disable hover detection
     - :attr:`hovered`: Current hover state
-    - :attr:`enter_pos`: Position where mouse entered (widget coords)
-    - :attr:`leave_pos`: Position where mouse left (widget coords) 
-    - :attr:`current_pos`: Current mouse position (widget coords)
+    - :attr:`enter_pos`: Position where mouse entered (window coords)
+    - :attr:`leave_pos`: Position where mouse left (window coords) 
+    - :attr:`mouse_pos`: Current mouse position (window coords)
     
     Examples
     --------
@@ -128,7 +128,7 @@ class MorphHoverBehavior(EventDispatcher):
         
         self.enter_pos: Tuple[float, float] = (0, 0)
         self.leave_pos: Tuple[float, float] = (0, 0)
-        self.current_pos: Tuple[float, float] = (0, 0)
+        self.mouse_pos: Tuple[float, float] = (0, 0)
         
         Window.bind(mouse_pos=self.on_mouse_pos)
 
@@ -154,15 +154,15 @@ class MorphHoverBehavior(EventDispatcher):
         if not self.is_displayed or not self.hover_enabled:
             return
 
-        self.current_pos = self.to_window(*pos)
+        self.mouse_pos = pos
         inside = self.collide_point(*calculate_widget_local_pos(self, pos))
 
         if inside and not self.hovered:
-            self.enter_pos = self.current_pos
+            self.enter_pos = self.mouse_pos
             self.hovered = True
             self.dispatch('on_enter')
         elif not inside and self.hovered:
-            self.leave_pos = self.current_pos
+            self.leave_pos = self.mouse_pos
             self.hovered = False
             self.dispatch('on_leave')
 
@@ -388,9 +388,8 @@ class MorphHoverEnhancedBehavior(MorphHoverBehavior):
     def _update_edge_detection(self) -> None:
         """Update edge and corner detection based on current mouse position."""
         # Calculate relative position within widget
-        x = self.current_pos[0] - self.x
-        y = self.current_pos[1] - self.y
-
+        mouse_x, mouse_y = self.to_widget(*self.mouse_pos)
+        x, y = mouse_x - self.x, mouse_y - self.y
         # Update individual edge states
         self.left_edge_hovered = (x <= self.edge_detection_size)
         self.right_edge_hovered = (x >= self.width - self.edge_detection_size)

@@ -12,6 +12,7 @@ from kivy.properties import ColorProperty
 from kivy.uix.behaviors import FocusBehavior
 from kivy.input.motionevent import MotionEvent
 
+from morphui.constants import NAME
 from morphui.utils.dotdict import DotDict
 from morphui.uix.behaviors import MorphHoverBehavior
 from morphui.uix.behaviors import MorphHoverEnhancedBehavior
@@ -29,6 +30,7 @@ from morphui.uix.behaviors import require_model
 from morphui.uix.behaviors import require_controller
 from morphui.uix.behaviors import MorphAutoSizingBehavior
 from morphui.uix.behaviors import MorphSizeBoundsBehavior
+from morphui.uix.behaviors import MorphResizeBehavior
 from morphui.uix.behaviors import MorphStateBehavior
 from morphui.uix.behaviors import MorphIconBehavior
 from morphui.uix.behaviors import MorphIdentificationBehavior
@@ -159,7 +161,7 @@ class TestMorphHoverBehavior:
         assert widget.hovered is False
         assert widget.enter_pos == (0, 0)
         assert widget.leave_pos == (0, 0)
-        assert widget.current_pos == (0, 0)
+        assert widget.mouse_pos == (0, 0)
 
     @patch('kivy.core.window.Window')
     def test_basic_hover_events_exist(self, mock_window):
@@ -788,8 +790,8 @@ class TestMorphSizeBoundsBehavior:
         assert result == (1000, 1000)
 
 
-class TestMorphResizeBehavior:
-    """Test suite for MorphResizeBehavior class."""
+class TestMorphAutoSizingBehavior:
+    """Test suite for MorphAutoSizingBehavior class."""
 
     class MockTextWidget(MorphAutoSizingBehavior, Widget):
         """Mock widget with texture_size for testing text-based auto sizing."""
@@ -1045,6 +1047,365 @@ class TestMorphResizeBehavior:
         # Refresh sizing
         widget.refresh_auto_sizing()
         assert widget.size_hint_x is None
+
+
+class TestMorphResizeBehavior:
+    """Test suite for MorphResizeBehavior class (drag-to-resize and
+    collapse/expand behavior)."""
+
+    class MockWidget(MorphResizeBehavior, Widget):
+        """Mock widget for testing resize behavior."""
+        pass
+
+    def _begin_resize(self, widget, edge_or_corner, touch_pos):
+        """Simulate hovering an edge/corner and starting a resize drag."""
+        edges = edge_or_corner.split(NAME.SEP_CORNER)
+        widget.hovered_edges = edges
+        widget.hovered_corner = edge_or_corner if len(edges) > 1 else None
+        widget._start_resize(touch_pos)
+
+    @patch('kivy.core.window.Window')
+    def test_initialization_default_properties(self, mock_window):
+        """Test MorphResizeBehavior initialization with default values."""
+        widget = self.MockWidget()
+
+        assert widget.resize_enabled is True
+        assert list(widget.resizable_edges) == list(NAME.EDGES)
+        assert widget.preserve_aspect_ratio is False
+        assert widget.resizing is False
+        assert widget.collapsible is False
+        assert widget.collapse_threshold == 0.5
+        assert widget.expand_threshold == 0.5
+        assert list(widget.collapsed_size) == [0, 0]
+        assert widget.collapsed_width is False
+        assert widget.collapsed_height is False
+        assert widget.collapsed is False
+
+    @patch('kivy.core.window.Window')
+    def test_hovered_resizable_edges_filters_non_resizable(self, mock_window):
+        """Test hovered_resizable_edges only includes resizable edges."""
+        widget = self.MockWidget()
+        widget.resizable_edges = ['left', 'right']
+        widget.hovered_edges = ['left', 'top']
+
+        assert widget.hovered_resizable_edges == ['left']
+
+    @patch('kivy.core.window.Window')
+    def test_hovered_resizable_edges_empty_when_disabled(self, mock_window):
+        """Test hovered_resizable_edges is empty when resize is disabled."""
+        widget = self.MockWidget()
+        widget.resize_enabled = False
+        widget.hovered_edges = ['left']
+
+        assert widget.hovered_resizable_edges == []
+
+    @patch('kivy.core.window.Window')
+    def test_hovered_resizable_corner(self, mock_window):
+        """Test hovered_resizable_corner only resolves when both edges
+        of the corner are resizable."""
+        widget = self.MockWidget()
+        widget.resizable_edges = ['right', 'bottom']
+        widget.hovered_corner = 'bottom-right'
+        assert widget.hovered_resizable_corner == 'bottom-right'
+
+        widget.resizable_edges = ['right']
+        assert widget.hovered_resizable_corner is None
+
+    @patch('kivy.core.window.Window')
+    def test_on_touch_down_starts_resize(self, mock_window):
+        """Test on_touch_down grabs the touch and starts resize when
+        hovering a resizable edge."""
+        widget = self.MockWidget()
+        widget.size = (200, 150)
+        widget.pos = (100, 100)
+        widget.hovered_edges = ['right']
+
+        touch = Mock(spec=MotionEvent)
+        touch.pos = (300, 175)
+        touch.ud = {}
+
+        result = widget.on_touch_down(touch)
+
+        assert result is True
+        assert widget._resize_in_progress is True
+        assert widget.resize_edge_or_corner == 'right'
+        touch.grab.assert_called_once_with(widget)
+        assert touch.ud[widget] is True
+
+    @patch('kivy.core.window.Window')
+    def test_on_touch_down_ignored_when_resize_disabled(self, mock_window):
+        """Test on_touch_down does nothing when resize_enabled is False."""
+        widget = self.MockWidget()
+        widget.resize_enabled = False
+        widget.hovered_edges = ['right']
+
+        touch = Mock(spec=MotionEvent)
+        touch.pos = (300, 175)
+        touch.ud = {}
+
+        assert widget.on_touch_down(touch) is False
+        assert widget._resize_in_progress is False
+
+    @patch('kivy.core.window.Window')
+    def test_on_touch_down_ignored_without_hovered_edges(self, mock_window):
+        """Test on_touch_down does nothing when no resizable edge is hovered."""
+        widget = self.MockWidget()
+        widget.hovered_edges = []
+
+        touch = Mock(spec=MotionEvent)
+        touch.pos = (300, 175)
+        touch.ud = {}
+
+        assert widget.on_touch_down(touch) is False
+
+    @patch('kivy.core.window.Window')
+    def test_resize_right_edge_grows_width(self, mock_window):
+        """Test dragging the right edge increases width without moving pos."""
+        widget = self.MockWidget()
+        widget.size = (200, 150)
+        widget.pos = (100, 100)
+        self._begin_resize(widget, 'right', (300, 175))
+
+        widget._resize((350, 175))
+
+        assert tuple(widget.size) == (250, 150)
+        assert tuple(widget.pos) == (100, 100)
+
+    @patch('kivy.core.window.Window')
+    def test_resize_left_edge_moves_position(self, mock_window):
+        """Test dragging the left edge grows width and shifts x position."""
+        widget = self.MockWidget()
+        widget.size = (200, 150)
+        widget.pos = (100, 100)
+        self._begin_resize(widget, 'left', (100, 175))
+
+        widget._resize((70, 175))
+
+        assert tuple(widget.size) == (230, 150)
+        assert tuple(widget.pos) == (70, 100)
+
+    @patch('kivy.core.window.Window')
+    def test_resize_respects_lower_bound(self, mock_window):
+        """Test resize clamps to size_lower_bound when collapsible is off."""
+        widget = self.MockWidget()
+        widget.size = (200, 150)
+        widget.pos = (100, 100)
+        widget.size_lower_bound = [100, -1]
+        self._begin_resize(widget, 'right', (300, 175))
+
+        widget._resize((150, 175))  # raw target width would be 50
+
+        assert widget.width == 100
+
+    @patch('kivy.core.window.Window')
+    def test_resize_respects_upper_bound(self, mock_window):
+        """Test resize clamps to size_upper_bound."""
+        widget = self.MockWidget()
+        widget.size = (200, 150)
+        widget.pos = (100, 100)
+        widget.size_upper_bound = [300, -1]
+        self._begin_resize(widget, 'right', (300, 175))
+
+        widget._resize((500, 175))  # raw target width would be 400
+
+        assert widget.width == 300
+
+    @patch('kivy.core.window.Window')
+    def test_preserve_aspect_ratio_corner_resize(self, mock_window):
+        """Test preserve_aspect_ratio corrects a mismatched corner drag
+        back to the original width-to-height ratio."""
+        widget = self.MockWidget()
+        widget.size = (200, 100)  # 2:1 ratio
+        widget.pos = (100, 100)
+        widget.preserve_aspect_ratio = True
+        self._begin_resize(widget, 'top-right', (300, 200))
+
+        widget._resize((420, 250))  # dx=120 -> w=320, dy=50 -> h=150
+
+        assert widget.width == 300
+        assert widget.height == 150
+
+    @patch('kivy.core.window.Window')
+    def test_on_touch_up_ends_resize(self, mock_window):
+        """Test on_touch_up ungrabs the touch and ends the resize operation."""
+        widget = self.MockWidget()
+        widget.size = (200, 150)
+        widget.pos = (100, 100)
+        self._begin_resize(widget, 'right', (300, 175))
+
+        touch = Mock(spec=MotionEvent)
+        touch.pos = (350, 175)
+
+        result = widget.on_touch_up(touch)
+
+        assert result is True
+        assert widget._resize_in_progress is False
+        assert widget.resize_edge_or_corner is None
+        touch.ungrab.assert_called_once_with(widget)
+
+    @patch('kivy.core.window.Window')
+    def test_resize_start_and_end_events_dispatched(self, mock_window):
+        """Test on_resize_start and on_resize_end events fire around a drag."""
+        widget = self.MockWidget()
+        widget.size = (200, 150)
+        widget.pos = (100, 100)
+
+        events = []
+        widget.bind(on_resize_start=lambda *args: events.append('start'))
+        widget.bind(on_resize_end=lambda *args: events.append('end'))
+
+        self._begin_resize(widget, 'right', (300, 175))
+        widget.on_touch_up(Mock(spec=MotionEvent, pos=(350, 175)))
+
+        assert events == ['start', 'end']
+
+    @patch('kivy.core.window.Window')
+    def test_on_resize_progress_applies_size_and_pos(self, mock_window):
+        """Test the default on_resize_progress handler applies new size/pos."""
+        widget = self.MockWidget()
+        widget.size = (200, 150)
+        widget.pos = (100, 100)
+        self._begin_resize(widget, 'right', (300, 175))
+
+        widget._resize((360, 175))
+
+        assert tuple(widget.size) == (260, 150)
+
+    # --- Collapse / expand on resize ---
+
+    @patch('kivy.core.window.Window')
+    def test_collapses_below_collapse_threshold(self, mock_window):
+        """Test a dimension snaps entirely shut below collapse_threshold."""
+        widget = self.MockWidget()
+        widget.size = (200, 150)
+        widget.pos = (100, 100)
+        widget.size_lower_bound = [100, -1]
+        widget.collapsible = True
+        widget.collapse_threshold = 0.5
+        self._begin_resize(widget, 'right', (300, 175))
+
+        widget._resize((130, 175))  # raw target width 30 <= 100 * 0.5
+
+        assert widget.collapsed_width is True
+        assert widget.collapsed is True
+        assert widget.width == 0
+
+    @patch('kivy.core.window.Window')
+    def test_collapse_dispatches_on_collapse_event(self, mock_window):
+        """Test on_collapse fires with the axis that collapsed."""
+        widget = self.MockWidget()
+        widget.size = (200, 150)
+        widget.pos = (100, 100)
+        widget.size_lower_bound = [100, -1]
+        widget.collapsible = True
+
+        collapsed_axes = []
+        widget.bind(on_collapse=lambda *args: collapsed_axes.append(args[-1]))
+        self._begin_resize(widget, 'right', (300, 175))
+
+        widget._resize((130, 175))
+
+        assert collapsed_axes == ['width']
+
+    @patch('kivy.core.window.Window')
+    def test_stays_collapsed_until_expand_threshold(self, mock_window):
+        """Test a collapsed dimension stays shut below expand_threshold."""
+        widget = self.MockWidget()
+        widget.size = (200, 150)
+        widget.pos = (100, 100)
+        widget.size_lower_bound = [100, -1]
+        widget.collapsible = True
+        widget.expand_threshold = 0.6
+        self._begin_resize(widget, 'right', (300, 175))
+
+        widget._resize((130, 175))  # collapse (raw width 30)
+        assert widget.collapsed_width is True
+
+        widget._resize((155, 175))  # raw width 55, still < 100 * 0.6 = 60
+        assert widget.collapsed_width is True
+        assert widget.width == 0
+
+    @patch('kivy.core.window.Window')
+    def test_expands_past_expand_threshold(self, mock_window):
+        """Test a collapsed dimension reopens to the lower bound once
+        dragged past expand_threshold."""
+        widget = self.MockWidget()
+        widget.size = (200, 150)
+        widget.pos = (100, 100)
+        widget.size_lower_bound = [100, -1]
+        widget.collapsible = True
+        widget.expand_threshold = 0.5
+        self._begin_resize(widget, 'right', (300, 175))
+
+        widget._resize((130, 175))  # collapse (raw width 30)
+        assert widget.collapsed_width is True
+
+        widget._resize((170, 175))  # raw width 70 > 100 * 0.5 = 50
+        assert widget.collapsed_width is False
+        assert widget.width == 100  # snaps open to the lower bound
+
+    @patch('kivy.core.window.Window')
+    def test_expand_dispatches_on_expand_event(self, mock_window):
+        """Test on_expand fires with the axis that reopened."""
+        widget = self.MockWidget()
+        widget.size = (200, 150)
+        widget.pos = (100, 100)
+        widget.size_lower_bound = [100, -1]
+        widget.collapsible = True
+
+        expanded_axes = []
+        widget.bind(on_expand=lambda *args: expanded_axes.append(args[-1]))
+        self._begin_resize(widget, 'right', (300, 175))
+
+        widget._resize((130, 175))  # collapse
+        widget._resize((170, 175))  # expand
+
+        assert expanded_axes == ['width']
+
+    @patch('kivy.core.window.Window')
+    def test_collapse_ignored_when_not_collapsible(self, mock_window):
+        """Test size is clamped normally when collapsible is False."""
+        widget = self.MockWidget()
+        widget.size = (200, 150)
+        widget.pos = (100, 100)
+        widget.size_lower_bound = [100, -1]
+        self._begin_resize(widget, 'right', (300, 175))
+
+        widget._resize((130, 175))  # would collapse if collapsible were True
+
+        assert widget.collapsed_width is False
+        assert widget.width == 100  # clamped to lower bound instead
+
+    @patch('kivy.core.window.Window')
+    def test_collapse_only_affects_actively_resized_dimension(self, mock_window):
+        """Test only the dimension being dragged is eligible to collapse."""
+        widget = self.MockWidget()
+        widget.size = (200, 150)
+        widget.pos = (100, 100)
+        widget.size_lower_bound = [100, 100]
+        widget.collapsible = True
+        self._begin_resize(widget, 'right', (300, 175))
+
+        widget._resize((130, 175))
+
+        assert widget.collapsed_width is True
+        assert widget.collapsed_height is False
+        assert widget.height == 150  # untouched dimension, clamped normally
+
+    @patch('kivy.core.window.Window')
+    def test_collapsed_size_is_customizable(self, mock_window):
+        """Test collapsed_size controls the snap-shut dimensions."""
+        widget = self.MockWidget()
+        widget.size = (200, 150)
+        widget.pos = (100, 100)
+        widget.size_lower_bound = [100, -1]
+        widget.collapsible = True
+        widget.collapsed_size = [20, 0]
+        self._begin_resize(widget, 'right', (300, 175))
+
+        widget._resize((130, 175))
+
+        assert widget.width == 20
 
 
 class TestMorphKeyPressBehavior:

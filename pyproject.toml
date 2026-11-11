@@ -1,42 +1,37 @@
 [project]
-name = "MorphUI"
-version = "0.16.1"
-description = "MorphUI is a creative and flexible UI extension for Kivy, designed to provide developers with a modern and customizable set of components for building beautiful user interfaces. Unlike KivyMD, MorphUI is not bound to Material Design principles, allowing for greater freedom in design and styling."
-authors = [
-    {name = "j4ggr", email = "reto@jaeggli.email"},
-]
-dependencies = [
-  "kivy>=2.3.1",
-  "material-color-utilities>=0.2.6"]
-requires-python = ">=3.13"
-readme = "README.md"
-license = {text = "MIT"}
-
-[project.urls]
-Repository = "https://github.com/j4ggr/MorphUI"
-Documentation = "https://j4ggr.github.io/MorphUI/"
-Changelog = "https://j4ggr.github.io/MorphUI/docs/CHANGELOG"
-
-[build-system]
-requires = ["pdm-backend"]
-build-backend = "pdm.backend"
-
-[tool.pdm]
-distribution = true
+  name = "MorphUI"
+  version = "0.16.1"
+  description = "MorphUI is a creative and flexible UI extension for Kivy, designed to provide developers with a modern and customizable set of components for building beautiful user interfaces. Unlike KivyMD, MorphUI is not bound to Material Design principles, allowing for greater freedom in design and styling."
+  authors = [
+      {name = "j4ggr", email = "reto@jaeggli.email"},]
+  dependencies = [
+    "kivy>=2.3.1",
+    "material-color-utilities>=0.2.6"]
+  requires-python = ">=3.13"
+  readme = "README.md"
+  license = {text = "MIT"}
+  [project.urls]
+    Repository = "https://github.com/j4ggr/MorphUI"
+    Documentation = "https://j4ggr.github.io/MorphUI/"
+    Changelog = "https://j4ggr.github.io/MorphUI/docs/CHANGELOG"
 
 [dependency-groups]
-test = [
-  "pytest>=8.4.2",
-]
-visualization = [
-    "matplotlib>=3.10.7",
-]
-profiling = [
-    "py-spy>=0.4.1",
-]
-doc = [
-    "mkdocs>=1.6.1",
-    "mkdocstrings[python]>=1.0.3",
-    "mkdocs-material>=9.7.6",
-    "ruff>=0.15.8",
-]
+  test = [
+    "pytest>=8.4.2",]
+  visualization = [
+      "matplotlib>=3.10.7",]
+  profiling = [
+      "py-spy>=0.4.1",]
+  doc = [
+      "mkdocs>=1.6.1",
+      "mkdocstrings[python]>=1.0.3",
+      "mkdocs-material>=9.7.6",
+      "ruff>=0.15.8",]
+
+[build-system]
+  requires = ["pdm-backend"]
+  build-backend = "pdm.backend"
+
+[tool]
+  [tool.pdm]
+    distribution = true

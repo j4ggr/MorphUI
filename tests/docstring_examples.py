@@ -19,17 +19,16 @@ from pathlib import Path
 
 sys.path.append(str(Path(__file__).parents[1].resolve()))
 
-
 from morphui.app import MorphApp
 from morphui.uix.floatlayout import MorphFloatLayout
-from morphui.uix.dropdown import MorphDropdownMultiselect
+from morphui.uix.dropdown import MorphDropdownMultiselectOutlined
 
 class MyApp(MorphApp):
     def build(self) -> MorphFloatLayout:
         self.theme_manager.theme_mode = 'Dark'
         self.theme_manager.seed_color = 'morphui_teal'
         return MorphFloatLayout(
-            MorphDropdownMultiselect(
+            MorphDropdownMultiselectOutlined(
                 identity='my_widget',
                 heading_text='Select Items',
                 items=[
@@ -37,7 +36,8 @@ class MyApp(MorphApp):
                     for i in ['Item 1', 'Item 2', 'Item 3']],
                 required=True,
                 pos_hint={'center_x': 0.5, 'center_y': 0.5},),
-            normal_surface_color=self.theme_manager.surface_color,)
+            theme_color_bindings=dict(
+                normal_surface_color='background_color'),)
 
 if __name__ == '__main__':
     MyApp().run()
