@@ -7,6 +7,7 @@ sys.path.append(str(Path(__file__).parent.resolve()))
 
 from kivy.clock import Clock
 from kivy.uix.widget import Widget
+from kivy.uix.relativelayout import RelativeLayout
 from kivy.properties import BooleanProperty
 from kivy.properties import ColorProperty
 from kivy.uix.behaviors import FocusBehavior
@@ -343,6 +344,35 @@ class TestBaseLayerBehavior:
         assert len(contour) > 0
         # Should have pairs of coordinates (x, y)
         assert len(contour) % 2 == 0
+
+    @patch('morphui.app.MorphApp._theme_manager')
+    def test_contour_uses_effective_pos_for_relative_layout(
+            self, mock_app_theme_manager):
+        """Test contour/border geometry isn't offset by a RelativeLayout
+        widget's own (non-zero) absolute position (regression for
+        MorphScreen surface/border being shifted away from its bounds)."""
+        mock_app_theme_manager.configure_mock(**{
+            'content_surface_color': [0, 0, 0, 1]})
+
+        class RelativeSurfaceWidget(MorphSurfaceLayerBehavior, RelativeLayout):
+            pass
+
+        plain_widget = self.TestSurfaceWidget()
+        plain_widget.size = (100, 60)
+        plain_widget.pos = (40, 20)
+        plain_widget.radius = [0, 0, 0, 0]
+
+        relative_widget = RelativeSurfaceWidget()
+        relative_widget.size = (100, 60)
+        relative_widget.pos = (40, 20)
+        relative_widget.radius = [0, 0, 0, 0]
+
+        # A plain widget's contour is positioned at its absolute pos...
+        assert plain_widget.contour[:2] == [40, 80]
+        # ...but a RelativeLayout's own contour must stay at local (0, 0),
+        # since the RelativeLayout's own canvas transform already shifts
+        # everything by its absolute pos.
+        assert relative_widget.contour[:2] == [0, 60]
 
     @patch('morphui.app.MorphApp._theme_manager')
     def test_mesh_generation(self, mock_app_theme_manager):

@@ -168,23 +168,24 @@ class BaseLayerBehavior(
         ValueError
             If an invalid corner is specified.
         """
+        x, y = get_effective_pos(self)
         match corner:
             case 'top-left':
                 alpha = 0.5 * pi
-                x_center = self.x + radius
-                y_center = self.y + self.height - radius
+                x_center = x + radius
+                y_center = y + self.height - radius
             case 'bottom-left':
                 alpha = pi
-                x_center = self.x + radius
-                y_center = self.y + radius
+                x_center = x + radius
+                y_center = y + radius
             case 'bottom-right':
                 alpha = 1.5 * pi
-                x_center = self.x + self.width - radius
-                y_center = self.y + radius
+                x_center = x + self.width - radius
+                y_center = y + radius
             case 'top-right':
                 alpha = 0
-                x_center = self.x + self.width - radius
-                y_center = self.y + self.height - radius
+                x_center = x + self.width - radius
+                y_center = y + self.height - radius
             case _:
                 raise ValueError("Invalid corner specified.")
             
@@ -267,15 +268,16 @@ class BaseLayerBehavior(
             A flat list of x, y coordinates representing the contour
             path.
         """
+        x, y = get_effective_pos(self)
         radius = self.clamped_radius
         points = [
-            self.x + radius[0], self.y + self.height,
+            x + radius[0], y + self.height,
             *self._generate_corner_arc_points('top-left', radius[0]),
-            self.x, self.y + radius[3],
+            x, y + radius[3],
             *self._generate_corner_arc_points('bottom-left', radius[3]),
-            self.x + self.width - radius[2], self.y,
+            x + self.width - radius[2], y,
             *self._generate_corner_arc_points('bottom-right', radius[2]),
-            self.x + self.width, self.y + self.height - radius[1],
+            x + self.width, y + self.height - radius[1],
             *self._generate_corner_arc_points('top-right', radius[1]),]
 
         return points
@@ -855,7 +857,8 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
         """
         # If only bottom line is requested, return just the bottom line points
         if self.border_bottom_line_only:
-            return [self.x, self.y, self.x + self.width, self.y]
+            x, y = get_effective_pos(self)
+            return [x, y, x + self.width, y]
         
         path: List[float] = self._generate_contour()
 
