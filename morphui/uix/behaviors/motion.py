@@ -348,6 +348,9 @@ class MorphMenuMotionBehavior(MorphMotionBaseBehavior):
         self.bind(
             caller=self._update_caller_bindings)
         self._update_caller_bindings()
+        if hasattr(self, 'layout_manager'):
+            self.fbind('layout_manager', self._update_layout_manager_bindings)
+            self._update_layout_manager_bindings()
         
     def _update_caller_bindings(self, *args) -> None:
         """Update bindings to the caller button's position and size.
@@ -362,6 +365,28 @@ class MorphMenuMotionBehavior(MorphMotionBaseBehavior):
         self.caller.bind(
             pos=self._adjust_and_reposition,
             size=self._adjust_and_reposition,)
+        self._adjust_and_reposition()
+
+    def _update_layout_manager_bindings(self, *args) -> None:
+        """Bind to the RecycleView layout manager's minimum size.
+
+        A :class:`~kivy.uix.recycleview.RecycleView` defers creation and
+        measurement of its items to the next frame (via its internal
+        refresh trigger), so the :attr:`layout_manager`'s
+        `minimum_width`/`minimum_height` may not yet reflect the actual
+        content when :meth:`open` first calls
+        :meth:`_adjust_and_reposition`. Binding to those properties
+        ensures the menu is resized and repositioned again as soon as
+        its content has actually been measured, instead of being stuck
+        with a stale size for the remainder of its lifetime.
+        """
+        layout_manager = getattr(self, 'layout_manager', None)
+        if layout_manager is None:
+            return
+        
+        layout_manager.bind(
+            minimum_width=self._adjust_and_reposition,
+            minimum_height=self._adjust_and_reposition,)
         self._adjust_and_reposition()
 
     def _adjust_and_reposition(self, *args) -> None:

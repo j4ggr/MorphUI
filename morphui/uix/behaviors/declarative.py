@@ -359,16 +359,24 @@ class MorphDeclarativeBehavior(MorphIdentificationBehavior):
         Notes
         -----
         If the widget is not already in :attr:`declarative_children`,
-        it will be added to the list, which will trigger another call
-        to this method to actually add it to the widget tree.
+        it will be added to the list. Normally this triggers another
+        call to this method (via a bound callback on
+        :attr:`declarative_children`) to actually add it to the widget
+        tree. However, widgets added by Kivy's kv language (e.g. rule
+        children declared in a `<ClassName>:` rule) are added via
+        :meth:`add_widget` while still inside `__init__`'s call to
+        `super().__init__()`, i.e. before that callback has been bound.
+        The explicit `widget not in self.children` check below ensures
+        the widget is still actually attached to the widget tree in
+        that case, instead of being silently dropped.
         """
         if widget not in self.declarative_children:
             self.declarative_children = (
                 list(self.declarative_children) + [widget])
-            return # changing declarative_children will call add_widget again, so return here
-        
-        super().add_widget(widget, *args, **kwargs) # type: ignore
-        self._register_declarative_child(widget)
+
+        if widget not in self.children: # pyright: ignore[reportAttributeAccessIssue]
+            super().add_widget(widget, *args, **kwargs) # pyright: ignore[reportAttributeAccessIssue]
+            self._register_declarative_child(widget)
     
     def remove_widget(self, widget: Widget, *args, **kwargs) -> None:
         """Remove a child widget and unregister it from declarative
@@ -405,7 +413,7 @@ class MorphDeclarativeBehavior(MorphIdentificationBehavior):
                 w for w in self.declarative_children if w != widget]
             return # changing declarative_children will call remove_widget again, so return here
         
-        super().remove_widget(widget, *args, **kwargs) # type: ignore
+        super().remove_widget(widget, *args, **kwargs) # pyright: ignore[reportAttributeAccessIssue]
         self._unregister_declarative_child(widget)
 
     def add_widgets(self, *children: Widget) -> None:
