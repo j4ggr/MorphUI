@@ -13,14 +13,18 @@ The sizing behaviors support:
 - Aspect ratio preservation
 - Event system for resize and auto-size operations
 """
+from typing import Any
+from typing import Dict
 from typing import List
 from typing import Tuple
 
 from kivy.clock import Clock
 from kivy.event import EventDispatcher
 from kivy.metrics import dp
+from kivy.animation import Animation
 from kivy.properties import ListProperty
 from kivy.properties import AliasProperty
+from kivy.properties import StringProperty
 from kivy.properties import BooleanProperty
 from kivy.properties import NumericProperty
 from kivy.properties import VariableListProperty
@@ -567,7 +571,8 @@ class MorphResizeBehavior(
     - **Size Constraints**: Minimum and maximum size limits via inheritance
     - **Aspect Ratio**: Optional aspect ratio preservation
     - **Collapse/Expand**: Optional snap-shut collapsing below a
-      percentage of the lower bound, reopening past another threshold
+      percentage of the lower bound, reopening past another threshold,
+      animated and with fading content
     - **Animation**: Smooth transitions for visual feedback
     - **Events**: Comprehensive event system for resize operations
     
@@ -591,6 +596,9 @@ class MorphResizeBehavior(
     - :attr:`expand_threshold`: Fraction of lower bound that triggers re-expand
     - :attr:`collapsed_size`: Size to snap to while collapsed
     - :attr:`collapsed`: Whether the widget is currently collapsed
+    - :attr:`collapse_animation_duration`: Duration of the collapse/expand transition
+    - :attr:`collapse_animation_transition`: Easing used for the collapse/expand transition
+    - :attr:`content_collapse_opacity`: Opacity direct children fade to while collapsed
     
     Examples
     --------
@@ -770,6 +778,44 @@ class MorphResizeBehavior(
     is bound to :attr:`collapsed_width` and :attr:`collapsed_height`.
     """
 
+    collapse_animation_duration: float = NumericProperty(0.1)
+    """Duration in seconds of the collapse/expand transition.
+    
+    Whenever a dimension snaps shut or pops back open (see
+    :attr:`collapsible`), that dimension animates to its target size
+    over this duration instead of jumping there instantly. The same
+    duration is also used to fade the widget's direct children in and
+    out alongside the size transition. Has no effect unless
+    :attr:`collapsible` is True.
+    
+    :attr:`collapse_animation_duration` is a
+    :class:`~kivy.properties.NumericProperty` and defaults to 0.1.
+    """
+
+    collapse_animation_transition: str = StringProperty('out_quad')
+    """Transition type for the collapse/expand animation.
+    
+    This should be a valid Kivy transition name. See
+    :class:`~kivy.animation.Animation` for available transitions.
+    
+    :attr:`collapse_animation_transition` is a
+    :class:`~kivy.properties.StringProperty` and defaults to
+    `'out_quad'`.
+    """
+
+    content_collapse_opacity: float = NumericProperty(1.0)
+    """Opacity applied to the widget's direct children while collapsed.
+    
+    While :attr:`collapsed` is True, each of this widget's direct
+    children fades to this opacity (in sync with the size transition)
+    so that content doesn't appear squeezed or clipped as the widget
+    snaps shut. Children fade back to fully opaque when the widget
+    expands again.
+    
+    :attr:`content_collapse_opacity` is a
+    :class:`~kivy.properties.NumericProperty` and defaults to 1.0.
+    """
+
     _resize_reference_geometry: FrozenGeometry
     """Frozen reference geometry for mouse movements when resize 
     operation started."""
@@ -787,6 +833,10 @@ class MorphResizeBehavior(
     _resize_in_progress: bool = False
     """Internal flag indicating if a resize operation is in progress."""
 
+    _collapse_animations: Dict[str, Animation]
+    """Internal registry of in-progress collapse/expand size animations,
+    keyed by axis ('width' or 'height')."""
+
     __events__ = (
         'on_resize_start',
         'on_resize_progress',
@@ -796,12 +846,14 @@ class MorphResizeBehavior(
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
+        self._collapse_animations = {}
         
         self.bind(
             hovered_edges=self._update_resize_feedback,
             hovered_corner=self._update_resize_feedback,
             overlay_edge_width=self._update_edge_detection_size,
-            overlay_edge_inside=self._update_edge_detection_size,)
+            overlay_edge_inside=self._update_edge_detection_size,
+            collapsed=self._animate_content_collapse,)
         
         self._update_edge_detection_size()
 
@@ -1057,13 +1109,15 @@ class MorphResizeBehavior(
             upper: float,
             collapsed_value: float,
             ) -> float:
-        """Snap a single dimension shut or reopen it based on thresholds.
+        """Snap a single dimension shut or reopen it based on thresholds,
+        animating the transition instead of jumping instantly.
 
         Parameters
         ----------
         axis : str
             Either 'width' or 'height'; used to read/set the matching
-            `collapsed_width`/`collapsed_height` property.
+            `collapsed_width`/`collapsed_height` property, and to
+            animate the matching `width`/`height` property.
         value : float
             The raw candidate size for this dimension.
         lower : float
@@ -1076,20 +1130,84 @@ class MorphResizeBehavior(
         Returns
         -------
         float
-            The resulting size for this dimension.
+            The resulting size for this dimension. While a
+            collapse/expand animation is in progress for this axis,
+            this returns the axis' current (animating) value so that
+            :meth:`on_resize_progress`'s direct size assignment doesn't
+            fight with the animation.
         """
         was_collapsed = getattr(self, f'collapsed_{axis}')
+        animating = axis in self._collapse_animations
+
         if was_collapsed:
             if value >= lower * self.expand_threshold:
                 setattr(self, f'collapsed_{axis}', False)
                 self.dispatch('on_expand', axis)
-                return clamp(value, lower, upper)
-            return collapsed_value
-        elif lower > 0 and value <= lower * self.collapse_threshold:
+                self._animate_collapse_dimension(axis, clamp(value, lower, upper))
+                return getattr(self, axis)
+            return getattr(self, axis) if animating else collapsed_value
+
+        if lower > 0 and value <= lower * self.collapse_threshold:
             setattr(self, f'collapsed_{axis}', True)
             self.dispatch('on_collapse', axis)
-            return collapsed_value
-        return clamp(value, lower, upper)
+            self._animate_collapse_dimension(axis, collapsed_value)
+            return getattr(self, axis)
+
+        return getattr(self, axis) if animating else clamp(value, lower, upper)
+
+    def _animate_collapse_dimension(self, axis: str, target: float) -> None:
+        """Animate a single dimension towards its collapsed/expanded
+        target size.
+
+        Any animation already in progress for this axis is cancelled
+        first, so reversing direction mid-transition (e.g. dragging back
+        open while still collapsing shut) smoothly redirects towards the
+        new target instead of fighting the previous animation.
+
+        Parameters
+        ----------
+        axis : str
+            Either 'width' or 'height'.
+        target : float
+            The size to animate this dimension towards.
+        """
+        existing = self._collapse_animations.pop(axis, None)
+        if existing is not None:
+            existing.cancel(self)
+
+        animation = Animation(
+            duration=self.collapse_animation_duration,
+            transition=self.collapse_animation_transition,
+            **{axis: target})
+        animation.bind(
+            on_complete=lambda *args: self._collapse_animations.pop(axis, None))
+        self._collapse_animations[axis] = animation
+        animation.start(self)
+
+    def _animate_content_collapse(self, instance: Any, collapsed: bool) -> None:
+        """Fade this widget's direct children in or out alongside the
+        collapse/expand size transition.
+
+        This is bound to the :attr:`collapsed` property, so it fires
+        whenever either dimension starts or finishes collapsing. Content
+        fades to :attr:`content_collapse_opacity` while collapsed, and
+        back to fully opaque once expanded again.
+
+        Parameters
+        ----------
+        instance : Any
+            The widget instance (self).
+        collapsed : bool
+            The new value of :attr:`collapsed`.
+        """
+        target_opacity = self.content_collapse_opacity if collapsed else 1.0
+        for child in self.children:
+            Animation.cancel_all(child, 'opacity')
+            Animation(
+                opacity=target_opacity,
+                duration=self.collapse_animation_duration,
+                transition=self.collapse_animation_transition,
+                ).start(child)
 
     def constrain_size(self, size: Tuple[float, float]) -> Tuple[float, float]:
         """Apply size bounds constraints, skipping collapsed dimensions.

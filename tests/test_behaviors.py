@@ -6,6 +6,7 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).parent.resolve()))
 
 from kivy.clock import Clock
+from kivy.animation import AnimationTransition
 from kivy.uix.widget import Widget
 from kivy.uix.relativelayout import RelativeLayout
 from kivy.properties import BooleanProperty
@@ -240,24 +241,31 @@ class TestMorphHoverEnhancedBehavior:
     def test_corner_detection(self, mock_window):
         """Test corner detection from edges."""
         widget = self.TestWidget()
-        
+
+        def set_hovered_edges(edges):
+            """Set the underlying per-edge hover flags, since
+            `hovered_edges` is a read-only AliasProperty derived from
+            them."""
+            for edge in NAME.EDGES:
+                setattr(widget, f'{edge}_edge_hovered', edge in edges)
+
         # Test no corner when not hovered
         widget.hovered = False
-        widget.hovered_edges = ['left', 'top']
+        set_hovered_edges(['left', 'top'])
         assert widget.get_hovered_corner() is None
         
         # Test corner detection
         widget.hovered = True
-        widget.hovered_edges = ['left', 'top']
+        set_hovered_edges(['left', 'top'])
         assert widget.get_hovered_corner() == 'top-left'
         
-        widget.hovered_edges = ['right', 'top']
+        set_hovered_edges(['right', 'top'])
         assert widget.get_hovered_corner() == 'top-right'
         
-        widget.hovered_edges = ['left', 'bottom']
+        set_hovered_edges(['left', 'bottom'])
         assert widget.get_hovered_corner() == 'bottom-left'
         
-        widget.hovered_edges = ['right', 'bottom']
+        set_hovered_edges(['right', 'bottom'])
         assert widget.get_hovered_corner() == 'bottom-right'
 
     @patch('kivy.core.window.Window')
@@ -1087,12 +1095,28 @@ class TestMorphResizeBehavior:
         """Mock widget for testing resize behavior."""
         pass
 
+    def _set_hovered_edges(self, widget, edges):
+        """Set the underlying per-edge hover flags so the read-only
+        `hovered_edges`/`hovered_corner` alias properties (see
+        MorphHoverEnhancedBehavior) compute as if the given edges were
+        hovered. `hovered_corner` additionally requires the base
+        `hovered` flag (from MorphHoverBehavior) to be True."""
+        widget.hovered = bool(edges)
+        for edge in NAME.EDGES:
+            setattr(widget, f'{edge}_edge_hovered', edge in edges)
+
     def _begin_resize(self, widget, edge_or_corner, touch_pos):
         """Simulate hovering an edge/corner and starting a resize drag."""
         edges = edge_or_corner.split(NAME.SEP_CORNER)
-        widget.hovered_edges = edges
-        widget.hovered_corner = edge_or_corner if len(edges) > 1 else None
+        self._set_hovered_edges(widget, edges)
         widget._start_resize(touch_pos)
+
+    def _advance_until_settled(self, ticks=50):
+        """Advance Kivy's global Clock enough real ticks for a
+        collapse/expand size or content-opacity animation (default
+        duration 0.2s) to finish."""
+        for _ in range(ticks):
+            Clock.tick()
 
     @patch('kivy.core.window.Window')
     def test_initialization_default_properties(self, mock_window):
@@ -1110,13 +1134,16 @@ class TestMorphResizeBehavior:
         assert widget.collapsed_width is False
         assert widget.collapsed_height is False
         assert widget.collapsed is False
+        assert widget.collapse_animation_duration == 0.2
+        assert widget.collapse_animation_transition == 'out_quad'
+        assert widget.content_collapse_opacity == 0.0
 
     @patch('kivy.core.window.Window')
     def test_hovered_resizable_edges_filters_non_resizable(self, mock_window):
         """Test hovered_resizable_edges only includes resizable edges."""
         widget = self.MockWidget()
         widget.resizable_edges = ['left', 'right']
-        widget.hovered_edges = ['left', 'top']
+        self._set_hovered_edges(widget, ['left', 'top'])
 
         assert widget.hovered_resizable_edges == ['left']
 
@@ -1125,7 +1152,7 @@ class TestMorphResizeBehavior:
         """Test hovered_resizable_edges is empty when resize is disabled."""
         widget = self.MockWidget()
         widget.resize_enabled = False
-        widget.hovered_edges = ['left']
+        self._set_hovered_edges(widget, ['left'])
 
         assert widget.hovered_resizable_edges == []
 
@@ -1135,7 +1162,7 @@ class TestMorphResizeBehavior:
         of the corner are resizable."""
         widget = self.MockWidget()
         widget.resizable_edges = ['right', 'bottom']
-        widget.hovered_corner = 'bottom-right'
+        self._set_hovered_edges(widget, ['right', 'bottom'])
         assert widget.hovered_resizable_corner == 'bottom-right'
 
         widget.resizable_edges = ['right']
@@ -1148,7 +1175,7 @@ class TestMorphResizeBehavior:
         widget = self.MockWidget()
         widget.size = (200, 150)
         widget.pos = (100, 100)
-        widget.hovered_edges = ['right']
+        self._set_hovered_edges(widget, ['right'])
 
         touch = Mock(spec=MotionEvent)
         touch.pos = (300, 175)
@@ -1167,7 +1194,7 @@ class TestMorphResizeBehavior:
         """Test on_touch_down does nothing when resize_enabled is False."""
         widget = self.MockWidget()
         widget.resize_enabled = False
-        widget.hovered_edges = ['right']
+        self._set_hovered_edges(widget, ['right'])
 
         touch = Mock(spec=MotionEvent)
         touch.pos = (300, 175)
@@ -1180,7 +1207,7 @@ class TestMorphResizeBehavior:
     def test_on_touch_down_ignored_without_hovered_edges(self, mock_window):
         """Test on_touch_down does nothing when no resizable edge is hovered."""
         widget = self.MockWidget()
-        widget.hovered_edges = []
+        self._set_hovered_edges(widget, [])
 
         touch = Mock(spec=MotionEvent)
         touch.pos = (300, 175)
@@ -1196,7 +1223,7 @@ class TestMorphResizeBehavior:
         widget = self.MockWidget()
         widget.size = (200, 150)
         widget.pos = (100, 100)
-        widget.hovered_edges = []  # not hovering a resizable edge
+        self._set_hovered_edges(widget, [])  # not hovering a resizable edge
 
         child = Widget(size=(50, 50), pos=(120, 120))
         child.on_touch_down = Mock(return_value=True)
@@ -1329,7 +1356,8 @@ class TestMorphResizeBehavior:
 
     @patch('kivy.core.window.Window')
     def test_collapses_below_collapse_threshold(self, mock_window):
-        """Test a dimension snaps entirely shut below collapse_threshold."""
+        """Test a dimension snaps entirely shut below collapse_threshold,
+        animating the transition instead of jumping instantly."""
         widget = self.MockWidget()
         widget.size = (200, 150)
         widget.pos = (100, 100)
@@ -1342,7 +1370,19 @@ class TestMorphResizeBehavior:
 
         assert widget.collapsed_width is True
         assert widget.collapsed is True
+        # Doesn't snap instantly: still animating towards 0.
+        assert widget.width == 200
+        assert 'width' in widget._collapse_animations
+        animation = widget._collapse_animations['width']
+        assert animation.animated_properties == {'width': 0}
+        assert animation.duration == widget.collapse_animation_duration
+        expected_transition = getattr(
+            AnimationTransition, widget.collapse_animation_transition)
+        assert animation.transition == expected_transition
+
+        self._advance_until_settled()
         assert widget.width == 0
+        assert widget._collapse_animations == {}
 
     @patch('kivy.core.window.Window')
     def test_collapse_dispatches_on_collapse_event(self, mock_window):
@@ -1374,6 +1414,7 @@ class TestMorphResizeBehavior:
 
         widget._resize((130, 175))  # collapse (raw width 30)
         assert widget.collapsed_width is True
+        self._advance_until_settled()
 
         widget._resize((155, 175))  # raw width 55, still < 100 * 0.6 = 60
         assert widget.collapsed_width is True
@@ -1393,9 +1434,17 @@ class TestMorphResizeBehavior:
 
         widget._resize((130, 175))  # collapse (raw width 30)
         assert widget.collapsed_width is True
+        self._advance_until_settled()
 
         widget._resize((170, 175))  # raw width 70 > 100 * 0.5 = 50
         assert widget.collapsed_width is False
+        # Doesn't snap instantly: still animating towards the lower bound.
+        assert widget.width == 0
+        assert 'width' in widget._collapse_animations
+        assert widget._collapse_animations['width'].animated_properties == {
+            'width': 100}
+
+        self._advance_until_settled()
         assert widget.width == 100  # snaps open to the lower bound
 
     @patch('kivy.core.window.Window')
@@ -1458,8 +1507,100 @@ class TestMorphResizeBehavior:
         self._begin_resize(widget, 'right', (300, 175))
 
         widget._resize((130, 175))
+        self._advance_until_settled()
 
         assert widget.width == 20
+
+    # --- Collapse / expand animation + content fade ---
+
+    @patch('kivy.core.window.Window')
+    def test_collapse_animation_redirects_when_expand_interrupts(
+            self, mock_window):
+        """Test crossing the expand threshold while a collapse animation
+        is still in flight cancels it and redirects towards the expanded
+        target, instead of jumping or fighting the stale animation."""
+        widget = self.MockWidget()
+        widget.size = (200, 150)
+        widget.pos = (100, 100)
+        widget.size_lower_bound = [100, -1]
+        widget.collapsible = True
+        widget.collapse_animation_duration = 1.0  # slow, to interrupt mid-flight
+        self._begin_resize(widget, 'right', (300, 175))
+
+        widget._resize((130, 175))  # collapse
+        assert widget.collapsed_width is True
+        old_animation = widget._collapse_animations['width']
+
+        widget._resize((170, 175))  # expand before the collapse animation finishes
+        assert widget.collapsed_width is False
+        new_animation = widget._collapse_animations['width']
+
+        assert new_animation is not old_animation
+        assert new_animation.animated_properties == {'width': 100}
+
+    @patch('kivy.core.window.Window')
+    def test_content_fades_out_while_collapsed(self, mock_window):
+        """Test direct children fade to content_collapse_opacity in sync
+        with a dimension collapsing shut."""
+        widget = self.MockWidget()
+        widget.size = (200, 150)
+        widget.pos = (100, 100)
+        widget.size_lower_bound = [100, -1]
+        widget.collapsible = True
+        widget.content_collapse_opacity = 0.0
+        child = Widget()
+        widget.add_widget(child)
+        assert child.opacity == 1.0
+
+        self._begin_resize(widget, 'right', (300, 175))
+        widget._resize((130, 175))  # collapse
+        self._advance_until_settled()
+
+        assert widget.collapsed_width is True
+        assert child.opacity == 0.0
+
+    @patch('kivy.core.window.Window')
+    def test_content_fades_back_in_when_expanded(self, mock_window):
+        """Test direct children fade back to fully opaque once a
+        collapsed dimension reopens."""
+        widget = self.MockWidget()
+        widget.size = (200, 150)
+        widget.pos = (100, 100)
+        widget.size_lower_bound = [100, -1]
+        widget.collapsible = True
+        widget.expand_threshold = 0.5
+        child = Widget()
+        widget.add_widget(child)
+
+        self._begin_resize(widget, 'right', (300, 175))
+        widget._resize((130, 175))  # collapse
+        self._advance_until_settled()
+        assert child.opacity == 0.0
+
+        widget._resize((170, 175))  # expand
+        self._advance_until_settled()
+
+        assert widget.collapsed_width is False
+        assert child.opacity == 1.0
+
+    @patch('kivy.core.window.Window')
+    def test_content_opacity_customizable(self, mock_window):
+        """Test content_collapse_opacity controls the faded-out opacity
+        instead of always fading fully to zero."""
+        widget = self.MockWidget()
+        widget.size = (200, 150)
+        widget.pos = (100, 100)
+        widget.size_lower_bound = [100, -1]
+        widget.collapsible = True
+        widget.content_collapse_opacity = 0.3
+        child = Widget()
+        widget.add_widget(child)
+
+        self._begin_resize(widget, 'right', (300, 175))
+        widget._resize((130, 175))  # collapse
+        self._advance_until_settled()
+
+        assert child.opacity == 0.3
 
 
 class TestMorphKeyPressBehavior:
