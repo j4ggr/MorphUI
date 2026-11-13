@@ -1151,6 +1151,7 @@ class MorphResizeBehavior(
         self.size_hint = self._original_size_hint
         self._original_size_hint = (1.0, 1.0)
         self._resize_edge_or_corner = None
+        self._update_resize_feedback()
         self.dispatch('on_resize_end', self.resize_edge_or_corner)
 
     def on_resize_start(self, edge_or_corner: str) -> None:

@@ -17,8 +17,7 @@ from typing import Literal
 
 from kivy.event import EventDispatcher
 from kivy.metrics import dp
-from kivy.properties import ListProperty
-from kivy.properties import StringProperty
+from kivy.properties import AliasProperty
 from kivy.properties import NumericProperty
 from kivy.properties import BooleanProperty
 from kivy.core.window import Window
@@ -256,9 +255,28 @@ class MorphHoverEnhancedBehavior(MorphHoverBehavior):
                 self.show_tooltip("Click to select widget")
     ```
     """
-
     # Edge and corner detection properties
-    hovered_edges: List[str] = ListProperty([])
+    def _get_hovered_edges(self) -> List[str]:
+        """Get list of currently hovered edges.
+
+        This property is computed dynamically based on the individual 
+        edge hover states.
+        
+        Returns
+        -------
+        List[str]
+            List of edge names that are currently hovered.
+        """
+        return [e for e in NAME.EDGES if getattr(self, f'{e}_edge_hovered')]
+
+    hovered_edges: List[str] = AliasProperty(
+        _get_hovered_edges, 
+        None,
+        bind=(
+            'left_edge_hovered',
+            'right_edge_hovered',
+            'top_edge_hovered',
+            'bottom_edge_hovered'))
     """List of edges currently being hovered over.
     
     Contains edge names from ['left', 'right', 'top', 'bottom'] that
@@ -269,13 +287,44 @@ class MorphHoverEnhancedBehavior(MorphHoverBehavior):
     and defaults to an empty list.
     """
 
-    hovered_corner: str | None = StringProperty(
-        None, options=NAME.CORNERS, allownone=True)
-    """The corner currently being hovered over.
+    _hovered_corner: str | None = None
+    """Internal corner currently being hovered over.
     
     Automatically determined from hovered_edges when exactly two adjacent
     edges are hovered. Possible values are corner names or None.
-    
+    """
+
+    _last_hovered_corner: str | None = None
+    """Internal tracking of last hovered corner for event dispatching."""
+
+    def _get_hovered_corner(self) -> str | None:
+        """Get the currently hovered corner based on hovered edges."""
+        self._last_hovered_corner = self._hovered_corner
+        if not self.hovered or len(self.hovered_edges) != 2:
+            self._hovered_corner = None
+        else:
+            corner = NAME.SEP_CORNER.join(self.hovered_edges)
+            if corner not in NAME.CORNERS:
+                corner = NAME.SEP_CORNER.join(reversed(self.hovered_edges))
+            if corner in NAME.CORNERS:
+                self._hovered_corner = corner
+            else:
+                self._hovered_corner = None
+        return self._hovered_corner
+
+    hovered_corner: str | None = AliasProperty(
+        _get_hovered_corner,
+        None,
+        bind=(
+            'left_edge_hovered',
+            'right_edge_hovered',
+            'top_edge_hovered',
+            'bottom_edge_hovered'))
+    """The corner currently being hovered over.
+
+    Automatically determined from hovered_edges when exactly two adjacent
+    edges are hovered. Possible values are corner names or None.
+
     :attr:`hovered_corner` is a :class:`~kivy.properties.StringProperty`
     and defaults to None.
     """
@@ -320,9 +369,6 @@ class MorphHoverEnhancedBehavior(MorphHoverBehavior):
     and defaults to 4.
     """
 
-    _last_hovered_corner: str | None = None
-    """Internal tracking of last hovered corner for event dispatching."""
-
     __events__ = (
         'on_enter_edge',
         'on_leave_edge',
@@ -348,17 +394,6 @@ class MorphHoverEnhancedBehavior(MorphHoverBehavior):
         if corner not in NAME.CORNERS:
             corner = NAME.SEP_CORNER.join(reversed(self.hovered_edges))
         return corner if corner in NAME.CORNERS else None
-
-    def get_hovered_edges(self) -> List[str]:
-        """Get list of currently hovered edges.
-        
-        Returns
-        -------
-        List[str]
-            List of edge names that are currently hovered.
-        """
-        return [
-            name for name in NAME.EDGES if getattr(self, f'{name}_edge_hovered')]
 
     def on_mouse_pos(self, instance: Any, pos: Tuple[float, float]) -> None:
         """Enhanced mouse position handling with edge detection.
@@ -395,21 +430,13 @@ class MorphHoverEnhancedBehavior(MorphHoverBehavior):
         self.right_edge_hovered = (x >= self.width - self.edge_detection_size)
         self.top_edge_hovered = (y >= self.height - self.edge_detection_size)
         self.bottom_edge_hovered = (y <= self.edge_detection_size)
-
-        # Update edge list and corner detection
-        self.hovered_edges = self.get_hovered_edges()
-        self._last_hovered_corner = self.hovered_corner
-        self.hovered_corner = self.get_hovered_corner()
-
+        
     def _clear_edge_detection(self) -> None:
         """Clear all edge and corner detection when not hovering."""
         self.left_edge_hovered = False
         self.right_edge_hovered = False
         self.top_edge_hovered = False
         self.bottom_edge_hovered = False
-        self.hovered_edges = []
-        self._last_hovered_corner = self.hovered_corner
-        self.hovered_corner = None
 
     def _dispatch_edge_event(self, edge: str, hovered: bool) -> None:
         """Dispatch appropriate edge event based on hover state.
