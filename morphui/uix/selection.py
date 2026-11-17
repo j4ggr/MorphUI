@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Callable
 from typing import Dict
 from typing import Tuple
 
@@ -48,31 +48,35 @@ class MorphCheckbox(
         auto_size=True,
         round_sides=True,
         padding=dp(1),
-        scale_animation_duration=0.1,))
+        scale_animation_duration=0.15,))
+
+    __events__ = ('on_checkbox_state',)
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
 
-    def on_active(self, instance: Any, active: bool) -> None:
-        """Handle the `active` property change. 
+    def _scale_animation_complete(
+            self, callback: Callable | None = None) -> None:
+        """Called when the scale out animation completes."""
+        super()._scale_animation_complete(callback)
+        self.dispatch('on_checkbox_state', self, self.active)
+
+    def on_checkbox_state(self, instance: Any, active: bool) -> None:
+        """Handle the checkbox state change after the scale out 
+        animation. Overrides this method to provide custom handling.
         
-        Triggers the check animations and updates the icon based on
-        the new state. The `active` property is inherited from
-        MorphToggleButtonBehavior.
+        The `on_checkbox_state` method is triggered after the scale out
+        animation completes, allowing any additional handling of the
+        checkbox state change.
         
         Parameters
         ----------
         instance : Any
-            The instance of the widget where the property changed.
+            The instance of the widget where the checkbox state changed.
         active : bool
             The new value of the `active` property.
         """
-        def on_scale_out_complete(anim, widget):
-            """Called when scale out animation completes."""
-            self._update_icon()
-            self.animate_scale_in()
-            
-        self.animate_scale_out(callback=on_scale_out_complete)
+        pass
 
 
 class MorphRadioButton(MorphCheckbox):

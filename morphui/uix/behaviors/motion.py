@@ -460,6 +460,17 @@ class MorphMenuMotionBehavior(MorphMotionBaseBehavior):
             h = self.layout_manager.height + padding[1] + padding[3]
         if self.same_width_as_caller and self.caller is not None:
             w = self._resolve_caller_size()[0]
+
+        # Lift any size_upper_bound left over from a previous
+        # _resolve_size() call before applying the content's natural
+        # size below. Otherwise this assignment would immediately be
+        # re-clamped to the stale (possibly much smaller) bound from
+        # the last reposition, permanently capping how much the menu
+        # can grow back when its content grows again (e.g. a filtered
+        # list being cleared). _resolve_size() recomputes the real
+        # bound from the current window space right after.
+        if hasattr(self, 'size_upper_bound'):
+            self.size_upper_bound = (-1, -1)
         self.size = (w, h)
         
         space_above = Window.height - (caller_y + caller_height) - margin
