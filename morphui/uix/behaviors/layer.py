@@ -2048,7 +2048,8 @@ class MorphOverlayLayerBehavior(BaseLayerBehavior):
                 self._overlay_edges_instruction[name] = Line(
                     points=points,
                     width=self.overlay_edge_width,
-                    cap='none',
+                    cap='round',
+                    joint='round',
                     group=NAME.OVERLAY_EDGES)
 
         self.bind(
