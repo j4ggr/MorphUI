@@ -1602,6 +1602,191 @@ class TestMorphResizeBehavior:
 
         assert child.opacity == 0.3
 
+    # --- Programmatic collapse / expand (e.g. from a button) ---
+
+    @patch('kivy.core.window.Window')
+    def test_collapse_snaps_axis_shut_without_a_drag(self, mock_window):
+        """Test collapse() snaps the given axis to collapsed_size and
+        marks it collapsed, with no resize drag involved."""
+        widget = self.MockWidget()
+        widget.size = (200, 150)
+        widget.pos = (100, 100)
+        widget.size_lower_bound = [100, -1]
+        widget.collapsible = True
+
+        widget.collapse('width')
+        self._advance_until_settled()
+
+        assert widget.collapsed_width is True
+        assert widget.width == 0
+
+    @patch('kivy.core.window.Window')
+    def test_collapse_dispatches_on_collapse_event(self, mock_window):
+        """Test collapse() fires on_collapse with the given axis."""
+        widget = self.MockWidget()
+        widget.size = (200, 150)
+        widget.pos = (100, 100)
+        widget.size_lower_bound = [100, -1]
+        widget.collapsible = True
+
+        collapsed_axes = []
+        widget.bind(on_collapse=lambda *args: collapsed_axes.append(args[-1]))
+        widget.collapse('width')
+
+        assert collapsed_axes == ['width']
+
+    @patch('kivy.core.window.Window')
+    def test_collapse_is_noop_when_not_collapsible(self, mock_window):
+        """Test collapse() does nothing if collapsible is False."""
+        widget = self.MockWidget()
+        widget.size = (200, 150)
+        widget.pos = (100, 100)
+
+        widget.collapse('width')
+
+        assert widget.collapsed_width is False
+        assert widget.width == 200
+
+    @patch('kivy.core.window.Window')
+    def test_collapse_is_noop_when_already_collapsed(self, mock_window):
+        """Test a second collapse() call doesn't overwrite the recorded
+        pre-collapse size."""
+        widget = self.MockWidget()
+        widget.size = (200, 150)
+        widget.pos = (100, 100)
+        widget.size_lower_bound = [100, -1]
+        widget.collapsible = True
+
+        widget.collapse('width')
+        self._advance_until_settled()
+        widget.width = 500  # simulate something else moving it while collapsed
+        widget.collapse('width')
+
+        assert widget._pre_collapse_size['width'] == 200
+
+    @patch('kivy.core.window.Window')
+    def test_expand_restores_pre_collapse_size(self, mock_window):
+        """Test expand() animates back to the size the axis had right
+        before collapse() was called, not just the lower bound."""
+        widget = self.MockWidget()
+        widget.size = (320, 150)
+        widget.pos = (100, 100)
+        widget.size_lower_bound = [100, -1]
+        widget.collapsible = True
+
+        widget.collapse('width')
+        self._advance_until_settled()
+        assert widget.width == 0
+
+        widget.expand('width')
+        self._advance_until_settled()
+
+        assert widget.collapsed_width is False
+        assert widget.width == 320
+
+    @patch('kivy.core.window.Window')
+    def test_expand_dispatches_on_expand_event(self, mock_window):
+        """Test expand() fires on_expand with the given axis."""
+        widget = self.MockWidget()
+        widget.size = (200, 150)
+        widget.pos = (100, 100)
+        widget.size_lower_bound = [100, -1]
+        widget.collapsible = True
+        widget.collapse('width')
+
+        expanded_axes = []
+        widget.bind(on_expand=lambda *args: expanded_axes.append(args[-1]))
+        widget.expand('width')
+
+        assert expanded_axes == ['width']
+
+    @patch('kivy.core.window.Window')
+    def test_expand_falls_back_to_lower_bound_without_prior_collapse(
+            self, mock_window):
+        """Test expand() reopens to the resolved lower bound when the
+        axis was collapsed some other way than collapse() (so no prior
+        size was recorded)."""
+        widget = self.MockWidget()
+        widget.size = (200, 150)
+        widget.pos = (100, 100)
+        widget.size_lower_bound = [100, -1]
+        widget.collapsible = True
+        widget.collapsed_width = True  # collapsed without collapse()
+
+        widget.expand('width')
+        self._advance_until_settled()
+
+        assert widget.collapsed_width is False
+        assert widget.width == 100
+
+    @patch('kivy.core.window.Window')
+    def test_expand_is_noop_when_not_collapsed(self, mock_window):
+        """Test expand() does nothing if the axis isn't collapsed."""
+        widget = self.MockWidget()
+        widget.size = (200, 150)
+        widget.pos = (100, 100)
+        widget.size_lower_bound = [100, -1]
+        widget.collapsible = True
+
+        widget.expand('width')
+
+        assert widget.width == 200
+
+    @patch('kivy.core.window.Window')
+    def test_toggle_collapse_switches_based_on_current_state(self, mock_window):
+        """Test toggle_collapse() collapses an expanded axis and expands
+        a collapsed one."""
+        widget = self.MockWidget()
+        widget.size = (200, 150)
+        widget.pos = (100, 100)
+        widget.size_lower_bound = [100, -1]
+        widget.collapsible = True
+
+        widget.toggle_collapse('width')
+        self._advance_until_settled()
+        assert widget.collapsed_width is True
+
+        widget.toggle_collapse('width')
+        self._advance_until_settled()
+        assert widget.collapsed_width is False
+        assert widget.width == 200
+
+    @patch('kivy.core.window.Window')
+    def test_collapse_preserves_opposite_edge_without_a_drag(self, mock_window):
+        """Test collapse()/expand() keep the edge opposite
+        resizable_edges fixed, using resizable_edges to pick the anchor
+        since there's no active drag to read it from."""
+        widget = self.MockWidget()
+        widget.size = (200, 150)
+        widget.pos = (100, 100)
+        widget.size_lower_bound = [100, -1]
+        widget.collapsible = True
+        widget.resizable_edges = ['left']  # right edge (x + width) is fixed
+
+        widget.collapse('width')
+        self._advance_until_settled()
+
+        assert widget.width == 0
+        assert widget.x == 300  # 100 + 200, right edge preserved
+
+        widget.expand('width')
+        self._advance_until_settled()
+
+        assert widget.width == 200
+        assert widget.x == 100
+
+    @patch('kivy.core.window.Window')
+    def test_collapse_invalid_axis_raises(self, mock_window):
+        """Test collapse()/expand()/toggle_collapse() reject an axis
+        that isn't 'width' or 'height'."""
+        widget = self.MockWidget()
+        widget.collapsible = True
+
+        with pytest.raises(ValueError):
+            widget.collapse('depth')
+        with pytest.raises(ValueError):
+            widget.expand('depth')
+
 
 class TestMorphKeyPressBehavior:
     """Test suite for MorphKeyPressBehavior class."""

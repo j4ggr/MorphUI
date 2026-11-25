@@ -600,6 +600,12 @@ class MorphResizeBehavior(
     - :attr:`collapse_animation_transition`: Easing used for the collapse/expand transition
     - :attr:`content_collapse_opacity`: Opacity direct children fade to while collapsed
     
+    Methods
+    -------
+    - :meth:`collapse`: Programmatically collapse an axis (e.g. from a button)
+    - :meth:`expand`: Programmatically expand an axis back to its pre-collapse size
+    - :meth:`toggle_collapse`: Collapse or expand an axis depending on its current state
+    
     Examples
     --------
     Basic resizable widget:
@@ -646,6 +652,13 @@ class MorphResizeBehavior(
             self.collapsible = True
             self.collapse_threshold = 0.4  # collapse below 40% of 200px
             self.expand_threshold = 0.6    # reopen past 60% of 200px
+    ```
+    
+    Toggling collapse/expand from a button instead of dragging, e.g. a
+    hamburger icon that shows/hides the sidebar above:
+    
+    ```python
+    toggle_button.bind(on_release=lambda *a: sidebar.toggle_collapse())
     ```
     """
 
@@ -837,6 +850,12 @@ class MorphResizeBehavior(
     """Internal registry of in-progress collapse/expand size animations,
     keyed by axis ('width' or 'height')."""
 
+    _pre_collapse_size: Dict[str, float]
+    """Internal storage of the size an axis had right before it
+    collapsed, keyed by axis ('width' or 'height'). Used by
+    :meth:`expand` to restore the previous size instead of only
+    reopening to the resolved lower bound."""
+
     __events__ = (
         'on_resize_start',
         'on_resize_progress',
@@ -847,6 +866,7 @@ class MorphResizeBehavior(
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self._collapse_animations = {}
+        self._pre_collapse_size = {}
         
         self.bind(
             hovered_edges=self._update_resize_feedback,
@@ -1168,12 +1188,14 @@ class MorphResizeBehavior(
         if was_collapsed:
             if value >= lower * self.expand_threshold:
                 setattr(self, f'collapsed_{axis}', False)
+                self._pre_collapse_size.pop(axis, None)
                 self.dispatch('on_expand', axis)
                 self._animate_collapse_dimension(axis, clamp(value, lower, upper))
                 return getattr(self, axis)
             return getattr(self, axis) if animating else collapsed_value
 
         if lower > 0 and value <= lower * self.collapse_threshold:
+            self._pre_collapse_size[axis] = getattr(self, axis)
             setattr(self, f'collapsed_{axis}', True)
             self.dispatch('on_collapse', axis)
             self._animate_collapse_dimension(axis, collapsed_value)
@@ -1190,6 +1212,14 @@ class MorphResizeBehavior(
         open while still collapsing shut) smoothly redirects towards the
         new target instead of fighting the previous animation.
 
+        While an interactive resize is in progress, the edge being
+        dragged (and the geometry frozen at the start of that drag)
+        determine which edge stays fixed. Otherwise (e.g. when
+        collapsing/expanding programmatically via :meth:`collapse` or
+        :meth:`expand`), :attr:`resizable_edges` and the widget's
+        current geometry are used instead, so the opposite edge is
+        preserved either way.
+
         Parameters
         ----------
         axis : str
@@ -1201,19 +1231,22 @@ class MorphResizeBehavior(
         if existing is not None:
             existing.cancel(self)
 
+        if self._resize_in_progress and self.resize_edge_or_corner is not None:
+            edges = self.resize_edge_or_corner.split(NAME.SEP_CORNER)
+            reference_pos = self._resize_reference_geometry.pos
+            reference_size = self._resize_reference_geometry.size
+        else:
+            edges = self.resizable_edges
+            reference_pos = self.pos
+            reference_size = self.size
+
         animated_properties = {axis: target}
-        if (
-                axis == 'width'
-                and self.resize_edge_or_corner is not None
-                and 'left' in self.resize_edge_or_corner.split(NAME.SEP_CORNER)):
-            reference = self._resize_reference_geometry
-            animated_properties['x'] = reference.pos[0] + reference.size[0] - target
-        elif (
-                axis == 'height'
-                and self.resize_edge_or_corner is not None
-                and 'bottom' in self.resize_edge_or_corner.split(NAME.SEP_CORNER)):
-            reference = self._resize_reference_geometry
-            animated_properties['y'] = reference.pos[1] + reference.size[1] - target
+        if axis == 'width' and 'left' in edges:
+            animated_properties['x'] = (
+                reference_pos[0] + reference_size[0] - target)
+        elif axis == 'height' and 'bottom' in edges:
+            animated_properties['y'] = (
+                reference_pos[1] + reference_size[1] - target)
 
         animation = Animation(
             duration=self.collapse_animation_duration,
@@ -1248,6 +1281,96 @@ class MorphResizeBehavior(
                 duration=self.collapse_animation_duration,
                 transition=self.collapse_animation_transition,
                 ).start(child)
+
+    @staticmethod
+    def _validate_collapse_axis(axis: str) -> None:
+        """Raise ValueError if `axis` isn't 'width' or 'height'."""
+        if axis not in ('width', 'height'):
+            raise ValueError(
+                f"axis must be 'width' or 'height', got {axis!r}")
+
+    def collapse(self, axis: str = 'width') -> None:
+        """Programmatically collapse `axis` to :attr:`collapsed_size`,
+        e.g. from a toggle button instead of a drag gesture.
+
+        The axis' current size is recorded first, so a later call to
+        :meth:`expand` can restore it. Has no effect if
+        :attr:`collapsible` is False or `axis` is already collapsed.
+
+        Parameters
+        ----------
+        axis : str
+            Either 'width' or 'height'. Defaults to 'width'.
+
+        Examples
+        --------
+        ```python
+        collapse_button.bind(on_release=lambda *a: sidebar.collapse())
+        ```
+        """
+        self._validate_collapse_axis(axis)
+        if not self.collapsible or getattr(self, f'collapsed_{axis}'):
+            return
+
+        index = 0 if axis == 'width' else 1
+        collapsed_value = self.collapsed_size[index]
+        self._pre_collapse_size[axis] = getattr(self, axis)
+        setattr(self, f'collapsed_{axis}', True)
+        self.dispatch('on_collapse', axis)
+        self._animate_collapse_dimension(axis, collapsed_value)
+
+    def expand(self, axis: str = 'width') -> None:
+        """Programmatically expand `axis` back to the size it had
+        before it collapsed, e.g. from a toggle button instead of a
+        drag gesture.
+
+        Restores the size recorded by the preceding :meth:`collapse`
+        call (clamped to the current resolved bounds), or falls back to
+        the resolved lower bound if no prior size was recorded. Has no
+        effect if `axis` isn't currently collapsed.
+
+        Parameters
+        ----------
+        axis : str
+            Either 'width' or 'height'. Defaults to 'width'.
+
+        Examples
+        --------
+        ```python
+        expand_button.bind(on_release=lambda *a: sidebar.expand())
+        ```
+        """
+        self._validate_collapse_axis(axis)
+        if not getattr(self, f'collapsed_{axis}'):
+            return
+
+        index = 0 if axis == 'width' else 1
+        lower = self._resolved_size_lower_bound[index]
+        upper = self._resolved_size_upper_bound[index]
+        target = clamp(self._pre_collapse_size.pop(axis, lower), lower, upper)
+        setattr(self, f'collapsed_{axis}', False)
+        self.dispatch('on_expand', axis)
+        self._animate_collapse_dimension(axis, target)
+
+    def toggle_collapse(self, axis: str = 'width') -> None:
+        """Collapse `axis` if currently expanded, or expand it if
+        currently collapsed. See :meth:`collapse` and :meth:`expand`.
+
+        Parameters
+        ----------
+        axis : str
+            Either 'width' or 'height'. Defaults to 'width'.
+
+        Examples
+        --------
+        ```python
+        toggle_button.bind(on_release=lambda *a: sidebar.toggle_collapse())
+        ```
+        """
+        if getattr(self, f'collapsed_{axis}'):
+            self.expand(axis)
+        else:
+            self.collapse(axis)
 
     def constrain_size(self, size: Tuple[float, float]) -> Tuple[float, float]:
         """Apply size bounds constraints, skipping collapsed dimensions.
