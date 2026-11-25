@@ -975,7 +975,6 @@ class MorphResizeBehavior(
         """
         self._resize_in_progress = True
         self._original_size_hint = self.size_hint
-        self.size_hint = (None, None)
         self._resize_reference_geometry = FrozenGeometry.from_widget(self)
         self._start_touch_pos = touch_pos
         
@@ -983,6 +982,18 @@ class MorphResizeBehavior(
             self._resize_edge_or_corner = self.hovered_resizable_corner
         else:
             self._resize_edge_or_corner = self.hovered_resizable_edges[0]
+
+        assert self.resize_edge_or_corner is not None
+        edges = self.resize_edge_or_corner.split(NAME.SEP_CORNER)
+        resizes_width = (
+            any(edge in NAME.VERTICAL_EDGES for edge in edges)
+            or self.preserve_aspect_ratio)
+        resizes_height = (
+            any(edge in NAME.HORIZONTAL_EDGES for edge in edges)
+            or self.preserve_aspect_ratio)
+        self.size_hint = (
+            None if resizes_width else self._original_size_hint[0],
+            None if resizes_height else self._original_size_hint[1],)
         self.dispatch('on_resize_start', self.resize_edge_or_corner)
 
     def on_touch_move(self, touch: MotionEvent) -> bool:
@@ -1023,6 +1034,8 @@ class MorphResizeBehavior(
         """
         x, y = self._resize_reference_geometry.pos
         w, h = self._resize_reference_geometry.size
+        current_x, current_y = self.pos
+        current_w, current_h = self.size
         dx = mouse_pos[0] - self._start_touch_pos[0]
         dy = mouse_pos[1] - self._start_touch_pos[1]
         target_ratio = self._resize_reference_geometry.aspect_ratio
@@ -1031,17 +1044,17 @@ class MorphResizeBehavior(
             edges = self.resize_edge_or_corner.split(NAME.SEP_CORNER)
         else:
             edges = []
+        resizes_width = any(edge in NAME.VERTICAL_EDGES for edge in edges)
+        resizes_height = any(edge in NAME.HORIZONTAL_EDGES for edge in edges)
         for edge in edges:
             if edge == 'left':
                 w -= dx
-                x += dx
             elif edge == 'right':
                 w += dx
             elif edge == 'top':
                 h += dy
             elif edge == 'bottom':
                 h -= dy
-                y += dy
 
         if self.preserve_aspect_ratio and target_ratio > 0:
             current_ratio = w / h if h > 0 else 1.0
@@ -1051,12 +1064,25 @@ class MorphResizeBehavior(
                     w = h * target_ratio    # Width is too large relative to height
                 else: 
                     h = w / target_ratio    # Height is too large relative to width
+        else:
+            if not resizes_width:
+                w = current_w
+            if not resizes_height:
+                h = current_h
 
         if self.collapsible:
             new_size = self._apply_collapse_snapping((w, h), edges)
         else:
             new_size = self.constrain_size((w, h))
-        new_pos = (x, y)
+        new_x = (
+            x + self._resize_reference_geometry.size[0] - new_size[0]
+            if 'left' in edges
+            else current_x)
+        new_y = (
+            y + self._resize_reference_geometry.size[1] - new_size[1]
+            if 'bottom' in edges
+            else current_y)
+        new_pos = (new_x, new_y)
         self.dispatch(
             'on_resize_progress', self.resize_edge_or_corner, new_size, new_pos)
 
@@ -1175,10 +1201,24 @@ class MorphResizeBehavior(
         if existing is not None:
             existing.cancel(self)
 
+        animated_properties = {axis: target}
+        if (
+                axis == 'width'
+                and self.resize_edge_or_corner is not None
+                and 'left' in self.resize_edge_or_corner.split(NAME.SEP_CORNER)):
+            reference = self._resize_reference_geometry
+            animated_properties['x'] = reference.pos[0] + reference.size[0] - target
+        elif (
+                axis == 'height'
+                and self.resize_edge_or_corner is not None
+                and 'bottom' in self.resize_edge_or_corner.split(NAME.SEP_CORNER)):
+            reference = self._resize_reference_geometry
+            animated_properties['y'] = reference.pos[1] + reference.size[1] - target
+
         animation = Animation(
             duration=self.collapse_animation_duration,
             transition=self.collapse_animation_transition,
-            **{axis: target})
+            **animated_properties)
         animation.bind(
             on_complete=lambda *args: self._collapse_animations.pop(axis, None))
         self._collapse_animations[axis] = animation
