@@ -788,7 +788,7 @@ class MorphResizeBehavior(
     is bound to :attr:`collapsed_width` and :attr:`collapsed_height`.
     """
 
-    collapse_animation_duration: float = NumericProperty(0.1)
+    collapse_animation_duration: float = NumericProperty(0.2)
     """Duration in seconds of the collapse/expand transition.
     
     Whenever a dimension snaps shut or pops back open (see
@@ -799,7 +799,7 @@ class MorphResizeBehavior(
     :attr:`collapsible` is True.
     
     :attr:`collapse_animation_duration` is a
-    :class:`~kivy.properties.NumericProperty` and defaults to 0.1.
+    :class:`~kivy.properties.NumericProperty` and defaults to 0.2.
     """
 
     collapse_animation_transition: str = StringProperty('out_quad')
@@ -813,7 +813,7 @@ class MorphResizeBehavior(
     `'out_quad'`.
     """
 
-    content_collapse_opacity: float = NumericProperty(1.0)
+    content_collapse_opacity: float = NumericProperty(0.0)
     """Opacity applied to the widget's direct children while collapsed.
     
     While :attr:`collapsed` is True, each of this widget's direct
@@ -823,7 +823,7 @@ class MorphResizeBehavior(
     expands again.
     
     :attr:`content_collapse_opacity` is a
-    :class:`~kivy.properties.NumericProperty` and defaults to 1.0.
+    :class:`~kivy.properties.NumericProperty` and defaults to 0.0.
     """
 
     _resize_reference_geometry: FrozenGeometry

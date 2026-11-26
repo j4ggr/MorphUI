@@ -14,6 +14,30 @@ __Types of changes__:
 - _Fixed_ for any bug fixes.
 - _Security_ in case of vulnerabilities.
 
+## [0.18.0] - 2026-11-26
+
+### Added
+
+- Added animated collapse and expansion to `MorphResizeBehavior`, including configurable duration and transition, content fading, and position animation that preserves the opposite edge.
+- Added `collapse(axis)`, `expand(axis)`, and `toggle_collapse(axis)` to `MorphResizeBehavior` for programmatic control and restoration of the pre-collapse size.
+
+### Changed
+
+- Changed `MorphResizeBehavior` to constrain only the axis currently being resized and to preserve the opposite edge during drag, collapse, and expansion.
+- Changed overlay line graphics to use rounded caps and joints.
+- Enabled Ruff's pyupgrade rules and modernized typing annotations across the package.
+
+### Refactored
+
+- Refactored hover edge and corner detection to derive `hovered_edges` and `hovered_corner` reactively with `AliasProperty`.
+
+### Fixed
+
+- Fixed menu geometry not resyncing after deferred content measurement and stale upper bounds preventing a menu from growing again.
+- Fixed declarative KV children not being attached while the owner was still initializing.
+- Fixed `MorphCheckbox` firing its scale animation twice per state change.
+- Fixed `MorphResizeBehavior` collapse animation defaults, axis handling, opposite-edge positioning, and programmatic restoration behavior.
+
 ## [0.17.0] - 2026-11-11
 
 ### Added
