@@ -10,7 +10,6 @@ for icon glyphs, and a variety of specialized labels used internally by
 button, chip, text field, tooltip, and data view components.
 """
 from typing import Any
-from typing import Dict
 
 from kivy.metrics import dp
 from kivy.uix.label import Label
@@ -94,7 +93,7 @@ class BaseLabel(Label):
     :attr:`minimum_width` is a :class:`~kivy.properties.AliasProperty`
     """
 
-    default_config: Dict[str, Any] = dict()
+    default_config: dict[str, Any] = dict()
     """Default configuration values for BaseLabel instances.
     """
 
@@ -146,7 +145,7 @@ class MorphSimpleLabel(
     - Lighter weight than MorphLabel for simple text display needs
     """
 
-    default_config: Dict[str, Any] = dict(
+    default_config: dict[str, Any] = dict(
         theme_color_bindings=dict(
             normal_content_color='content_surface_color',),
         typography_role='Label',
@@ -207,7 +206,7 @@ MyApp().run()
     - Lighter weight than MorphIconLabel for simple icon display
     """
 
-    default_config: Dict[str, Any] = dict(
+    default_config: dict[str, Any] = dict(
         theme_color_bindings=dict(
             normal_content_color='content_surface_color',),
         font_name='MaterialIcons',
@@ -273,7 +272,7 @@ class MorphLabel(
       properties in kwargs will override the typography settings.
     """
 
-    default_config: Dict[str, Any] = dict(
+    default_config: dict[str, Any] = dict(
         theme_color_bindings=dict(
             normal_content_color='content_surface_color',
             normal_surface_color='surface_color',),
@@ -346,7 +345,7 @@ class MorphIconLabel(
       properties in kwargs will override the typography settings.
     """
 
-    default_config: Dict[str, Any] = dict(
+    default_config: dict[str, Any] = dict(
         theme_color_bindings=dict(
             normal_content_color='content_surface_variant_color',
             normal_surface_color='transparent_color',),
@@ -380,7 +379,7 @@ class MorphLeadingIconLabel(
     with support for scale animations.
     """
     
-    default_config: Dict[str, Any] = (
+    default_config: dict[str, Any] = (
         MorphSimpleIconLabel.default_config.copy() | dict(
         padding=dp(0),
         pos_hint={'center_y': 0.5},))
@@ -394,7 +393,7 @@ class MorphTextLabel(
     trailing icons or other widgets.
     """
     
-    default_config: Dict[str, Any] = (
+    default_config: dict[str, Any] = (
         MorphSimpleLabel.default_config.copy() | dict(
         auto_size=(True, True),
         size_hint=(1, None),
@@ -410,7 +409,7 @@ class MorphHeadingLabel(
     trailing icons or other widgets.
     """
     
-    default_config: Dict[str, Any] = (
+    default_config: dict[str, Any] = (
         MorphSimpleLabel.default_config.copy() | dict(
         auto_size=(True, True),
         size_hint=(1, None),
@@ -430,7 +429,7 @@ class MorphTertiaryLabel(
     trailing icons or other widgets.
     """
     
-    default_config: Dict[str, Any] = (
+    default_config: dict[str, Any] = (
         MorphSimpleLabel.default_config.copy() | dict(
         auto_size=(True, True),
         size_hint=(1, None),
@@ -448,7 +447,7 @@ class MorphTrailingIconLabel(
     with support for scale animations.
     """
     
-    default_config: Dict[str, Any] = (
+    default_config: dict[str, Any] = (
         MorphSimpleIconLabel.default_config.copy() | dict(
         padding=dp(0),
         pos_hint={'center_y': 0.5},))
@@ -478,7 +477,7 @@ class MorphButtonTextLabel(
     
     Inherits from :class:`~morphui.uix.label.MorphTextLabel`.
     """
-    default_config: Dict[str, Any] = (
+    default_config: dict[str, Any] = (
         MorphTextLabel.default_config.copy() | dict(
         padding=[dp(4), 0],
         pos_hint={'center_y': 0.5},
@@ -491,7 +490,7 @@ class MorphChipLeadingIconLabel(
     
     Inherits from :class:`~morphui.uix.label.MorphLeadingIconLabel`.
     """
-    default_config: Dict[str, Any] = (
+    default_config: dict[str, Any] = (
         MorphLeadingIconLabel.default_config.copy() | dict(
         padding=[0, 0, dp(4), 0],))
 
@@ -502,7 +501,7 @@ class MorphChipTextLabel(
     
     Inherits from :class:`~morphui.uix.label.MorphTextLabel`.
     """
-    default_config: Dict[str, Any] = (
+    default_config: dict[str, Any] = (
         MorphTextLabel.default_config.copy() | dict(
         padding=[0, 0],
         auto_size=(True, True),))
@@ -547,7 +546,7 @@ class MorphTextFieldHeadingLabel(MorphSimpleLabel):
     and defaults to False.
     """
     
-    default_config: Dict[str, Any] = dict(
+    default_config: dict[str, Any] = dict(
         theme_color_bindings=dict(
             normal_content_color='content_surface_color',
             focus_content_color='primary_color',
@@ -611,7 +610,7 @@ class MorphTextFieldSupportingLabel(MorphSimpleLabel):
     and defaults to dp(200).
     """
     
-    default_config: Dict[str, Any] = dict(
+    default_config: dict[str, Any] = dict(
         theme_color_bindings=dict(
             normal_content_color='content_surface_color',
             error_content_color='error_color',),
@@ -653,7 +652,7 @@ class MorphTextFieldTertiaryLabel(MorphSimpleLabel):
     and defaults to False.
     """
     
-    default_config: Dict[str, Any] = dict(
+    default_config: dict[str, Any] = dict(
         theme_color_bindings=dict(
             normal_content_color='content_surface_color',
             error_content_color='error_color',),
@@ -705,7 +704,7 @@ class MorphTextFieldLeadingIconLabel(MorphSimpleIconLabel):
     and defaults to False.
     """
     
-    default_config: Dict[str, Any] = dict(
+    default_config: dict[str, Any] = dict(
         theme_color_bindings=dict(
             normal_content_color='content_surface_color',
             focus_content_color='primary_color',
@@ -729,7 +728,7 @@ class MorphTooltipLabel(MorphSimpleLabel):
     appearance without touching the generic label.
     """
 
-    default_config: Dict[str, Any] = MorphSimpleLabel.default_config | dict(
+    default_config: dict[str, Any] = MorphSimpleLabel.default_config | dict(
         typography_role='Label',
         typography_size='small',)
     """Default configuration for MorphTooltipLabel."""
@@ -738,7 +737,7 @@ class MorphTooltipLabel(MorphSimpleLabel):
 class MorphTooltipHeadingLabel(MorphTooltipLabel):
     """A bold, medium-sized label for the heading row of a rich tooltip."""
 
-    default_config: Dict[str, Any] = MorphTooltipLabel.default_config | dict(
+    default_config: dict[str, Any] = MorphTooltipLabel.default_config | dict(
         typography_size='medium',
         bold=True,)
     """Default configuration for MorphTooltipHeadingLabel."""

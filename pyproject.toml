@@ -35,3 +35,7 @@
 [tool]
   [tool.pdm]
     distribution = true
+  [tool.ruff.lint]
+    extend-select = ["UP"]
+    # PEP 695 aliases break get_args() for the state precedence system.
+    ignore = ["UP040"]

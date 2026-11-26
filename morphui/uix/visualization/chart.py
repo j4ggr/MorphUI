@@ -1,7 +1,6 @@
 import warnings
 
 from typing import Any
-from typing import Dict
 
 from pathlib import Path
 
@@ -33,7 +32,7 @@ __all__ = [
 
 class MorphChartInfoLabel(MorphSimpleLabel):
     """Label to show chart information in a MorphChartCard."""
-    default_config: Dict[str, Any] = dict(
+    default_config: dict[str, Any] = dict(
         theme_color_bindings=dict(
             normal_content_color='content_primary_fixed_variant_color',),
         typography_role='Label',
@@ -47,7 +46,7 @@ class MorphChartInfoLabel(MorphSimpleLabel):
 class MorphChartNavigationButton(MorphIconButton):
     """Button for chart navigation in a MorphChartCard
     """
-    default_config: Dict[str, Any] = dict(
+    default_config: dict[str, Any] = dict(
         font_name=MorphIconButton.default_config['font_name'],
         halign='center',
         valign='center',
@@ -71,7 +70,7 @@ class MorphChartNavigationToggleButton(
         MorphChartNavigationButton):
     """Toggle button for chart navigation in a MorphChartCard.
     """
-    default_config: Dict[str, Any] = (
+    default_config: dict[str, Any] = (
         MorphChartNavigationButton.default_config.copy() | dict(
         theme_color_bindings={
             'normal_surface_color': 'transparent_color',
@@ -87,7 +86,7 @@ class MorphChartToolbarMenu(
         MorphBoxLayout):
     """Toolbar menu container for MorphChartCard.
     """
-    default_config: Dict[str, Any] = dict(
+    default_config: dict[str, Any] = dict(
         theme_color_bindings={
             'normal_surface_color': 'transparent_color',},
         orientation='vertical',
@@ -155,7 +154,7 @@ class MorphChartToolbar(
     :attr:`info_label` is a :class:`~kivy.properties.ObjectProperty`
     and defaults to `None`."""
 
-    default_config: Dict[str, Any] = (
+    default_config: dict[str, Any] = (
         MorphChartNavigationButton.default_config.copy() | dict(
             icon='menu',))
 
@@ -402,7 +401,7 @@ class MorphChart(MorphFloatLayout):
     and defaults to `[dp(0), dp(0), dp(0), dp(0)]`.
     """
 
-    kw_savefig: Dict[str, Any]
+    kw_savefig: dict[str, Any]
     """Keyword arguments for saving the figure.
 
     This dictionary holds any additional keyword arguments that should
@@ -437,7 +436,7 @@ class MorphChart(MorphFloatLayout):
     save location.
     """
 
-    default_config: Dict[str, Any] = dict(
+    default_config: dict[str, Any] = dict(
         theme_color_bindings=dict(
             normal_surface_color='transparent_color',),
         size_hint=(1, 1),)
@@ -445,7 +444,7 @@ class MorphChart(MorphFloatLayout):
 
     def __init__(
             self,
-            kw_savefig: Dict[str, Any] = {},
+            kw_savefig: dict[str, Any] = {},
             **kwargs) -> None:
         config = self.default_config.copy() | kwargs
 

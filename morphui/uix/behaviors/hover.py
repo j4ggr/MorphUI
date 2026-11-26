@@ -11,8 +11,6 @@ Choose the appropriate behavior based on your needs:
 """
 
 from typing import Any
-from typing import List
-from typing import Tuple
 from typing import Literal
 
 from kivy.event import EventDispatcher
@@ -125,9 +123,9 @@ class MorphHoverBehavior(EventDispatcher):
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         
-        self.enter_pos: Tuple[float, float] = (0, 0)
-        self.leave_pos: Tuple[float, float] = (0, 0)
-        self.mouse_pos: Tuple[float, float] = (0, 0)
+        self.enter_pos: tuple[float, float] = (0, 0)
+        self.leave_pos: tuple[float, float] = (0, 0)
+        self.mouse_pos: tuple[float, float] = (0, 0)
         
         Window.bind(mouse_pos=self.on_mouse_pos)
 
@@ -136,7 +134,7 @@ class MorphHoverBehavior(EventDispatcher):
         """Check if widget is displayed (has root window)."""
         return bool(self.get_root_window())
 
-    def on_mouse_pos(self, instance: Any, pos: Tuple[float, float]) -> None:
+    def on_mouse_pos(self, instance: Any, pos: tuple[float, float]) -> None:
         """Handle mouse position changes from Window.
         
         This method is automatically called whenever the mouse moves.
@@ -256,7 +254,7 @@ class MorphHoverEnhancedBehavior(MorphHoverBehavior):
     ```
     """
     # Edge and corner detection properties
-    def _get_hovered_edges(self) -> List[str]:
+    def _get_hovered_edges(self) -> list[str]:
         """Get list of currently hovered edges.
 
         This property is computed dynamically based on the individual 
@@ -269,7 +267,7 @@ class MorphHoverEnhancedBehavior(MorphHoverBehavior):
         """
         return [e for e in NAME.EDGES if getattr(self, f'{e}_edge_hovered')]
 
-    hovered_edges: List[str] = AliasProperty(
+    hovered_edges: list[str] = AliasProperty(
         _get_hovered_edges, 
         None,
         bind=(
@@ -395,7 +393,7 @@ class MorphHoverEnhancedBehavior(MorphHoverBehavior):
             corner = NAME.SEP_CORNER.join(reversed(self.hovered_edges))
         return corner if corner in NAME.CORNERS else None
 
-    def on_mouse_pos(self, instance: Any, pos: Tuple[float, float]) -> None:
+    def on_mouse_pos(self, instance: Any, pos: tuple[float, float]) -> None:
         """Enhanced mouse position handling with edge detection.
         
         Extends the base behavior to also calculate edge and corner

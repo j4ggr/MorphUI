@@ -1,8 +1,6 @@
 from typing import Any
-from typing import Dict
-from typing import List
 from typing import Literal
-from typing import Callable
+from collections.abc import Callable
 
 from kivy.metrics import dp
 from kivy.properties import ListProperty
@@ -105,7 +103,7 @@ class MorphListItemFlat(
     and defaults to `None`.
     """
 
-    default_config: Dict[str, Any] = (
+    default_config: dict[str, Any] = (
         MorphIconLabelIconContainer.default_config.copy() | dict(
             theme_color_bindings={
                 'normal_surface_color': 'transparent_color',
@@ -131,7 +129,7 @@ class MorphListItemFlat(
             self,
             rv: RecycleView,
             index: int,
-            data: Dict[str, Any]
+            data: dict[str, Any]
             ) -> None:
         """Refreshes the view attributes of this menu item.
 
@@ -221,7 +219,7 @@ class MorphListItem(
     access and manipulation of the label widgets as a group.
     """
 
-    default_config: Dict[str, Any] = (
+    default_config: dict[str, Any] = (
         MorphIconLabelIconContainer.default_config.copy() | dict(
         theme_color_bindings={
             'normal_surface_color': 'transparent_color',
@@ -268,7 +266,7 @@ class MorphListItem(
             self,
             rv: RecycleView,
             index: int,
-            data: Dict[str, Any]
+            data: dict[str, Any]
             ) -> None:
         """Refreshes the view attributes of this menu item.
 
@@ -318,7 +316,7 @@ class MorphToggleListItem(
             self,
             rv: RecycleView,
             index: int,
-            data: Dict[str, Any]
+            data: dict[str, Any]
             ) -> None:
         """Refreshes the view attributes of this top list item.
 
@@ -343,7 +341,7 @@ class MorphListLayout(
     to provide a vertical layout suitable for index labels.
     """
     
-    default_config: Dict[str, Any] = dict(
+    default_config: dict[str, Any] = dict(
         theme_color_bindings={
             'normal_surface_color': 'transparent_color',},
         orientation='vertical',
@@ -453,7 +451,7 @@ class BaseListView(
     :class:`~kivy.properties.ObjectProperty` and defaults to `None`.
     """
 
-    default_data: Dict[str, Any] = DictProperty({})
+    default_data: dict[str, Any] = DictProperty({})
     """Default data attributes applied to each list item.
 
     This property holds a dictionary of default attributes that will
@@ -465,7 +463,7 @@ class BaseListView(
     and defaults to an empty dictionary.
     """
 
-    _source_items: List[Dict[str, Any]] = ListProperty([])
+    _source_items: list[dict[str, Any]] = ListProperty([])
     """Internal storage for the full list of items before filtering.
 
     This property holds the complete list of items that can be displayed
@@ -476,7 +474,7 @@ class BaseListView(
     and defaults to an empty list.
     """
 
-    def _get_items(self) -> List[Dict[str, Any]]:
+    def _get_items(self) -> list[dict[str, Any]]:
         """Retrieve the list of items after applying the current filter.
 
         This method returns the list of items that should be displayed
@@ -492,7 +490,7 @@ class BaseListView(
             lambda item: not self.should_filter_item(item),
             self._source_items))
     
-    def _set_items(self, items: List[Dict[str, Any]]) -> None:
+    def _set_items(self, items: list[dict[str, Any]]) -> None:
         """Set the list of items to be displayed in the list view.
 
         This method updates the internal storage of items and refreshes
@@ -512,7 +510,7 @@ class BaseListView(
             for item_data in items]
         self.data = self._get_items()
 
-    items: List[Dict[str, Any]] = AliasProperty(
+    items: list[dict[str, Any]] = AliasProperty(
         _get_items,
         _set_items,
         bind=[
@@ -535,7 +533,7 @@ class BaseListView(
     properties.
     """
 
-    def _get_available_texts(self) -> List[str]:
+    def _get_available_texts(self) -> list[str]:
         """Retrieve the list of label texts from the current data.
 
         This method extracts and returns a list of label texts from
@@ -550,7 +548,7 @@ class BaseListView(
         """
         return [i.get('label_text', i.get('text', '')) for i in self.data]
 
-    available_texts: List[str] = AliasProperty(
+    available_texts: list[str] = AliasProperty(
         _get_available_texts,
         None,
         cache=True,
@@ -567,7 +565,7 @@ class BaseListView(
     the :attr:`data` property.
     """
 
-    default_config: Dict[str, Any] = dict(
+    default_config: dict[str, Any] = dict(
         do_scroll_x=False,
         do_scroll_y=True,
         size_hint=(1, 1),
@@ -592,7 +590,7 @@ class BaseListView(
         self.bind(items=self.refresh_data) # type: ignore
         self.refresh_data()
 
-    def should_filter_item(self, item: Dict[str, Any]) -> bool:
+    def should_filter_item(self, item: dict[str, Any]) -> bool:
         """Determine if a list item should be filtered out based on
         the current filter value.
 

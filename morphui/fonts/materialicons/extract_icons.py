@@ -8,10 +8,10 @@ into a TOML file where keys are icon names and values are Unicode codepoints.
 
 import re
 from pathlib import Path
-from typing import Dict, TextIO, Union, Any, Optional
+from typing import TextIO, Any
 
 
-def extract_icons_from_html(html_file_path: Union[str, Path]) -> Dict[str, str]:
+def extract_icons_from_html(html_file_path: str | Path) -> dict[str, str]:
     """
     Extract icon information from the Material Design Icons cheatsheet.html file.
 
@@ -26,7 +26,7 @@ def extract_icons_from_html(html_file_path: Union[str, Path]) -> Dict[str, str]:
         Dictionary with icon names as keys and Unicode codepoints as values
     """
     try:
-        with open(html_file_path, 'r', encoding='utf-8') as file:
+        with open(html_file_path, encoding='utf-8') as file:
             content = file.read()
     except FileNotFoundError:
         raise FileNotFoundError(f"cheatsheet.html not found at {html_file_path}")
@@ -68,7 +68,7 @@ def extract_icons_from_html(html_file_path: Union[str, Path]) -> Dict[str, str]:
     return icons_dict
 
 
-def write_toml(data: Dict[str, Dict[str, Any]], file_handle: TextIO) -> None:
+def write_toml(data: dict[str, dict[str, Any]], file_handle: TextIO) -> None:
     """
     Simple TOML writer for our specific data structure.
 
@@ -98,7 +98,7 @@ def write_toml(data: Dict[str, Dict[str, Any]], file_handle: TextIO) -> None:
             file_handle.write(f'{icon_name} = "{unicode_val}"\n')
 
 
-def save_icons_toml(icons_dict: Dict[str, str], output_file: Union[str, Path]) -> None:
+def save_icons_toml(icons_dict: dict[str, str], output_file: str | Path) -> None:
     """
     Save the icons dictionary to a TOML file.
 
@@ -128,7 +128,7 @@ def save_icons_toml(icons_dict: Dict[str, str], output_file: Union[str, Path]) -
         raise Exception(f"Error saving file: {e}")
 
 
-def get_material_icons_dict(html_file_path: Optional[Union[str, Path]] = None) -> Dict[str, str]:
+def get_material_icons_dict(html_file_path: str | Path | None = None) -> dict[str, str]:
     """
     Get Material Design Icons as a dictionary.
 

@@ -21,8 +21,6 @@ MorphDropdownFilterFieldFilled
     Explicit filled variant of the filter field.
 """
 from typing import Any
-from typing import List
-from typing import Dict
 from typing import Literal
 
 from textwrap import dedent
@@ -87,7 +85,7 @@ class MorphDropdownList(
             {MorphListLayout.__name__}:
         '''))
 
-    default_data: Dict[str, Any] = DictProperty(
+    default_data: dict[str, Any] = DictProperty(
         MorphListItemFlat.default_config.copy() | {
         'normal_leading_icon': '',
         'normal_trailing_icon': '',
@@ -262,7 +260,7 @@ class MorphDropdownMenu(
     defaults to `None`.
     """
     
-    items: List[Dict[str, Any]] = AliasProperty(
+    items: list[dict[str, Any]] = AliasProperty(
         lambda self: self.dropdown_list._get_items(),
         lambda self, items: self.dropdown_list._set_items(items),)
     """The list of items in the dropdown menu.
@@ -296,7 +294,7 @@ class MorphDropdownMenu(
     and defaults to `None`.
     """
     
-    default_config: Dict[str, Any] = dict(
+    default_config: dict[str, Any] = dict(
             theme_color_bindings=dict(
                 normal_surface_color='surface_container_highest_color',),
             size_lower_bound=(150, 100),
@@ -443,7 +441,7 @@ class MorphDropdownSelect(
     __events__ = (
         'on_item_release',)
 
-    def __init__(self, kw_dropdown: Dict[str, Any] = {}, **kwargs) -> None:
+    def __init__(self, kw_dropdown: dict[str, Any] = {}, **kwargs) -> None:
         kw_dropdown = dict(
             caller=self,
             items=kwargs.pop('items', []),
@@ -602,14 +600,14 @@ class MorphDropdownFilterField(MorphTextField):
     defaults to `None`.
     """
 
-    default_config: Dict[str, Any] = (
+    default_config: dict[str, Any] = (
         MorphTextField.default_config.copy() | dict())
     """Default configuration for the MorphDropdownFilterField."""
 
     __events__ = (
         'on_item_release',)
 
-    def __init__(self, kw_dropdown: Dict[str, Any] = {}, **kwargs) -> None:
+    def __init__(self, kw_dropdown: dict[str, Any] = {}, **kwargs) -> None:
         kw_dropdown = dict(
             caller=self,
             items=kwargs.pop('items', []),
@@ -725,7 +723,7 @@ class MorphDropdownFilterFieldOutlined(
     :class:`~morphui.uix.textfield.MorphTextFieldOutlined`
     """
 
-    default_config: Dict[str, Any] = (
+    default_config: dict[str, Any] = (
         MorphTextFieldOutlined.default_config.copy() | dict())
     """Default configuration for the
     :class:`MorphDropdownFilterFieldOutlined`."""
@@ -741,7 +739,7 @@ class MorphDropdownFilterFieldRounded(
     :class:`~morphui.uix.textfield.MorphTextFieldRounded`
     """
 
-    default_config: Dict[str, Any] = (
+    default_config: dict[str, Any] = (
         MorphTextFieldRounded.default_config.copy() | dict())
     """Default configuration for the
     :class:`MorphDropdownFilterFieldRounded`."""
@@ -756,7 +754,7 @@ class MorphDropdownFilterFieldFilled(
     :class:`~morphui.uix.textfield.MorphTextFieldFilled`
     """
 
-    default_config: Dict[str, Any] = (
+    default_config: dict[str, Any] = (
         MorphTextFieldFilled.default_config.copy() | dict())
     """Default configuration for the
     :class:`MorphDropdownFilterFieldFilled`."""
@@ -886,7 +884,7 @@ class MorphDropdownMultiselect(
     whenever the selected options change.
     """
 
-    _chips: List[MorphInputChip] = ListProperty([])
+    _chips: list[MorphInputChip] = ListProperty([])
     """Internal list of chips representing selected options.
 
     This property holds the list of 
@@ -897,12 +895,12 @@ class MorphDropdownMultiselect(
     defaults to an empty list.
     """
 
-    def _get_selected_options(self) -> List[str]:
+    def _get_selected_options(self) -> list[str]:
         """Get the list of currently selected options in the multiselect 
         dropdown."""
         return [c.label_text for c in self._chips]
 
-    selected_options: List[str] = AliasProperty(
+    selected_options: list[str] = AliasProperty(
         _get_selected_options,
         None,
         bind=['_chips'])
@@ -951,7 +949,7 @@ class MorphDropdownMultiselect(
         """
         return self._options_container
 
-    default_config: Dict[str, Any] = (
+    default_config: dict[str, Any] = (
         MorphDropdownFilterField.default_config.copy() | dict(
         focus_trailing_icon='',
         ))
@@ -981,7 +979,7 @@ class MorphDropdownMultiselect(
         self._adjust_text_input_width()
 
     def on_options_container_children(
-            self, instance: MorphStackLayout, children: List[object]) -> None:
+            self, instance: MorphStackLayout, children: list[object]) -> None:
         """Handle changes to the children of the options container.
         
         This method is called whenever the children of the options 
@@ -1181,7 +1179,7 @@ class MorphDropdownMultiselectOutlined(
         MyApp().run()
     """
 
-    default_config: Dict[str, Any] = (
+    default_config: dict[str, Any] = (
         MorphDropdownMultiselect.default_config.copy()
         | MorphTextFieldOutlined.default_config.copy())
     """Default configuration for the
@@ -1225,7 +1223,7 @@ class MorphDropdownMultiselectRounded(
         MyApp().run()
     """
 
-    default_config: Dict[str, Any] = (
+    default_config: dict[str, Any] = (
         MorphDropdownMultiselect.default_config.copy()
         | MorphTextFieldRounded.default_config.copy())
     """Default configuration for the
@@ -1268,7 +1266,7 @@ class MorphDropdownMultiselectFilled(
         MyApp().run()
     """
 
-    default_config: Dict[str, Any] = (
+    default_config: dict[str, Any] = (
         MorphDropdownMultiselect.default_config.copy()
         | MorphTextFieldFilled.default_config.copy())
     """Default configuration for the

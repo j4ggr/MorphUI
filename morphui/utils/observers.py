@@ -13,7 +13,7 @@ ProgressObserver
     Starts a worker on a thread and mirrors its progress onto a widget.
 """
 from typing import Any
-from typing import Callable
+from collections.abc import Callable
 
 from threading import Thread
 

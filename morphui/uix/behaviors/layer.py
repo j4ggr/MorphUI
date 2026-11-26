@@ -2,11 +2,8 @@ from math import pi
 from math import sin
 from math import cos
 
-from typing import List
-from typing import Dict
-from typing import Tuple
 from typing import Literal
-from typing import Generator
+from collections.abc import Generator
 
 from kivy.event import EventDispatcher
 from kivy.metrics import dp
@@ -70,7 +67,7 @@ class BaseLayerBehavior(
     :attr:`radius` is a :class:`~kivy.properties.VariableListProperty`
     and defaults to `[0, 0, 0, 0]`."""
 
-    clamped_radius: List[float] = AliasProperty(
+    clamped_radius: list[float] = AliasProperty(
         lambda self: self._clamp_radius(),
         bind=['size', 'radius'],
         cache=True)
@@ -85,7 +82,7 @@ class BaseLayerBehavior(
     :attr:`clamped_radius` is a :class:`~kivy.properties.AliasProperty`
     """
 
-    rounded_rectangle_params: List[float] = AliasProperty(
+    rounded_rectangle_params: list[float] = AliasProperty(
         lambda self: [
             *get_effective_pos(self),
             self.width,
@@ -107,7 +104,7 @@ class BaseLayerBehavior(
         rectangle.
     """
 
-    contour: List[float] = AliasProperty(
+    contour: list[float] = AliasProperty(
         lambda self: self._generate_contour(),
         bind=['size', 'pos', 'clamped_radius'],
         cache=True)
@@ -120,7 +117,7 @@ class BaseLayerBehavior(
     :attr:`contour` is a :class:`~kivy.properties.AliasProperty`
     """
 
-    mesh: Tuple[List[float], List[float]] = AliasProperty(
+    mesh: tuple[list[float], list[float]] = AliasProperty(
         lambda self: self._generate_mesh(),
         bind=['contour'],
         cache=True)
@@ -141,7 +138,7 @@ class BaseLayerBehavior(
             self,
             corner: Literal['top-left', 'top-right', 'bottom-left', 'bottom-right'],
             radius: float
-            ) -> List[float]:
+            ) -> list[float]:
         """Generate points for a quarter circle arc at the specified 
         corner.
         
@@ -194,7 +191,7 @@ class BaseLayerBehavior(
 
         n_max = 45 # Limit maximum segments for performance (1 for each degree)
         n_segments = min(int(radius) + 1, n_max)
-        def _points(n: int) -> Generator[float, None, None]:
+        def _points(n: int) -> Generator[float]:
             for i in range(n + 1):  # Include end point for continuity
                 # Use normalized angle progression for consistent curvature
                 t = i / n  # Normalized parameter from 0 to 1
@@ -205,7 +202,7 @@ class BaseLayerBehavior(
                 yield y
         return list(_points(n_segments))
     
-    def _clamp_radius(self, *args) -> List[float]:
+    def _clamp_radius(self, *args) -> list[float]:
         """Ensure the radius values do not exceed the widget's size.
 
         This method adjusts the radius values to ensure that the sum of 
@@ -255,7 +252,7 @@ class BaseLayerBehavior(
             min(v_radius[2], h_radius[2]),
             min(v_radius[3], h_radius[3]),]
     
-    def _generate_contour(self) -> List[float]:
+    def _generate_contour(self) -> list[float]:
         """Generate the complete contour points including corners and 
         edges.
 
@@ -282,7 +279,7 @@ class BaseLayerBehavior(
 
         return points
 
-    def _generate_mesh(self) -> Tuple[List[float], List[int]]:
+    def _generate_mesh(self) -> tuple[list[float], list[int]]:
         """Generate the vertices and indices for the rounded rectangle
         using tessellation.
 
@@ -297,8 +294,8 @@ class BaseLayerBehavior(
               of the rounded rectangle.
             - A list of indices defining the triangles for rendering.
         """
-        vertices: List[float] = []
-        indices: List[int] = []
+        vertices: list[float] = []
+        indices: list[int] = []
         tesselator = Tesselator()
         tesselator.add_contour(self.contour)
         tesselator.tesselate()
@@ -324,7 +321,7 @@ class MorphHighlightLayerBehavior(EventDispatcher):
     :attr:`highlight` is a :class:`~kivy.properties.BooleanProperty` and
     defaults to `False`."""
 
-    normal_highlight_color: List[float] = ColorProperty([0, 0, 0, 0])
+    normal_highlight_color: list[float] = ColorProperty([0, 0, 0, 0])
     """Current highlight color of the widget.
 
     This property reflects the active highlight color, which may change
@@ -345,7 +342,7 @@ class MorphHighlightLayerBehavior(EventDispatcher):
     :class:`~kivy.properties.BoundedNumericProperty` and defaults to
     `None`."""
 
-    def _get_highlight_color(self) -> List[float]:
+    def _get_highlight_color(self) -> list[float]:
         """Get the highlight color based on the current state.
 
         This method determines the appropriate highlight color based on
@@ -378,7 +375,7 @@ class MorphHighlightLayerBehavior(EventDispatcher):
         """
         self._highlight_color_instruction.rgba = self._get_highlight_color()
 
-    highlight_color: List[float] = AliasProperty(
+    highlight_color: list[float] = AliasProperty(
         _get_highlight_color,
         _set_highlight_color,
         bind=[
@@ -386,7 +383,7 @@ class MorphHighlightLayerBehavior(EventDispatcher):
             'highlight_opacity',
             'highlight'])
 
-    def _get_highlight_layer_pos(self) -> Tuple[float, float]:
+    def _get_highlight_layer_pos(self) -> tuple[float, float]:
         """Get the position for the highlight layer.
 
         This method accounts for whether the widget is a
@@ -409,12 +406,12 @@ class MorphHighlightLayerBehavior(EventDispatcher):
         """
         self._highlight_instruction.pos = self._get_highlight_layer_pos()
 
-    highlight_layer_pos: Tuple[float, float] = AliasProperty(
+    highlight_layer_pos: tuple[float, float] = AliasProperty(
         _get_highlight_layer_pos,
         _set_highlight_layer_pos,
         bind=['pos'])
 
-    def _get_highlight_layer_size(self) -> Tuple[float, float]:
+    def _get_highlight_layer_size(self) -> tuple[float, float]:
         """Get the size for the highlight layer.
 
         This method accounts for whether the widget is a
@@ -437,7 +434,7 @@ class MorphHighlightLayerBehavior(EventDispatcher):
         """
         self._highlight_instruction.size = self._get_highlight_layer_size()
 
-    highlight_layer_size: Tuple[float, float] = AliasProperty(
+    highlight_layer_size: tuple[float, float] = AliasProperty(
         _get_highlight_layer_size,
         _set_highlight_layer_size,
         bind=['size'])
@@ -469,7 +466,7 @@ class MorphHighlightLayerBehavior(EventDispatcher):
             highlight_color=self._update_highlight)
         self.refresh_highlight()
             
-    def _resolve_highlight_pos(self) -> Tuple[float, float]:
+    def _resolve_highlight_pos(self) -> tuple[float, float]:
         """Get the correct position for the highlight rectangle.
 
         This method accounts for whether the widget is a
@@ -520,7 +517,7 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
     surface with optional border.
     """
 
-    normal_surface_color: List[float] = ColorProperty([0, 0, 0, 0])
+    normal_surface_color: list[float] = ColorProperty([0, 0, 0, 0])
     """Surface color of the widget when it is in its normal state.
     
     The color should be provided as a list of RGBA values between 0 and 
@@ -529,7 +526,7 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
     :attr:`normal_surface_color` is a :class:`~kivy.properties.ColorProperty`
     and defaults to `[0, 0, 0, 0]` (fully transparent)."""
 
-    disabled_surface_color: List[float] | None = ColorProperty([0, 0, 0, 0])
+    disabled_surface_color: list[float] | None = ColorProperty([0, 0, 0, 0])
     """Surface color when the widget is disabled.
 
     This color is applied when the widget is in a disabled state.
@@ -540,7 +537,7 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
     :class:`~kivy.properties.ColorProperty` and defaults to
     `[0, 0, 0, 0]` (fully transparent)."""
 
-    error_surface_color: List[float] | None = ColorProperty(None)
+    error_surface_color: list[float] | None = ColorProperty(None)
     """Surface color when the widget is in an error state.
 
     This color is applied when the widget is in an error state.
@@ -549,21 +546,21 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
     :class:`~kivy.properties.ColorProperty` and defaults to
     `None`."""
 
-    focus_surface_color: List[float] | None = ColorProperty(None)
+    focus_surface_color: list[float] | None = ColorProperty(None)
     """Surface color when the widget is focused.
 
     :attr:`focus_surface_color` is a
     :class:`~kivy.properties.ColorProperty` and defaults to
     `None`."""
 
-    active_surface_color: List[float] | None = ColorProperty(None)
+    active_surface_color: list[float] | None = ColorProperty(None)
     """Surface color when the widget is active.
 
     :attr:`active_surface_color` is a
     :class:`~kivy.properties.ColorProperty` and defaults to
     `None`."""
 
-    def _get_surface_color(self, *args) -> List[float]:
+    def _get_surface_color(self, *args) -> list[float]:
         """Get the surface color based on the current state.
 
         This method determines the appropriate surface color based on
@@ -590,7 +587,7 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
         """
         self._surface_color_instruction.rgba = self._get_surface_color()
 
-    surface_color: List[float] = AliasProperty(
+    surface_color: list[float] = AliasProperty(
         _get_surface_color,
         _set_surface_color,
         bind=[
@@ -614,7 +611,7 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
     and defaults to the resolved surface color based on the current
     state."""
 
-    normal_border_color: List[float] = ColorProperty([0, 0, 0, 0])
+    normal_border_color: list[float] = ColorProperty([0, 0, 0, 0])
     """Border color of the widget when in the normal state.
     
     The color should be provided as a list of RGBA values between 0 and 
@@ -623,7 +620,7 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
     :attr:`normal_border_color` is a :class:`~kivy.properties.ColorProperty`
     and defaults to `[0, 0, 0, 0]` (fully transparent)."""
 
-    disabled_border_color: List[float] | None = ColorProperty(None)
+    disabled_border_color: list[float] | None = ColorProperty(None)
     """Border color when the widget is disabled.
 
     This color is applied when the widget is in a disabled state.
@@ -632,28 +629,28 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
     :class:`~kivy.properties.ColorProperty` and defaults to
     `None`."""
 
-    error_border_color: List[float] | None = ColorProperty(None)
+    error_border_color: list[float] | None = ColorProperty(None)
     """Border color when the widget is in an error state.
 
     :attr:`error_border_color` is a
     :class:`~kivy.properties.ColorProperty` and defaults to
     `None`."""
 
-    focus_border_color: List[float] | None = ColorProperty(None)
+    focus_border_color: list[float] | None = ColorProperty(None)
     """Border color when the widget is focused.
 
     :attr:`focus_border_color` is a
     :class:`~kivy.properties.ColorProperty` and defaults to
     `None`."""
 
-    active_border_color: List[float] | None = ColorProperty(None)
+    active_border_color: list[float] | None = ColorProperty(None)
     """Border color when the widget is active.
 
     :attr:`active_border_color` is a
     :class:`~kivy.properties.ColorProperty` and defaults to
     `None`."""
 
-    def _get_border_color(self, *args) -> List[float]:
+    def _get_border_color(self, *args) -> list[float]:
         """Get the border color based on the current state.
 
         This method determines the appropriate border color based on
@@ -680,7 +677,7 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
         """
         self._border_color_instruction.rgba = self._get_border_color()
 
-    border_color: List[float] = AliasProperty(
+    border_color: list[float] = AliasProperty(
         _get_border_color,
         _set_border_color,
         bind=[
@@ -842,7 +839,7 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
 
         self.refresh_surface()
 
-    def _generate_border_path(self) -> List[float]:
+    def _generate_border_path(self) -> list[float]:
         """Calculate the complete border path points including corners
         and edges.
 
@@ -860,7 +857,7 @@ class MorphSurfaceLayerBehavior(BaseLayerBehavior):
             x, y = get_effective_pos(self)
             return [x, y, x + self.width, y]
         
-        path: List[float] = self._generate_contour()
+        path: list[float] = self._generate_contour()
 
         if self.border_open_x is not None:
             path = [self.border_open_x, path[1], *path]
@@ -1004,7 +1001,7 @@ class MorphInteractionLayerBehavior(BaseLayerBehavior):
     `None` (theme-based automatic selection).
     """
 
-    interaction_expansion: List[float] = VariableListProperty(
+    interaction_expansion: list[float] = VariableListProperty(
         [dp(0)], length=4)
     """Expansion values for the interaction layer.
     
@@ -1016,7 +1013,7 @@ class MorphInteractionLayerBehavior(BaseLayerBehavior):
     :class:`~kivy.properties.VariableListProperty` and defaults to
     `[0, 0, 0, 0]`."""
 
-    def _get_interaction_pos(self, *args) -> Tuple[float, float]:
+    def _get_interaction_pos(self, *args) -> tuple[float, float]:
         """Get the position of the interaction layer.
         
         The (x, y) position of the interaction layer is calculated
@@ -1036,7 +1033,7 @@ class MorphInteractionLayerBehavior(BaseLayerBehavior):
         by the :attr:`interaction_pos` property."""
         self._interaction_instruction.pos = self._get_interaction_pos()
         
-    interaction_pos: Tuple[float, float] = AliasProperty(
+    interaction_pos: tuple[float, float] = AliasProperty(
         _get_interaction_pos,
         _set_interaction_pos,
         bind=['pos', 'interaction_expansion'],
@@ -1055,7 +1052,7 @@ class MorphInteractionLayerBehavior(BaseLayerBehavior):
     `pos` and `interaction_expansion` properties.
     """
 
-    def _get_interaction_size(self, *args) -> Tuple[float, float]:
+    def _get_interaction_size(self, *args) -> tuple[float, float]:
         """Get the size of the interaction layer.
         
         The (width, height) size of the interaction layer is calculated
@@ -1078,7 +1075,7 @@ class MorphInteractionLayerBehavior(BaseLayerBehavior):
         
         self._interaction_instruction.size = self._get_interaction_size()
 
-    interaction_size: Tuple[float, float] = AliasProperty(
+    interaction_size: tuple[float, float] = AliasProperty(
         _get_interaction_size,
         _set_interaction_size,
         bind=['size', 'interaction_expansion'],
@@ -1096,7 +1093,7 @@ class MorphInteractionLayerBehavior(BaseLayerBehavior):
     `size` and `interaction_expansion` properties.
     """
 
-    def _get_interaction_radius(self, *args) -> List[float]:
+    def _get_interaction_radius(self, *args) -> list[float]:
         """Get the radius of the interaction layer.
         
         The radius values of the interaction layer are the same as the
@@ -1115,7 +1112,7 @@ class MorphInteractionLayerBehavior(BaseLayerBehavior):
         
         self._interaction_instruction.radius = self.clamped_radius
 
-    interaction_radius: List[float] = AliasProperty(
+    interaction_radius: list[float] = AliasProperty(
         _get_interaction_radius,
         _set_interaction_radius,
         bind=['radius'],
@@ -1134,7 +1131,7 @@ class MorphInteractionLayerBehavior(BaseLayerBehavior):
     `radius` property.
     """
 
-    def _get_interaction_color(self, *args) -> List[float]:
+    def _get_interaction_color(self, *args) -> list[float]:
         """Get the interaction layer color.
         
         Returns the interaction layer color as RGBA values. The base 
@@ -1182,7 +1179,7 @@ class MorphInteractionLayerBehavior(BaseLayerBehavior):
             interaction_color = self._get_interaction_color()
             self._interaction_color_instruction.rgba = interaction_color
 
-    interaction_color: List[float] = AliasProperty(
+    interaction_color: list[float] = AliasProperty(
         _get_interaction_color,
         _set_interaction_color,
         bind=[
@@ -1364,7 +1361,7 @@ class MorphContentLayerBehavior(BaseLayerBehavior):
     be used for text outlines/shadows, but this is less commonly used.
     """
     
-    normal_content_color: List[float] | None = ColorProperty(None)
+    normal_content_color: list[float] | None = ColorProperty(None)
     """Explicit content color property for theme binding disambiguation.
 
     This property provides a clear, dedicated binding target for content
@@ -1377,7 +1374,7 @@ class MorphContentLayerBehavior(BaseLayerBehavior):
     :class:`~kivy.properties.ColorProperty` and defaults to None.
     """
 
-    _disabled_content_color: List[float] | None = ColorProperty(None, allownone=True)
+    _disabled_content_color: list[float] | None = ColorProperty(None, allownone=True)
     """Internal property to store the disabled content color. 
 
     This property is used to manage the disabled content color
@@ -1387,7 +1384,7 @@ class MorphContentLayerBehavior(BaseLayerBehavior):
     properties.
     """
 
-    def _get_disabled_content_color(self, *args) -> List[float] | None:
+    def _get_disabled_content_color(self, *args) -> list[float] | None:
         """Get the disabled content color.
 
         This method determines the appropriate content color to use when
@@ -1407,7 +1404,7 @@ class MorphContentLayerBehavior(BaseLayerBehavior):
             or getattr(self, 'disabled_color', None)
             or getattr(self, 'disabled_foreground_color', None))
 
-    def _set_disabled_content_color(self, color: List[float] | None) -> None:
+    def _set_disabled_content_color(self, color: list[float] | None) -> None:
         """Set the disabled content color.
 
         This method updates the internal `_disabled_content_color` 
@@ -1430,7 +1427,7 @@ class MorphContentLayerBehavior(BaseLayerBehavior):
         if hasattr(self, 'disabled_foreground_color'):
             self.disabled_foreground_color = color
 
-    disabled_content_color: List[float] | None = AliasProperty(
+    disabled_content_color: list[float] | None = AliasProperty(
         _get_disabled_content_color,
         _set_disabled_content_color,
         bind=('_disabled_content_color',))
@@ -1444,7 +1441,7 @@ class MorphContentLayerBehavior(BaseLayerBehavior):
     :class:`~kivy.properties.ColorProperty` and defaults to None.
     """
 
-    error_content_color: List[float] | None = ColorProperty(None)
+    error_content_color: list[float] | None = ColorProperty(None)
     """Content color to use when the widget is in an error state.
 
     This property allows you to specify a different content color for
@@ -1455,7 +1452,7 @@ class MorphContentLayerBehavior(BaseLayerBehavior):
     :class:`~kivy.properties.ColorProperty` and defaults to None.
     """
 
-    focus_content_color: List[float] | None = ColorProperty(None)
+    focus_content_color: list[float] | None = ColorProperty(None)
     """Content color to use when the widget is focused.
 
     This property allows you to specify a different content color for
@@ -1465,7 +1462,7 @@ class MorphContentLayerBehavior(BaseLayerBehavior):
     :attr:`focus_content_color` is a
     :class:`~kivy.properties.ColorProperty` and defaults to None."""
 
-    hovered_content_color: List[float] | None = ColorProperty(None)
+    hovered_content_color: list[float] | None = ColorProperty(None)
     """Content color to use when the widget is hovered.
 
     This property allows you to specify a different content color for
@@ -1476,7 +1473,7 @@ class MorphContentLayerBehavior(BaseLayerBehavior):
     and defaults to None.
     """
 
-    active_content_color: List[float] | None = ColorProperty(None)
+    active_content_color: list[float] | None = ColorProperty(None)
     """Content color to use when the widget is active.
 
     This property allows you to specify a different content color for
@@ -1487,7 +1484,7 @@ class MorphContentLayerBehavior(BaseLayerBehavior):
     and defaults to None.
     """
 
-    def _get_content_color(self, *args) -> List[float] | None:
+    def _get_content_color(self, *args) -> list[float] | None:
         """Get the content color based on the current state.
 
         This method determines the appropriate content color based on
@@ -1529,7 +1526,7 @@ class MorphContentLayerBehavior(BaseLayerBehavior):
         if color is not None:
             self.apply_content(color)
 
-    content_color: List[float] | None = AliasProperty(
+    content_color: list[float] | None = AliasProperty(
         _get_content_color,
         _set_content_color,
         bind=[
@@ -1582,7 +1579,7 @@ class MorphContentLayerBehavior(BaseLayerBehavior):
         self._set_disabled_content_color(self._get_disabled_content_color())
         self._set_content_color()
     
-    def apply_content(self, color: List[float]) -> None:
+    def apply_content(self, color: list[float]) -> None:
         """Apply the specified content color to the widget.
 
         This method sets the widget's content color, which is typically
@@ -1663,7 +1660,7 @@ class MorphOverlayLayerBehavior(BaseLayerBehavior):
     :class:`~kivy.properties.ColorProperty` and defaults to 
     `[0, 0, 0, 0]`."""
 
-    disabled_overlay_color: List[float] | None = ColorProperty(None)
+    disabled_overlay_color: list[float] | None = ColorProperty(None)
     """Color of the overlay when the widget is disabled.
 
     This color is applied when the widget is in a disabled state.
@@ -1673,7 +1670,7 @@ class MorphOverlayLayerBehavior(BaseLayerBehavior):
     `None`.
     """
 
-    resizing_overlay_color: List[float] | None = ColorProperty(None)
+    resizing_overlay_color: list[float] | None = ColorProperty(None)
     """Color of the overlay during resizing.
 
     The color should be provided as a list of RGBA values between 0 and
@@ -1684,7 +1681,7 @@ class MorphOverlayLayerBehavior(BaseLayerBehavior):
     `None`.
     """
 
-    def _get_overlay_color(self, *args) -> List[float]:
+    def _get_overlay_color(self, *args) -> list[float]:
         """Get the overlay color based on the current overlay state.
 
         This method returns the appropriate overlay color depending on
@@ -1707,7 +1704,7 @@ class MorphOverlayLayerBehavior(BaseLayerBehavior):
         """
         self._overlay_color_instruction.rgba = self._get_overlay_color()
 
-    overlay_color: List[float] = AliasProperty(
+    overlay_color: list[float] = AliasProperty(
         _get_overlay_color,
         _set_overlay_color,
         bind=[
@@ -1737,7 +1734,7 @@ class MorphOverlayLayerBehavior(BaseLayerBehavior):
     :class:`~kivy.properties.ColorProperty` and defaults to
     `[0, 0, 0, 0]`."""
 
-    disabled_overlay_edge_color: List[float] | None = ColorProperty(None)
+    disabled_overlay_edge_color: list[float] | None = ColorProperty(None)
     """Edge color of the overlay when the widget is disabled.
 
     This color is applied when the widget is in a disabled state.
@@ -1747,7 +1744,7 @@ class MorphOverlayLayerBehavior(BaseLayerBehavior):
     `None`.
     """
 
-    resizing_overlay_edge_color: List[float] | None = ColorProperty(None)
+    resizing_overlay_edge_color: list[float] | None = ColorProperty(None)
     """Edge color of the overlay during resizing.
 
     The edge color should be provided as a list of RGBA values between
@@ -1759,7 +1756,7 @@ class MorphOverlayLayerBehavior(BaseLayerBehavior):
     `None`.
     """
 
-    active_overlay_edge_color: List[float] | None = ColorProperty(None)
+    active_overlay_edge_color: list[float] | None = ColorProperty(None)
     """Edge color of the overlay when the widget is active.
 
     This color is applied when the widget is in an active state.
@@ -1769,7 +1766,7 @@ class MorphOverlayLayerBehavior(BaseLayerBehavior):
     `None`.
     """
 
-    def _get_overlay_edge_color(self, *args) -> List[float]:
+    def _get_overlay_edge_color(self, *args) -> list[float]:
         """Get the overlay edge color based on the current overlay state.
 
         This method returns the appropriate overlay edge color depending
@@ -1798,7 +1795,7 @@ class MorphOverlayLayerBehavior(BaseLayerBehavior):
             else:
                 instruction.rgba = self.theme_manager.transparent_color
     
-    overlay_edge_color: List[float] = AliasProperty(
+    overlay_edge_color: list[float] = AliasProperty(
         _get_overlay_edge_color,
         _set_overlay_edge_color,
         bind=[
@@ -1846,7 +1843,7 @@ class MorphOverlayLayerBehavior(BaseLayerBehavior):
     :class:`~kivy.properties.BooleanProperty` and defaults to True.
     """
 
-    visible_edges : List[str] = ListProperty([])
+    visible_edges : list[str] = ListProperty([])
     """List of edges to show for the overlay.
 
     The edges can be 'top', 'right', 'bottom', 'left'. If empty, no
@@ -1858,7 +1855,7 @@ class MorphOverlayLayerBehavior(BaseLayerBehavior):
     empty list.
     """
 
-    def _get_overlay_layer_pos(self, *args) -> Tuple[float, float]:
+    def _get_overlay_layer_pos(self, *args) -> tuple[float, float]:
         """Get the position of the overlay layer.
         
         The (x, y) position of the overlay layer. This method is used
@@ -1875,7 +1872,7 @@ class MorphOverlayLayerBehavior(BaseLayerBehavior):
         if hasattr(self, '_overlay_instruction'):
             self._overlay_instruction.pos = self._get_overlay_layer_pos()
 
-    overlay_layer_pos: Tuple[float, float] = AliasProperty(
+    overlay_layer_pos: tuple[float, float] = AliasProperty(
         _get_overlay_layer_pos,
         _set_overlay_layer_pos,
         bind=['pos'],
@@ -1891,7 +1888,7 @@ class MorphOverlayLayerBehavior(BaseLayerBehavior):
     `pos` property.
     """
 
-    def _get_overlay_layer_size(self, *args) -> Tuple[float, float]:
+    def _get_overlay_layer_size(self, *args) -> tuple[float, float]:
         """Get the size of the overlay layer.
         
         The (width, height) size of the overlay layer. This method is used
@@ -1908,7 +1905,7 @@ class MorphOverlayLayerBehavior(BaseLayerBehavior):
         if hasattr(self, '_overlay_instruction'):
             self._overlay_instruction.size = self._get_overlay_layer_size()
 
-    overlay_layer_size: Tuple[float, float] = AliasProperty(
+    overlay_layer_size: tuple[float, float] = AliasProperty(
         _get_overlay_layer_size,
         _set_overlay_layer_size,
         bind=['size'],
@@ -1922,7 +1919,7 @@ class MorphOverlayLayerBehavior(BaseLayerBehavior):
     `size` property.
     """
 
-    def _get_overlay_layer_radius(self, *args) -> List[float]:
+    def _get_overlay_layer_radius(self, *args) -> list[float]:
         """Get the radius of the overlay layer.
         
         The radius values of the overlay layer are the same as the
@@ -1940,7 +1937,7 @@ class MorphOverlayLayerBehavior(BaseLayerBehavior):
         if hasattr(self, '_overlay_instruction'):
             self._overlay_instruction.radius = self.clamped_radius
 
-    overlay_layer_radius: List[float] = AliasProperty(
+    overlay_layer_radius: list[float] = AliasProperty(
         _get_overlay_layer_radius,
         _set_overlay_layer_radius,
         bind=['radius'],
@@ -1955,7 +1952,7 @@ class MorphOverlayLayerBehavior(BaseLayerBehavior):
     `radius` property.
     """
 
-    def _get_overlay_edges_params(self, *args) -> Dict[str, List[float]]:
+    def _get_overlay_edges_params(self, *args) -> dict[str, list[float]]:
         """Get the parameters for creating overlay edge lines.
 
         The parameters are returned as a dictionary with edge names as keys
@@ -1988,7 +1985,7 @@ class MorphOverlayLayerBehavior(BaseLayerBehavior):
                 line.points = edges[name]
                 line.width = self.get_resolved_edge_width(name)
 
-    overlay_edges_params: Dict[str, List[float]] = AliasProperty(
+    overlay_edges_params: dict[str, list[float]] = AliasProperty(
         _get_overlay_edges_params,
         _set_overlay_edges_params,
         bind=[
@@ -2013,12 +2010,12 @@ class MorphOverlayLayerBehavior(BaseLayerBehavior):
     _overlay_instruction: SmoothRoundedRectangle
     """Kivy SmoothRoundedRectangle instruction for the overlay shape."""
 
-    _overlay_edges_color_instructions: Dict[str, Line]
+    _overlay_edges_color_instructions: dict[str, Line]
     """Kivy Color instructions for the overlay edges.
     
     The edges are drawn in the order: top, right, bottom, left."""
 
-    _overlay_edges_instruction: Dict[str, Line]
+    _overlay_edges_instruction: dict[str, Line]
     """Kivy Line instructions for the overlay edges.
     
     The edges are drawn in the order: top, right, bottom, left."""
@@ -2112,7 +2109,7 @@ class MorphOverlayLayerBehavior(BaseLayerBehavior):
         self.overlay_edges_params = {}  # Trigger update
         self.dispatch('on_overlay_updated')
     
-    def apply_overlay(self, color: List[float]) -> None:
+    def apply_overlay(self, color: list[float]) -> None:
         """Apply the specified overlay color to the widget.
 
         This method sets the widget's overlay color, which is typically

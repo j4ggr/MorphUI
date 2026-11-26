@@ -1,7 +1,4 @@
 from typing import Any
-from typing import Set
-from typing import Tuple
-from typing import Literal
 from typing import get_args
 from typing import cast
 
@@ -90,7 +87,7 @@ class MorphStateBehavior(EventDispatcher):
     :class:`~kivy.properties.StringProperty` and defaults to 'normal'.
     """
 
-    possible_states: Set[str] = set(get_args(State))
+    possible_states: set[str] = set(get_args(State))
     """All possible states that can be used by the widget.
 
     This set contains all the states defined in the :class:`State`
@@ -100,7 +97,7 @@ class MorphStateBehavior(EventDispatcher):
     Default states are defined by :class:`~morphui._typing.State`.
     """
 
-    surface_state_precedence: Tuple[str, ...] = get_args(SurfaceState)
+    surface_state_precedence: tuple[str, ...] = get_args(SurfaceState)
     """The precedence order for surface states.
 
     This tuple defines the order of precedence for surface states,
@@ -110,7 +107,7 @@ class MorphStateBehavior(EventDispatcher):
     Default order is defined by :class:`~morphui._typing.SurfaceState`.
     """
 
-    interaction_state_precedence: Tuple[str, ...] = get_args(InteractionState)
+    interaction_state_precedence: tuple[str, ...] = get_args(InteractionState)
     """The precedence order for interaction states.
 
     This tuple defines the order of precedence for interaction states,
@@ -121,7 +118,7 @@ class MorphStateBehavior(EventDispatcher):
     :class:`~morphui._typing.InteractionState`.
     """
 
-    content_state_precedence: Tuple[str, ...] = get_args(ContentState)
+    content_state_precedence: tuple[str, ...] = get_args(ContentState)
     """The precedence order for content states.
 
     This tuple defines the order of precedence for content states,
@@ -131,7 +128,7 @@ class MorphStateBehavior(EventDispatcher):
     Default order is defined by :class:`~morphui._typing.ContentState`.
     """
 
-    overlay_state_precedence: Tuple[str, ...] = get_args(OverlayState)
+    overlay_state_precedence: tuple[str, ...] = get_args(OverlayState)
     """The precedence order for overlay states.
 
     This tuple defines the order of precedence for overlay states,
@@ -141,7 +138,7 @@ class MorphStateBehavior(EventDispatcher):
     Default order is defined by :class:`~morphui._typing.OverlayState`.
     """
 
-    _available_states: Set[str]
+    _available_states: set[str]
     """States that are currently available for the widget.
 
     This is a subset of :attr:`_states_precedence` that the widget
@@ -157,7 +154,7 @@ class MorphStateBehavior(EventDispatcher):
         self.refresh_state()
     
     @property
-    def available_states(self) -> Set[str]:
+    def available_states(self) -> set[str]:
         """States that are currently available for the widget
         (read-only).
 
@@ -194,8 +191,7 @@ class MorphStateBehavior(EventDispatcher):
             self,
             instance: Any,
             value: bool,
-            state: Literal[
-                'disabled', 'pressed', 'focus', 'hovered', 'active', 'normal'] # TODO: generalize
+            state: State
             ) -> None:
         """Handle changes to state properties.
 
@@ -269,7 +265,7 @@ class MorphStateBehavior(EventDispatcher):
             self,
             new_state: State,
             current_state: State,
-            precedence: Tuple[str, ...],
+            precedence: tuple[str, ...],
             value: bool
             ) -> State:
         """Determine the most relevant current state based on active

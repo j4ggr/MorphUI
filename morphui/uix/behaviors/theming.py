@@ -1,8 +1,6 @@
 import warnings
 
 from typing import Any
-from typing import Set
-from typing import Dict
 from typing import Literal
 
 from kivy.event import EventDispatcher
@@ -195,7 +193,7 @@ class MorphColorThemeBehavior(BaseThemeBehavior):
     and defaults to '' (no style).
     """
 
-    theme_color_bindings: Dict[str, str] = DictProperty({})
+    theme_color_bindings: dict[str, str] = DictProperty({})
     """Dictionary mapping widget properties to theme color names.
     
     This dictionary defines the automatic color binding configuration 
@@ -233,7 +231,7 @@ class MorphColorThemeBehavior(BaseThemeBehavior):
     :class:`~kivy.properties.DictProperty` and defaults to {}.
     """
 
-    theme_style_mappings: Dict[str, Dict[str, str]] = THEME.STYLES
+    theme_style_mappings: dict[str, dict[str, str]] = THEME.STYLES
     """Predefined theme style mappings from constants.
     
     This class attribute contains the default Material Design style
@@ -241,7 +239,7 @@ class MorphColorThemeBehavior(BaseThemeBehavior):
     or additional style mappings.
     """
 
-    _theme_style_color_bindings: Dict[str, str] = DictProperty({})
+    _theme_style_color_bindings: dict[str, str] = DictProperty({})
     """Dictionary mapping theme style names to color bindings.
 
     This dictionary is populated with the color bindings for each
@@ -318,7 +316,7 @@ class MorphColorThemeBehavior(BaseThemeBehavior):
         self.refresh_theme_colors()
 
     @property
-    def effective_color_bindings(self) -> Dict[str, str]:
+    def effective_color_bindings(self) -> dict[str, str]:
         """Get the effective color bindings after merging style and 
         custom bindings.
 
@@ -341,7 +339,7 @@ class MorphColorThemeBehavior(BaseThemeBehavior):
             k: v for k, v in merged.items() 
             if k not in self.explicit_color_properties}
 
-    def _detect_explicit_properties(self, kwargs: Dict[str, Any]) -> Set[str]:
+    def _detect_explicit_properties(self, kwargs: dict[str, Any]) -> set[str]:
         """Detect which color properties are explicitly set in kwargs.
         
         This method identifies properties that should not be 
@@ -571,7 +569,7 @@ class MorphColorThemeBehavior(BaseThemeBehavior):
             self._theme_style_color_bindings = {}
 
     def add_custom_style(
-            self, style_name: str, color_mappings: Dict[str, str]) -> None:
+            self, style_name: str, color_mappings: dict[str, str]) -> None:
         """Add a custom theme style to the available styles.
         
         This method allows you to define new theme styles that can be

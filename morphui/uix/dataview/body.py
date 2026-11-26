@@ -1,9 +1,7 @@
 from textwrap import dedent
 
 from typing import Any
-from typing import Dict
-from typing import List
-from typing import Sequence
+from collections.abc import Sequence
 
 from kivy.lang import Builder
 from kivy.metrics import dp
@@ -56,7 +54,7 @@ class MorphDataViewBodyLabel(
     defaults to `None`.
     """
     
-    default_config: Dict[str, Any] = dict(
+    default_config: dict[str, Any] = dict(
         theme_color_bindings=dict(
             normal_content_color='content_surface_color',
             normal_overlay_edge_color='outline_color',),
@@ -83,7 +81,7 @@ class MorphDataViewBodyLabel(
             self,
             rv: RecycleView,
             index: int,
-            data: Dict[str, Any]
+            data: dict[str, Any]
             ) -> None:
         """Refresh the view attributes when the data changes.
         
@@ -138,7 +136,7 @@ class MorphDataViewBodyLayout(MorphRecycleGridLayout):
     defaults to `None`.
     """
 
-    default_config: Dict[str, Any] = dict(
+    default_config: dict[str, Any] = dict(
         theme_color_bindings={
             'normal_surface_color': 'surface_container_low_color'},
         auto_size=(True, True),)
@@ -184,7 +182,7 @@ class MorphDataViewBody(BaseDataView):
     defaults to `None`.
     """
 
-    def _get_values(self) -> List[List[str]]:
+    def _get_values(self) -> list[list[str]]:
         """Get the current values in the body as a 2D list.
 
         This method constructs a list of lists representing the values
@@ -227,7 +225,7 @@ class MorphDataViewBody(BaseDataView):
             for value in row]
         self.dispatch('on_values_updated')
 
-    values: List[List[str]] = AliasProperty(
+    values: list[list[str]] = AliasProperty(
         _get_values,
         _set_values,
         bind=['data'],)
@@ -242,7 +240,7 @@ class MorphDataViewBody(BaseDataView):
     bound to changes in :attr:`children`.
     """
 
-    default_config: Dict[str, Any] = dict(
+    default_config: dict[str, Any] = dict(
         do_scroll_x=True,
         do_scroll_y=True,
         size_hint=(1, 1),

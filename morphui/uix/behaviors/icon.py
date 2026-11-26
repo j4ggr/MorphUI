@@ -1,4 +1,3 @@
-from typing import Tuple
 from typing import get_args
 
 from kivy.event import EventDispatcher
@@ -76,7 +75,7 @@ class MorphIconBehavior(
     defaults to `False`.
     """
 
-    icon_state_precedence: Tuple[str, ...] = get_args(IconState)
+    icon_state_precedence: tuple[str, ...] = get_args(IconState)
     """Defines the precedence order for icon states.
 
     This tuple specifies the order in which icon states are checked to

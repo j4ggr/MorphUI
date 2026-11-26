@@ -3,11 +3,8 @@ Helper utilities for MorphUI components
 """
 import time
 from typing import Any
-from typing import Dict
-from typing import List
-from typing import Tuple
 from typing import overload
-from typing import Generator
+from collections.abc import Generator
 
 from functools import lru_cache
 from functools import wraps
@@ -69,7 +66,7 @@ def timeit(func):
     return wrapper
 
 
-def linspace(start: float, stop: float, num: int) -> Generator[float, None, None]:
+def linspace(start: float, stop: float, num: int) -> Generator[float]:
     """Yield ``num`` evenly spaced values over ``[start, stop]`` inclusive.
 
     A pure-Python generator equivalent of ``numpy.linspace``.
@@ -205,7 +202,7 @@ def clamp(
     return value
 
 
-def get_effective_pos(widget) -> Tuple[float, float]:
+def get_effective_pos(widget) -> tuple[float, float]:
     """Get the effective position for canvas operations.
     
     Returns (0, 0) for RelativeLayout widgets since they use local 
@@ -264,8 +261,8 @@ def get_effective_pos(widget) -> Tuple[float, float]:
 
 def calculate_widget_local_pos(
         widget: Any, 
-        window_pos: Tuple[float, float] | List[float]
-        ) -> Tuple[float, float]:
+        window_pos: tuple[float, float] | list[float]
+        ) -> tuple[float, float]:
     """Calculate widget-local coordinates from window coordinates.
     
     This function converts coordinates from window space to widget-local
@@ -361,7 +358,7 @@ def get_edges_params(
             bottom: float,
             top: float,
             offset: float,
-            ) -> Dict[str, List[float]]:
+            ) -> dict[str, list[float]]:
     """Get parameters for creating edge lines around a rectangle.
 
     This function calculates the start and end points for lines
@@ -541,7 +538,7 @@ class FrozenGeometry:
             height=float(widget.height))
 
     @property
-    def pos(self) -> Tuple[float, float]:
+    def pos(self) -> tuple[float, float]:
         """The position of the widget as a (x, y) tuple.
         
         Returns
@@ -552,7 +549,7 @@ class FrozenGeometry:
         return (self.x, self.y)
 
     @property
-    def size(self) -> Tuple[float, float]:
+    def size(self) -> tuple[float, float]:
         """The size of the widget as a (width, height) tuple.
         
         Returns
@@ -563,7 +560,7 @@ class FrozenGeometry:
         return (self.width, self.height)
 
     @property
-    def center(self) -> Tuple[float, float]:
+    def center(self) -> tuple[float, float]:
         """The center point of the widget as a (center_x, center_y) 
         tuple.
         
@@ -623,7 +620,7 @@ class FrozenGeometry:
         """
         return self.width / self.height if self.height > 0 else 1.0
 
-    def point_delta(self, x: float, y: float) -> Tuple[float, float]:
+    def point_delta(self, x: float, y: float) -> tuple[float, float]:
         """Calculate the delta from a point to this geometry's position.
         
         This method computes how far a given point is from the widget's

@@ -1,9 +1,7 @@
 from textwrap import dedent
 
 from typing import Any
-from typing import Dict
-from typing import List
-from typing import Sequence
+from collections.abc import Sequence
 
 from kivy.lang import Builder
 from kivy.metrics import dp
@@ -27,7 +25,7 @@ class MorphDataViewHeaderLabel(BaseDataViewLabel): # TODO: maybe adding HoverEnh
     styling and behavior for header labels.
     """
     
-    default_config: Dict[str, Any] = dict(
+    default_config: dict[str, Any] = dict(
         theme_color_bindings=dict(
             normal_content_color='content_surface_color',
             normal_overlay_edge_color='outline_color',),
@@ -52,7 +50,7 @@ class MorphDataViewHeaderLayout(MorphRecycleBoxLayout):
     to provide a horizontal layout suitable for header labels.
     """
     
-    default_config: Dict[str, Any] = dict(
+    default_config: dict[str, Any] = dict(
         theme_color_bindings={
             'normal_surface_color': 'surface_container_high_color'},
         orientation='horizontal',
@@ -104,7 +102,7 @@ class MorphDataViewHeader(BaseDataView):
             {MorphDataViewHeaderLayout.__name__}:
         '''))
 
-    def _get_column_names(self) -> List[str]:
+    def _get_column_names(self) -> list[str]:
         """Retrieve the list of column names from the header data.
 
         Returns
@@ -131,7 +129,7 @@ class MorphDataViewHeader(BaseDataView):
             for n in names]
         self.dispatch('on_columns_updated')
 
-    column_names: List[str] = AliasProperty(
+    column_names: list[str] = AliasProperty(
         _get_column_names,
         _set_column_names,
         bind=['data'])
@@ -144,7 +142,7 @@ class MorphDataViewHeader(BaseDataView):
     and is bound to changes in the `data` property.
     """
     
-    default_config: Dict[str, Any] = dict(
+    default_config: dict[str, Any] = dict(
         do_scroll_x=True,
         do_scroll_y=False,
         size_hint=(1, None),

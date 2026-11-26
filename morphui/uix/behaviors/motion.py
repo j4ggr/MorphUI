@@ -1,5 +1,4 @@
 from typing import Any
-from typing import Tuple
 from typing import Literal
 
 from kivy.clock import Clock
@@ -408,7 +407,7 @@ class MorphMenuMotionBehavior(MorphMotionBaseBehavior):
         self.pos = self._resolve_pos()
         self.size = self._resolve_size()
 
-    def _resolve_caller_pos(self) -> Tuple[float, float]:
+    def _resolve_caller_pos(self) -> tuple[float, float]:
         """Get the caller button position in window coordinates.
         
         This method returns the position of the caller button in window
@@ -420,7 +419,7 @@ class MorphMenuMotionBehavior(MorphMotionBaseBehavior):
         
         return self.caller.to_window(*self.caller.pos)
     
-    def _resolve_caller_size(self) -> Tuple[float, float]:
+    def _resolve_caller_size(self) -> tuple[float, float]:
         """Get the caller button size.
         
         This method returns the size of the caller button. If the caller
@@ -499,7 +498,7 @@ class MorphMenuMotionBehavior(MorphMotionBaseBehavior):
                 space_right < self.min_space_required,)):
             self.menu_anchor_position = 'left'
     
-    def _resolve_pos(self) -> Tuple[float, float]:
+    def _resolve_pos(self) -> tuple[float, float]:
         """Get the menu position relative to the caller button.
         
         This method calculates the position of the menu based on the
@@ -547,7 +546,7 @@ class MorphMenuMotionBehavior(MorphMotionBaseBehavior):
         y = max(y, self.window_margin)
         return (x, y)
     
-    def _resolve_size(self) -> Tuple[float, float]:
+    def _resolve_size(self) -> tuple[float, float]:
         """Get the menu size constrained within window bounds.
         
         This method calculates the size of the menu, ensuring it fits

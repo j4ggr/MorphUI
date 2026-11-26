@@ -22,9 +22,6 @@ MorphTextFieldRounded
     Fully rounded border style.
 """
 from typing import Any
-from typing import Dict
-from typing import List
-from typing import Tuple
 from typing import Literal
 
 from kivy.clock import Clock
@@ -441,7 +438,7 @@ class MorphTextInput(
     :attr:`maximum_height` is a :class:`~kivy.properties.NumericProperty`
     and defaults to dp(300)."""
 
-    cursor_path: List[float] = AliasProperty(
+    cursor_path: list[float] = AliasProperty(
         lambda self: [
             *self.cursor_pos,
             self.cursor_pos[0],
@@ -467,7 +464,7 @@ class MorphTextInput(
     _cursor_color_instruction: Line
     """Kivy Color instruction for the cursor color."""
 
-    default_config: Dict[str, Any] = dict(
+    default_config: dict[str, Any] = dict(
         theme_color_bindings={
             'cursor_color': 'secondary_color',}) # TODO: not working yet
 
@@ -659,7 +656,7 @@ class MorphTextField(
     :attr:`password` is a :class:`~kivy.properties.BooleanProperty`
     and defaults to False."""
 
-    spacing: List[float] = VariableListProperty([dp(4), dp(4)], length=2)
+    spacing: list[float] = VariableListProperty([dp(4), dp(4)], length=2)
     """The spacing between the child widgets.
     
     This property defines the amount of space (in pixels) between the
@@ -671,7 +668,7 @@ class MorphTextField(
     :attr:`spacing` is a :class:`~kivy.properties.VariableListProperty`
     and defaults to [dp(4), dp(4)]."""
 
-    selected_text_color: List[float] = ColorProperty(None, allownone=True)
+    selected_text_color: list[float] = ColorProperty(None, allownone=True)
     """The color of the text selection highlight.
 
     This property defines the RGBA color used to highlight selected
@@ -687,7 +684,7 @@ class MorphTextField(
     :attr:`selected_text_color_opacity` is a
     :class:`~kivy.properties.NumericProperty` and defaults to 0.4."""
 
-    supporting_error_texts: Dict[str, str] = DictProperty({})
+    supporting_error_texts: dict[str, str] = DictProperty({})
     """Mapping of error types to supporting error messages.
 
     This property holds a dictionary that maps specific error types to
@@ -752,7 +749,7 @@ class MorphTextField(
     :class:`~kivy.properties.OptionProperty` and defaults to 
     'float_to_border'."""
 
-    padding: List[float] = VariableListProperty(
+    padding: list[float] = VariableListProperty(
         [dp(4), dp(4), dp(4), dp(4)], length=4)
     """The padding values around the text field content.
 
@@ -763,7 +760,7 @@ class MorphTextField(
     :attr:`padding` is a :class:`~kivy.properties.VariableListProperty`
     of length 4 and defaults to [dp(4), dp(4), dp(4), dp(4)]."""
 
-    input_widget_padding: List[float] = VariableListProperty(
+    input_widget_padding: list[float] = VariableListProperty(
         [dp(4), dp(4), dp(4), dp(4)], length=4)
     """The padding values around the internal input widget.
 
@@ -776,7 +773,7 @@ class MorphTextField(
     :class:`~kivy.properties.VariableListProperty` of length 4 and
     defaults to [dp(4), dp(4), dp(4), dp(4)]."""
 
-    def _get_input_margin(self) -> Tuple[float, float, float, float]:
+    def _get_input_margin(self) -> tuple[float, float, float, float]:
         """Calculate the margin values for the internal input widget.
 
         This method computes the margin space that should be applied
@@ -806,7 +803,7 @@ class MorphTextField(
         
         return (left, top, right, bottom)
 
-    input_margin: Tuple[float, float, float, float] = AliasProperty(
+    input_margin: tuple[float, float, float, float] = AliasProperty(
         _get_input_margin,
         None,
         bind=[
@@ -933,7 +930,7 @@ class MorphTextField(
     :attr:`is_active` is a :class:`~kivy.properties.AliasProperty`
     bound to `focus` and `text`."""
 
-    content_bbox: List[float] = AliasProperty(
+    content_bbox: list[float] = AliasProperty(
         lambda self: [
             self.x + self.padding[0],
             self.y + self.height - self.padding[1],
@@ -952,7 +949,7 @@ class MorphTextField(
     :attr:`content_bbox` is a :class:`~kivy.properties.AliasProperty`
     and is read-only."""
 
-    input_bbox: List[float] = AliasProperty(
+    input_bbox: list[float] = AliasProperty(
         lambda self: [
             self.x + self.input_margin[0],
             self.y + self.height - self.input_margin[1],
@@ -1257,7 +1254,7 @@ class MorphTextField(
             self.input_widget.refresh_content()
         Clock.schedule_once(_input_widget_updates)
 
-    def _resolve_heading_position(self) -> Tuple[float, float]:
+    def _resolve_heading_position(self) -> tuple[float, float]:
         """Get the position of the heading widget.
 
         Returns
@@ -1307,7 +1304,7 @@ class MorphTextField(
         self._heading_size_factor = font_size / self._heading_initial_font_size
         return font_size
 
-    def _resolve_border_open_params(self) -> Tuple[float | None, float]:
+    def _resolve_border_open_params(self) -> tuple[float | None, float]:
         """Get the open border segment parameters for the text field.
 
         The open border segment is used when the heading floats over
@@ -1388,7 +1385,7 @@ class MorphTextField(
 
         heading_animation.start(self.heading_widget)
 
-    def _update_selection_color(self, instance: Any, color: List[float]) -> None:
+    def _update_selection_color(self, instance: Any, color: list[float]) -> None:
         """Fired when the selected text color changes.
 
         This method ensures that the :attr:`selection_color` of the
@@ -1476,7 +1473,7 @@ class MorphTextFieldOutlined(
         MyApp().run()
     """
 
-    default_config: Dict[str, Any] = (
+    default_config: dict[str, Any] = (
         MorphTextField.default_config.copy() | dict(
             heading_focus_behavior='float_to_border',
             border_bottom_line_only=False,
@@ -1527,7 +1524,7 @@ class MorphTextFieldRounded(
         MyApp().run()
     """
 
-    default_config: Dict[str, Any] = (
+    default_config: dict[str, Any] = (
         MorphTextField.default_config.copy() | dict(
             heading_focus_behavior='hide',
             round_sides=True,
@@ -1576,7 +1573,7 @@ class MorphTextFieldFilled(
         MyApp().run()
     """
 
-    default_config: Dict[str, Any] = (
+    default_config: dict[str, Any] = (
         MorphTextField.default_config.copy() | dict(            
             heading_focus_behavior='move_above',
             border_bottom_line_only=True,

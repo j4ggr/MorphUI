@@ -1,6 +1,5 @@
-from typing import Any, Callable
-from typing import Dict
-from typing import Tuple
+from typing import Any
+from collections.abc import Callable
 
 from kivy.metrics import dp
 from kivy.animation import Animation
@@ -36,7 +35,7 @@ class MorphCheckbox(
         MorphScaleBehavior,
         MorphIconLabel,):
 
-    default_config: Dict[str, Any] = (
+    default_config: dict[str, Any] = (
         MorphIconLabel.default_config.copy() | dict(
         theme_color_bindings=dict(
             normal_surface_color='transparent_color',
@@ -91,7 +90,7 @@ class MorphRadioButton(MorphCheckbox):
     :class:`~morphui.uix.selection.MorphCheckbox`
     """
 
-    default_config: Dict[str, Any] = (
+    default_config: dict[str, Any] = (
         MorphCheckbox.default_config.copy() | dict(
         normal_icon='radiobox-blank',
         active_icon='radiobox-marked',
@@ -113,7 +112,7 @@ class ThumbSwitch(
     :attr:`active` is a :class:`~kivy.properties.BooleanProperty` and
     defaults to `False`."""
 
-    default_config: Dict[str, Any] = dict(
+    default_config: dict[str, Any] = dict(
         theme_color_bindings=dict(
             normal_surface_color='content_surface_color',
             active_surface_color='content_primary_color',
@@ -202,7 +201,7 @@ class MorphSwitch(
     :class:`~kivy.properties.StringProperty` and defaults to `'out_sine'`.
     """
 
-    default_config: Dict[str, Any] = dict(
+    default_config: dict[str, Any] = dict(
         theme_color_bindings=dict(
             normal_surface_color='surface_dim_color',
             active_surface_color='primary_color',
@@ -214,7 +213,7 @@ class MorphSwitch(
         height=dp(24),)
     """Default configuration for the MorphSwitch widget."""
 
-    def __init__(self, kw_thumb: Dict[str, Any] = {}, **kwargs) -> None:
+    def __init__(self, kw_thumb: dict[str, Any] = {}, **kwargs) -> None:
         config = self.default_config.copy() | kwargs
         self.thumb = ThumbSwitch(**kw_thumb)
         super().__init__(**config)
@@ -225,7 +224,7 @@ class MorphSwitch(
             size=self._update_thumb,)
         self._update_thumb()
 
-    def _do_press(self, pos: Tuple[float, float]) -> None:
+    def _do_press(self, pos: tuple[float, float]) -> None:
         """Internal method to handle press logic.
 
         This method sets the :attr:`pressed` state to True. If 
@@ -275,7 +274,7 @@ class MorphSwitch(
             return diameter * 2 / 3
         return diameter
 
-    def _resolve_thumb_position(self) -> Tuple[float, float]:
+    def _resolve_thumb_position(self) -> tuple[float, float]:
         """Calculate the position of the thumb based on the current 
         state.
 

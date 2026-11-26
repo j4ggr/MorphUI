@@ -1,5 +1,4 @@
 from typing import Any
-from typing import Dict
 
 from kivy.metrics import dp
 from kivy.uix.widget import Widget
@@ -71,7 +70,7 @@ class MorphDivider(
     :attr:`thickness` is a :class:`~kivy.properties.NumericProperty` and
     defaults to 1.0."""
 
-    default_config: Dict[str, Any] = dict(
+    default_config: dict[str, Any] = dict(
         theme_color_bindings=dict(
             normal_surface_color='outline_color'))
     """Default configuration values for MorphDivider.

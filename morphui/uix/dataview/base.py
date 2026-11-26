@@ -5,7 +5,6 @@ eliminating code duplication across header, index, and body components.
 """
 
 from typing import Any
-from typing import Dict
 from typing import TYPE_CHECKING
 
 from kivy.metrics import dp
@@ -23,8 +22,7 @@ from morphui.uix.behaviors import MorphOverlayLayerBehavior
 from morphui.uix.behaviors import MorphIdentificationBehavior
 
 if TYPE_CHECKING:
-    from morphui.uix.recycleboxlayout import MorphRecycleBoxLayout
-    from morphui.uix.recyclegridlayout import MorphRecycleGridLayout
+    pass
 
 
 __all__ = [
@@ -69,7 +67,7 @@ class BaseDataViewLabel(
             self,
             rv: RecycleView,
             index: int,
-            data: Dict[str, Any]
+            data: dict[str, Any]
             ) -> None:
         """Refresh the view attributes when the data changes.
         
@@ -107,7 +105,7 @@ class BaseDataView(
     to provide specific scroll behavior and sizing for their use case.
     """
 
-    default_config: Dict[str, Any] = dict(
+    default_config: dict[str, Any] = dict(
         scroll_distance=dp(120),)
     
     def __init__(self, **kwargs) -> None:

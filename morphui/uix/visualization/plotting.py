@@ -2,9 +2,6 @@ import weakref
 
 from typing import Any
 from typing import Self
-from typing import List
-from typing import Dict
-from typing import Tuple
 from typing import Literal
 from numpy.typing import ArrayLike
 
@@ -80,7 +77,7 @@ class MorphPlotWidget(
     texture: Texture = ObjectProperty(None)
     """Texture to blit the figure into."""
 
-    rubberband_pos: List[float] = VariableListProperty([0, 0], length=2)
+    rubberband_pos: list[float] = VariableListProperty([0, 0], length=2)
     """Position of the rubberband when using the zoom tool.
     
     This property stores the [x, y] coordinates of the top-left corner
@@ -91,7 +88,7 @@ class MorphPlotWidget(
     :class:`~kivy.properties.VariableListProperty` and defaults to 
     `[0, 0]`."""
     
-    rubberband_size: List[float] = VariableListProperty([0, 0], length=2)
+    rubberband_size: list[float] = VariableListProperty([0, 0], length=2)
     """Size of the rubberband when using the zoom tool.
     
     This property stores the [width, height] dimensions of the 
@@ -102,7 +99,7 @@ class MorphPlotWidget(
     :class:`~kivy.properties.VariableListProperty` and defaults to 
     `[0, 0]`."""
     
-    rubberband_corners: List[float] = ListProperty(
+    rubberband_corners: list[float] = ListProperty(
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
     """Corner points of the rubberband when using the zoom tool.
     
@@ -172,7 +169,7 @@ class MorphPlotWidget(
     _texture_rectangle_instruction: Rectangle
     """Kivy Rectangle instruction for rendering the matplotlib texture."""
 
-    default_config: Dict[str, Any] = dict(
+    default_config: dict[str, Any] = dict(
         normal_surface_color=(1.0, 1.0, 1.0, 1.0),  # White background for charts
         size_hint=(None, None),)
     """Default configuration for the plot widget."""
@@ -241,7 +238,7 @@ class MorphPlotWidget(
         self._rubberband_color_instruction.rgba = self.rubberband_color
         self._rubberband_edge_color_instruction.rgba = self.rubberband_edge_color
 
-    def _get_surface_color(self, *args) -> List[float]:
+    def _get_surface_color(self, *args) -> list[float]:
         # inherited docstring from MorphSurfaceLayerBehavior
         surface_color = super()._get_surface_color()
         assert surface_color[3] > 0, (
@@ -296,7 +293,7 @@ class MorphPlotWidget(
 
         self.dispatch('on_surface_updated')
 
-    def window_to_figure_canvas(self, x: float, y: float) -> Tuple[float, float]:
+    def window_to_figure_canvas(self, x: float, y: float) -> tuple[float, float]:
         """Convert window coordinates to figure canvas coordinates.
 
         This method transforms the given (x, y) coordinates from window
@@ -305,7 +302,7 @@ class MorphPlotWidget(
         x_offset, y_offset = self.to_window(*self.pos)
         return x - x_offset, y - y_offset
 
-    def touch_to_figure_canvas(self, touch: MotionEvent) -> Tuple[float, float]:
+    def touch_to_figure_canvas(self, touch: MotionEvent) -> tuple[float, float]:
         """Convert touch coordinates to figure canvas coordinates.
 
         This method transforms the given touch event's (x, y)
@@ -313,7 +310,7 @@ class MorphPlotWidget(
         """
         return self.window_to_figure_canvas(*self.to_window(touch.x, touch.y))
     
-    def figure_canvas_to_widget(self, x: float, y: float) -> Tuple[float, float]:
+    def figure_canvas_to_widget(self, x: float, y: float) -> tuple[float, float]:
         """Convert figure canvas coordinates to widget coordinates.
 
         This method transforms the given (x, y) coordinates from figure
@@ -373,7 +370,7 @@ class MorphPlotWidget(
             gui_event=touch)
     
     def on_mouse_move(
-            self, window: WindowSDL, mouse_pos: Tuple[float, float]) -> None:
+            self, window: WindowSDL, mouse_pos: tuple[float, float]) -> None:
         """Callback function, called on mouse movement event"""
         if any((
                 not self.collide_point(*mouse_pos),
@@ -396,7 +393,7 @@ class MorphPlotWidget(
         self.texture = Texture.create(size=self.size,)
         self._update_figure_size(self, self.size)
 
-    def _update_figure_size(self, caller: Self, size: List[float]) -> None:
+    def _update_figure_size(self, caller: Self, size: list[float]) -> None:
         """Creat a new, correctly sized bitmap"""
         if self.figure is None or size[0] <= 1 or size[1] <= 1:
             return
@@ -511,7 +508,7 @@ class MorphPlotWidget(
     
     def adjust_toolbar_info_pos(
             self,
-            pos: Tuple[float, float],
+            pos: tuple[float, float],
             center_x: bool = True
             ) -> None:
         """Adjust position of toolbar label if available

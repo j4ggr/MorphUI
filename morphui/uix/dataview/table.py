@@ -1,6 +1,4 @@
 from typing import Any
-from typing import Dict
-from typing import List
 
 from kivy.metrics import dp
 from kivy.properties import ListProperty
@@ -31,7 +29,7 @@ class TopLeftCorner(
         Widget):
     """An empty cell for the top-left corner of the data view table."""
 
-    default_config: Dict[str, Any] = dict(
+    default_config: dict[str, Any] = dict(
         size_hint=(None, None),
         visible_edges=['right', 'bottom'],
         overlay_edge_width=dp(0.5),
@@ -49,7 +47,7 @@ class BottomLeftCorner(
         Widget):
     """An empty cell for the bottom-left corner of the data view table."""
 
-    default_config: Dict[str, Any] = dict(
+    default_config: dict[str, Any] = dict(
         size_hint=(None, None),)
     
     def __init__(self, **kwargs) -> None:
@@ -204,7 +202,7 @@ class MorphDataViewTable(MorphGridLayout):
     :attr:`current_page` is an :class:`~kivy.properties.AliasProperty`
     and is bound to changes in `chunked_values`."""
 
-    values: List[List] = ListProperty([])
+    values: list[list] = ListProperty([])
     """2D list of values holding the data for the table.
 
     This property allows getting and setting the values of the body
@@ -215,7 +213,7 @@ class MorphDataViewTable(MorphGridLayout):
     :attr:`values` is an :class:`~kivy.properties.AliasProperty` and 
     defaults to an empty list."""
 
-    column_names: List[str] = AliasProperty(
+    column_names: list[str] = AliasProperty(
         lambda self: self.header.column_names,
         lambda self, names: setattr(self.header, 'column_names', names))
     """List of column names for the data view table.
@@ -226,7 +224,7 @@ class MorphDataViewTable(MorphGridLayout):
     :attr:`column_names` is a :class:`~kivy.properties.ListProperty`
     and defaults to an empty list."""
 
-    row_names: List[str] = ListProperty([])
+    row_names: list[str] = ListProperty([])
     """List of row names for the data view table.
 
     This property holds the names of the rows displayed in the
@@ -235,7 +233,7 @@ class MorphDataViewTable(MorphGridLayout):
     :attr:`row_names` is a :class:`~kivy.properties.ListProperty`
     and defaults to an empty list."""
 
-    chunked_values: List[List[List[str]]] = ListProperty([])
+    chunked_values: list[list[list[str]]] = ListProperty([])
     """List of values chunks based on rows_per_page.
 
     This property holds the values divided into chunks, where each chunk
@@ -245,7 +243,7 @@ class MorphDataViewTable(MorphGridLayout):
     :attr:`chunked_values` is an :class:`~kivy.properties.AliasProperty`
     and is bound to changes in `values` and `rows_per_page`."""
 
-    def _get_page_values(self) -> List[List[str]]:
+    def _get_page_values(self) -> list[list[str]]:
         """Retrieve the values for the current page in the table.
         
         Returns
@@ -258,7 +256,7 @@ class MorphDataViewTable(MorphGridLayout):
             return []
         return self.chunked_values[self.current_page - 1]
 
-    page_values: List[List[str]] = AliasProperty(
+    page_values: list[list[str]] = AliasProperty(
         _get_page_values,
         bind=['chunked_values', 'current_page'])
     """2D list of values for the current page in the table (read-only).
@@ -269,7 +267,7 @@ class MorphDataViewTable(MorphGridLayout):
     :attr:`page_values` is an :class:`~kivy.properties.AliasProperty`
     and is bound to changes in `chunked_values` and `current_page`."""
 
-    def _get_page_rows(self) -> List[str]:
+    def _get_page_rows(self) -> list[str]:
         """Retrieve the row names for the current page in the table.
 
         The method calculates the appropriate slice of row names based
@@ -283,7 +281,7 @@ class MorphDataViewTable(MorphGridLayout):
         end = min(start + self.rows_per_page, len(row_names))
         return row_names[start:end]
     
-    page_rows: List[str] = AliasProperty(
+    page_rows: list[str] = AliasProperty(
         _get_page_rows,
         bind=['row_names', 'current_page', 'rows_per_page'])
     """List of row names for the current page in the table (read-only).
@@ -340,7 +338,7 @@ class MorphDataViewTable(MorphGridLayout):
     bottom_left: BottomLeftCorner
     """The bottom-left corner component of the data view table."""
 
-    _top_left_visible_edges: List[str]
+    _top_left_visible_edges: list[str]
     """Storage of visible edges for the top-left corner component."""
 
     default_config = dict(
@@ -355,10 +353,10 @@ class MorphDataViewTable(MorphGridLayout):
 
     def __init__(
             self,
-            kw_header: Dict[str, Any] = {},
-            kw_index: Dict[str, Any] = {},
-            kw_body: Dict[str, Any] = {},
-            kw_navigation: Dict[str, Any] = {},
+            kw_header: dict[str, Any] = {},
+            kw_index: dict[str, Any] = {},
+            kw_body: dict[str, Any] = {},
+            kw_navigation: dict[str, Any] = {},
             **kwargs) -> None:
         """Initialize the data view table component."""
         config = self.default_config.copy() | kwargs

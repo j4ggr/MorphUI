@@ -13,9 +13,7 @@ MorphDialog
     Modal dialog container with open/dismiss animation.
 """
 from types import TracebackType
-from typing import List
 from typing import Self
-from typing import Type
 from typing import Literal
 
 from textwrap import dedent
@@ -50,7 +48,7 @@ class MorphScrimLayer(Widget):
     distractions from the background content.
     """
 
-    color: List[float] = ColorProperty([0, 0, 0, 0.5])
+    color: list[float] = ColorProperty([0, 0, 0, 0.5])
     """The color of the scrim layer, specified as a list of four float 
     values representing the red, green, blue, and alpha (opacity) 
     components of the color.
@@ -105,7 +103,7 @@ class MorphDialog(
     `with` statement to ensure proper opening and closing.
     """
 
-    def _get_scrim_color(self) -> List[float]:
+    def _get_scrim_color(self) -> list[float]:
         """Get the current color of the scrim layer.
 
         This method retrieves the color of the scrim layer that appears
@@ -119,7 +117,7 @@ class MorphDialog(
         """
         return self._scrim_widget.color
 
-    def _set_scrim_color(self, color: List[float]) -> None:
+    def _set_scrim_color(self, color: list[float]) -> None:
         """Set the color of the scrim layer.
 
         This method updates the color of the scrim layer that appears
@@ -134,7 +132,7 @@ class MorphDialog(
         """
         self._scrim_widget.color = color
 
-    scrim_color: List[float] = AliasProperty(
+    scrim_color: list[float] = AliasProperty(
         _get_scrim_color,
         _set_scrim_color,
         bind=['_scrim_widget'])
@@ -219,7 +217,7 @@ class MorphDialog(
     
     def __exit__(
             self,
-            exc_type: Type[BaseException] | None,
+            exc_type: type[BaseException] | None,
             exc_value: BaseException | None,
             traceback: TracebackType | None
             ) -> None:

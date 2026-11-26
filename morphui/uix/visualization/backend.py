@@ -1,8 +1,6 @@
 import warnings
 
 from typing import Any
-from typing import List
-from typing import Tuple
 from typing import Literal
 from typing import NamedTuple
 
@@ -22,12 +20,12 @@ __all__ = [
 ]
 
 
-ZoomInfo = NamedTuple('ZoomInfo',[
-    ('direction', Literal['in', 'out']),
-    ('start_xy', Tuple[int, int]),
-    ('axes', List[Axes]),
-    ('cid', int),
-    ('cbar', Literal['vertical', 'horizontal', None])])
+class ZoomInfo(NamedTuple):
+    direction: Literal['in', 'out']
+    start_xy: tuple[int, int]
+    axes: list[Axes]
+    cid: int
+    cbar: Literal['vertical', 'horizontal', None]
 
 
 class FigureCanvas(FigureCanvasAgg):

@@ -2,7 +2,7 @@
 DotDict - A dictionary that supports dot notation access
 """
 
-from typing import Any, Dict
+from typing import Any
 
 
 class DotDict(dict):
@@ -190,7 +190,7 @@ class DotDict(dict):
         """
         return DotDict(dict.copy(self))
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """
         Convert DotDict back to a regular dictionary (recursively).
         
@@ -220,7 +220,7 @@ class DotDict(dict):
 
 
 # Convenience function for creating DotDict from nested dictionaries
-def dotdict(data: Dict[str, Any]) -> DotDict:
+def dotdict(data: dict[str, Any]) -> DotDict:
     """
     Create a DotDict from a regular dictionary.
     

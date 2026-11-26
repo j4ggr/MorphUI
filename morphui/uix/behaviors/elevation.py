@@ -1,4 +1,3 @@
-from typing import List
 
 from kivy.event import EventDispatcher
 from kivy.metrics import dp
@@ -60,7 +59,7 @@ class MorphElevationBehavior(EventDispatcher):
     :attr:`shadow_inset` is a :class:`~kivy.properties.BooleanProperty`
     and defaults to `False` (outset)."""
 
-    shadow_offset: List[float] = ListProperty([2, -2], length=2)
+    shadow_offset: list[float] = ListProperty([2, -2], length=2)
     """Offset of the shadow in the x and y directions.
 
     Specifies shadow offsets in (horizontal, vertical) format. Positive
@@ -98,7 +97,7 @@ class MorphElevationBehavior(EventDispatcher):
     :class:`~kivy.properties.AliasProperty` and is read-only.
     """
 
-    shadow_color: List[float] = ColorProperty([0, 0, 0, 0.65])
+    shadow_color: list[float] = ColorProperty([0, 0, 0, 0.65])
     """Color of the shadow.
 
     The color should be provided as a list of RGBA values between 0 and
@@ -108,7 +107,7 @@ class MorphElevationBehavior(EventDispatcher):
     and defaults to `[0, 0, 0, 0.65]`.
     """
 
-    shadow_border_radius: List[float] = ListProperty([0, 0, 0, 0], length=4)
+    shadow_border_radius: list[float] = ListProperty([0, 0, 0, 0], length=4)
     """Border radius for the shadow corners.
 
     The order of the corners is: top-left, top-right, bottom-right,

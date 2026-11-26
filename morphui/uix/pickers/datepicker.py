@@ -4,8 +4,6 @@ from calendar import month_name
 from textwrap import dedent
 
 from typing import Any
-from typing import List
-from typing import Dict
 from typing import Literal
 
 from datetime import date
@@ -60,7 +58,7 @@ __all__ = [
 
 class _ListItemLeadingWidget(MorphLeadingIconLabel):
 
-    default_config: Dict[str, Any] = (
+    default_config: dict[str, Any] = (
         MorphLeadingIconLabel.default_config.copy() | dict(
             auto_size=(False, True),
             size_hint_x=(None),
@@ -68,13 +66,13 @@ class _ListItemLeadingWidget(MorphLeadingIconLabel):
     
 class _ListItemLabelWidget(MorphSimpleLabel):
 
-    default_config: Dict[str, Any] = (
+    default_config: dict[str, Any] = (
         MorphSimpleLabel.default_config.copy() | dict(
             auto_size=(True, True),))
     
 class _ListItemTrailingWidget(MorphSimpleIconLabel):
 
-    default_config: Dict[str, Any] = (
+    default_config: dict[str, Any] = (
         MorphSimpleIconLabel.default_config.copy() | dict(
             auto_size=(False, True),
             size_hint_x=(1),))
@@ -103,7 +101,7 @@ class BaseDatePickerListView(
             {MorphListLayout.__name__}:
         '''))
 
-    default_data: Dict[str, Any] = DictProperty(
+    default_data: dict[str, Any] = DictProperty(
         MorphToggleListItemFlat.default_config.copy() | {
         'normal_leading_icon': 'blank',
         'active_leading_icon': 'check',
@@ -254,7 +252,7 @@ class MorphDatePickerMonthView(
     and defaults to current month.
     """
 
-    month_names: List[str] = ListProperty(
+    month_names: list[str] = ListProperty(
         [month_name[i] for i in range(1, 13)])
     """List of month names to display in the month view.
 
@@ -313,7 +311,7 @@ class MorphDatePickerCalendarView(
     defaults to `'single'`.
     """
 
-    selected_dates: List[date] = ListProperty([])
+    selected_dates: list[date] = ListProperty([])
     """List of currently selected dates.
 
     This property holds the list of :class:`datetime.date` values that
@@ -323,7 +321,7 @@ class MorphDatePickerCalendarView(
     and defaults to an empty list.
     """
 
-    weekday_headers: List[str] = ListProperty(list(day_abbr))
+    weekday_headers: list[str] = ListProperty(list(day_abbr))
     """List of weekday abbreviations to display as headers.
 
     :attr:`weekday_headers` is a :class:`kivy.properties.ListProperty`
@@ -331,14 +329,14 @@ class MorphDatePickerCalendarView(
     Monday to Sunday.
     """
 
-    date_values: List[date | None] = ListProperty([])
+    date_values: list[date | None] = ListProperty([])
     """List of date values to display in the calendar grid.
 
     :attr:`date_values` is a :class:`kivy.properties.ListProperty` and
     defaults to an empty list.
     """
 
-    default_config: Dict[str, Any] = dict(
+    default_config: dict[str, Any] = dict(
         orientation='vertical',
         auto_size=(True, True),
         theme_color_bindings=dict(
@@ -538,7 +536,7 @@ class MorphDockedDatePickerMenu(
     defaults to `'single'`.
     """
     
-    default_config: Dict[str, Any] = dict(
+    default_config: dict[str, Any] = dict(
         theme_color_bindings=dict(
             normal_surface_color='surface_container_color',),
         orientation='vertical',
@@ -896,7 +894,7 @@ class MorphDockedDatePickerField(MorphTextField):
     defaults to `' - '`.
     """
 
-    _format_strings: Dict[str, str] = dict(
+    _format_strings: dict[str, str] = dict(
         iso=r'%Y-%m-%d',
         us=r'%m/%d/%Y',
         eu=r'%d.%m.%Y',)
@@ -1171,7 +1169,7 @@ class MorphDockedDatePickerFieldOutlined(
     ```
     """
 
-    default_config: Dict[str, Any] = (
+    default_config: dict[str, Any] = (
         MorphTextFieldOutlined.default_config.copy() | dict())
 
 
@@ -1236,7 +1234,7 @@ class MorphDockedDatePickerFieldRounded(
     ```
     """
 
-    default_config: Dict[str, Any] = (
+    default_config: dict[str, Any] = (
         MorphTextFieldRounded.default_config.copy() | dict())
     
     
@@ -1300,6 +1298,6 @@ class MorphDockedDatePickerFieldFilled(
     ```
     """
 
-    default_config: Dict[str, Any] = (
+    default_config: dict[str, Any] = (
         MorphTextFieldFilled.default_config.copy() | dict())
     

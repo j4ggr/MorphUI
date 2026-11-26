@@ -14,9 +14,6 @@ The sizing behaviors support:
 - Event system for resize and auto-size operations
 """
 from typing import Any
-from typing import Dict
-from typing import List
-from typing import Tuple
 
 from kivy.clock import Clock
 from kivy.event import EventDispatcher
@@ -226,7 +223,7 @@ class MorphSizeBoundsBehavior(EventDispatcher):
         """
         self.size = self.constrain_size(self.size)
     
-    def constrain_size(self, size: Tuple[float, float]) -> Tuple[float, float]:
+    def constrain_size(self, size: tuple[float, float]) -> tuple[float, float]:
         """Apply size bounds constraints to a given size.
         
         This convenience method applies both lower and upper bound constraints
@@ -334,7 +331,7 @@ class MorphAutoSizingBehavior(EventDispatcher):
     and defaults to False.
     """
 
-    def _get_auto_size(self) -> Tuple[bool, bool]:
+    def _get_auto_size(self) -> tuple[bool, bool]:
         """Get combined auto size as a tuple or single bool.
         
         This method returns the combined auto size state. The return
@@ -344,7 +341,7 @@ class MorphAutoSizingBehavior(EventDispatcher):
         """
         return (self.auto_width, self.auto_height)
     
-    def _set_auto_size(self, value: bool | Tuple[bool, bool]) -> None:
+    def _set_auto_size(self, value: bool | tuple[bool, bool]) -> None:
         """Set combined auto size from a tuple or single bool.
         
         This method sets both auto_width and auto_height based on the
@@ -357,7 +354,7 @@ class MorphAutoSizingBehavior(EventDispatcher):
         assert len(value) == 2, "auto_size must be a bool or tuple of two bools"
         self.auto_width, self.auto_height = value
 
-    auto_size: Tuple[bool, bool] = AliasProperty(
+    auto_size: tuple[bool, bool] = AliasProperty(
         _get_auto_size,
         _set_auto_size,
         bind=('auto_width', 'auto_height'))
@@ -380,12 +377,12 @@ class MorphAutoSizingBehavior(EventDispatcher):
     defaults to (False, False).
     """
 
-    _original_size_hint: Tuple[float | None, float | None] = (1.0, 1.0)
+    _original_size_hint: tuple[float | None, float | None] = (1.0, 1.0)
     """Internal storage for the original size_hint before auto sizing.
     This is used to restore the size_hint when auto sizing is disabled.
     """
 
-    _original_size : Tuple[float, float] = (0, 0)
+    _original_size : tuple[float, float] = (0, 0)
     """Internal storage for the original size before auto sizing.
     This is used to restore the size when auto sizing is disabled.
     """
@@ -673,7 +670,7 @@ class MorphResizeBehavior(
     and defaults to True.
     """
 
-    resizable_edges: List[str] = ListProperty(NAME.EDGES)
+    resizable_edges: list[str] = ListProperty(NAME.EDGES)
     """List of edges that can be used for resizing.
     
     Controls which edges of the widget can be dragged to resize. Can contain
@@ -833,10 +830,10 @@ class MorphResizeBehavior(
     """Frozen reference geometry for mouse movements when resize 
     operation started."""
 
-    _start_touch_pos: Tuple[float, float] = (0, 0)
+    _start_touch_pos: tuple[float, float] = (0, 0)
     """The mouse position where the resize operation started."""
 
-    _original_size_hint : Tuple[float | None, float | None] = (1.0, 1.0)
+    _original_size_hint : tuple[float | None, float | None] = (1.0, 1.0)
     """Internal storage for the original size_hint before resizing.
     This is used to restore the size_hint after resizing."""
 
@@ -846,11 +843,11 @@ class MorphResizeBehavior(
     _resize_in_progress: bool = False
     """Internal flag indicating if a resize operation is in progress."""
 
-    _collapse_animations: Dict[str, Animation]
+    _collapse_animations: dict[str, Animation]
     """Internal registry of in-progress collapse/expand size animations,
     keyed by axis ('width' or 'height')."""
 
-    _pre_collapse_size: Dict[str, float]
+    _pre_collapse_size: dict[str, float]
     """Internal storage of the size an axis had right before it
     collapsed, keyed by axis ('width' or 'height'). Used by
     :meth:`expand` to restore the previous size instead of only
@@ -891,7 +888,7 @@ class MorphResizeBehavior(
         return self._resize_edge_or_corner
     
     @property
-    def hovered_resizable_edges(self) -> List[str]:
+    def hovered_resizable_edges(self) -> list[str]:
         """List of currently hovered edges that are resizable.
         
         Only edges present in :attr:`resizable_edges` will be included.
@@ -981,7 +978,7 @@ class MorphResizeBehavior(
         self._start_resize(touch.pos)
         return True
 
-    def _start_resize(self, touch_pos: Tuple[float, float]) -> None:
+    def _start_resize(self, touch_pos: tuple[float, float]) -> None:
         """Internal method to handle the start of a resize operation.
         
         This method sets the resizing state to True. It is called when a
@@ -1039,7 +1036,7 @@ class MorphResizeBehavior(
         self._resize(touch.pos)
         return True
 
-    def _resize(self, mouse_pos: Tuple[float, float]) -> None:
+    def _resize(self, mouse_pos: tuple[float, float]) -> None:
         """Internal method to perform resize calculations and apply
         new dimensions.
         
@@ -1107,8 +1104,8 @@ class MorphResizeBehavior(
             'on_resize_progress', self.resize_edge_or_corner, new_size, new_pos)
 
     def _apply_collapse_snapping(
-            self, size: Tuple[float, float], edges: List[str]
-            ) -> Tuple[float, float]:
+            self, size: tuple[float, float], edges: list[str]
+            ) -> tuple[float, float]:
         """Apply collapse/expand snapping to a candidate resize size.
 
         For each dimension actively being resized (as determined by
@@ -1372,7 +1369,7 @@ class MorphResizeBehavior(
         else:
             self.collapse(axis)
 
-    def constrain_size(self, size: Tuple[float, float]) -> Tuple[float, float]:
+    def constrain_size(self, size: tuple[float, float]) -> tuple[float, float]:
         """Apply size bounds constraints, skipping collapsed dimensions.
 
         This overrides :meth:`MorphSizeBoundsBehavior.constrain_size` so
@@ -1461,8 +1458,8 @@ class MorphResizeBehavior(
     def on_resize_progress(
             self, 
             edge_or_corner: str, 
-            new_size: Tuple[float, float], 
-            new_pos: Tuple[float, float]
+            new_size: tuple[float, float],
+            new_pos: tuple[float, float]
             ) -> None:
         """Event fired during resize operations with new dimensions.
         

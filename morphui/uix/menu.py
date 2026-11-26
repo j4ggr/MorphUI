@@ -1,10 +1,7 @@
 from textwrap import dedent
 
 from typing import Any
-from typing import Callable
-from typing import Dict
-from typing import List
-from typing import Optional
+from collections.abc import Callable
 
 from kivy.lang import Builder
 from kivy.properties import ListProperty
@@ -63,7 +60,7 @@ class MorphDropdownMenuItem(
     and defaults to `None`.
     """
 
-    default_config: Dict[str, Any] = (
+    default_config: dict[str, Any] = (
         MorphIconLabelIconContainer.default_config.copy() | dict())
 
     def __init__(self, **kwargs) -> None:
@@ -74,7 +71,7 @@ class MorphDropdownMenuItem(
             self,
             rv: RecycleView,
             index: int,
-            data: List[Dict[str, Any]]
+            data: list[dict[str, Any]]
             ) -> None:
         """Refreshes the view attributes of this menu item.
 
@@ -101,7 +98,7 @@ class MenuRecycleBoxLayout(
     """A RecycleBoxLayout specifically for use within the MorphMenu
     widget to layout menu items in a vertical list.
     """
-    default_config: Dict[str, Any] = dict(
+    default_config: dict[str, Any] = dict(
         orientation='vertical',
         size_hint=(None, None),
         size=(500, 200),)
@@ -145,7 +142,7 @@ class MorphDropdownMenu(
     :attr:`filter_value` is an :class:`~kivy.properties.ObjectProperty`
     and defaults to an empty string."""
 
-    item_release_callback: Optional[Callable[[Any, int], None]] = ObjectProperty(None)
+    item_release_callback: Callable[[Any, int], None] | None = ObjectProperty(None)
     """Callback function called when a menu item is released.
 
     This callback is triggered when a user releases a menu item after
@@ -163,10 +160,10 @@ class MorphDropdownMenu(
     :attr:`item_release_callback` is an :class:`~kivy.properties.ObjectProperty`
     and defaults to `None`."""
 
-    _all_items: List[Dict[str, Any]] = ListProperty([])
+    _all_items: list[dict[str, Any]] = ListProperty([])
     """Internal storage for all menu items before filtering."""
 
-    def _get_items(self) -> List[Dict[str, Any]]:
+    def _get_items(self) -> list[dict[str, Any]]:
         """Get the list of menu items, filtered based on the current
         filter value.
 
@@ -180,7 +177,7 @@ class MorphDropdownMenu(
             lambda item: not self.should_filter_item(item),
             self._all_items))
 
-    def _set_items(self, items: List[Dict[str, Any]]) -> None:
+    def _set_items(self, items: list[dict[str, Any]]) -> None:
         """Set the menu items for the dropdown menu.
 
         This method updates the RecycleView's data to reflect the
@@ -202,7 +199,7 @@ class MorphDropdownMenu(
             self._all_items = [
                 {'on_release': self.item_release_callback, **item} for item in items]
 
-    items: List[Dict[str, Any]] = AliasProperty(
+    items: list[dict[str, Any]] = AliasProperty(
         _get_items,
         _set_items,
         bind=[
@@ -220,7 +217,7 @@ class MorphDropdownMenu(
     is bound to changes in the `_all_items` and `filter_value` properties.
     """
 
-    default_config: Dict[str, Any] = dict(
+    default_config: dict[str, Any] = dict(
         size_hint=(None, None),
         auto_size=(True, True),
         elevation=2,)
@@ -232,7 +229,7 @@ class MorphDropdownMenu(
         self.bind(items=self.setter('data'))
         self.data = self.items
 
-    def should_filter_item(self, item: Dict[str, Any]) -> bool:
+    def should_filter_item(self, item: dict[str, Any]) -> bool:
         """Determine if a menu item should be filtered out based on
         the current filter value.
 

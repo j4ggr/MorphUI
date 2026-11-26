@@ -1,5 +1,4 @@
 from typing import Any
-from typing import Dict
 
 from kivy.uix.boxlayout import BoxLayout
 
@@ -53,7 +52,7 @@ class MorphSimpleBoxLayout(
     ```
     """
     
-    default_config: Dict[str, Any] = dict(
+    default_config: dict[str, Any] = dict(
         orientation='horizontal',)
     """Initialize the MorphSimpleBoxLayout with the provided 
     configuration."""
@@ -114,7 +113,7 @@ class MorphBoxLayout(
     ```
     """
     
-    default_config: Dict[str, Any] = dict(
+    default_config: dict[str, Any] = dict(
         orientation='horizontal',
         theme_color_bindings=dict(
             normal_surface_color='transparent_color',))
@@ -176,7 +175,7 @@ class MorphElevationBoxLayout(
     ```
     """
 
-    default_config: Dict[str, Any] = dict(
+    default_config: dict[str, Any] = dict(
         orientation='horizontal',
         theme_color_bindings=dict(
             normal_surface_color='surface_container_color',),

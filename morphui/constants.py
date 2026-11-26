@@ -1,8 +1,6 @@
 import re
 import tomllib
 
-from typing import Dict
-from typing import Tuple
 from typing import Literal
 from pathlib import Path
 from dataclasses import dataclass
@@ -23,11 +21,11 @@ class _Theme_:
     """Light theme mode."""
     DARK: Literal['Dark'] = 'Dark'
     """Dark theme mode."""
-    SCHEMES: Tuple[str, ...] = tuple(Variant.__members__.keys())
+    SCHEMES: tuple[str, ...] = tuple(Variant.__members__.keys())
     """Available color schemes from Material Color Utilities."""
     
     @property
-    def STYLES(self) -> Dict[str, Dict[str, str]]:
+    def STYLES(self) -> dict[str, dict[str, str]]:
         """Predefined theme styles mapping to color roles for common 
         Material Design patterns."""
         disabled = {
@@ -102,7 +100,7 @@ with open(PATH.ICON_FONTS/'material_icons.toml', 'rb') as f:
 @dataclass(frozen=True)
 class _Icon_:
     @property
-    def MAP(self) -> Dict[str, str]:
+    def MAP(self) -> dict[str, str]:
         """Mapping of icon names to their actual Unicode characters.
         
         Returns a dictionary where keys are icon names and values are 
@@ -129,20 +127,20 @@ ICON = _Icon_()
 class _Name_:
     """Standardized names for component parts and rendering layers."""
     
-    EDGES: Tuple[
+    EDGES: tuple[
         Literal['left'], Literal['top'], Literal['right'], Literal['bottom']
         ] = ('left', 'top', 'right', 'bottom')
     """Standard edge names for component boundaries."""
 
-    HORIZONTAL_EDGES: Tuple[
+    HORIZONTAL_EDGES: tuple[
         Literal['top'], Literal['bottom']] = ('top', 'bottom')
     """Horizontal edges for components."""
 
-    VERTICAL_EDGES: Tuple[
+    VERTICAL_EDGES: tuple[
         Literal['left'], Literal['right']] = ('left', 'right')
     """Vertical edges for components."""
 
-    CORNERS: Tuple[
+    CORNERS: tuple[
         Literal['top-left'], Literal['top-right'],
         Literal['bottom-left'], Literal['bottom-right']
         ] = ('top-left', 'top-right', 'bottom-left', 'bottom-right')
@@ -229,7 +227,7 @@ NAME = _Name_()
 class _Fonts_:
     
     # Typography role constants
-    TYPOGRAPHY_ROLES: Tuple[str, ...] = (
+    TYPOGRAPHY_ROLES: tuple[str, ...] = (
         'Display', 'Headline', 'Title', 'Body', 'Label')
     """Available typography roles in the Material Design type system.
     
@@ -241,7 +239,7 @@ class _Fonts_:
     - Label: Text for UI components like buttons and form labels
     """
     
-    SIZE_VARIANTS: Tuple[str, ...] = ('large', 'medium', 'small')
+    SIZE_VARIANTS: tuple[str, ...] = ('large', 'medium', 'small')
     """Available size variants for each typography role.
     
     Each typography role includes three size options:
@@ -250,7 +248,7 @@ class _Fonts_:
     - small: Compact size for dense layouts or secondary content
     """
 
-    WEIGHT_VARIANTS: Tuple[str, ...] = ('Thin', 'Regular', 'Heavy')
+    WEIGHT_VARIANTS: tuple[str, ...] = ('Thin', 'Regular', 'Heavy')
     """Available weight variants for font families.
 
     Weight variants provide different visual weights:
@@ -260,7 +258,7 @@ class _Fonts_:
     """
     
     @property
-    def DMSANS_REGULAR(self) -> Dict[str, str]:
+    def DMSANS_REGULAR(self) -> dict[str, str]:
         """Details for the DM Sans Regular weight font family.
         
         DM Sans is a low-contrast geometric sans serif designed for use 
@@ -285,7 +283,7 @@ class _Fonts_:
             'fn_bolditalic': str(PATH.DMSANS_FONTS/'DMSans-BoldItalic.ttf'),}
     
     @property
-    def DMSANS_THIN(self) -> Dict[str, str]:
+    def DMSANS_THIN(self) -> dict[str, str]:
         """Details for the DM Sans Thin weight font family.
         
         This variant provides the thin weight of DM Sans, ideal for
@@ -310,7 +308,7 @@ class _Fonts_:
             'fn_bolditalic': str(PATH.DMSANS_FONTS/'DMSans-SemiBoldItalic.ttf'),}
     
     @property
-    def DMSANS_HEAVY(self) -> Dict[str, str]:
+    def DMSANS_HEAVY(self) -> dict[str, str]:
         """Details for the DM Sans Heavy weight font family.
         
         This variant provides heavier weights of DM Sans, using Medium
@@ -335,7 +333,7 @@ class _Fonts_:
             'fn_bolditalic': str(PATH.DMSANS_FONTS/'DMSans-ExtraBoldItalic.ttf'),}
 
     @property
-    def INTER_REGULAR(self) -> Dict[str, str]:
+    def INTER_REGULAR(self) -> dict[str, str]:
         """Details for the Inter Regular weight font family.
         
         Inter is a typeface specifically designed for computer screens
@@ -360,7 +358,7 @@ class _Fonts_:
             'fn_bolditalic': str(PATH.INTER_FONTS/'Inter-BoldItalic.ttf'),}
 
     @property
-    def INTER_THIN(self) -> Dict[str, str]:
+    def INTER_THIN(self) -> dict[str, str]:
         """Details for the Inter Thin weight font family.
         
         This variant provides the thin weight of Inter, ideal for
@@ -385,7 +383,7 @@ class _Fonts_:
             'fn_bolditalic': str(PATH.INTER_FONTS/'Inter-SemiBoldItalic.ttf'),}
     
     @property
-    def INTER_HEAVY(self) -> Dict[str, str]:
+    def INTER_HEAVY(self) -> dict[str, str]:
         """Details for the Inter Heavy weight font family.
         
         This variant provides heavier weights of Inter, using Medium
@@ -410,7 +408,7 @@ class _Fonts_:
             'fn_bolditalic': str(PATH.INTER_FONTS/'Inter-ExtraBoldItalic.ttf'),}
 
     @property
-    def MATERIAL_ICONS(self) -> Dict[str, str]:
+    def MATERIAL_ICONS(self) -> dict[str, str]:
         """Details for the Material Design Icons font.
         
         Material Design Icons Desktop font provides a comprehensive
@@ -434,7 +432,7 @@ class _Fonts_:
             'fn_regular': str(PATH.ICON_FONTS/'MaterialDesignIcons-Desktop.ttf'),}
     
     @property
-    def DEFAULT_AUTOREGISTERED_FONTS(self) -> Tuple[Dict[str, str], ...]:
+    def DEFAULT_AUTOREGISTERED_FONTS(self) -> tuple[dict[str, str], ...]:
         """Default font configurations for automatic registration with 
         Kivy.
 
@@ -483,7 +481,7 @@ class _Fonts_:
             self.MATERIAL_ICONS,)
 
     @property
-    def TEXT_STYLES(self) -> Dict[str, Dict[str, Dict[str, str | float | int]]]:
+    def TEXT_STYLES(self) -> dict[str, dict[str, dict[str, str | float | int]]]:
         """Material Design typography roles with size variants.
         
         Provides a comprehensive set of text styles following Material 

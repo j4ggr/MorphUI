@@ -1,9 +1,7 @@
 from textwrap import dedent
 
 from typing import Any
-from typing import Dict
-from typing import List
-from typing import Sequence
+from collections.abc import Sequence
 
 from kivy.lang import Builder
 from kivy.metrics import dp
@@ -27,7 +25,7 @@ class MorphDataViewIndexLabel(BaseDataViewLabel):
     styling and behavior for index labels.
     """
 
-    default_config: Dict[str, Any] = dict(
+    default_config: dict[str, Any] = dict(
         theme_color_bindings=dict(
             normal_content_color='content_surface_color',
             normal_overlay_edge_color='outline_color',),
@@ -53,7 +51,7 @@ class MorphDataViewIndexLayout(MorphRecycleBoxLayout):
     to provide a vertical layout suitable for index labels.
     """
     
-    default_config: Dict[str, Any] = dict(
+    default_config: dict[str, Any] = dict(
         theme_color_bindings={
             'normal_surface_color': 'surface_container_high_color'},
         orientation='vertical',
@@ -99,7 +97,7 @@ class MorphDataViewIndex(BaseDataView):
             {MorphDataViewIndexLayout.__name__}:
         '''))
 
-    def _get_row_names(self) -> List[str]:
+    def _get_row_names(self) -> list[str]:
         """Retrieve the list of row names from the index data.
 
         Returns
@@ -126,7 +124,7 @@ class MorphDataViewIndex(BaseDataView):
             for n in names]
         self.dispatch('on_rows_updated')
 
-    row_names: List[str] = AliasProperty(
+    row_names: list[str] = AliasProperty(
         _get_row_names,
         _set_row_names,
         bind=['data'])
@@ -139,7 +137,7 @@ class MorphDataViewIndex(BaseDataView):
     is bound to changes in the `data` property.
     """
     
-    default_config: Dict[str, Any] = dict(
+    default_config: dict[str, Any] = dict(
         do_scroll_x=False,
         do_scroll_y=True,
         size_hint=(None, 1),

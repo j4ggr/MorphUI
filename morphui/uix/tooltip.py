@@ -15,7 +15,6 @@ MorphRichTooltip
     Tooltip with a bold heading and a supporting detail line.
 """
 from typing import Any
-from typing import Dict
 
 from kivy.metrics import dp
 from kivy.properties import StringProperty
@@ -84,7 +83,7 @@ class MorphTooltip(
     ```
     """
 
-    default_config: Dict[str, Any] = dict(
+    default_config: dict[str, Any] = dict(
         theme_color_bindings=dict(
             normal_surface_color='surface_container_highest_color',),
         menu_caller_spacing=dp(8),

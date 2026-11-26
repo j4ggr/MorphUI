@@ -20,10 +20,7 @@ MorphWavyCircularProgress
 import math
 
 from typing import Any
-from typing import Dict
-from typing import List
-from typing import Tuple
-from typing import Generator
+from collections.abc import Generator
 
 from kivy.animation import Animation
 from kivy.clock import Clock
@@ -114,7 +111,7 @@ class _MorphProgressBase(
     :class:`~kivy.properties.NumericProperty` and defaults to ``1.33``.
     """
 
-    indicator_color: List[float] = ColorProperty([0, 0, 0, 1])
+    indicator_color: list[float] = ColorProperty([0, 0, 0, 1])
     """Color of the active (filled) indicator segment.
 
     Defaults are applied via :attr:`default_config` which binds this to
@@ -123,7 +120,7 @@ class _MorphProgressBase(
     :attr:`indicator_color` is a :class:`~kivy.properties.ColorProperty`.
     """
 
-    track_color: List[float] = ColorProperty([0, 0, 0, 0.12])
+    track_color: list[float] = ColorProperty([0, 0, 0, 0.12])
     """Color of the background track.
 
     Defaults are applied via :attr:`default_config` which binds this to
@@ -139,7 +136,7 @@ class _MorphProgressBase(
     and defaults to ``dp(4)``.
     """
 
-    default_config: Dict[str, Any] = dict(
+    default_config: dict[str, Any] = dict(
         theme_color_bindings=dict(
             indicator_color='primary_color',
             track_color='secondary_container_color',),)
@@ -258,7 +255,7 @@ class MorphLinearProgress(_MorphProgressBase):
     :meth:`_refresh_canvas`.
     """
 
-    default_config: Dict[str, Any] = (
+    default_config: dict[str, Any] = (
         _MorphProgressBase.default_config.copy() | dict(
         size_hint=(1, None),
         height=dp(8),))
@@ -377,7 +374,7 @@ class MorphLinearProgress(_MorphProgressBase):
 
         return (draw_left, draw_right)
 
-    def _get_indicator_points(self) -> List[float]:
+    def _get_indicator_points(self) -> list[float]:
         """Return a flat list of points for the active indicator.
 
         In indeterminate mode the bar bounds come from
@@ -411,7 +408,7 @@ class MorphLinearProgress(_MorphProgressBase):
         
         return [x0, y, x_indicator_end, y]
 
-    def _get_track_points(self) -> List[float]:
+    def _get_track_points(self) -> list[float]:
         """Return points for the left track segment.
 
         In indeterminate mode the track is split around the sliding bar
@@ -444,7 +441,7 @@ class MorphLinearProgress(_MorphProgressBase):
             return []
         return [x_track_start, y, x1, y]
 
-    def _get_track_points_right(self) -> List[float]:
+    def _get_track_points_right(self) -> list[float]:
         """Return points for the right track segment in indeterminate mode.
 
         Returns an empty list in determinate mode.  The segment starts
@@ -559,7 +556,7 @@ class MorphCircularProgress(_MorphProgressBase):
     read-only and bound to the size and thickness of the widget.
     """
 
-    default_config: Dict[str, Any] = (
+    default_config: dict[str, Any] = (
         _MorphProgressBase.default_config.copy() | dict(
         size_hint=(None, None),
         size=(dp(48), dp(48)),))
@@ -691,7 +688,7 @@ class MorphCircularProgress(_MorphProgressBase):
         else:
             self._track_line.points = []
 
-    def _get_indicator_circle(self) -> None | Tuple[float, ...]:
+    def _get_indicator_circle(self) -> None | tuple[float, ...]:
         """Return a ``(cx, cy, r[, angle_start, angle_end])`` tuple for the
         active indicator arc, or ``None`` when nothing should be drawn.
 
@@ -711,7 +708,7 @@ class MorphCircularProgress(_MorphProgressBase):
         angle_end = angle_start + self._display_value * 360
         return (cx, cy, r, angle_start, angle_end)
 
-    def _get_track_circle(self) -> None | Tuple[float, ...]:
+    def _get_track_circle(self) -> None | tuple[float, ...]:
         """Return a ``(cx, cy, r[, angle_start, angle_end])`` tuple for the
         background track arc, or ``None`` when nothing should be drawn.
 
@@ -850,7 +847,7 @@ class MorphWavyLinearProgress(_WavePhaseAnimMixin, MorphLinearProgress):
             x_start: float,
             x_end: float,
             y_center: float,
-            ) -> Generator[float, None, None]:
+            ) -> Generator[float]:
         """Yield x, y points tracing a sine wave between two x coordinates.
 
         The spatial argument is the absolute x coordinate so that indicator
@@ -870,7 +867,7 @@ class MorphWavyLinearProgress(_WavePhaseAnimMixin, MorphLinearProgress):
             yield x
             yield y
 
-    def _get_indicator_points(self) -> List[float]:
+    def _get_indicator_points(self) -> list[float]:
         y = self.center_y
         x0 = self.x + self.thickness / 2
         x1 = self.right - self.thickness / 2
@@ -931,7 +928,7 @@ class MorphWavyCircularProgress(_WavePhaseAnimMixin, MorphCircularProgress):
             r: float,
             angle_start: float,
             angle_end: float,
-            ) -> Generator[float, None, None]:
+            ) -> Generator[float]:
         """Yield a sequence of x, y points tracing a wavy arc.
 
         The wave oscillates radially around ``r``.  The wavelength is
@@ -957,7 +954,7 @@ class MorphWavyCircularProgress(_WavePhaseAnimMixin, MorphCircularProgress):
             yield cx + radius * math.cos(angle_rad)
             yield cy + radius * math.sin(angle_rad)
 
-    def _circle_to_points(self, circle: Tuple[float, ...]) -> List[float]:
+    def _circle_to_points(self, circle: tuple[float, ...]) -> list[float]:
         """Convert a ``(cx, cy, r)`` or ``(cx, cy, r, a_start, a_end)``
         circle tuple into wavy arc polyline points.
         """

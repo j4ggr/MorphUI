@@ -3,8 +3,6 @@ Typography system for MorphUI themes
 """
 import warnings
 
-from typing import Dict
-from typing import Tuple
 from typing import Literal
 from pathlib import Path
 
@@ -181,7 +179,7 @@ class Typography(EventDispatcher):
     ```
     """
 
-    fonts_to_autoregister: Tuple[Dict[str, str], ...] = (
+    fonts_to_autoregister: tuple[dict[str, str], ...] = (
         FONTS.DEFAULT_AUTOREGISTERED_FONTS)
     """Tuple of font registration dictionaries.
 
@@ -199,7 +197,7 @@ class Typography(EventDispatcher):
     - `fn_bolditalic`: Path to the bold italic font file (optional)
     """
 
-    content_styles: Dict[str, Dict[str, Dict[str, str | float | int]]] = DictProperty(
+    content_styles: dict[str, dict[str, dict[str, str | float | int]]] = DictProperty(
         FONTS.TEXT_STYLES)
     """Typography text styles configuration.
     
@@ -246,7 +244,7 @@ class Typography(EventDispatcher):
     ```
     """
 
-    icon_map: Dict[str, str] = DictProperty(ICON.MAP)
+    icon_map: dict[str, str] = DictProperty(ICON.MAP)
     """Mapping of icon names to their Unicode characters.
 
     Provides a dictionary mapping icon names to their corresponding Unicode
@@ -257,7 +255,7 @@ class Typography(EventDispatcher):
     defaults to `ICON.MAP`.
     """
 
-    _registered_fonts: Tuple[str, ...]
+    _registered_fonts: tuple[str, ...]
     """Tuple of currently registered font family names."""
 
     __events__ = (
@@ -275,7 +273,7 @@ class Typography(EventDispatcher):
             content_styles=self.on_typography_changed)
 
     @property
-    def available_style_properties(self) -> Tuple[str, ...]:
+    def available_style_properties(self) -> tuple[str, ...]:
         """Get all available style property names from content styles.
         
         Extracts and returns all unique property names from the innermost
@@ -396,7 +394,7 @@ class Typography(EventDispatcher):
             role: Literal['Display', 'Headline', 'Title', 'Body', 'Label'],
             size: Literal['large', 'medium', 'small'],
             font_weight: Literal['Regular', 'Thin', 'Heavy'] = 'Regular'
-            ) -> Dict[str, str | float | int]:
+            ) -> dict[str, str | float | int]:
         """Get typography style configuration for specified role and size.
         
         Retrieves the complete style dictionary including font family,

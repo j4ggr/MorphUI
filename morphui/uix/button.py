@@ -25,9 +25,6 @@ MorphTextIconToggleButton
     Toggleable version of ``MorphTextIconButton``.
 """
 from typing import Any
-from typing import Dict
-from typing import List
-from typing import Tuple
 from datetime import date
 from warnings import warn
 
@@ -99,7 +96,7 @@ class MorphSimpleIconButton(
     needed (e.g., toolbar buttons, or within a chip).
     """
 
-    default_config: Dict[str, Any] = dict(
+    default_config: dict[str, Any] = dict(
         theme_color_bindings={
             'normal_surface_color': 'transparent_color',
             'normal_content_color': 'content_surface_color',
@@ -150,7 +147,7 @@ class MorphButton(
     MorphLabel to create a button that supports ripple effects and 
     theming.
     """
-    default_config: Dict[str, Any] = dict(
+    default_config: dict[str, Any] = dict(
         halign='center',
         valign='center',
         theme_style='container',
@@ -187,7 +184,7 @@ class MorphIconButton(
     effects and theming.
     """
 
-    default_config: Dict[str, Any] = dict(
+    default_config: dict[str, Any] = dict(
         font_name=MorphIconLabel.default_config['font_name'],
         halign='center',
         valign='center',
@@ -226,7 +223,7 @@ class MorphTrailingIconButton(
     for chips where the trailing icon needs button behavior.
     """
     
-    default_config: Dict[str, Any] = (
+    default_config: dict[str, Any] = (
         MorphSimpleIconLabel.default_config.copy() | dict(
         padding=dp(0),
         pos_hint={'center_y': 0.5},))
@@ -313,7 +310,7 @@ class MorphIconTextButton(
       MorphButtonTextLabel` for displaying the button text.
     """
 
-    default_config: Dict[str, Any] = dict(
+    default_config: dict[str, Any] = dict(
         theme_style='container',
         orientation='horizontal',
         ripple_enabled=True,
@@ -382,7 +379,7 @@ class MorphTextIconButton(
       MorphButtonTrailingIconLabel` for displaying the trailing icon.
     """
 
-    default_config: Dict[str, Any] = MorphIconTextButton.default_config.copy()
+    default_config: dict[str, Any] = MorphIconTextButton.default_config.copy()
     """Default configuration values for MorphTextIconButton.
 
     Inherits default configuration from :class:`MorphIconTextButton`.
@@ -414,7 +411,7 @@ class MorphTextIconToggleButton(
     By default, it uses 'chevron-down' and 'chevron-up' icons to indicate
     the toggle state.
     """
-    default_config: Dict[str, Any] = (
+    default_config: dict[str, Any] = (
         MorphTextIconButton.default_config.copy() | dict(
         normal_icon='chevron-down',
         active_icon='chevron-up',))
@@ -429,7 +426,7 @@ class MorphChipTrailingIconButton(
     
     Inherits from :class:`~morphui.uix.button.MorphTrailingIconButton`.
     """
-    default_config: Dict[str, Any] = (
+    default_config: dict[str, Any] = (
         MorphTrailingIconButton.default_config.copy() | dict(
         padding=[dp(4), 0, 0, 0],))
 
@@ -470,7 +467,7 @@ class MorphTextFieldTrailingIconButton(MorphIconButton):
     defaults to False.
     """
 
-    default_config: Dict[str, Any] = dict(
+    default_config: dict[str, Any] = dict(
         theme_color_bindings=dict(
             normal_surface_color='transparent_color',
             normal_content_color='content_surface_color',
@@ -557,7 +554,7 @@ class MorphDatePickerDayButton(
     defaults to False.
     """
 
-    today_border_color: List[float] = ColorProperty([0, 0, 0, 0])
+    today_border_color: list[float] = ColorProperty([0, 0, 0, 0])
     """Border color for today's date button.
 
     This property holds the RGBA color value used for the border of
@@ -568,7 +565,7 @@ class MorphDatePickerDayButton(
     `[0, 0, 0, 0]`.
     """
 
-    default_config: Dict[str, Any] = dict(
+    default_config: dict[str, Any] = dict(
         halign='center',
         valign='center',
         theme_color_bindings={
@@ -630,7 +627,7 @@ class MorphDatePickerDayButton(
             self.is_start_day,
             self.is_end_day,])
 
-    def _get_highlight_layer_pos(self) -> Tuple[float, float]:
+    def _get_highlight_layer_pos(self) -> tuple[float, float]:
         """Get the position of the highlight layer.
 
         This method returns the position of the highlight layer based
@@ -649,7 +646,7 @@ class MorphDatePickerDayButton(
 
         return x, y
 
-    def _get_highlight_layer_size(self) -> Tuple[float, float]:
+    def _get_highlight_layer_size(self) -> tuple[float, float]:
         """Get the size of the highlight layer.
 
         This method returns the size of the highlight layer based on
@@ -668,7 +665,7 @@ class MorphDatePickerDayButton(
 
         return width, height
 
-    def _get_border_color(self, *args) -> List[float]:
+    def _get_border_color(self, *args) -> list[float]:
         """Get the border color based on the button state.
 
         This method returns the appropriate border color depending on

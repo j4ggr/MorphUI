@@ -1,5 +1,4 @@
-from typing import List
-from typing import Callable
+from collections.abc import Callable
 
 from kivy.metrics import dp
 from kivy.event import EventDispatcher
@@ -107,7 +106,7 @@ class MorphRoundSidesBehavior(EventDispatcher):
     and defaults to False.
     """
 
-    active_radius: List[float] = VariableListProperty([dp(8)], length=4)
+    active_radius: list[float] = VariableListProperty([dp(8)], length=4)
     """Radius to apply when the widget is in an active state.
 
     This property defines the radius values to be used when the widget
@@ -159,7 +158,7 @@ class MorphRoundSidesBehavior(EventDispatcher):
     :class:`~kivy.properties.StringProperty` and defaults to 'out_sine'.
     """
 
-    _original_radius: List[float] | None
+    _original_radius: list[float] | None
     """Store original radius value when round_sides is enabled."""
 
     def __init__(self, **kwargs) -> None:
@@ -172,7 +171,7 @@ class MorphRoundSidesBehavior(EventDispatcher):
             active=self.animate_active_radius,)
         self._update_round_sides(self, self.round_sides)
 
-    def _resolve_radius(self) -> List[float]:
+    def _resolve_radius(self) -> list[float]:
         """Determine the appropriate radius based on current state.
         
         This method calculates the radius to be applied based on whether
@@ -318,7 +317,7 @@ class MorphScaleBehavior(EventDispatcher):
     `1.0`.
     """
 
-    scale_origin: List[float] = ListProperty([])
+    scale_origin: list[float] = ListProperty([])
     """Origin point for scaling transformations.
     
     This property defines the point around which the scaling occurs.
@@ -414,7 +413,7 @@ class MorphScaleBehavior(EventDispatcher):
             scale_origin=self._update_scale)
         
     @property
-    def resolved_scale_origin(self) -> List[float]:
+    def resolved_scale_origin(self) -> list[float]:
         """Get the resolved scale origin as a 3D point.
 
         This property returns the `scale_origin` property ensured to be

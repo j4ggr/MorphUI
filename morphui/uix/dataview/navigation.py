@@ -1,5 +1,4 @@
 from typing import Any
-from typing import Dict
 
 from kivy.metrics import dp
 from kivy.properties import AliasProperty
@@ -34,7 +33,7 @@ class MorphDataViewNavigationButton(MorphSimpleIconButton):
     and defaults to `0`.
     """
 
-    default_config: Dict[str, Any] = (
+    default_config: dict[str, Any] = (
         MorphSimpleIconButton.default_config.copy() | dict(
         theme_color_bindings={
             'normal_surface_color':'transparent_color',
@@ -75,7 +74,7 @@ class MorphDataViewNavigationPageLabel(MorphSimpleLabel):
     and is bound to changes in `current_page` and `total_pages`.
     """
     
-    default_config: Dict[str, Any] = dict(
+    default_config: dict[str, Any] = dict(
         theme_color_bindings=dict(
             normal_content_color='content_surface_color',),
         typography_role='Label',

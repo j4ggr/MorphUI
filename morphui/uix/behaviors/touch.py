@@ -1,8 +1,5 @@
 from time import time
 from typing import Any
-from typing import List
-from typing import Dict
-from typing import Tuple
 from weakref import ref
 
 from kivy.clock import Clock
@@ -303,7 +300,7 @@ class MorphButtonBehavior(EventDispatcher):
                 self._press_duration = time() - self._press_start_time
             self._press_start_time = None
 
-    def _do_press(self, pos: Tuple[float, float]) -> None:
+    def _do_press(self, pos: tuple[float, float]) -> None:
         """Internal method to handle press logic.
 
         This method sets the :attr:`pressed` state to True. If 
@@ -395,7 +392,7 @@ class MorphRippleBehavior(EventDispatcher):
     method to specify how the ripple effect is drawn on the canvas.
     """
 
-    ripple_color: List[float] | None = ColorProperty(None)
+    ripple_color: list[float] | None = ColorProperty(None)
     """The color of the ripple effect.
 
     This property defines the color of the ripple effect when it is
@@ -410,7 +407,7 @@ class MorphRippleBehavior(EventDispatcher):
     ([0.75, 0.75, 0.75, 0.5]).
     """
 
-    _current_ripple_color: List[float] = ColorProperty()
+    _current_ripple_color: list[float] = ColorProperty()
     """The current color of the ripple effect during animation.
 
     This internal property tracks the color of the ripple effect as it
@@ -488,7 +485,7 @@ class MorphRippleBehavior(EventDispatcher):
     :class:`~kivy.properties.BooleanProperty` and defaults to True.
     """
 
-    ripple_pos: List[float] = ListProperty([0, 0], length=4)
+    ripple_pos: list[float] = ListProperty([0, 0], length=4)
     """The position of the ripple effect on the widget.
 
     This property defines the (x, y) coordinates where the ripple
@@ -564,7 +561,7 @@ class MorphRippleBehavior(EventDispatcher):
         if hasattr(self, 'disabled'):
             self.fbind('disabled', self.fade_ripple_animation)
 
-    def _evaluate_ripple_pos(self, touch_pos: Tuple[float, float]) -> None:
+    def _evaluate_ripple_pos(self, touch_pos: tuple[float, float]) -> None:
         """Calculate and set the local ripple position from touch 
         coordinates.
 
@@ -603,7 +600,7 @@ class MorphRippleBehavior(EventDispatcher):
         local_pos = calculate_widget_local_pos(self, touch_pos)
         self.ripple_pos = list(local_pos)
 
-    def determine_ripple_color(self) -> List[float]:
+    def determine_ripple_color(self) -> list[float]:
         """Get the effective ripple color, falling back to interaction 
         color.
 
@@ -631,7 +628,7 @@ class MorphRippleBehavior(EventDispatcher):
         opacity = getattr(self, 'pressed_state_opacity', 0.16)
         return ripple_color[:3] + [opacity,]
 
-    def show_ripple_effect(self, touch_pos: Tuple[float, float]) -> None:
+    def show_ripple_effect(self, touch_pos: tuple[float, float]) -> None:
         """Display the ripple effect for a touch event if ripple is
         enabled.
 
@@ -867,7 +864,7 @@ class MorphToggleButtonBehavior(MorphButtonBehavior):
     :class:`~kivy.uix.behaviors.ToggleButtonBehavior`.
     """
 
-    __groups: Dict[str, List[ref]] = {}
+    __groups: dict[str, list[ref]] = {}
     """Internal dictionary to manage groups of toggle buttons.
     
     This class-level dictionary keeps track of toggle button groups,
@@ -930,7 +927,7 @@ class MorphToggleButtonBehavior(MorphButtonBehavior):
                 break
     
     @staticmethod
-    def get_widgets(group: str) -> List[Any]:
+    def get_widgets(group: str) -> list[Any]:
         """Get all toggle button widgets in the specified group.
 
         This static method retrieves all toggle button instances that

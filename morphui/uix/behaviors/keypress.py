@@ -1,6 +1,4 @@
 from typing import Any
-from typing import List
-from typing import Dict
 
 from kivy.clock import Clock
 from kivy.event import EventDispatcher
@@ -65,7 +63,7 @@ class MorphKeyPressBehavior(EventDispatcher):
     :class:`~kivy.properties.NumericProperty` and defaults to -1.
     """
 
-    modifiers: List[str] = ListProperty([])
+    modifiers: list[str] = ListProperty([])
     """List of currently held modifier keys.
 
     Possible values include 'shift', 'ctrl', 'alt', 'numlock', etc.
@@ -76,7 +74,7 @@ class MorphKeyPressBehavior(EventDispatcher):
     list.
     """
 
-    key_map: Dict[int, str] = {
+    key_map: dict[int, str] = {
         40: 'enter',
         41: 'escape',
         42: 'backspace',
@@ -149,7 +147,7 @@ class MorphKeyPressBehavior(EventDispatcher):
             keyboard: int,
             keycode: int,
             text: str | None,
-            modifiers: List[str]) -> None:
+            modifiers: list[str]) -> None:
         """Callback for key press events. Binds to the Window's
         on_key_down event.
         
@@ -233,7 +231,7 @@ class MorphTabNavigationManagerBehavior(MorphKeyPressBehavior):
     :class:`~kivy.properties.StringProperty` and defaults to an
     empty string."""
 
-    _index_last_focus: Dict[str, int] = DictProperty({})
+    _index_last_focus: dict[str, int] = DictProperty({})
     """Store the index of the last focus widget."""
 
     def _get_index_last_focus(self) -> int:
@@ -294,7 +292,7 @@ class MorphTabNavigationManagerBehavior(MorphKeyPressBehavior):
     :class:`~kivy.properties.AliasProperty` and defaults to 0.
     """
 
-    _tab_widgets: Dict[str, List[Any]] = DictProperty({})
+    _tab_widgets: dict[str, list[Any]] = DictProperty({})
     """Tab groups dictionary mapping group names to lists of widgets.
     
     This allows multiple independent tab groups to exist. Each group
@@ -304,7 +302,7 @@ class MorphTabNavigationManagerBehavior(MorphKeyPressBehavior):
     :attr:`tab_widgets` is a :class:`~kivy.properties.DictProperty`
     and defaults to an empty dictionary."""
 
-    def _get_tab_widgets(self) -> List[Any]:
+    def _get_tab_widgets(self) -> list[Any]:
         """Get the list of widgets in the current tab group.
          Only returns widgets that are not disabled."""
         return [
@@ -312,7 +310,7 @@ class MorphTabNavigationManagerBehavior(MorphKeyPressBehavior):
             self._tab_widgets.get(self.current_tab_group, [])
             if not getattr(widget, 'disabled', False)]
 
-    tab_widgets: List[Any] = AliasProperty(
+    tab_widgets: list[Any] = AliasProperty(
         _get_tab_widgets,
         None,
         bind=[

@@ -15,7 +15,6 @@ MorphInputChip
     Input token chip with a trailing close/remove button.
 """
 from typing import Any
-from typing import Dict
 
 from kivy.metrics import dp
 
@@ -129,7 +128,7 @@ class MorphChip(
     This dictionary maps widget identities to their default classes.
     """
 
-    default_config: Dict[str, Any] = dict(
+    default_config: dict[str, Any] = dict(
         theme_color_bindings=dict(
             normal_surface_color='transparent_color',
             normal_content_color='content_surface_color',
@@ -205,7 +204,7 @@ class MorphFilterChip(
         MyApp().run()
     """
 
-    default_config: Dict[str, Any] = (
+    default_config: dict[str, Any] = (
         MorphChip.default_config.copy() | dict(
         theme_color_bindings=dict(
             normal_surface_color='transparent_color',
@@ -250,7 +249,7 @@ class MorphInputChip(MorphChip):
         MyApp().run()
     """
 
-    default_config: Dict[str, Any] = (
+    default_config: dict[str, Any] = (
         MorphChip.default_config.copy() | dict(
         normal_trailing_icon='close',))
     """Default configuration for the :class:`MorphInputChip` component."""

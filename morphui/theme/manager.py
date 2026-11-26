@@ -5,9 +5,6 @@ This module provides a dynamic color system that automatically updates
 all widget colors when switching between light and dark themes.
 """
 from typing import Any
-from typing import Dict
-from typing import List
-from typing import Tuple
 from typing import Literal
 
 from kivy.utils import hex_colormap
@@ -169,7 +166,7 @@ class ThemeManager(MorphDynamicColorPalette):
     :class:`~kivy.properties.AliasProperty`.
     """
     
-    hex_colormap: Dict[str, str] = DictProperty(hex_colormap.copy())
+    hex_colormap: dict[str, str] = DictProperty(hex_colormap.copy())
     """Instance-level hex colormap for storing registered seed colors.
     
     This property allows for dynamic registration of new seed colors at
@@ -214,13 +211,13 @@ class ThemeManager(MorphDynamicColorPalette):
 
         self.refresh_theme_colors()
 
-    def _get_available_seed_colors(self) -> Tuple[str, ...]:
+    def _get_available_seed_colors(self) -> tuple[str, ...]:
         """Get a tuple of all available seed color names."""
         return tuple(
             color.capitalize() for color in self.hex_colormap.keys())
     
     @property
-    def colormap(self) -> Dict[str, List[float]]:
+    def colormap(self) -> dict[str, list[float]]:
         """RGBA colormap derived from hex_colormap (read-only).
         
         Returns a dictionary mapping color names to RGBA values.

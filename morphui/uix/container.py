@@ -5,7 +5,6 @@ patterns used across multiple components.
 """
 
 from typing import Any
-from typing import Dict
 
 from kivy.metrics import dp
 from kivy.properties import BooleanProperty
@@ -44,14 +43,14 @@ class _MorphBaseContainer(MorphSimpleBoxLayout):
     defaults to False.
     """
 
-    default_child_classes: Dict[str, Any] = {}
+    default_child_classes: dict[str, Any] = {}
     """Default child widgets for the container.
     
     This dictionary maps widget identities to their default classes.
     Override in subclasses to change default child widgets.
     """
 
-    default_config: Dict[str, Any] = dict(
+    default_config: dict[str, Any] = dict(
         orientation='horizontal',
         auto_size=True,
         padding=dp(8),
@@ -67,7 +66,7 @@ class _MorphBaseContainer(MorphSimpleBoxLayout):
         super().__init__(**config)
         self._initialize_child_widgets()
     
-    def _prepare_config(self, **kwargs) -> Dict[str, Any]:
+    def _prepare_config(self, **kwargs) -> dict[str, Any]:
         """Prepare configuration by merging defaults and instantiating
         child widgets.
 
