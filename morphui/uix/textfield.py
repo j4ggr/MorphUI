@@ -1215,6 +1215,15 @@ class MorphTextField(
         This method stops any ongoing animations on the child widgets
         before updating their positions and sizes to ensure smooth
         transitions. 
+
+        If :attr:`size_hint_x` is set, the parent layout owns the
+        widget's width, so the minimum width is not enforced here.
+        Doing so unconditionally would fight the parent layout: the
+        parent keeps re-assigning its computed width (e.g. from
+        `size_hint_x`) while this method keeps forcing a larger
+        `minimum_width`, each change re-triggering the other's layout
+        pass forever (visible as a Kivy "too much iteration" Clock
+        warning that never settles).
         """
         if self.size[0] <= 0 or self.size[1] <= 0: # ScreenManager issue when widget was not visible yet.
             return
@@ -1230,7 +1239,8 @@ class MorphTextField(
         self._update_heading_geometry()
         self._update_input_widget_geometry()
 
-        self.width = max(self.width, self.minimum_width)
+        if self.size_hint_x is None:
+            self.width = max(self.width, self.minimum_width)
 
     def refresh_textfield_content(self, *args) -> None:
         """Refresh the content of the text field and its child widgets.

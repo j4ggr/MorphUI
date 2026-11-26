@@ -12,6 +12,7 @@ sys.path.append(str(Path(__file__).parent.resolve()))
 
 from kivy.event import EventDispatcher
 from morphui.uix.textfield import MorphTextValidator
+from morphui.uix.textfield import MorphTextFieldOutlined
 
 
 @pytest.fixture
@@ -391,3 +392,47 @@ def test_optional_field_with_empty_text(validator):
     # (empty string doesn't match email pattern)
     assert not validator.validate('')
     assert validator.error
+
+
+# MorphTextField._update_layout width-enforcement tests
+def test_update_layout_respects_parent_managed_width():
+    """Width must not be forced past a parent-assigned size_hint_x width.
+
+    Regression test for an infinite layout loop: when size_hint_x is
+    set, the parent layout owns the widget's width. If _update_layout
+    forced self.width up to minimum_width regardless, it would fight
+    the parent's own width assignment forever (visible as a Kivy
+    "too much iteration" Clock warning that never settles).
+    """
+    field = MorphTextFieldOutlined(
+        size_hint_x=0.5,
+        heading_text='Select machine',
+        leading_icon='cog-outline',
+        size=(300, 56),
+        pos=(0, 0))
+
+    narrow_width = field.minimum_width / 2
+    field.width = narrow_width
+    field._update_layout()
+
+    assert field.width == narrow_width
+
+
+def test_update_layout_still_enforces_minimum_width_when_self_managed():
+    """Width is still clamped to minimum_width when size_hint_x is None.
+
+    This preserves the original behavior for self-managed widgets
+    (e.g. explicit size_hint_x=None, width=<too small>), which do not
+    conflict with a parent layout.
+    """
+    field = MorphTextFieldOutlined(
+        size_hint_x=None,
+        heading_text='Select machine',
+        leading_icon='cog-outline',
+        size=(300, 56),
+        pos=(0, 0))
+
+    field.width = field.minimum_width / 2
+    field._update_layout()
+
+    assert field.width == field.minimum_width
